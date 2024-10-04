@@ -1,0 +1,53 @@
+.navbar {
+    position: fixed; /* Fija la barra en el lado izquierdo */
+    left: 0;
+    top: 0;
+    width: 100px; /* Ajusta el ancho según tus necesidades */
+    height: 100%; /* La altura cubre toda la pantalla */
+    background-color: white; /* Color de fondo de la barra */
+    display: flex;
+    flex-direction: column; /* Alinea los elementos en columna */
+    align-items: center; /* Centra los elementos horizontalmente */
+    padding-top: 20px; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Añade una sombra */
+}
+
+.logoPagina {
+    width: 80px; /* Ajusta el tamaño del logo */
+
+}
+
+.logoPagina img {
+    width: 100%; /* La imagen se ajusta al ancho del contenedor */
+    height: auto; /* Mantiene la proporción de la imagen */
+}
+
+.botonesNavBar {
+    display: flex;
+    flex-direction: column;
+    width: 100%; /* Ocupa todo el ancho del navbar */
+    align-items: center; /* Centra los botones */
+    padding: 0;
+}
+
+.botonNavBar {
+    width: 100%; /* El botón ocupará todo el ancho del navbar */
+    background-color: white;
+    color: #143361;
+    border: none;
+    cursor: pointer;
+    padding: 15px 0; /* Añade padding vertical para hacer los botones más altos */
+    margin-bottom: 10px; /* Espacio entre los botones */
+    text-align: center;
+    font-size: 16px;
+    transition: transform 0.2s ease, background-color 0.2s ease; /* Transición suave */
+    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+}
+
+.botonNavBar:hover {
+    transform: scale(1.05);
+    background-color: white;
+    color: #143361;
+    border: none;
+    cursor: pointer;
+}
