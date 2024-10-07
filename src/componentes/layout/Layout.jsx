@@ -13,7 +13,19 @@ import Facturasmanuales from '../facturacion/facturas_manuales/Facturasmanuales'
 import Reportesexpo from '../reportes/expo/Reportesexpo';
 import Reportesimpo from '../reportes/impo/Reportesimpo';
 
+//Importo componente Clientes
+import Clientes from '../clientes/Clientes';
 
+//Importo componentes de Guias
+import Guiasimpo from '../guias/Impo/Guiasimpo';
+import Guiasexpo from '../guias/expo/Guiasexpo';
+
+//Importo componentes de Tablas
+import Historialdecambios from '../tablas/historialdecambios/Historialdecambios';
+import Correlatividad from '../tablas/correlatividad/Correlatividad';
+
+//Importo componente Deudores
+import Deudores from '../deudores/Deudores';
 
 function Layout({ isLoggedIn, handleLogin }) {
     const location = useLocation();
@@ -98,6 +110,79 @@ function Layout({ isLoggedIn, handleLogin }) {
                         )
                     }
                 />
+
+                {/* Ruta Clientes: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/clientes"
+                    element={
+                        isLoggedIn ? (
+                            <Clientes isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Guias Impo: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/guias/impo"
+                    element={
+                        isLoggedIn ? (
+                            <Guiasimpo isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Guias Expo: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/guias/expo"
+                    element={
+                        isLoggedIn ? (
+                            <Guiasexpo isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Historial de cambio: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/tablas/cambio"
+                    element={
+                        isLoggedIn ? (
+                            <Historialdecambios isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Correlatividad: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/tablas/correlatividad"
+                    element={
+                        isLoggedIn ? (
+                            <Correlatividad isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Deudores: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/deudores"
+                    element={
+                        isLoggedIn ? (
+                            <Deudores isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
                 {/* Ruta por defecto: Redirige al login si no se encuentra la ruta */}
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>

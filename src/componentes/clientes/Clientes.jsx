@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Clientes = () => {
+const Clientes = ({isLoggedIn}) => {
   return (
     <div>Clientes</div>
   )
