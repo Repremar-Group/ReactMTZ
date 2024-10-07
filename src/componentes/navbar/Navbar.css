@@ -1,47 +1,47 @@
 .navbar {
-    position: fixed; /* Fija la barra en el lado izquierdo */
+    position: fixed;
     left: 0;
     top: 0;
-    width: 100px; /* Ajusta el ancho según tus necesidades */
-    height: 100%; /* La altura cubre toda la pantalla */
-    background-color: white; /* Color de fondo de la barra */
+    width: 100px;
+    height: 100%;
+    background-color: white;
     display: flex;
-    flex-direction: column; /* Alinea los elementos en columna */
-    align-items: center; /* Centra los elementos horizontalmente */
-    padding-top: 20px; 
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Añade una sombra */
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .logoPagina {
-    width: 80px; /* Ajusta el tamaño del logo */
-
+    width: 80px;
 }
 
 .logoPagina img {
-    width: 100%; /* La imagen se ajusta al ancho del contenedor */
-    height: auto; /* Mantiene la proporción de la imagen */
+    width: 100%;
+    height: auto;
 }
 
 .botonesNavBar {
     display: flex;
     flex-direction: column;
-    width: 100%; /* Ocupa todo el ancho del navbar */
-    align-items: center; /* Centra los botones */
+    width: 100%;
+    align-items: center;
     padding: 0;
 }
 
 .botonNavBar {
-    width: 100%; /* El botón ocupará todo el ancho del navbar */
+    width: 100%;
     background-color: white;
     color: #143361;
     border: none;
     cursor: pointer;
-    padding: 15px 0; /* Añade padding vertical para hacer los botones más altos */
-    margin-bottom: 10px; /* Espacio entre los botones */
+    padding: 15px 0;
+    margin-bottom: 10px;
     text-align: center;
     font-size: 16px;
-    transition: transform 0.2s ease, background-color 0.2s ease; /* Transición suave */
-    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    box-sizing: border-box;
+    outline: none;
 }
 
 .botonNavBar:hover {
@@ -49,5 +49,55 @@
     background-color: white;
     color: #143361;
     border: none;
+}
+
+.botonConSubmenu {
+    position: relative;
+    width: 100%;
+}
+
+.submenu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 100px; /* Ajusta para que el submenú aparezca justo al lado del navbar */
+    top: 0;
+    background-color: white;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    opacity: 0; /* Comienza invisible */
+    transform: translateY(-10px); /* Comienza un poco más arriba */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Transiciones suaves */
+    pointer-events: none; /* Desactiva la interacción mientras está invisible */
+}
+
+.botonConSubmenu:hover .submenu {
+    opacity: 1; /* Hace visible el submenú */
+    transform: translateY(0); /* Lo lleva a su posición original */
+    pointer-events: auto; /* Activa la interacción */
+}
+
+.submenuItem {
+    padding: 10px;
+    color: #143361;
+    text-decoration: none;
+    text-align: left;
+    width: 100%;
+    background-color: white;
+    border: none;
     cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    font-size: 13px;
+}
+
+.submenuItem:hover {
+    transform: scale(1.05);
+    background-color: white;
+    color: #143361;
+    border: none;
+}
+
+.botonNavBar:focus, .submenuItem:focus {
+    outline: none;
 }
