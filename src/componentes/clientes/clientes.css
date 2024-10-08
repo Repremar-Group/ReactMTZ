@@ -1,0 +1,151 @@
+.Contenedor_Principal {
+    width: 100%; /* Usa todo el ancho disponible */
+    height: 100vh; /* Altura fija relativa a la ventana del navegador */
+    max-width: 100%; /* Ajustamos el ancho máximo para que no exceda el ancho del viewport */
+    padding-left: 100px; /* Espacio solo a la izquierda */
+    padding-right: 20px; /* Espacio a la derecha */
+    margin: 0 auto; /* Centra el contenedor horizontalmente, sin margen superior */
+    box-sizing: border-box; /* Asegúrate de que el padding no afecte el ancho total */
+    overflow-y: auto; /* Permitir desplazamiento si el contenido excede la altura */
+}
+
+.Titulo {
+    margin: 20px 100px 10px 100px; /* Espacio superior, y mantiene el padding lateral */
+    text-align: left; /* Alinea el texto a la izquierda */
+    color: #143361;
+}
+
+.table-container {
+    width: calc(100% - 120px); /* Ajusta el ancho restando padding */
+    max-width: 100%; /* Ajustamos el ancho máximo para que no exceda el ancho del viewport */
+    margin: 0 auto; /* Centra el contenedor horizontalmente, sin margen superior */
+    box-sizing: border-box; /* Asegúrate de que el padding no afecte el ancho total */
+    overflow-x: auto; /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
+}
+
+.search-bar {
+    display: left;
+    align-items: center;
+    margin-bottom: 10px;
+
+}
+
+.add-button {
+    background: none; /* Sin fondo */
+    border: none; /* Sin borde */
+    cursor: pointer; /* Cambia el cursor al pasar por encima */
+    font-size: 20px; /* Tamaño de la fuente */
+    display: inline-block; /* Ajusta el tamaño del botón al contenido */
+    padding: 2px; /* Padding mínimo para un tamaño reducido */
+    margin: 2px; /* Margen mínimo para evitar espacio adicional */
+    line-height: 1; /* Asegura que el botón no tenga altura extra */
+    height: auto; /* Permitir que el botón ajuste su altura al contenido */
+    width: fit-content; /* Ajusta el ancho al contenido */
+    min-width: 10px; /* Permite que el ancho sea tan pequeño como sea necesario */
+    max-width: none; /* Sin límite superior al ancho */
+    transition: transform 0.2s ease; /* Transición suave para el hover */
+}
+
+.add-button:hover {
+    transform: scale(1.1); /* Aumenta el tamaño al 110% */
+    background: none; /* Sin fondo */
+}
+
+.input_buscar[type="text"] {
+    padding: 5px;
+    width: 200px; /* Puedes ajustar esto o hacerlo responsive */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%; /* Asegúrate de que la tabla ocupe todo el contenedor */
+    border-collapse: collapse;
+    margin-top: 10px;
+    table-layout: fixed; /* Fija el ancho de las columnas */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+    overflow: hidden; /* Oculta el desbordamiento */
+    white-space: nowrap; /* Evita el salto de línea */
+    text-overflow: ellipsis; /* Muestra "..." si hay desbordamiento */
+    
+}
+
+/* Anchos fijos para cada columna */
+th:nth-child(1), td:nth-child(1) { width: 25%; } /* Razón social */
+th:nth-child(2), td:nth-child(2) { width: 15%; } /* RUT */
+th:nth-child(3), td:nth-child(3) { width: 1%; } /* Id */
+th:nth-child(4), td:nth-child(4) { width: 2%; } /* País */
+th:nth-child(5), td:nth-child(5) { width: 30%; } /* Email */
+th:nth-child(6), td:nth-child(6) { width: 10%; } /* Tel */
+th:nth-child(7), td:nth-child(7) { width: 6%; } /* Acciones */
+
+th {
+    background-color: #f9f9f9;
+}
+
+/* Nuevo contenedor para los botones de acción */
+.action-buttons {
+    display: flex; /* Hace que los botones se alineen en fila */
+    gap: 2px; /* Espacio entre los botones */
+}
+
+.action-button {
+    background: none; /* Sin fondo */
+    border: none; /* Sin borde */
+    cursor: pointer; /* Cambia el cursor al pasar por encima */
+    font-size: 18px; /* Tamaño de la fuente */
+    display: inline-block; /* Ajusta el tamaño del botón al contenido */
+    padding: 2px; /* Padding mínimo para un tamaño reducido */
+    margin: 2px; /* Margen mínimo para evitar espacio adicional */
+    line-height: 1; /* Asegura que el botón no tenga altura extra */
+    height: auto; /* Permitir que el botón ajuste su altura al contenido */
+    width: fit-content; /* Ajusta el ancho al contenido */
+    min-width: 0; /* Permite que el ancho sea tan pequeño como sea necesario */
+    max-width: none; /* Sin límite superior al ancho */
+    transition: transform 0.2s ease; /* Transición suave para el hover */
+}
+
+.action-button:hover {
+    background-color: #143361;
+    transform: scale(1.1); /* Aumenta el tamaño al 110% */
+    background: none; /* Sin fondo */
+}
+
+.pagination {
+    display: flex;
+    justify-content: center; /* Centra los elementos horizontalmente */
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    user-select: none; /* Evita la selección de texto */
+}
+
+.pagination li {
+    transition: transform 0.2s ease; /* Transición suave para el hover */
+    margin: 0 5px;
+}
+
+.pagination li.active {
+    font-weight: bold;
+    transform: scale(1.4); /* Aumenta el tamaño al 110% */
+    color: white; /* Color del texto para la página activa */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+.pagination li a {
+    text-decoration: none;
+    padding: 8px 12px;
+    color: #143361; /* Color por defecto */
+    cursor: pointer;
+}
+
+.pagination li a:hover {
+    color: #4986e2;
+}

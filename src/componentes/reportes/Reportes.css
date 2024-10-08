@@ -1,0 +1,57 @@
+
+
+.reporte-container h2 {
+    text-align: center; /* Centra el título */
+}
+
+.date-container {
+    display: flex; /* Alinea los campos de fecha en una fila */
+    justify-content: space-between; /* Espacio entre los campos */
+    margin-bottom: 15px; /* Espacio inferior para separación */
+}
+
+.date-field {
+    flex: 1; /* Ambos campos ocupan el mismo ancho */
+    margin-right: 10px; /* Espacio a la derecha */
+}
+
+.date-field:last-child {
+    margin-right: 0; /* Elimina el margen derecho del último campo */
+
+}
+
+.reporte-container label {
+    display: block; /* Asegura que el label ocupe todo el ancho */
+    width: 100%; /* Ocupa todo el ancho del contenedor */
+    margin-bottom: 5px; /* Espacio inferior */
+    text-align: left; /* Alineación del texto a la izquierda */
+}
+
+.reporte-container input,
+.reporte-container select {
+    width: 100%; /* Ocupa todo el ancho */
+    padding: 8px; /* Espacio interno */
+    border: 1px solid #ccc; /* Borde */
+    border-radius: 4px; /* Bordes redondeados */
+    box-sizing: border-box; /* Incluye el padding y el borde en el ancho total */
+}
+
+.reporte-container button {
+    width: 100%; /* Botón ocupa todo el ancho */
+    padding: 10px; /* Espacio interno */
+    background-color: #143361; /* Color de fondo */
+    color: white; /* Color del texto */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar por encima */
+    margin-top: 10px; /* Espacio superior */
+}
+
+.reporte-container button:hover {
+    background-color: #007bff; /* Cambia el color al pasar el mouse */
+}
+
+/* Estilos adicionales para el campo Cliente */
+.Cliente_Label {
+    margin-bottom: 10px; /* Espacio inferior */
+}
