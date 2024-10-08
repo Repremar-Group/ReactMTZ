@@ -1,0 +1,78 @@
+
+
+/* Estilos para el formulario */
+.formulario-agregar-cliente {
+    display: flex;
+    flex-direction: column;
+}
+.formulario-agregar-cliente div {
+    width: 100%; /* Asegura que los divs de los inputs ocupen el mismo ancho */
+    margin: 10px;
+}
+
+/* Título del formulario */
+.formulario-agregar-cliente h2 {
+    text-align: center;
+    color: #143361;
+    margin-bottom: 20px;
+}
+
+/* Estilos generales para los campos del formulario */
+.formulario-agregar-cliente label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.formulario-agregar-cliente input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0; /* color de fondo claro */
+    color: gray;
+}
+
+/* Asegura que el input no se expanda fuera de su contenedor */
+.formulario-agregar-cliente input:focus {
+    border-color: #4986e2;
+    outline: none;
+}
+
+/* Estilos específicos para cada campo */
+.div_razonsocial_agregar {
+    margin-bottom: 15px;
+}
+
+/* Botón para agregar cliente */
+.btn-agregar-cliente {
+    padding: 10px;
+    margin: 20px;
+    background-color: #143361;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.btn-agregar-cliente:hover {
+    background-color: #007bff;
+}
+.btn-Salir-Agregar-Cliente{
+    padding: 10px;
+    background-color: #143361;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+.btn-Salir-Agregar-Cliente:hover {
+    background-color: #007bff;
+}

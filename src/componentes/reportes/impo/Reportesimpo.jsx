@@ -48,40 +48,42 @@ const Reportesimpo = ({isLoggedIn}) => {
            />
          </div>
        </div>
-       <div className='cliente-label'>
-         <label htmlFor="cliente">Cliente:</label>
-         <input
-           type="text"
-           id="cliente"
-           value={cliente}
-           onChange={(e) => setCliente(e.target.value)}
-           required
-         />
-       </div>
-       <div>
-         <label htmlFor="numeroCliente">Número de Cliente:</label>
-         <input
-           type="text"
-           id="numeroCliente"
-           value={numeroCliente}
-           onChange={(e) => setNumeroCliente(e.target.value)}
-           required
-         />
-       </div>
-       <div>
-         <label htmlFor="tipoPago">Tipo de Pago:</label>
-         <select
-           id="tipoPago"
-           value={tipoPago}
-           onChange={(e) => setTipoPago(e.target.value)}
-           required
-         >
-           <option value="">Selecciona un tipo de pago</option>
-           <option value="credito">Crédito</option>
-           <option value="contado">Contado</option>
-           <option value="transferencia">Transferencia</option>
-         </select>
-       </div>
+       <div className='datoscliente-reporte'>
+          <div >
+            <label htmlFor="cliente">Cliente:</label>
+            <input
+              type="text"
+              id="cliente"
+              value={cliente}
+              onChange={(e) => setCliente(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="numeroCliente">Número de Cliente:</label>
+            <input
+              type="text"
+              id="numeroCliente"
+              value={numeroCliente}
+              onChange={(e) => setNumeroCliente(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="tipoPago">Tipo de Pago:</label>
+            <select
+              id="tipoPago"
+              value={tipoPago}
+              onChange={(e) => setTipoPago(e.target.value)}
+              required
+            >
+              <option value="">Selecciona un tipo de pago</option>
+              <option value="credito">Crédito</option>
+              <option value="contado">Contado</option>
+              <option value="transferencia">Transferencia</option>
+            </select>
+          </div>
+        </div>
        <button type="submit">Generar Reporte</button>
      </form>
    </div>

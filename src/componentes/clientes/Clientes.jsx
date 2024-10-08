@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import ReactPaginate from 'react-paginate';
 import './clientes.css'; // Importa el archivo CSS
+import { Link } from "react-router-dom";
+import EliminarCliente from './eliminar/EliminarCliente';
 
 const Clientes = ({ isLoggedIn }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
+
+  const [empresaAEliminar, setEmpresaAEliminar] = useState(null); // Estado para la empresa a eliminar
+  const [rutAEliminar, setRutAEliminar] = useState(null); // Estado para el RUT a eliminar
 
   const data = [
     { id: 1, razonSocial: 'Repremar SA', rut: '01010101010', pais: 'UY', email: 'mpena@repremar.com', tel: '123123123' },
@@ -46,14 +51,20 @@ const Clientes = ({ isLoggedIn }) => {
     setCurrentPage(0); // Resetear la página actual al buscar
   };
 
+  const handleEliminar = (razonSocial, rut) => {
+    setEmpresaAEliminar(razonSocial); // Captura la razón social
+    setRutAEliminar(rut); // Captura el RUT
+  };
+
+
   return (
     <div className="Contenedor_Principal">
 
       <div className="Titulo"><h1>Clientes</h1></div>
-      
+
       <div className="table-container">
         <div className="search-bar">
-          <button className="add-button">➕</button>
+          <Link to="/clientes/agregar"><button className="add-button">➕</button></Link>
           <input className='input_buscar'
             type="text"
             placeholder="Buscar"
@@ -87,7 +98,7 @@ const Clientes = ({ isLoggedIn }) => {
                   <div className="action-buttons">
                     <button className="action-button">👥</button>
                     <button className="action-button">✏️</button>
-                    <button className="action-button">❌</button>
+                    <button className="action-button" onClick={() => handleEliminar(row.razonSocial, row.rut)}>❌</button>
                   </div>
                 </td>
               </tr>
@@ -108,6 +119,7 @@ const Clientes = ({ isLoggedIn }) => {
           activeClassName={"active"}
         />
       </div>
+      <EliminarCliente empresa={empresaAEliminar} rut={rutAEliminar} />
     </div>
 
   );

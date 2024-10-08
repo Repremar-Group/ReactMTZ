@@ -27,6 +27,9 @@ import Correlatividad from '../tablas/correlatividad/Correlatividad';
 //Importo componente Deudores
 import Deudores from '../deudores/Deudores';
 
+//Importo componente AgregarCliente
+import AgregarCliente from '../clientes/agregar/AgregarCliente';
+
 function Layout({ isLoggedIn, handleLogin }) {
     const location = useLocation();
 
@@ -117,6 +120,17 @@ function Layout({ isLoggedIn, handleLogin }) {
                     element={
                         isLoggedIn ? (
                             <Clientes isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                {/* Ruta Agregar Clientes: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/clientes/agregar"
+                    element={
+                        isLoggedIn ? (
+                            <AgregarCliente isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )

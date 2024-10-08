@@ -44,7 +44,7 @@ img {
 
 }
 
-input[type="text"], [type="password"] {
+.input-box [type="text"], [type="password"] {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -63,7 +63,7 @@ input[type="text"], [type="password"] {
 }
 
 
-button {
+.submit-btn-login {
     width: 100%;
     padding: 10px;
     color: white;
@@ -73,7 +73,7 @@ button {
     font-size: 16px;
 }
 
-button:hover {
+.submit-btn-login:hover {
     background-color: #f15641;
     
 }

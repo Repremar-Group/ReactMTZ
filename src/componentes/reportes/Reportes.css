@@ -8,8 +8,13 @@
     display: flex; /* Alinea los campos de fecha en una fila */
     justify-content: space-between; /* Espacio entre los campos */
     margin-bottom: 15px; /* Espacio inferior para separación */
+    width: 100%; /* Asegura que los divs de los inputs ocupen el mismo ancho */
+    margin: 10px;
 }
-
+.datoscliente-reporte{
+    width: 100%; /* Asegura que los divs de los inputs ocupen el mismo ancho */
+    margin: 10px;
+}
 .date-field {
     flex: 1; /* Ambos campos ocupan el mismo ancho */
     margin-right: 10px; /* Espacio a la derecha */
@@ -29,11 +34,13 @@
 
 .reporte-container input,
 .reporte-container select {
-    width: 100%; /* Ocupa todo el ancho */
-    padding: 8px; /* Espacio interno */
-    border: 1px solid #ccc; /* Borde */
-    border-radius: 4px; /* Bordes redondeados */
-    box-sizing: border-box; /* Incluye el padding y el borde en el ancho total */
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0; /* color de fondo claro */
+    color: gray;
 }
 
 .reporte-container button {

@@ -52,10 +52,13 @@
 }
 
 .input_buscar[type="text"] {
-    padding: 5px;
-    width: 200px; /* Puedes ajustar esto o hacerlo responsive */
+    width: 200px;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0; /* color de fondo claro */
+    color: gray;
 }
 
 table {

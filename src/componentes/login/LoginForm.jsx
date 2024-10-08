@@ -59,7 +59,7 @@ const LoginForm = ({ onLoginSuccess }) => {
                     />
                 </div>
 
-                <button type="submit">Ingresar</button>
+                <button type="submit" className="submit-btn-login">Ingresar</button>
             </form>
         </div>
     );

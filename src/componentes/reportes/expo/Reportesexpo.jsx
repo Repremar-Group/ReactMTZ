@@ -25,7 +25,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
   return (
     <div className="reporte-container">
       <form onSubmit={handleSubmitReporteExpo}>
-      <h2>Reporte de Embarque Pendiente Exportación</h2>
+        <h2>Reporte de Embarque Pendiente Exportación</h2>
         <div className="date-container">
           <div className="date-field">
             <label htmlFor="desde">Desde:</label>
@@ -48,40 +48,43 @@ const Reportesexpo = ({ isLoggedIn }) => {
             />
           </div>
         </div>
-        <div className='cliente-label'>
-          <label htmlFor="cliente">Cliente:</label>
-          <input
-            type="text"
-            id="cliente"
-            value={cliente}
-            onChange={(e) => setCliente(e.target.value)}
-            required
-          />
+        <div className='datoscliente-reporte'>
+          <div >
+            <label htmlFor="cliente">Cliente:</label>
+            <input
+              type="text"
+              id="cliente"
+              value={cliente}
+              onChange={(e) => setCliente(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="numeroCliente">Número de Cliente:</label>
+            <input
+              type="text"
+              id="numeroCliente"
+              value={numeroCliente}
+              onChange={(e) => setNumeroCliente(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="tipoPago">Tipo de Pago:</label>
+            <select
+              id="tipoPago"
+              value={tipoPago}
+              onChange={(e) => setTipoPago(e.target.value)}
+              required
+            >
+              <option value="">Selecciona un tipo de pago</option>
+              <option value="credito">Crédito</option>
+              <option value="contado">Contado</option>
+              <option value="transferencia">Transferencia</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label htmlFor="numeroCliente">Número de Cliente:</label>
-          <input
-            type="text"
-            id="numeroCliente"
-            value={numeroCliente}
-            onChange={(e) => setNumeroCliente(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="tipoPago">Tipo de Pago:</label>
-          <select
-            id="tipoPago"
-            value={tipoPago}
-            onChange={(e) => setTipoPago(e.target.value)}
-            required
-          >
-            <option value="">Selecciona un tipo de pago</option>
-            <option value="credito">Crédito</option>
-            <option value="contado">Contado</option>
-            <option value="transferencia">Transferencia</option>
-          </select>
-        </div>
+
         <button type="submit">Generar Reporte</button>
       </form>
     </div>
