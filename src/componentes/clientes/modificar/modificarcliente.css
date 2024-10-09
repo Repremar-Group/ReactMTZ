@@ -29,7 +29,7 @@
 .modal-overlay.active {
   display: block; /* Muestra el overlay cuando esté activo */
 }
-.btn-volver-eliminar-cliente{
+.btn-volver-modificar-cliente{
   background-color: #6BBE45;
   border:none;
   color:white;
@@ -37,7 +37,7 @@
   transition: transform 0.2s ease; /* Transición suave para el hover */
 }
 
-.btn-eliminar-cliente{
+.btn-modificar-cliente{
   background-color: #FF6F61;
   border:none;
   color:white;
@@ -45,10 +45,24 @@
   transition: transform 0.2s ease; /* Transición suave para el hover */
 }
 
-.btn-eliminar-cliente:hover{
+.btn-modificar-cliente:hover{
   transform: scale(1.1); /* Aumenta el tamaño al 110% */
 }
 
-.btn-volver-eliminar-cliente:hover{
+.btn-volver-modificar-cliente:hover{
   transform: scale(1.1); /* Aumenta el tamaño al 110% */
+}
+
+.contenido-modificar-empresa input{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  background-color: #f0f0f0; /* color de fondo claro */
+  color: gray;
+}
+.botones-formulario-modificar-cliente{
+  display: flex;
+  justify-content: center;
 }

@@ -6,6 +6,17 @@ const AgregarCliente = ({ isLoggedIn }) => {
     // Estado para los campos del formulario
     const [razonSocial, setRazonSocial] = useState('');
     const [rut, setRut] = useState('');
+    const [iata, setIata] = useState(''); //*
+    const [direccion, setDireccion] = useState('');//*
+    const [zona, setZona] = useState('');//*
+    const [ciudad, setCiudad] = useState('');//*
+    const [codigopostal, setCodigoPostal] = useState('');//*
+    const [cass, setCass] = useState('');//*
+    const [comision, setComision] = useState('');//*
+    const [descuento, setDescuento] = useState('');//*
+    const [isCheckedLPC, setIsCheckedLPC] = useState(false);//*
+    const [isCheckedCompaniaAerea, setIsCheckedCompaniaAerea] = useState(false);//*
+    const [tipoComprobante, setTipoComprobante] = useState(false);//*
     const [id, setID] = useState('');
     const [pais, setPais] = useState('');
     const [email, setEmail] = useState('');
@@ -16,9 +27,20 @@ const AgregarCliente = ({ isLoggedIn }) => {
         e.preventDefault();
         // Aquí puedes manejar la lógica para enviar la información
         console.log({
-           razonSocial
+            razonSocial
         });
     };
+
+    // Maneja el cambio del checkbox LPC
+    const handleCheckboxChangeLPC = () => {
+        setIsCheckedLPC(!isCheckedLPC);
+    };
+
+    // Maneja el cambio del checkbox LPC
+    const handleCheckboxChangeCompaniaAerea = () => {
+        setIsCheckedCompaniaAerea(!isCheckedLPC);
+    };
+
     return (
         <div className="AgregarCliente-container">
             <form onSubmit={handleSubmitAgregarUsuario} className='formulario-agregar-cliente'>
@@ -34,6 +56,46 @@ const AgregarCliente = ({ isLoggedIn }) => {
                     />
                 </div>
                 <div>
+                    <label htmlFor="direccion">Direccion:</label>
+                    <input
+                        type="text"
+                        id="direccion"
+                        value={direccion}
+                        onChange={(e) => setDireccion(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="Zona">Zona:</label>
+                    <input
+                        type="text"
+                        id="zona"
+                        value={zona}
+                        onChange={(e) => setZona(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="Ciudad">Ciudad:</label>
+                    <input
+                        type="text"
+                        id="ciudad"
+                        value={ciudad}
+                        onChange={(e) => setCiudad(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="codigo-postal">Codigo Postal:</label>
+                    <input
+                        type="text"
+                        id="codigo-postal"
+                        value={codigopostal}
+                        onChange={(e) => setCodigoPostal(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
                     <label htmlFor="rut">Rut:</label>
                     <input
                         type="number"
@@ -43,6 +105,28 @@ const AgregarCliente = ({ isLoggedIn }) => {
                         required
                     />
                 </div>
+                <div>
+                    <label htmlFor="iata">IATA:</label>
+                    <input
+                        type="text"
+                        id="iata"
+                        value={iata}
+                        onChange={(e) => setIata(e.target.value)}
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="cass">Cass:</label>
+                    <input
+                        type="text"
+                        id="cass"
+                        value={cass}
+                        onChange={(e) => setCass(e.target.value)}
+                        required
+                    />
+                </div>
+
                 <div>
                     <label htmlFor="id">ID:</label>
                     <input
@@ -83,11 +167,83 @@ const AgregarCliente = ({ isLoggedIn }) => {
                         required
                     />
                 </div>
+                <div>
+                    <label htmlFor="comision">Comision(%):</label>
+                    <input
+                        type="text"
+                        id="comision"
+                        value={comision}
+                        onChange={(e) => setComision(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="descuento">Descuento(%):</label>
+                    <input
+                        type="text"
+                        id="descuento"
+                        value={descuento}
+                        onChange={(e) => setDescuento(e.target.value)}
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={isCheckedLPC}
+                            onChange={handleCheckboxChangeLPC}
+                        />
+                        LPC
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={isCheckedCompaniaAerea}
+                            onChange={handleCheckboxChangeCompaniaAerea}
+                        />
+                        Compañia Aerea
+                    </label>
+                </div>
+
+                <div>
+                    <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
+                    <select
+                        id="tipoComprobante"
+                        value={tipoComprobante}
+                        onChange={(e) => setTipoComprobante(e.target.value)}
+                        required
+                    >
+                        <option value="">Selecciona un tipo de Comprobante</option>
+                        <option value="credito">Factura de Credito</option>
+                        <option value="contado">Factura Contado</option>
+                        <option value="transferencia">Transferencia</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label htmlFor="tipoMoneda">Moneda:</label>
+                    <select
+                        id="tipoMoneda"
+                        value={tipoMoneda}
+                        onChange={(e) => setTipoMoneda(e.target.value)}
+                        required
+                    >
+                        <option value="">Selecciona una Moneda</option>
+                        <option value="dolares">Dolares</option>
+                        <option value="pesos">Pesos</option>
+                        <option value="Euros">Euros</option>
+                    </select>
+                </div>
 
                 <button type="submit" className='btn-agregar-cliente'>Agregar Cliente</button>
 
                 <div>
-                <Link to="/clientes"><button className="btn-Salir-Agregar-Cliente">Volver</button></Link>
+                    <Link to="/clientes"><button className="btn-Salir-Agregar-Cliente">Volver</button></Link>
                 </div>
             </form>
         </div>

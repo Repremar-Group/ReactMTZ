@@ -3,13 +3,23 @@ import ReactPaginate from 'react-paginate';
 import './clientes.css'; // Importa el archivo CSS
 import { Link } from "react-router-dom";
 import EliminarCliente from './eliminar/EliminarCliente';
+import ModificarCliente from './modificar/ModificarCliente';
 
 const Clientes = ({ isLoggedIn }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
+  //Variables de estado para eliminar empresas
+  const [empresaAEliminar, setEmpresaAEliminar] = useState(null); // Razon Social
+  const [rutAEliminar, setRutAEliminar] = useState(null); // rut
 
-  const [empresaAEliminar, setEmpresaAEliminar] = useState(null); // Estado para la empresa a eliminar
-  const [rutAEliminar, setRutAEliminar] = useState(null); // Estado para el RUT a eliminar
+  //Variables de estado para modificar empresas
+
+  const [empresaAModificar, setEmpresaAModificar] = useState(null); // Razon Social
+  const [rutAModificar, setRutAModificar] = useState(null); // Rut
+  const [idAModificar, setIDAModificar] = useState(null); // ID
+  const [paisAModificar, setPaisAModificar] = useState(null); // Pais
+  const [emailAModificar, setEmailAModificar] = useState(null); // Email
+  const [telAModificar, setTelAModificar] = useState(null); // Tel
 
   const data = [
     { id: 1, razonSocial: 'Repremar SA', rut: '01010101010', pais: 'UY', email: 'mpena@repremar.com', tel: '123123123' },
@@ -50,12 +60,36 @@ const Clientes = ({ isLoggedIn }) => {
     setSearchTerm(event.target.value);
     setCurrentPage(0); // Resetear la página actual al buscar
   };
-
+  //Handle Eliminar lo que hace es cargar las variables de estado para la eliminacion con la info de la empresa.
   const handleEliminar = (razonSocial, rut) => {
     setEmpresaAEliminar(razonSocial); // Captura la razón social
     setRutAEliminar(rut); // Captura el RUT
   };
 
+  //Handle Modificar lo que hace es cargar las variables de estado para la Modificacion con la info de la empresa.
+  const handleModificar = (razonSocial, rut, id, pais, email, tel) => {
+    setEmpresaAModificar(razonSocial);
+    setRutAModificar(rut);
+    setIDAModificar(id);
+    setPaisAModificar(pais);
+    setEmailAModificar(email);
+    setTelAModificar(tel);
+  };
+
+  //Los CloseModal Devuelven las variables de estados a null
+  const closeModalEliminar = () => {
+    setEmpresaAEliminar(null);
+    setRutAEliminar(null);
+  };
+
+  const closeModalModificar = () => {
+    setEmpresaAModificar(null);
+    setRutAModificar(null);
+    setIDAModificar(null);
+    setPaisAModificar(null);
+    setEmailAModificar(null);
+    setTelAModificar(null);
+  };
 
   return (
     <div className="Contenedor_Principal">
@@ -97,7 +131,7 @@ const Clientes = ({ isLoggedIn }) => {
                 <td>
                   <div className="action-buttons">
                     <button className="action-button">👥</button>
-                    <button className="action-button">✏️</button>
+                    <button className="action-button" onClick={() => handleModificar(row.razonSocial, row.rut, row.id, row.pais, row.email, row.tel)}>✏️</button>
                     <button className="action-button" onClick={() => handleEliminar(row.razonSocial, row.rut)}>❌</button>
                   </div>
                 </td>
@@ -119,9 +153,27 @@ const Clientes = ({ isLoggedIn }) => {
           activeClassName={"active"}
         />
       </div>
-      <EliminarCliente empresa={empresaAEliminar} rut={rutAEliminar} />
-    </div>
 
+      {/* Modal para eliminar cliente */}
+      {empresaAEliminar && (
+        <>
+          <div className="modal-overlay active" onClick={closeModalEliminar}></div>
+          <div className="modal-container active">
+            <EliminarCliente empresa={empresaAEliminar} rut={rutAEliminar} closeModal={closeModalEliminar} />
+          </div>
+        </>
+      )}
+
+      {/* Modal para modificar Cliente */}
+      {empresaAModificar && (
+        <>
+          <div className="modal-overlay active" onClick={closeModalModificar}></div>
+          <div className="modal-container active">
+            <ModificarCliente empresa={empresaAModificar} rut={rutAModificar} closeModal={closeModalModificar} id={idAModificar} pais={paisAModificar} email={emailAModificar} tel={telAModificar} />
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 
