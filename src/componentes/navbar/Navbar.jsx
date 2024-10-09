@@ -26,8 +26,15 @@ const NavBar = () => {
                 <div className="botonConSubmenu">
                     <button className="botonNavBar">Reportes</button>
                     <div className="submenu">
-                        <Link to="/reportes/impo" className="submenuItem">Impo</Link>
-                        <Link to="/reportes/expo" className="submenuItem">Expo</Link>
+                        <button className="submenuItemREPORTES">Impo</button>
+                        <Link to="/reportes/impo" className="submenuItem">Embarques</Link>
+                        <Link to="/reportespendientes/impo" className="submenuItem">Embarques Pendientes</Link>
+                        <div className='submenu'>
+                            <button className="submenuItemREPORTES">Expo</button>
+                            <Link to="/reportes/expo" className="submenuItem">Embarques</Link>
+                            <Link to="/reportespendientes/expo" className="submenuItem">Embarques Pendientes</Link>
+                        </div>
+
                     </div>
                 </div>
 

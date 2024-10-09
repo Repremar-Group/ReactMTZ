@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../Reportes.css'; // Importa el archivo CSS
 
-const Reportesimpo = ({isLoggedIn}) => {
+const Reportespendientesimpo = ({isLoggedIn}) => {
  // Estado para los campos del formulario
  const [desde, setDesde] = useState('');
  const [hasta, setHasta] = useState('');
@@ -25,7 +25,7 @@ const Reportesimpo = ({isLoggedIn}) => {
  return (
    <div className="reporte-container">
      <form onSubmit={handleSubmitReporteImpo}>
-     <h2>Reporte de Embarque Importación</h2>
+     <h2>Reporte de Embarque Pendiente Importación</h2>
        <div className="date-container">
          <div className="date-field">
            <label htmlFor="desde">Desde:</label>
@@ -90,4 +90,4 @@ const Reportesimpo = ({isLoggedIn}) => {
  );
 }
 
-export default Reportesimpo
+export default Reportespendientesimpo

@@ -10,6 +10,8 @@ import Emisionrecibos from '../facturacion/emision_de_recibos/Emisionrecibos';
 import Facturasmanuales from '../facturacion/facturas_manuales/Facturasmanuales';
 
 //Importo componentes de Reportes
+import Reportespendientesexpo from '../reportes/expo/Reportespendientesexpo';
+import Reportespendientesimpo from '../reportes/impo/Reportespendientesimpo';
 import Reportesexpo from '../reportes/expo/Reportesexpo';
 import Reportesimpo from '../reportes/impo/Reportesimpo';
 
@@ -92,6 +94,30 @@ function Layout({ isLoggedIn, handleLogin }) {
 
                 {/* Ruta Reportes Impo: Solo accesible si el usuario está logueado */}
                 <Route
+                    path="/reportespendientes/impo"
+                    element={
+                        isLoggedIn ? (
+                            <Reportespendientesimpo isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Reportes Expo: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/reportespendientes/expo"
+                    element={
+                        isLoggedIn ? (
+                            <Reportespendientesexpo isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                                {/* Ruta Reportes Impo: Solo accesible si el usuario está logueado */}
+                                <Route
                     path="/reportes/impo"
                     element={
                         isLoggedIn ? (

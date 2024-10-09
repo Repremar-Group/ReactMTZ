@@ -13,8 +13,20 @@
 
 .modal-container.active {
   display: block; /* Muestra el modal cuando esté activo */
-}
 
+}
+.formulario-editar-cliente{
+  display: flex;
+  flex-direction: column;
+  max-width: 800px; /* Limita el ancho máximo del formulario */
+  max-height: 750px; /* Limita el ancho máximo del formulario */
+  width: 100%;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  
+  box-sizing: border-box;
+}
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -53,6 +65,7 @@
   transform: scale(1.1); /* Aumenta el tamaño al 110% */
 }
 
+
 .contenido-modificar-empresa input{
   width: 100%;
   padding: 10px;
@@ -65,4 +78,150 @@
 .botones-formulario-modificar-cliente{
   display: flex;
   justify-content: center;
+}
+
+.div_primerrenglon-modificarusuario{
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Espacio uniforme entre los inputs */
+  gap: 20px; /* Espacio entre los campos */
+  margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_primerrenglon-modificarusuario div{
+  width: 48%; /* Cada input ocupa un tercio del ancho del contenedor */
+}
+
+.div_primerrenglon-modificarusuario label{
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+
+.div_segundorenglon-modificarusuario{
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Espacio uniforme entre los inputs */
+  gap: 20px; /* Espacio entre los campos */
+  margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_segundorenglon-modificarusuario div{
+  width: 48%; /* Cada input ocupa un tercio del ancho del contenedor */
+}
+
+.div_segundorenglon-modificarusuario label{
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+
+.div_tercerrenglon-modificarusuario{
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Espacio uniforme entre los inputs */
+  gap: 20px; /* Espacio entre los campos */
+  margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_tercerrenglon-modificarusuario div{
+  width: 48%; /* Cada input ocupa un tercio del ancho del contenedor */
+}
+
+.div_tercerrenglon-modificarusuario label{
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+
+.div_cuartorenglon-modificarusuario {
+  display: flex;
+  justify-content: space-between; /* Espacio uniforme entre los inputs */
+  gap: 20px; /* Espacio entre los campos */
+  margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_cuartorenglon-modificarusuario label{
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+.div_quintorenglon-modificarusuario{
+  display: flex;
+  justify-content: space-between; /* Espacio uniforme entre los inputs */
+  gap: 20px; /* Espacio entre los campos */
+  margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+.div_quintorenglon-modificarusuario div{
+  width: 33%; /* Cada input ocupa un tercio del ancho del contenedor */
+}
+
+.div_quintorenglon-modificarusuario label{
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.div_sextorenglon-modificarusuario{
+  display: flex;
+  justify-content: space-between; /* Espacio uniforme entre los inputs */
+  gap: 20px; /* Espacio entre los campos */
+  margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_sextorenglon-modificarusuario label{
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+.divporcentajes {
+  display: flex;
+  gap: 20px; /* Espacio entre los campos */
+  box-sizing: border-box; /* Asegura que el padding y el border se incluyan en el ancho total */
+  padding: 0 10px; /* Espaciado interno opcional */
+}
+
+.divcheckboxs {
+  display: flex;
+  gap: 20px; /* Espacio entre los campos */
+  box-sizing: border-box; /* Asegura que el padding y el border se incluyan en el ancho total */
+  padding: 0 10px; /* Espaciado interno opcional */
+}
+
+/* Para cada checkbox y su etiqueta */
+.divcheckboxs label {
+  display: inline-flex; /* Usa inline-flex para mantenerlos en la misma línea */
+  align-items: baseline;
+}
+
+.div_septimorenglon-modificarusuario{
+  display: flex;
+  justify-content: space-between; /* Espacio uniforme entre los inputs */
+  gap: 20px; /* Espacio entre los campos */
+  margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_septimorenglon-modificarusuario label{
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+/*Estilo para los campos*/
+.formulario-editar-cliente select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  background-color: #f0f0f0;
+  color: gray;
+  
 }

@@ -1,20 +1,130 @@
-
-
 /* Estilos para el formulario */
+.AgregarCliente-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
 .formulario-agregar-cliente {
     display: flex;
     flex-direction: column;
-}
-.formulario-agregar-cliente div {
-    width: 100%; /* Asegura que los divs de los inputs ocupen el mismo ancho */
-    margin: 10px;
+    max-width: 800px; /* Limita el ancho máximo del formulario */
+    max-height: 800px; /* Limita el ancho máximo del formulario */
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
 }
 
-/* Título del formulario */
-.formulario-agregar-cliente h2 {
-    text-align: center;
-    color: #143361;
-    margin-bottom: 20px;
+.div_primerrenglon-agregarusuario{
+    display: flex;
+    width: 100%;
+    justify-content: space-between; /* Espacio uniforme entre los inputs */
+    gap: 20px; /* Espacio entre los campos */
+    margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_primerrenglon-agregarusuario div{
+    width: 48%; /* Cada input ocupa un tercio del ancho del contenedor */
+}
+
+.div_primerrenglon-agregarusuario label{
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+
+
+.div_segundorenglon-agregarusuario{
+    display: flex;
+    width: 100%;
+    justify-content: space-between; /* Espacio uniforme entre los inputs */
+    gap: 20px; /* Espacio entre los campos */
+    margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_segundorenglon-agregarusuario div{
+    width: 48%; /* Cada input ocupa un tercio del ancho del contenedor */
+}
+
+.div_segundorenglon-agregarusuario label{
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+
+
+.div_tercerrenglon-agregarusuario{
+    display: flex;
+    width: 100%;
+    justify-content: space-between; /* Espacio uniforme entre los inputs */
+    gap: 20px; /* Espacio entre los campos */
+    margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_tercerrenglon-agregarusuario div{
+    width: 48%; /* Cada input ocupa un tercio del ancho del contenedor */
+}
+
+.div_tercerrenglon-agregarusuario label{
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+
+
+.div_cuartorenglon-agregarusuario {
+    display: flex;
+    justify-content: space-between; /* Espacio uniforme entre los inputs */
+    gap: 20px; /* Espacio entre los campos */
+    margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+
+
+.div_quintorenglon-agregarusuario{
+    display: flex;
+    justify-content: space-between; /* Espacio uniforme entre los inputs */
+    gap: 20px; /* Espacio entre los campos */
+    margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+
+.div_sextorenglon-agregarusuario{
+    display: flex;
+    justify-content: space-between; /* Espacio uniforme entre los inputs */
+    gap: 20px; /* Espacio entre los campos */
+    margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
+}
+.divporcentajes {
+    display: flex;
+    gap: 20px; /* Espacio entre los campos */
+    box-sizing: border-box; /* Asegura que el padding y el border se incluyan en el ancho total */
+    padding: 0 10px; /* Espaciado interno opcional */
+}
+
+.divcheckboxs {
+    display: flex;
+    gap: 20px; /* Espacio entre los campos */
+    box-sizing: border-box; /* Asegura que el padding y el border se incluyan en el ancho total */
+    padding: 0 10px; /* Espaciado interno opcional */
+}
+
+/* Para cada checkbox y su etiqueta */
+.divcheckboxs label {
+    display: inline-flex; /* Usa inline-flex para mantenerlos en la misma línea */
+    align-items: baseline;
+}
+
+.div_septimorenglon-agregarusuario{
+    display: flex;
+    justify-content: space-between; /* Espacio uniforme entre los inputs */
+    gap: 20px; /* Espacio entre los campos */
+    margin-bottom: 20px; /* Espacio entre este grupo de inputs y el siguiente */
 }
 
 /* Estilos generales para los campos del formulario */
@@ -23,46 +133,32 @@
     font-weight: bold;
     color: #333;
 }
-
-.formulario-agregar-cliente input {
+/*Estilo para los campos*/
+.formulario-agregar-cliente input, .formulario-agregar-cliente select {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;
-    background-color: #f0f0f0; /* color de fondo claro */
+    background-color: #f0f0f0;
     color: gray;
 }
 
-/* Asegura que el input no se expanda fuera de su contenedor */
-.formulario-agregar-cliente input:focus {
+/* Estilos de los inputs cuando están enfocados */
+.formulario-agregar-cliente input:focus, .formulario-agregar-cliente select:focus {
     border-color: #4986e2;
     outline: none;
 }
 
-/* Estilos específicos para cada campo */
-.div_razonsocial_agregar {
-    margin-bottom: 15px;
+.botonesagregarusuario {
+    display: flex;
+    flex-direction: column; /* Cambia la dirección a columna */
+    align-items: center; /* Centra los botones horizontalmente */
+    gap: 10px; /* Espacio entre los botones */
 }
 
-/* Botón para agregar cliente */
-.btn-agregar-cliente {
-    padding: 10px;
-    margin: 20px;
-    background-color: #143361;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-}
-
-.btn-agregar-cliente:hover {
-    background-color: #007bff;
-}
-.btn-Salir-Agregar-Cliente{
+/* Botones para agregar y salir */
+.btn-agregar-cliente, .btn-Salir-Agregar-Cliente {
     padding: 10px;
     background-color: #143361;
     color: white;
@@ -72,7 +168,12 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
+    margin-top: 15px;
 }
-.btn-Salir-Agregar-Cliente:hover {
+
+.btn-agregar-cliente:hover, .btn-Salir-Agregar-Cliente:hover {
     background-color: #007bff;
 }
+
+
+
