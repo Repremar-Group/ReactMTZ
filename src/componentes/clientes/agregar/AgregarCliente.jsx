@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 const AgregarCliente = ({ isLoggedIn }) => {
     // Estado para los campos del formulario
+    const [nombre, setNombre] = useState('');
     const [razonSocial, setRazonSocial] = useState('');
     const [rut, setRut] = useState('');
     const [iata, setIata] = useState(''); //*
@@ -55,6 +56,16 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             id="id"
                             value={id}
                             onChange={(e) => setID(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="nombre">Nombre:</label>
+                        <input
+                            type="text"
+                            id="nombre"
+                            value={nombre}
+                            onChange={(e) => setNombre(e.target.value)}
                             required
                         />
                     </div>

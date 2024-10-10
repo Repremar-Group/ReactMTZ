@@ -94,7 +94,7 @@ const Clientes = ({ isLoggedIn }) => {
   return (
     <div className="Contenedor_Principal">
 
-      <div className="Titulo"><h1>Clientes</h1></div>
+      <div className='titulo-estandar'><h1>Clientes</h1></div>
 
       <div className="table-container">
         <div className="search-bar">
@@ -107,7 +107,7 @@ const Clientes = ({ isLoggedIn }) => {
           />
         </div>
 
-        <table>
+        <table className='tabla-clientes'>
           <thead>
             <tr>
               <th>Razón social</th>

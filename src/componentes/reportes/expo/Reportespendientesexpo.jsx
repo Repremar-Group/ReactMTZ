@@ -24,8 +24,8 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
 
   return (
     <div className="reporte-container">
-      <form onSubmit={handleSubmitReporteExpo}>
-        <h2>Reporte de Embarque Pendiente Exportación</h2>
+      <form className='formularioschicos' onSubmit={handleSubmitReporteExpo}>
+        <h2 className='titulo-estandar'>Reporte de Embarque Pendiente Exportación</h2>
         <div className="date-container">
           <div className="date-field">
             <label htmlFor="desde">Desde:</label>

@@ -61,7 +61,7 @@
     color: gray;
 }
 
-table {
+.tabla-clientes {
     width: 100%; /* Asegúrate de que la tabla ocupe todo el contenedor */
     border-collapse: collapse;
     margin-top: 10px;

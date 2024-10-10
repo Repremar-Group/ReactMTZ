@@ -11,7 +11,7 @@ const EliminarCliente = ({ empresa, rut, closeModal }) => {
 
   return (
 
-      <form onSubmit={handleSubmit}>
+      <form className='formularioschicos' onSubmit={handleSubmit}>
         <p>¿Estás seguro de que deseas eliminar la empresa {empresa} con RUT {rut}?</p>
         <div className="botones">
           <button className = 'btn-eliminar-cliente' type="submit" >Eliminar</button>

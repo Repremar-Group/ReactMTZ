@@ -1,0 +1,283 @@
+.primerafilaemitirrecibo,
+.segundafilaemitirrecibo {
+    align-items: center;
+    /* Alinear verticalmente */
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+.EmitirRecibos-container {
+    max-width: 1000px;
+    /* Limita el ancho máximo del formulario */
+    max-height: 900px;
+    /* Limita el ancho máximo del formulario */
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+}
+
+
+/* Estilos para cada subcontenedor */
+.div-datos-recibos,
+.div-ercuentacorriente,
+.erfacturasasociadas,
+.ersaldodelrecibo {
+    border: 1px solid #ccc;
+    /* Borde para cada subcontenedor */
+    padding: 8px;
+    /* Espaciado interno */
+    box-sizing: border-box;
+    /* Incluye el padding y el borde en el tamaño total */
+    background-color: #f0f0f0;
+    /* Color de fondo por defecto */
+}
+
+/* Colores diferentes para cada subcontenedor */
+.div-datos-recibos {
+    background-color: #f9f9f9;
+    /* Color específico */
+    max-width: 500px;
+    max-height: 100%;
+    border-radius: 10px;
+    
+}
+
+.div-ercuentacorriente {
+    background-color: #f9f9f9;
+    width: 100%;
+    height: 396px;
+    padding: 30px;
+    border-radius: 10px;
+    
+}
+
+.erfacturasasociadas {
+    display: flex;
+    flex-direction: column;
+    background-color: #f9f9f9;
+    height: 300px;
+    max-height: 300px;
+    /* Altura fija del contenedor */
+    padding: 10px;
+
+    padding: 30px;
+    border-radius: 10px;
+
+}
+
+.primerafilafacturasasociadas {
+    align-items: top;
+    /* Alinear verticalmente */
+    display: grid;
+    grid-template-columns: 30% 70%;
+    gap: 3px;
+}
+
+.ersaldodelrecibo {
+    background-color: #f9f9f9;
+    /* Color específico */
+    width: 100%;
+    height: 300px;
+    max-height: 300px;
+    padding: 30px;
+    border-radius: 10px;
+
+
+}
+
+.botonesfacturasasociadas {
+    margin-top: auto;
+    /* Empuja los botones hacia abajo */
+    display: flex;
+    justify-content: center;
+    /* Centra los botones horizontalmente */
+    gap: 10px;
+    /* Agrega un espacio entre los botones si es necesario */
+}
+
+/* Ajustes para los textos dentro de los subcontenedores */
+h2 {
+    margin-top: 0;
+    /* Eliminar margen superior de los encabezados */
+}
+
+p {
+    margin: 5px 0;
+    /* Espaciado para párrafos */
+}
+
+.div-primerrenglon-datos-recibos {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+
+}
+
+.div-primerrenglon-datos-recibos div {
+    width: 48%;
+}
+
+.div-segundorenglon-datos-recibos {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+
+}
+
+.div-segundorenglon-datos-recibos div {
+    width: 48%;
+}
+
+.div-tercerrenglon-datos-recibos {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+}
+
+.div-tercerrenglon-datos-recibos div {
+    width: 48%;
+}
+
+.div-cuartorenglon-datos-recibos {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+
+}
+
+.div-cuartorenglon-datos-recibos div {
+    width: 99%;
+}
+
+.div-quintorenglon-datos-recibos {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+
+}
+
+.div-quintorenglon-datos-recibos div {
+    width: 99%;
+}
+
+/*Estilo para los campos*/
+.formulario-emitir-recibo input,
+.formulario-emitir-recibo select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    color: gray;
+    
+}
+
+
+.tabla-facturasasociadas {
+    font-size: 12px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: auto; /* Permite que las celdas se ajusten al contenido */
+    width: 100%; /* Asegúrate de que la tabla use el ancho completo */
+    max-height: 150px; /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+  }
+  
+
+  
+  .tabla-facturasasociadas tbody {
+    
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 75px; /* Ajusta la altura para 3 filas */
+  }
+  
+  .tabla-facturasasociadas th, .tabla-facturasasociadas td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  }
+  
+  .tabla-facturasasociadas th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+  }
+
+
+  .tabla-cuentacorriente-recibos{
+    font-size: 12px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: auto; /* Permite que las celdas se ajusten al contenido */
+    width: 100%; /* Asegúrate de que la tabla use el ancho completo */
+    max-height: 280px; /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+  }
+
+  .tabla-cuentacorriente-recibos tbody {
+    
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 75px; /* Ajusta la altura para 3 filas */
+  }
+  
+  .tabla-cuentacorriente-recibos th, .tabla-cuentacorriente-recibos td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  }
+  
+  .tabla-cuentacorriente-recibos th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+  }
+
+  /* Botones para agregar y salir */
+.btn-agregar-Recibo, .btn-Salir-Agregar-Recibo {
+    padding: 10px;
+    background-color: #143361;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btn-agregar-Recibo:hover, .btn-Salir-Agregar-Recibo:hover {
+    background-color: #007bff;
+}
+.btn-eliminar-fasociada{
+    padding: 10px;
+    background-color: rgb(100, 4, 4);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btn-eliminar-fasociada:hover {
+    background-color: #ed0018;
+}
+.Titulo-ingreso-recibos{
+    text-align: center;
+    color:#143361;
+}
+.Titulos-formularios-ingreso-recibos{
+    color:#143361;
+}

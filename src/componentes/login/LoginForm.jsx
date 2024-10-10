@@ -36,7 +36,7 @@ const LoginForm = ({ onLoginSuccess }) => {
 
     return (
         <div className='Login'>
-            <form onSubmit={handleSubmit}>
+            <form className= 'formularioschicos' onSubmit={handleSubmit}>
                 <img src={logo} alt="Logo Cielosur" />
 
                 <div className='input-box'>
@@ -59,7 +59,7 @@ const LoginForm = ({ onLoginSuccess }) => {
                     />
                 </div>
 
-                <button type="submit" className="submit-btn-login">Ingresar</button>
+                <button type="submit" className="btn-estandar">Ingresar</button>
             </form>
         </div>
     );

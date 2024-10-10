@@ -5,6 +5,7 @@ const ModificarCliente = ({ empresa, rut, closeModal, id, pais, email, tel }) =>
   if (!empresa || !rut) return null; // No muestra nada si no hay empresa seleccionada
 
   // Establece el estado local para los campos que se pueden modificar
+  const [nombre, setNombre] = useState('');
   const [razonSocial, setRazonSocial] = useState(empresa);
   const [rutLocal, setRut] = useState(rut);
   const [idLocal, setID] = useState(id);
@@ -58,6 +59,16 @@ const ModificarCliente = ({ empresa, rut, closeModal, id, pais, email, tel }) =>
               required
             />
           </div>
+          <div>
+                        <label htmlFor="nombre">Nombre:</label>
+                        <input
+                            type="text"
+                            id="nombre"
+                            value={nombre}
+                            onChange={(e) => setNombre(e.target.value)}
+                            required
+                        />
+                    </div>
           <div>
             <label htmlFor="razonsocial">Razon Social:</label>
             <input
