@@ -1,0 +1,83 @@
+.EmitirComprobante-container{
+    max-width: 1600px;
+    /* Limita el ancho máximo del formulario */
+    max-height: 900px;
+    /* Limita el ancho máximo del formulario */
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+}
+
+.tabla-guias-asociadas {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 200px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-guias-asociadas tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 150px; /* Ajusta la altura para 3 filas */
+}
+
+.tabla-guias-asociadas th, .tabla-guias-asociadas td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-guias-asociadas th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-guias-asociadas th:nth-child(1),
+.tabla-guias-asociadas td:nth-child(1) {
+    width: 10%; /* Columna Tipo */
+}
+
+.tabla-guias-asociadas th:nth-child(2),
+.tabla-guias-asociadas td:nth-child(2) {
+    width: 10%; /* Columna Guia */
+}
+
+.tabla-guias-asociadas th:nth-child(3),
+.tabla-guias-asociadas td:nth-child(3) {
+    width: 70%; /* Columna Descripción */
+}
+
+.tabla-guias-asociadas th:nth-child(4),
+.tabla-guias-asociadas td:nth-child(4) {
+    width: 10%; /* Columna Moneda */
+}
+
+.tabla-guias-asociadas th:nth-child(5),
+.tabla-guias-asociadas td:nth-child(5) {
+    width: 15%; /* Columna Importe */
+}
+
+.tabla-guias-asociadas th:nth-child(6),
+.tabla-guias-asociadas td:nth-child(6) {
+    width: 5%; /* Columna Acciones */
+}
+
+.div-primerrenglon-datos-comprobante {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+
+}
+
+.div-primerrenglon-datos-comprobante div {
+    width: 48%;
+}
