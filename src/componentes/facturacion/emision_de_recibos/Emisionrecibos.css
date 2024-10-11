@@ -187,7 +187,7 @@ p {
     border-collapse: collapse; /* Sin espacios entre celdas */
     table-layout: auto; /* Permite que las celdas se ajusten al contenido */
     width: 100%; /* Asegúrate de que la tabla use el ancho completo */
-    max-height: 150px; /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
+    max-height: 116px; /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
     overflow-y: auto; /* Permite el desplazamiento vertical */
     display: block; /* Hace que la tabla se comporte como un bloque */
   }

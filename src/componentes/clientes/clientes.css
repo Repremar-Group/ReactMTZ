@@ -93,33 +93,7 @@ th {
     background-color: #f9f9f9;
 }
 
-/* Nuevo contenedor para los botones de acción */
-.action-buttons {
-    display: flex; /* Hace que los botones se alineen en fila */
-    gap: 2px; /* Espacio entre los botones */
-}
 
-.action-button {
-    background: none; /* Sin fondo */
-    border: none; /* Sin borde */
-    cursor: pointer; /* Cambia el cursor al pasar por encima */
-    font-size: 18px; /* Tamaño de la fuente */
-    display: inline-block; /* Ajusta el tamaño del botón al contenido */
-    padding: 2px; /* Padding mínimo para un tamaño reducido */
-    margin: 2px; /* Margen mínimo para evitar espacio adicional */
-    line-height: 1; /* Asegura que el botón no tenga altura extra */
-    height: auto; /* Permitir que el botón ajuste su altura al contenido */
-    width: fit-content; /* Ajusta el ancho al contenido */
-    min-width: 0; /* Permite que el ancho sea tan pequeño como sea necesario */
-    max-width: none; /* Sin límite superior al ancho */
-    transition: transform 0.2s ease; /* Transición suave para el hover */
-}
-
-.action-button:hover {
-    background-color: #143361;
-    transform: scale(1.1); /* Aumenta el tamaño al 110% */
-    background: none; /* Sin fondo */
-}
 
 .pagination {
     display: flex;

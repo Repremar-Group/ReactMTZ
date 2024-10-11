@@ -7,11 +7,6 @@ const ModificarCliente = ({ empresa, rut, closeModal, id, pais, email, tel }) =>
   // Establece el estado local para los campos que se pueden modificar
   const [nombre, setNombre] = useState('');
   const [razonSocial, setRazonSocial] = useState(empresa);
-  const [rutLocal, setRut] = useState(rut);
-  const [idLocal, setID] = useState(id);
-  const [paisLocal, setPais] = useState(pais);
-  const [emailLocal, setEmail] = useState(email);
-  const [telLocal, setTel] = useState(tel);
   const [iata, setIata] = useState(''); //*
   const [direccion, setDireccion] = useState('');//*
   const [zona, setZona] = useState('');//*

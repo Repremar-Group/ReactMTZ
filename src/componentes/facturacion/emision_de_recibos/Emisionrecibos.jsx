@@ -354,7 +354,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
         </div>
 
         <div className='botonesagregarrecibo'>
-          <button type="submit" className='btn-agregar-Recibo'>Confirmar</button>
+          <Link to="/facturacion/recibos/ingresocheques"><button type="submit" className='btn-agregar-Recibo'>Confirmar</button></Link>
 
           <Link to="/home"><button className="btn-Salir-Agregar-Recibo">Volver</button></Link>
         </div>

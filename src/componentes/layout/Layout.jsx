@@ -7,6 +7,7 @@ import Home from '../home/Home';
 //Importo componentes de Facturacion
 import Comprobantes from '../facturacion/comprobantes/Comprobantes'
 import Emisionrecibos from '../facturacion/emision_de_recibos/Emisionrecibos';
+import Ingresodecheques from '../facturacion/emision_de_recibos/ingresocheques/Ingresodecheques';
 import Facturasmanuales from '../facturacion/facturas_manuales/Facturasmanuales';
 
 //Importo componentes de Reportes
@@ -79,7 +80,17 @@ function Layout({ isLoggedIn, handleLogin }) {
                         )
                     }
                 />
-
+                {/* Ruta registro de cheques: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/facturacion/recibos/ingresocheques"
+                    element={
+                        isLoggedIn ? (
+                            <Ingresodecheques isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
                 {/* Ruta Facturas Manuales: Solo accesible si el usuario está logueado */}
                 <Route
                     path="/facturacion/FacturasManuales"
