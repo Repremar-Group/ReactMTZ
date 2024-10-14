@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import ModificarCorrelatividad from './modificarcorrelatividad/ModificarCorrelatividad';
 import Eliminarcorrelatividad from './eliminarcorrelatividad/Eliminarcorrelatividad';
+import './Correlatividad.css';
 
 const Correlatividad = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -216,7 +217,7 @@ const Correlatividad = ({ isLoggedIn }) => {
 
             <div className='div-primerrenglon-datos-recibos'>
               {/* Tabla que muestra las facturas agregadas */}
-              <table className='tabla-guias-asociadas' >
+              <table className='tabla-correlatividad' >
                 <thead>
                   <tr>
                     <th>Formulario</th>

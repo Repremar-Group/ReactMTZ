@@ -1,0 +1,58 @@
+.tabla-correlatividad {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 500px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-correlatividad tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 150px; /* Ajusta la altura para 3 filas */
+}
+
+.tabla-correlatividad th, .tabla-correlatividad td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: center; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-correlatividad th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-correlatividad th:nth-child(1),
+.tabla-correlatividad td:nth-child(1) {
+    width: 10%; 
+}
+
+.tabla-correlatividad th:nth-child(2),
+.tabla-correlatividad td:nth-child(2) {
+    width: 10%; /* Columna Guia */
+}
+
+.tabla-correlatividad th:nth-child(3),
+.tabla-correlatividad td:nth-child(3) {
+    width: 20%; /* Columna Descripción */
+}
+
+.tabla-correlatividad th:nth-child(4),
+.tabla-correlatividad td:nth-child(4) {
+    width: 10%; /* Columna Moneda */
+}
+
+.tabla-correlatividad th:nth-child(5),
+.tabla-correlatividad td:nth-child(5) {
+    width: 20%; /* Columna Importe */
+}
+
+.tabla-correlatividad th:nth-child(6),
+.tabla-correlatividad td:nth-child(6) {
+    width: 5%; /* Columna Acciones */
+}
