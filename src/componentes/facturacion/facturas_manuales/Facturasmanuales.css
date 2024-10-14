@@ -1,0 +1,83 @@
+.EmitirFacturaManual-container{
+    max-width: 1600px;
+    /* Limita el ancho máximo del formulario */
+    max-height: 900px;
+    /* Limita el ancho máximo del formulario */
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+}
+
+.tabla-conceptos {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 200px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-conceptos tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 150px; /* Ajusta la altura para 3 filas */
+}
+
+.tabla-conceptos th, .tabla-conceptos td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-conceptos th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-conceptos th:nth-child(1),
+.tabla-conceptos td:nth-child(1) {
+    width: 5%; /* Columna Codigo */
+}
+
+.tabla-conceptos th:nth-child(2),
+.tabla-conceptos td:nth-child(2) {
+    width: 70%; /* Columna Descripcion */
+}
+
+.tabla-conceptos th:nth-child(3),
+.tabla-conceptos td:nth-child(3) {
+    width: 10%; /* Columna Moneda */
+}
+
+.tabla-conceptos th:nth-child(4),
+.tabla-conceptos td:nth-child(4) {
+    width: 5%; /* Columna IVA */
+}
+
+.tabla-conceptos th:nth-child(5),
+.tabla-conceptos td:nth-child(5) {
+    width: 10%; /* Columna Importe */
+}
+
+.ttabla-conceptos th:nth-child(6),
+.tabla-conceptos td:nth-child(6) {
+    width: 5%; /* Columna Acciones */
+}
+
+.div-renglon-datos-facturasmanuales {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+
+}
+
+.div-renglon-datos-facturasmanuales div {
+    width: 48%;
+}
