@@ -1,0 +1,97 @@
+.primeracolumnaguiasimpo,
+.segundacolumnaguiasimpo{
+    align-items: center;
+    /* Alinear verticalmente */
+    display: grid;
+    grid-template-columns: 60% 40%;
+    gap: 10px
+}
+
+.tabla-pago-guias {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 120px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-pago-guias tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    
+}
+
+.tabla-pago-guias th, .tabla-pago-guias td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: center; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-pago-guias th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-pago-guias th:nth-child(1),
+.tabla-pago-guias td:nth-child(1) {
+    width: 40%; 
+}
+
+.tabla-pago-guias th:nth-child(2),
+.tabla-pago-guias td:nth-child(2) {
+    width: 40%; 
+}
+
+.tabla-pago-guias th:nth-child(3),
+.tabla-pago-guias td:nth-child(3) {
+    width: 10%; 
+}
+
+
+.tabla-embarques {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 300px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-embarques tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    
+}
+
+.tabla-embarques th, .tabla-embarques td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: center; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-embarques th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-embarques th:nth-child(1),
+.tabla-embarques td:nth-child(1) {
+    width: 40%; 
+}
+
+.ttabla-embarques th:nth-child(2),
+.tabla-embarques td:nth-child(2) {
+    width: 40%; 
+}
+
+.tabla-embarques th:nth-child(3),
+.tabla-embarques td:nth-child(3) {
+    width: 10%; 
+}
