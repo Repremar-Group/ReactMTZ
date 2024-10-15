@@ -139,7 +139,7 @@ const Correlatividad = ({ isLoggedIn }) => {
 
 
   return (
-    <div className="EmitirComprobante-container">
+    <div className="estandar-container">
       <h2 className='titulo-estandar'>Control de Correlatividad</h2>
       <form onSubmit={handleSubmitAgregarRecibo} className='formulario-estandar'>
 

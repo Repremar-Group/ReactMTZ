@@ -1,0 +1,56 @@
+/* Para centrar el modal en la pantalla */
+.modal-containercambio {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: transparent;
+    padding: 20px;
+    z-index: 1000;
+    display: none; /* Por defecto oculto */
+  }
+  
+  .modal-containercambio.active {
+    display: block; /* Muestra el modal cuando esté activo */
+  
+  }
+  .formulario-editar-cambio{
+    display: flex;
+    flex-direction: column;
+    max-width: 800px; /* Limita el ancho máximo del formulario */
+    max-height: 750px; /* Limita el ancho máximo del formulario */
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    
+    box-sizing: border-box;
+  }
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro */
+    z-index: 999;
+    display: none;
+  }
+  
+  .modal-overlay.active {
+    display: block; /* Muestra el overlay cuando esté activo */
+  }
+  
+  
+  /*Estilo para los campos*/
+  .formulario-editar-cambio select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    color: gray;
+    
+  }
+  
