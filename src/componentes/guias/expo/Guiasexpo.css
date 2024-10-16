@@ -1,0 +1,143 @@
+.tabla-pago-guias-expo {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 120px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-pago-guias-expo tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    
+}
+
+.tabla-pago-guias-expo th, .tabla-pago-guias-expo td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: center; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-pago-guias-expo th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-pago-guias-expo th:nth-child(1),
+.tabla-pago-guias-expo td:nth-child(1) {
+    width: 40%; 
+}
+
+.tabla-pago-guias-expo th:nth-child(2),
+.tabla-pago-guias-expo td:nth-child(2) {
+    width: 40%; 
+}
+
+.tabla-pago-guias-expo th:nth-child(3),
+.tabla-pago-guias-expo td:nth-child(3) {
+    width: 10%; 
+}
+
+.tabla-mercaderia-guias-expo {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 120px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-mercaderia-guias-expo tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    
+}
+
+.tabla-mercaderia-guias-expo th, .tabla-mercaderia-guias-expo td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: center; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-mercaderia-guias-expo th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-mercaderia-guias-expo th:nth-child(1){
+    width: 15%; 
+}
+
+.tabla-mercaderia-guias-expo th:nth-child(2){
+    width: 15%; 
+}
+
+.tabla-mercaderia-guias-expo th:nth-child(3) {
+    width: 15%; 
+}
+.tabla-mercaderia-guias-expo th:nth-child(4) {
+    width: 20%; 
+}
+.tabla-mercaderia-guias-expo th:nth-child(5) {
+    width: 15%; 
+}
+.tabla-mercaderia-guias-expo th:nth-child(6) {
+    width: 20%; 
+}
+
+
+
+.tabla-embarques-expo {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 300px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-embarques-expo tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    
+}
+
+.tabla-embarques-expo th, .tabla-embarques-expo td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: center; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-embarques-expo th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-embarques-expo th:nth-child(1),
+.tabla-embarques-expo td:nth-child(1) {
+    width: 10%; 
+}
+
+.ttabla-embarques-expo th:nth-child(2),
+.tabla-embarques-expo td:nth-child(2) {
+    width: 20%; 
+}
+
+.tabla-embarques-expo th:nth-child(3),
+.tabla-embarques-expo td:nth-child(3) {
+    width: 25%; 
+}
+.tabla-embarques-expo th:nth-child(4),
+.tabla-embarques-expo td:nth-child(4) {
+    width: 25%; 
+}

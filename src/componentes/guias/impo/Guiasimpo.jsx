@@ -140,33 +140,12 @@ const Guiasimpo = ({ isLoggedIn }) => {
   );
 
 
-  const [ecid, setEcId] = useState('');
-  const [ecnombre, setEcNombre] = useState('');
-  const [ectipocomprobante, setEcTipoComprobante] = useState('');
-  const [eccomprobanteelectronico, setEcComprobanteElectronico] = useState('');
-  const [ecciudad, setEcCiudad] = useState('');
-  const [ecpais, setEcPais] = useState('');
-  const [ecrazonsocial, setEcRazonSocial] = useState('');
-  const [ectipoiva, setEcTipoIva] = useState('');
-  const [ecmoneda, setEcMoneda] = useState('');
+
   const [ecfecha, setEcFecha] = useState('');
-  const [eccomprobante, setEcComprobante] = useState('');
-  const [ecelectronico, setEcElectronico] = useState('');
-  const [ecdireccionfiscal, setEcDireccionFiscal] = useState('');
-  const [eccompania, setEcCompania] = useState('');
-  const [ecrutcedula, setEcrutcedula] = useState('');
-  const [eccass, setEcCass] = useState('');
-  const [ectipodeembarque, setEcTipoDeEmbarque] = useState('');
-  const [ectc, setEcTc] = useState('');
   const [ecguia, setEcGuia] = useState('');
   const [ecdescripcion, setEcDescripcion] = useState('');
   const [ecmonedaguia, setEcMonedaGuia] = useState('');
   const [ecimporte, setEcImporte] = useState('');
-  const [ectotalacobrar, setEcTotalACobrar] = useState('');
-  const [ecsubtotal, setEcsubtotal] = useState('');
-  const [eciva, setEcIva] = useState('');
-  const [ecredondeo, setEcRedondeo] = useState('');
-  const [ectotal, setEcTotal] = useState('');
   const [eclistadeguiasasociadas, setEcListaDeGuiasAsociadas] = useState([]);
 
 
