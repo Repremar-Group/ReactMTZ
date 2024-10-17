@@ -1,0 +1,49 @@
+.tabla-pendientes {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 492px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-pendientes tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    
+}
+
+.tabla-pendientes th, .tabla-pendientes td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: center; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-pendientes th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-pendientes th:nth-child(1){
+    width: 15%; 
+}
+
+.tabla-pendientes th:nth-child(2){
+    width: 15%; 
+}
+
+.tabla-pendientes th:nth-child(3) {
+    width: 15%; 
+}
+.tabla-pendientes th:nth-child(4) {
+    width: 20%; 
+}
+.tabla-pendientes th:nth-child(5) {
+    width: 15%; 
+}
+.tabla-pendientes th:nth-child(6) {
+    width: 20%; 
+}
