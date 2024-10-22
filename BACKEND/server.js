@@ -45,8 +45,8 @@ app.use(cors());
 });
 */
 
-app.get('/clientes', (req, res) => {
-  console.log('Received request for /clientes'); // Agrega esta línea
+app.get('/api/previewclientes', (req, res) => {
+  console.log('Received request for /api/previewclientes'); // Agrega esta línea
     const sql = 'SELECT * FROM clientes';
     
     connection.query(sql, (err, result) => {
@@ -63,6 +63,6 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).send('Server is running');
 });
