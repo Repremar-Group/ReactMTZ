@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, BrowserRouter } from 'react-router-dom';
 import Layout from './componentes/layout/Layout';
-import './app.css'
+import './app.css';
 
 function App() {
     // Recuperar el estado de autenticación desde localStorage
