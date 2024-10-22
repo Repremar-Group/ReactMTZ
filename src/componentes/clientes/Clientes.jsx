@@ -28,7 +28,7 @@ const Clientes = ({ isLoggedIn }) => {
   useEffect(() => {
     const fetchClientes = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/clientes');
+        const response = await axios.get('https://cielosurinvoiceappservice-g3d0f5efafczage9.eastus2-01.azurewebsites.net/clientes');
         setClientes(response.data); // Asigna los datos de clientes al estado
       } catch (err) {
         setError('Error fetching clients');
