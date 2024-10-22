@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; // Asegúrate de importar useEffect
-import './modificarcorrelatividad.css';
+import './modificarCorrelatividad.css';
 
 const ModificarCorrelatividad = ({ formulario, documento, fecha, tipocomprobante, estado, closeModal }) => {
     if (!formulario || !documento) return null; // No muestra nada si no hay empresa seleccionada
