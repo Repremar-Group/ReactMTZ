@@ -20,7 +20,7 @@ import Reportesimpo from '../reportes/impo/Reportesimpo';
 import Clientes from '../clientes/Clientes';
 
 //Importo componentes de Guias
-import Guiasimpo from '../guias/Impo/Guiasimpo';
+import Guiasimpo from '../guias/impo/Guiasimpo';
 import Guiasexpo from '../guias/expo/Guiasexpo';
 
 //Importo componentes de Tablas
