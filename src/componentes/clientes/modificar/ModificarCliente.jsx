@@ -1,306 +1,300 @@
-import React, { useState } from 'react'; // Asegúrate de importar useState
+import React, { useState, useEffect } from 'react'; // Asegúrate de importar useState
 import './modificarcliente.css';
+import axios from 'axios';
 
-const ModificarCliente = ({ empresa, rut, closeModal, id, pais, email, tel }) => {
-  if (!empresa || !rut) return null; // No muestra nada si no hay empresa seleccionada
+const ModificarCliente = ({ closeModal, id }) => {
+  if (!id) return null; // No muestra nada si no hay empresa seleccionada
 
   // Establece el estado local para los campos que se pueden modificar
   const [nombre, setNombre] = useState('');
-  const [razonSocial, setRazonSocial] = useState(empresa);
+  const [rut, setRut] = useState('');
+  const [pais, setPais] = useState('');
+  const [email, setEmail] = useState('');
+  const [tel, setTel] = useState('');
+  const [razonSocial, setRazonSocial] = useState('');
   const [iata, setIata] = useState(''); //*
   const [direccion, setDireccion] = useState('');//*
   const [zona, setZona] = useState('');//*
   const [ciudad, setCiudad] = useState('');//*
   const [codigopostal, setCodigoPostal] = useState('');//*
   const [cass, setCass] = useState('');//*
-  const [comision, setComision] = useState('');//*
-  const [descuento, setDescuento] = useState('');//*
-  const [isCheckedLPC, setIsCheckedLPC] = useState(false);//*
-  const [isCheckedCompaniaAerea, setIsCheckedCompaniaAerea] = useState(false);//*
   const [tipoComprobante, setTipoComprobante] = useState(false);//*
   const [tipoMoneda, setTipoMoneda] = useState(false);//*
   const [tipoIVA, setTipoIVA] = useState(false);//*
 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Llama a la función para controlar la modificación aquí
-    onConfirmar(); // Debes implementar esta función según tus necesidades
+    try {
+      const response = await axios.put(`http://localhost:3000/api/actualizarcliente/${id}`, {
+        nombre,
+        rut,
+        pais,
+        email,
+        tel,
+        razonSocial,
+        iata,
+        direccion,
+        zona,
+        ciudad,
+        codigopostal,
+        cass,
+        tipoComprobante,
+        tipoMoneda,
+        tipoIVA
+      });
+      alert(response.data.message); // Mensaje de éxito
+      closeModal(); // Cerrar el modal después de modificar
+    } catch (error) {
+      console.error(':', error);
+      alert('Error al modificar el cliente');
+    }
   };
 
-  // Maneja el cambio del checkbox LPC
-  const handleCheckboxChangeLPC = () => {
-    setIsCheckedLPC(!isCheckedLPC);
+  //Obtengo los datos del cliente desde la base y los cargo en los campos.
+  const fetchClienteData = async (id) => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/obtenerclientes/${id}`);
+      const clienteData = response.data;
+
+      // Establecer los datos en el estado del componente
+      setNombre(clienteData.Nombre);
+      setRazonSocial(clienteData.RazonSocial);
+      setDireccion(clienteData.Direccion);
+      setZona(clienteData.Zona);
+      setCiudad(clienteData.Ciudad);
+      setCodigoPostal(clienteData.CodigoPostal);
+      setRut(clienteData.Rut);
+      setIata(clienteData.IATA);
+      setCass(clienteData.Cass);
+      setPais(clienteData.Pais);
+      setEmail(clienteData.Email);
+      setTel(clienteData.Tel);
+      setTipoComprobante(clienteData.Tcomprobante);
+      setTipoIVA(clienteData.Tiva);
+      setTipoMoneda(clienteData.Moneda)
+    } catch (error) {
+      console.error('Error fetching client data:', error);
+      alert('Error al obtener los datos del cliente');
+    }
   };
 
-  // Maneja el cambio del checkbox LPC
-  const handleCheckboxChangeCompaniaAerea = () => {
-    setIsCheckedCompaniaAerea(!isCheckedLPC);
-  };
+  useEffect(() => {
+    // Llamar a la función para obtener los datos del cliente al montar el componente
+    if (id) {
+      fetchClienteData(id);
+    }
+  }, [id]); // Dependencia: se vuelve a ejecutar si `clienteId` cambia
+
 
 
   return (
-    <form className= 'formulario-editar-cliente'onSubmit={handleSubmit}>
-      <h2>Modificar Empresa: {razonSocial} </h2>
-      <div className="contenido-modificar-empresa">
-        <div className='div_primerrenglon-modificarusuario'>
-          <div>
-            <label htmlFor="id">ID:</label>
-            <input
-              type="text"
-              id="id"
-              value={id}
-              onChange={(e) => setID(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-                        <label htmlFor="nombre">Nombre:</label>
-                        <input
-                            type="text"
-                            id="nombre"
-                            value={nombre}
-                            onChange={(e) => setNombre(e.target.value)}
-                            required
-                        />
-                    </div>
-          <div>
-            <label htmlFor="razonsocial">Razon Social:</label>
-            <input
-              type="text"
-              id="razonsocial"
-              value={razonSocial}
-              onChange={(e) => setRazonSocial(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-
-        <div className='div_segundorenglon-modificarusuario'>
-          <div>
-            <label htmlFor="direccion">Direccion:</label>
-            <input
-              type="text"
-              id="direccion"
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="Zona">Zona:</label>
-            <input
-              type="text"
-              id="zona"
-              value={zona}
-              onChange={(e) => setZona(e.target.value)}
-              required
-            />
-
-          </div>
-        </div>
-
-        <div className='div_tercerrenglon-modificarusuario'>
-          <div>
-            <label htmlFor="Ciudad">Ciudad:</label>
-            <input
-              type="text"
-              id="ciudad"
-              value={ciudad}
-              onChange={(e) => setCiudad(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="codigo-postal">Codigo Postal:</label>
-            <input
-              type="text"
-              id="codigo-postal"
-              value={codigopostal}
-              onChange={(e) => setCodigoPostal(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-
-
-
-        <div className='div_cuartorenglon-modificarusuario'>
-          <div>
-            <label htmlFor="rut">Rut:</label>
-            <input
-              type="number"
-              id="rut"
-              value={rut}
-              onChange={(e) => setRut(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="iata">IATA:</label>
-            <input
-              type="text"
-              id="iata"
-              value={iata}
-              onChange={(e) => setIata(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="cass">Cass:</label>
-            <input
-              type="text"
-              id="cass"
-              value={cass}
-              onChange={(e) => setCass(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-
-
-        <div className='div_quintorenglon-modificarusuario'>
-          <div>
-            <label htmlFor="pais">País:</label>
-            <input
-              type="text"
-              id="pais"
-              value={pais}
-              onChange={(e) => setPais(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="email">Email:</label>
-            <input
-              type="mail"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="tel">Tel:</label>
-            <input
-              type="text"
-              id="tel"
-              value={tel}
-              onChange={(e) => setTel(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-
-
-
-
-        <div className='div_sextorenglon-modificarusuario'>
-          <div className='divporcentajes'>
+    <div className='estandar-container'>
+      <form className='formulario-editar-cliente' onSubmit={handleSubmit}>
+        <h2 className='subtitulo-estandar'>Modificar Empresa: {razonSocial} </h2>
+        <div className="contenido-modificar-empresa">
+          <div className='div_primerrenglon-modificarusuario'>
             <div>
-              <label htmlFor="comision">Comision(%):</label>
+              <label htmlFor="nombre">Nombre:</label>
               <input
                 type="text"
-                id="comision"
-                value={comision}
-                onChange={(e) => setComision(e.target.value)}
+                id="nombre"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
                 required
               />
             </div>
             <div>
-              <label htmlFor="descuento">Descuento(%):</label>
+              <label htmlFor="razonsocial">Razon Social:</label>
               <input
                 type="text"
-                id="descuento"
-                value={descuento}
-                onChange={(e) => setDescuento(e.target.value)}
+                id="razonsocial"
+                value={razonSocial}
+                onChange={(e) => setRazonSocial(e.target.value)}
                 required
               />
             </div>
           </div>
-          <div className='divcheckboxs'>
+
+          <div className='div_segundorenglon-modificarusuario'>
             <div>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isCheckedLPC}
-                  onChange={handleCheckboxChangeLPC}
-                />
-                LPC
-              </label>
+              <label htmlFor="direccion">Direccion:</label>
+              <input
+                type="text"
+                id="direccion"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="Zona">Zona:</label>
+              <input
+                type="text"
+                id="zona"
+                value={zona}
+                onChange={(e) => setZona(e.target.value)}
+
+              />
+
+            </div>
+          </div>
+
+          <div className='div_tercerrenglon-modificarusuario'>
+            <div>
+              <label htmlFor="Ciudad">Ciudad:</label>
+              <input
+                type="text"
+                id="ciudad"
+                value={ciudad}
+                onChange={(e) => setCiudad(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="codigo-postal">Codigo Postal:</label>
+              <input
+                type="text"
+                id="codigo-postal"
+                value={codigopostal}
+                onChange={(e) => setCodigoPostal(e.target.value)}
+
+              />
+            </div>
+          </div>
+
+
+
+          <div className='div_cuartorenglon-modificarusuario'>
+            <div>
+              <label htmlFor="rut">Rut:</label>
+              <input
+                type="number"
+                id="rut"
+                value={rut}
+                onChange={(e) => setRut(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="iata">IATA:</label>
+              <input
+                type="text"
+                id="iata"
+                value={iata}
+                onChange={(e) => setIata(e.target.value)}
+
+              />
             </div>
 
             <div>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isCheckedCompaniaAerea}
-                  onChange={handleCheckboxChangeCompaniaAerea}
-                />
-                Compañía Aérea
-              </label>
+              <label htmlFor="cass">Cass:</label>
+              <select
+                id="cass"
+                value={cass}
+                onChange={(e) => setCass(e.target.value)}
+
+              >
+                <option value="">Selecciona el Cass</option>
+                <option value="false">No</option>
+                <option value="true">Si</option>
+              </select>
+            </div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+          </div>
+
+
+
+          <div className='div_quintorenglon-modificarusuario'>
+            <div>
+              <label htmlFor="pais">País:</label>
+              <input
+                type="text"
+                id="pais"
+                value={pais}
+                onChange={(e) => setPais(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="email">Email:</label>
+              <input
+                type="mail"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+
+              />
+            </div>
+            <div>
+              <label htmlFor="tel">Tel:</label>
+              <input
+                type="text"
+                id="tel"
+                value={tel}
+                onChange={(e) => setTel(e.target.value)}
+
+              />
             </div>
           </div>
 
-        </div>
 
+          <div className='div_quintorenglon-modificarusuario'>
+            <div>
+              <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
+              <select
+                id="tipoComprobante"
+                value={tipoComprobante}
+                onChange={(e) => setTipoComprobante(e.target.value)}
+                required
+              >
+                <option value="">Selecciona un tipo de Comprobante</option>
+                <option value="efactura">E-Factura</option>
+                <option value="eticket">E-Ticket</option>
+                <option value="efacturaca">E-Factura Cuenta Ajena</option>
+                <option value="eticketca">E-Ticket Cuenta Ajena</option>
+              </select>
+            </div>
 
-        <div className='div_septimorenglon-modificarusuario'>
-          <div>
-            <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
-            <select
-              id="tipoComprobante"
-              value={tipoComprobante}
-              onChange={(e) => setTipoComprobante(e.target.value)}
-              required
-            >
-              <option value="">Selecciona un tipo de Comprobante</option>
-              <option value="credito">Factura de Credito</option>
-              <option value="contado">Factura Contado</option>
-              <option value="transferencia">Transferencia</option>
-            </select>
+            <div>
+              <label htmlFor="tipoMoneda">Moneda:</label>
+              <select
+                id="tipoMoneda"
+                value={tipoMoneda}
+                onChange={(e) => setTipoMoneda(e.target.value)}
+                required
+              >
+                <option value="">Selecciona una Moneda</option>
+                <option value="dolares">Dolares</option>
+                <option value="pesos">Pesos</option>
+                <option value="euros">Euros</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="tipoIVA">Tipo de IVA:</label>
+              <select
+                id="tipoIVA"
+                value={tipoIVA}
+                onChange={(e) => setTipoIVA(e.target.value)}
+                required
+              >
+                <option value="">Seleccione un tipo de IVA</option>
+                <option value="iva22">IVA 22%</option>
+                <option value="excento">Exento</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="tipoMoneda">Moneda:</label>
-            <select
-              id="tipoMoneda"
-              value={tipoMoneda}
-              onChange={(e) => setTipoMoneda(e.target.value)}
-              required
-            >
-              <option value="">Selecciona una Moneda</option>
-              <option value="dolares">Dolares</option>
-              <option value="pesos">Pesos</option>
-              <option value="Euros">Euros</option>
-            </select>
+
+          <div className='botones-formulario-modificar-cliente'>
+            <button className='btn-eliminar-estandar' type="submit">Modificar</button> {/* Cambié "Eliminar" a "Modificar" para reflejar la acción */}
+            <button className='btn-estandar' type="button" onClick={closeModal}>Volver</button>
           </div>
 
-          <div>
-            <label htmlFor="tipoIVA">Tipo de IVA:</label>
-            <select
-              id="tipoIVA"
-              value={tipoIVA}
-              onChange={(e) => setTipoIVA(e.target.value)}
-              required
-            >
-              <option value="">Seleccione un tipo de IVA</option>
-              <option value="IVA22">IVA 22%</option>
-              <option value="IVAX">IVA X%</option>
-              <option value="IVAY">IVA Y%</option>
-            </select>
-          </div>
         </div>
+      </form>
+    </div>
 
-
-        <div className='botones-formulario-modificar-cliente'>
-          <button className='btn-modificar-cliente' type="submit">Modificar</button> {/* Cambié "Eliminar" a "Modificar" para reflejar la acción */}
-          <button className='btn-volver-modificar-cliente' type="button" onClick={closeModal}>Volver</button>
-        </div>
-
-      </div>
-    </form>
   );
 };
 

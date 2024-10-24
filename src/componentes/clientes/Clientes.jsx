@@ -13,35 +13,34 @@ const Clientes = ({ isLoggedIn }) => {
   //Variables de estado para eliminar empresas
   const [empresaAEliminar, setEmpresaAEliminar] = useState(null); // Razon Social
   const [rutAEliminar, setRutAEliminar] = useState(null); // rut
+  const [idAEliminar, setIdAEliminar] = useState(null);
 
   //Variables de estado para modificar empresas
   const [empresaAModificar, setEmpresaAModificar] = useState(null); // Razon Social
-  const [rutAModificar, setRutAModificar] = useState(null); // Rut
+
   const [idAModificar, setIDAModificar] = useState(null); // ID
-  const [paisAModificar, setPaisAModificar] = useState(null); // Pais
-  const [emailAModificar, setEmailAModificar] = useState(null); // Email
-  const [telAModificar, setTelAModificar] = useState(null); // Tel
+ 
 
   const [clientes, setClientes] = useState([]);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchClientes = async () => {
-      try {
-        const response = await axios.get('https://cielosurinvoiceappservice-g3d0f5efafczage9.eastus2-01.azurewebsites.net/api/previewclientes');
-        setClientes(response.data); // Asigna los datos de clientes al estado
-      } catch (err) {
-        setError('Error fetching clients');
-        console.error(err);
-      }
-    };
+  const fetchClientes = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/previewclientes');
+      setClientes(response.data); // Asigna los datos de clientes al estado
+    } catch (err) {
+      setError('Error fetching clients');
+      console.error(err);
+    }
+  };
 
-    fetchClientes();
+  useEffect(() => {
+    fetchClientes(); // Llama a la función para obtener los clientes
   }, []);
 
   const itemsPerPage = 8; // Cambia este número según tus necesidades
   const filteredData = clientes.filter((row) =>
-    row.razon_social.toLowerCase().includes(searchTerm.toLowerCase())
+    row.RazonSocial.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const pageCount = Math.ceil(filteredData.length / itemsPerPage);
@@ -56,32 +55,27 @@ const Clientes = ({ isLoggedIn }) => {
     setCurrentPage(0); // Resetear la página actual al buscar
   };
 
-  const handleEliminar = (razonSocial, rut) => {
+  const handleEliminar = (razonSocial, rut, id) => {
     setEmpresaAEliminar(razonSocial); // Captura la razón social
     setRutAEliminar(rut); // Captura el RUT
+    setIdAEliminar(id);
   };
 
-  const handleModificar = (razonSocial, rut, id, pais, email, tel) => {
-    setEmpresaAModificar(razonSocial);
-    setRutAModificar(rut);
+  const handleModificar = (razonSocial, id) => {
     setIDAModificar(id);
-    setPaisAModificar(pais);
-    setEmailAModificar(email);
-    setTelAModificar(tel);
+    setEmpresaAModificar(razonSocial);
   };
 
   const closeModalEliminar = () => {
     setEmpresaAEliminar(null);
     setRutAEliminar(null);
+    fetchClientes();
   };
 
   const closeModalModificar = () => {
     setEmpresaAModificar(null);
-    setRutAModificar(null);
     setIDAModificar(null);
-    setPaisAModificar(null);
-    setEmailAModificar(null);
-    setTelAModificar(null);
+    fetchClientes();
   };
 
   return (
@@ -114,18 +108,17 @@ const Clientes = ({ isLoggedIn }) => {
           </thead>
           <tbody>
             {displayedItems.map((row) => (
-              <tr key={row.id}>
-                <td title={row.razon_social}>{row.razon_social}</td>
-                <td title={row.rut}>{row.rut}</td>
+              <tr key={row.Id}>
+                <td title={row.razon_social}>{row.RazonSocial}</td>
+                <td title={row.rut}>{row.Rut}</td>
                 <td title={row.id}>{row.Id}</td>
-                <td title={row.pais}>{row.pais}</td>
-                <td title={row.email}>{row.email}</td>
-                <td title={row.tel}>{row.tel}</td>
+                <td title={row.pais}>{row.Pais}</td>
+                <td title={row.email}>{row.Email}</td>
+                <td title={row.tel}>{row.Tel}</td>
                 <td>
                   <div className="action-buttons">
-                    <button className="action-button">👥</button>
-                    <button className="action-button" onClick={() => handleModificar(row.razon_social, row.rut, row.id, row.pais, row.email, row.tel)}>✏️</button>
-                    <button className="action-button" onClick={() => handleEliminar(row.razon_social, row.rut)}>❌</button>
+                    <button className="action-button" onClick={() => handleModificar(row.RazonSocial,row.Id)}>✏️</button>
+                    <button className="action-button" onClick={() => handleEliminar(row.RazonSocial, row.Rut, row.Id)}>❌</button>
                   </div>
                 </td>
               </tr>
@@ -152,7 +145,7 @@ const Clientes = ({ isLoggedIn }) => {
         <>
           <div className="modal-overlay active" onClick={closeModalEliminar}></div>
           <div className="modal-container active">
-            <EliminarCliente empresa={empresaAEliminar} rut={rutAEliminar} closeModal={closeModalEliminar} />
+            <EliminarCliente empresa={empresaAEliminar} rut={rutAEliminar} id={idAEliminar} closeModal={closeModalEliminar} />
           </div>
         </>
       )}
@@ -162,7 +155,7 @@ const Clientes = ({ isLoggedIn }) => {
         <>
           <div className="modal-overlay active" onClick={closeModalModificar}></div>
           <div className="modal-container active">
-            <ModificarCliente empresa={empresaAModificar} rut={rutAModificar} closeModal={closeModalModificar} id={idAModificar} pais={paisAModificar} email={emailAModificar} tel={telAModificar} />
+            <ModificarCliente closeModal={closeModalModificar} id={idAModificar}  />
           </div>
         </>
       )}

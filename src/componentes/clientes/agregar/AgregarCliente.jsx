@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import './agregarcliente.css';
+import axios from 'axios';
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+
 
 const AgregarCliente = ({ isLoggedIn }) => {
     // Estado para los campos del formulario
@@ -13,52 +16,54 @@ const AgregarCliente = ({ isLoggedIn }) => {
     const [ciudad, setCiudad] = useState('');//*
     const [codigopostal, setCodigoPostal] = useState('');//*
     const [cass, setCass] = useState('');//*
-    const [comision, setComision] = useState('');//*
-    const [descuento, setDescuento] = useState('');//*
-    const [isCheckedLPC, setIsCheckedLPC] = useState(false);//*
-    const [isCheckedCompaniaAerea, setIsCheckedCompaniaAerea] = useState(false);//*
     const [tipoComprobante, setTipoComprobante] = useState(false);//*
     const [tipoMoneda, setTipoMoneda] = useState(false);//*
     const [tipoIVA, setTipoIVA] = useState(false);//*
-    const [id, setID] = useState('');
     const [pais, setPais] = useState('');
     const [email, setEmail] = useState('');
     const [tel, setTel] = useState('');
+    const navigate = useNavigate();
 
     // Función para manejar el envío del formulario
     const handleSubmitAgregarUsuario = (e) => {
         e.preventDefault();
-        // Aquí puedes manejar la lógica para enviar la información
-        console.log({
-            razonSocial
-        });
+        const nuevoCliente = {
+            Nombre: nombre,
+            RazonSocial: razonSocial,
+            Direccion: direccion,
+            Zona: zona,
+            Ciudad: ciudad,
+            CodigoPostal: codigopostal,
+            Rut: rut,
+            IATA: iata,
+            Cass: cass,
+            Pais: pais,
+            Email: email,
+            Tel: tel,
+            Tcomprobante: tipoComprobante,
+            Tiva: tipoIVA,
+            Moneda: tipoMoneda
+        };
+        // Realizar la solicitud POST usando axios
+        axios.post('http://localhost:3000/api/insertclientes', nuevoCliente)
+            .then(response => {
+                // Mostrar una alerta de éxito
+                alert('Cliente agregado exitosamente');
+                navigate('/clientes');
+            })
+            .catch(error => {
+                // Mostrar una alerta de error si la solicitud falla
+                alert('Error al agregar el cliente');
+                console.error(error);
+            });
     };
 
-    // Maneja el cambio del checkbox LPC
-    const handleCheckboxChangeLPC = () => {
-        setIsCheckedLPC(!isCheckedLPC);
-    };
-
-    // Maneja el cambio del checkbox LPC
-    const handleCheckboxChangeCompaniaAerea = () => {
-        setIsCheckedCompaniaAerea(!isCheckedLPC);
-    };
 
     return (
         <div className="AgregarCliente-container">
             <form onSubmit={handleSubmitAgregarUsuario} className='formulario-agregar-cliente'>
                 <h2>Agregar Cliente</h2>
                 <div className='div_primerrenglon-agregarusuario'>
-                    <div>
-                        <label htmlFor="id">ID:</label>
-                        <input
-                            type="text"
-                            id="id"
-                            value={id}
-                            onChange={(e) => setID(e.target.value)}
-                            required
-                        />
-                    </div>
                     <div>
                         <label htmlFor="nombre">Nombre:</label>
                         <input
@@ -99,7 +104,6 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             id="zona"
                             value={zona}
                             onChange={(e) => setZona(e.target.value)}
-                            required
                         />
 
                     </div>
@@ -126,7 +130,6 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             id="codigo-postal"
                             value={codigopostal}
                             onChange={(e) => setCodigoPostal(e.target.value)}
-                            required
                         />
                     </div>
                 </div>
@@ -147,24 +150,25 @@ const AgregarCliente = ({ isLoggedIn }) => {
                     <div>
                         <label htmlFor="iata">IATA:</label>
                         <input
-                            type="text"
+                            type="number"
                             id="iata"
                             value={iata}
                             onChange={(e) => setIata(e.target.value)}
-                            required
                         />
                     </div>
-
                     <div>
                         <label htmlFor="cass">Cass:</label>
-                        <input
-                            type="text"
+                        <select
                             id="cass"
                             value={cass}
                             onChange={(e) => setCass(e.target.value)}
-                            required
-                        />
-                    </div>
+
+                        >
+                            <option value="">Selecciona el Cass</option>
+                            <option value="false">No</option>
+                            <option value="true">Si</option>
+                        </select>
+                    </div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
                 </div>
 
 
@@ -202,58 +206,6 @@ const AgregarCliente = ({ isLoggedIn }) => {
                 </div>
 
 
-
-
-                <div className='div_sextorenglon-agregarusuario'>
-                    <div className='divporcentajes'>
-                        <div>
-                            <label htmlFor="comision">Comision(%):</label>
-                            <input
-                                type="text"
-                                id="comision"
-                                value={comision}
-                                onChange={(e) => setComision(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="descuento">Descuento(%):</label>
-                            <input
-                                type="text"
-                                id="descuento"
-                                value={descuento}
-                                onChange={(e) => setDescuento(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div className='divcheckboxs'>
-                        <div>
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={isCheckedLPC}
-                                    onChange={handleCheckboxChangeLPC}
-                                />
-                                LPC
-                            </label>
-                        </div>
-
-                        <div>
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={isCheckedCompaniaAerea}
-                                    onChange={handleCheckboxChangeCompaniaAerea}
-                                />
-                                Compañía Aérea
-                            </label>
-                        </div>
-                    </div>
-
-                </div>
-
-
                 <div className='div_septimorenglon-agregarusuario'>
                     <div>
                         <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
@@ -264,9 +216,10 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             required
                         >
                             <option value="">Selecciona un tipo de Comprobante</option>
-                            <option value="credito">Factura de Credito</option>
-                            <option value="contado">Factura Contado</option>
-                            <option value="transferencia">Transferencia</option>
+                            <option value="efactura">E-Factura</option>
+                            <option value="eticket">E-Ticket</option>
+                            <option value="efacturaca">E-Factura Cuenta Ajena</option>
+                            <option value="eticketca">E-Ticket Cuenta Ajena</option>
                         </select>
                     </div>
 
@@ -281,7 +234,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             <option value="">Selecciona una Moneda</option>
                             <option value="dolares">Dolares</option>
                             <option value="pesos">Pesos</option>
-                            <option value="Euros">Euros</option>
+                            <option value="euros">Euros</option>
                         </select>
                     </div>
 
@@ -294,9 +247,8 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             required
                         >
                             <option value="">Seleccione un tipo de IVA</option>
-                            <option value="IVA22">IVA 22%</option>
-                            <option value="IVAX">IVA X%</option>
-                            <option value="IVAY">IVA Y%</option>
+                            <option value="iva22">IVA 22%</option>
+                            <option value="excento">Exento</option>
                         </select>
                     </div>
                 </div>

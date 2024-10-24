@@ -2,5 +2,7 @@
     "appService.zipIgnorePattern": [
         "node_modules{,/**}",
         ".vscode{,/**}"
-    ]
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/e1177586-b500-419a-b8aa-4823ecc87241/resourceGroups/AppservicesReplog/providers/Microsoft.Web/sites/CielosurinvoiceAppService",
+    "appService.deploySubpath": "BACKEND"
 }

@@ -83,8 +83,8 @@ th, td {
 /* Anchos fijos para cada columna */
 th:nth-child(1), td:nth-child(1) { width: 25%; } /* Razón social */
 th:nth-child(2), td:nth-child(2) { width: 15%; } /* RUT */
-th:nth-child(3), td:nth-child(3) { width: 1%; } /* Id */
-th:nth-child(4), td:nth-child(4) { width: 2%; } /* País */
+th:nth-child(3), td:nth-child(3) { width: 2%; text-align: center; } /* Id */
+th:nth-child(4), td:nth-child(4) { width: 3%; text-align: center; } /* País */
 th:nth-child(5), td:nth-child(5) { width: 30%; } /* Email */
 th:nth-child(6), td:nth-child(6) { width: 10%; } /* Tel */
 th:nth-child(7), td:nth-child(7) { width: 6%; } /* Acciones */
