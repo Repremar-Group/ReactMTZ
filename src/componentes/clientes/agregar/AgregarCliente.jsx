@@ -3,6 +3,7 @@ import './agregarcliente.css';
 import axios from 'axios';
 import { Link } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
+import Alertas from '../../modales/Alertas';
 
 
 const AgregarCliente = ({ isLoggedIn }) => {
@@ -22,6 +23,9 @@ const AgregarCliente = ({ isLoggedIn }) => {
     const [pais, setPais] = useState('');
     const [email, setEmail] = useState('');
     const [tel, setTel] = useState('');
+    const [saldo, setSaldo] = useState('');
+    const [alertasVisible, setAlertasVisible] = useState(false);
+    const [alertasMessage, setAlertasMessage] = useState('');
     const navigate = useNavigate();
 
     // Función para manejar el envío del formulario
@@ -42,14 +46,18 @@ const AgregarCliente = ({ isLoggedIn }) => {
             Tel: tel,
             Tcomprobante: tipoComprobante,
             Tiva: tipoIVA,
-            Moneda: tipoMoneda
+            Moneda: tipoMoneda,
+            Saldo: saldo
         };
         // Realizar la solicitud POST usando axios
         axios.post('http://localhost:3000/api/insertclientes', nuevoCliente)
             .then(response => {
-                // Mostrar una alerta de éxito
-                alert('Cliente agregado exitosamente');
-                navigate('/clientes');
+                setAlertasMessage('Cliente agregado exitosamente');
+                setAlertasVisible(true);
+                setTimeout(() => {
+                    setAlertasVisible(false);
+                    navigate('/clientes');
+                }, 2000); // Esperar 2 segundos antes de navegar
             })
             .catch(error => {
                 // Mostrar una alerta de error si la solicitud falla
@@ -62,7 +70,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
     return (
         <div className="AgregarCliente-container">
             <form onSubmit={handleSubmitAgregarUsuario} className='formulario-agregar-cliente'>
-                <h2>Agregar Cliente</h2>
+                <h2 className='titulo-estandar'>Agregar Cliente</h2>
                 <div className='div_primerrenglon-agregarusuario'>
                     <div>
                         <label htmlFor="nombre">Nombre:</label>
@@ -250,6 +258,16 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             <option value="iva22">IVA 22%</option>
                             <option value="excento">Exento</option>
                         </select>
+                    </div>
+                    <div>
+                        <label htmlFor="saldo">Saldo:</label>
+                        <input
+                            type="number"
+                            id="saldo"
+                            value={saldo}
+                            onChange={(e) => setSaldo(e.target.value)}
+                            required
+                        />
                     </div>
                 </div>
                 <div className='botonesagregarusuario'>

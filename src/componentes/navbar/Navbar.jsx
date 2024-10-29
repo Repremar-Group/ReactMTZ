@@ -58,6 +58,15 @@ const NavBar = () => {
 
                 <Link to="/deudores"><button className="botonNavBar">Deudores</button></Link>
 
+                {/* Botón de Reportes con submenú */}
+                <div className="botonConSubmenu">
+                    <button className="botonNavBar">Parametros</button>
+                    <div className="submenu">
+                        <Link to="/parametros/datosempresa" className="submenuItem">Datos de la Empresa</Link>
+                        <Link to="/parametros/usuarios" className="submenuItem">Usuarios</Link>
+                    </div>
+                </div>
+
                 <Link to="/logout"><button className="botonNavBar">Salir</button></Link>
             </nav>
         </header>

@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
 import '../Reportespendientes.css'; // Importa el archivo CSS
+import axios from 'axios';
+import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
+//importaciones para exportar a excel
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
+
 
 const Reportespendientesexpo = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -12,15 +19,46 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
   const [pcs, setPcs] = useState('');
   const [peso, setPeso] = useState('');
   const [cobrar, setCobrar] = useState('');
+  // Estado para la búsqueda de clientes
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Función para manejar el envío del formulario
-  const handleSubmitReporteImpo = (e) => {
+  // Manejo del input de búsqueda
+  const handleInputChange = (e) => setSearchTerm(e.target.value);
+
+  // Búsqueda de clientes al presionar Enter
+  const handleKeyPress = async (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      e.preventDefault();
+      try {
+        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        setFilteredClientes(response.data);
+        setIsModalOpen(true); // Abre el modal con los resultados
+      } catch (error) {
+        console.error('Error al buscar clientes:', error);
+      }
+    }
+  };
+
+  // Selección de un cliente desde el modal
+  const handleSelectCliente = (cliente) => {
+    setSelectedCliente(cliente);
+    setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setIsModalOpen(false); // Cierra el modal
+  };
+
+  // Cerrar modal
+  const closeModal = () => setIsModalOpen(false);
+
+  // Envío del formulario
+  const handleSubmitReportePendienteExpo = (e) => {
     e.preventDefault();
-    // Aquí puedes manejar la lógica para enviar la información
     console.log({
       desde,
       hasta,
-      cliente,
+      cliente: selectedCliente ? selectedCliente.RazonSocial : '', // Muestra el cliente seleccionado
       numeroCliente,
       tipoPago,
     });
@@ -58,6 +96,64 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
     { awb: "29", agente: "prueba29", pcs: "29", peso: "3300", llegada: "07/11/24", ori: "EZE", cnx: "BOG", des: "MVD", tarifado: "si", tarifa: "z", flete: "z", com: "z", dc: "z", da: "z", over: "z", total: "z", cobrar: "z" },
     { awb: "30", agente: "prueba30", pcs: "30", peso: "3400", llegada: "08/11/24", ori: "MIA", cnx: "PTY", des: "MVD", tarifado: "no", tarifa: "aa", flete: "aa", com: "aa", dc: "aa", da: "aa", over: "aa", total: "aa", cobrar: "aa" }
   ];
+
+  const exportaExcel = () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Guias Pendientes');
+
+    // Agregar encabezados
+    worksheet.columns = [
+      { header: 'AWB', key: 'awb', width: 10 },
+      { header: 'Agente', key: 'agente', width: 15 },
+      { header: 'Pcs', key: 'pcs', width: 10 },
+      { header: 'Peso', key: 'peso', width: 10 },
+      { header: 'Llegada', key: 'llegada', width: 15 },
+      { header: 'ORI', key: 'ori', width: 10 },
+      { header: 'CNX', key: 'cnx', width: 10 },
+      { header: 'DES', key: 'des', width: 10 },
+      { header: 'Tarifado', key: 'tarifado', width: 10 },
+      { header: 'Tarifa', key: 'tarifa', width: 10 },
+      { header: 'Flete', key: 'flete', width: 10 },
+      { header: 'COM', key: 'com', width: 10 },
+      { header: 'DC', key: 'dc', width: 10 },
+      { header: 'DA', key: 'da', width: 10 },
+      { header: 'Over', key: 'over', width: 10 },
+      { header: 'Total', key: 'total', width: 10 },
+      { header: 'Cobrar', key: 'cobrar', width: 10 },
+    ];
+
+    // Establecer el color de fondo para las celdas de encabezado desde A1 hasta J1
+    for (let col = 1; col <= 17; col++) { // Desde la columna 1 (A) hasta la columna 17 (Q)
+      const cell = worksheet.getCell(1, col); // Obtener la celda en la fila 1
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '143361' } // Color de fondo deseado
+      };
+      cell.font = { bold: true, color: { argb: 'FFFFFF' } }; // Texto en negrita y color blanco
+      cell.alignment = { horizontal: 'center' }; // Centrar texto
+    }
+    // Agregar filas de datos
+    guiaspendientes.forEach((guia) => {
+      worksheet.addRow(guia);
+    });
+
+    worksheet.autoFilter = {
+      from: 'A1',
+      to: 'O1',
+     }
+
+    // Generar archivo Excel y descargarlo
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, 'GuiasPendientesExpo.xlsx');
+    }).catch((error) => {
+      console.error("Error al escribir el buffer: ", error);
+    });
+  };
+
+
+
   const TablaPendientes = ({ guia }) => (
     <table className='tabla-pendientes' >
       <thead>
@@ -111,7 +207,7 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
 
   return (
     <div className="EmitirComprobante-container">
-      <form className='formulario-estandar' onSubmit={handleSubmitReporteImpo}>
+      <form className='formulario-estandar' onSubmit={handleSubmitReportePendienteExpo}>
         <h2 className='titulo-estandar'>Reporte de Embarque Pendiente Exportación</h2>
         <div className="primerrenglon-estandar">
           <div className="">
@@ -140,10 +236,10 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
             <label htmlFor="cliente">Cliente:</label>
             <input
               type="text"
-              id="cliente"
-              value={cliente}
-              onChange={(e) => setCliente(e.target.value)}
-              required
+              value={searchTerm}
+              onChange={handleInputChange}
+              onKeyPress={handleKeyPress}
+              placeholder="Buscar cliente..."
             />
           </div>
           <div>
@@ -224,11 +320,19 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
         </div>
 
         <div className='botones-reportes'>
-          <button className= 'btn-estandar'type="button">Generar Excel</button>
-          <button className='btn-estandar'type="button">Volver</button>
+          <button className='btn-estandar' type="button" onClick={exportaExcel} >Generar Excel</button>
+          <button className='btn-estandar' type="button">Volver</button>
         </div>
 
       </form>
+
+      {/* Modal de búsqueda de clientes */}
+      <ModalBusquedaClientes
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        filteredClientes={filteredClientes}
+        handleSelectCliente={handleSelectCliente}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 
 // Configura la conexión a tu servidor MySQL flexible de Azure
 const connection = mysql.createConnection({
@@ -9,6 +10,7 @@ const connection = mysql.createConnection({
   password: 'nujqeg-giwfes-6jynzA', // La contraseña del usuario
   database: 'cielosurinvoiceprod', // El nombre de la base de datos
   port: 3306, // Puerto predeterminado de MySQL
+  connectTimeout: 60000,
 });
 // Probar la conexión
 connection.connect((err) => {
@@ -41,6 +43,7 @@ app.get('/api/previewclientes', (req, res) => {
   });
 });
 
+
 //Armado de la consulta Insert Cliente
 
 // Ruta para insertar un cliente y su cuenta corriente
@@ -61,43 +64,28 @@ app.post('/api/insertclientes', (req, res) => {
     Tel,
     Tcomprobante,
     Tiva,
-    Moneda
+    Moneda,
+    Saldo
   } = req.body; // Los datos del cliente enviados desde el front
 
   // Consulta para insertar el cliente
   const insertClienteQuery = `
-    INSERT INTO clientes (Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO clientes (Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   // Ejecutar la inserción del cliente
-  connection.query(insertClienteQuery, [Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda], (err, results) => {
+  connection.query(insertClienteQuery, [Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo], (err, results) => {
     if (err) {
       console.error('Error al insertar el cliente:', err);
       return res.status(500).json({ error: 'Error al insertar el cliente' });
     }
-
-    // Obtener el ID del cliente recién insertado
-    const clienteId = results.insertId;
-
-    // Ahora insertar la cuenta corriente
-    const insertCuentaCorrienteQuery = `
-        INSERT INTO CuentaCorriente (Id_Cliente, Debe, Haber, Fecha, TipoDocumento, NroDocumento)
-        VALUES (?, NULL, NULL, NULL, NULL, NULL)
-      `;
-
-    connection.query(insertCuentaCorrienteQuery, [clienteId], (err, results) => {
-      if (err) {
-        console.error('Error al insertar la cuenta corriente:', err);
-        return res.status(500).json({ error: 'Error al insertar la cuenta corriente' });
-      }
-
       // Respuesta exitosa
       res.status(200).json({ message: 'Cliente y cuenta corriente insertados exitosamente' });
     });
   }
   );
-});
+
 
 //Armando Endpoint para eliminar Cliente
 
@@ -219,6 +207,134 @@ app.put('/api/actualizarcliente/:id', (req, res) => {
     tipoComprobante,
     tipoMoneda,
     tipoIVA,
+    id
+  ];
+
+  connection.query(sql, values, (err, result) => {
+    if (err) {
+      console.error('Error actualizando cliente:', err);
+      return res.status(500).json({ message: 'Error actualizando cliente' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Cliente No encontrado' });
+    }
+    res.status(200).json({ message: 'Cliente Modificado Correctamente' });
+  });
+});
+
+// Endpoint para buscar clientes
+app.get('/api/obtenernombrecliente', (req, res) => {
+  const search = req.query.search;
+  const query = 'SELECT * FROM clientes WHERE RazonSocial LIKE ?';
+  connection.query(query, [`%${search}%`], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error en la consulta' });
+    }
+    res.json(results);
+  });
+});
+
+// Endpoint para insertar un usuario con contraseña hasheada
+app.post('/api/insertusuarios', async (req, res) => {
+  console.log('Received request for /api/insertusuarios');
+
+  const {
+    usuario, 
+    contraseña,
+    rol
+  } = req.body; // Los datos del usuario enviados desde el frontend
+
+  try {
+    // Hashear la contraseña antes de almacenarla
+    const saltRounds = 10; // Define el número de rondas de sal para el hash
+    const hashedPassword = await bcrypt.hash(contraseña, saltRounds);
+
+    // Consulta para insertar un nuevo usuario con la contraseña hasheada
+    const insertUsuarioQuery = `
+      INSERT INTO usuarios (usuario, contraseña, rol)
+      VALUES (?, ?, ?)
+    `;
+
+    // Ejecutar la inserción del usuario con la contraseña hasheada
+    connection.query(insertUsuarioQuery, [usuario, hashedPassword, rol], (err, results) => {
+      if (err) {
+        console.error('Error al insertar el usuario:', err);
+        return res.status(500).json({ error: 'Error al insertar el usuario' });
+      }
+      // Respuesta exitosa
+      res.status(200).json({ message: 'Usuario insertado exitosamente' });
+    });
+  } catch (error) {
+    console.error('Error al hashear la contraseña:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+//Consulta para cargar la tabla de preview de clientes.
+
+app.get('/api/previewusuarios', (req, res) => {
+  console.log('Received request for /api/previewclientes'); // Agrega esta línea
+  const sql = 'SELECT * FROM usuarios';
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'An error occurred while fetching clients.' });
+    }
+
+    // Envía todos los resultados de la consulta al frontend
+    res.status(200).json(result);
+  });
+});
+
+//Obtener datos para modificar cliente.
+app.get('/api/obtenerusuario/:id', (req, res) => {
+  console.log('Received request for /api/obtenerclientes/' + req.params.id);
+  const { id } = req.params; // Obtener el ID del cliente desde la URL
+
+  // Consulta para obtener el cliente por ID
+  const getClienteQuery = `
+      SELECT * FROM usuarios
+      WHERE id = ?
+  `;
+
+  connection.query(getClienteQuery, [id], (err, results) => {
+    if (err) {
+      console.error('Error al obtener el Usuario:', err);
+      return res.status(500).json({ error: 'Error al obtener el Usuario' });
+    }
+
+    if (results.length > 0) {
+      console.log('Usuario encontrado:', results[0]);
+      // Respuesta exitosa con los datos del cliente
+      res.status(200).json(results[0]);
+    } else {
+      // Si no se encuentra el cliente
+      console.log('Usuario no encontrado');
+      res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+  });
+});
+
+// Endpoint para actualizar un cliente
+app.put('/api/actualizarusuario/:id', (req, res) => {
+  const id = req.params.id; // Obtener el ID del cliente de la URL
+  const {
+    usuario,
+    contraseña,
+    rol,
+  } = req.body; // Obtener los datos del cliente del cuerpo de la solicitud
+
+  // Consulta SQL para actualizar los datos del cliente
+  const sql = `UPDATE clientes SET 
+    usuario = ?,
+    contraseña = ?,
+    rol = ?
+    WHERE id = ?`;
+
+  const values = [
+    usuario,
+    contraseña,
+    rol,
     id
   ];
 

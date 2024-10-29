@@ -30,6 +30,21 @@ body{
     background-color: #007bff;
 }
 
+.btn-estandartablas {
+    background-color: #143361;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-estandartablas:hover {
+    background-color: #007bff;
+}
+
+
 .titulo-estandar{
     text-align: center;
     color:#143361;
@@ -121,4 +136,32 @@ body{
 
 .primerrenglon-estandar div {
     width: 48%;
+}
+
+/* Estilos para el contenedor del checkbox */
+.checkbox-estandar {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* Estilos para la etiqueta */
+.checkbox-estandar label {
+    font-size: 16px;
+    color: gray;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* Estilos para el checkbox */
+.checkbox-estandar input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: #143361; /* Cambia el color del checkbox en navegadores compatibles */
+}
+
+/* Efecto hover en el checkbox */
+.checkbox-estandar input[type="checkbox"]:hover {
+    box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
 }

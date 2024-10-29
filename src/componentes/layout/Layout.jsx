@@ -33,6 +33,11 @@ import Deudores from '../deudores/Deudores';
 //Importo componente AgregarCliente
 import AgregarCliente from '../clientes/agregar/AgregarCliente';
 
+//Importo componentes de parametros
+import DatosEmpresa from '../parametros/DatosEmpresa';
+import Usuarios from '../parametros/Usuarios';
+import AgregarUsuario from '../parametros/manejousuarios/AgregarUsuario';
+
 function Layout({ isLoggedIn, handleLogin }) {
     const location = useLocation();
 
@@ -127,8 +132,8 @@ function Layout({ isLoggedIn, handleLogin }) {
                     }
                 />
 
-                                {/* Ruta Reportes Impo: Solo accesible si el usuario está logueado */}
-                                <Route
+                {/* Ruta Reportes Impo: Solo accesible si el usuario está logueado */}
+                <Route
                     path="/reportes/impo"
                     element={
                         isLoggedIn ? (
@@ -233,6 +238,42 @@ function Layout({ isLoggedIn, handleLogin }) {
                         )
                     }
                 />
+                {/* Ruta Datos de la Empresa: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/parametros/datosempresa"
+                    element={
+                        isLoggedIn ? (
+                            <DatosEmpresa isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Usuarios: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/parametros/usuarios"
+                    element={
+                        isLoggedIn ? (
+                            <Usuarios isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                {/* Ruta Agregar Usuarios: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/usuarios/agregar"
+                    element={
+                        isLoggedIn ? (
+                            <AgregarUsuario isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
 
                 {/* Ruta por defecto: Redirige al login si no se encuentra la ruta */}
                 <Route path="*" element={<Navigate to="/" />} />
