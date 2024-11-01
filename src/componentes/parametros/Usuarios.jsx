@@ -77,7 +77,7 @@ const Usuarios = ({ isLoggedIn }) => {
   
         <div className="table-container">
           <div className="search-bar">
-            <Link to="/usuarios/agregar"><button className="add-button">➕</button></Link>
+            <Link to="/parametros/agregar_usuarios"><button className="add-button">➕</button></Link>
             <input className='input_buscar'
               type="text"
               placeholder="Buscar"

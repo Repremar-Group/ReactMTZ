@@ -349,8 +349,221 @@ app.put('/api/actualizarusuario/:id', (req, res) => {
     res.status(200).json({ message: 'Cliente Modificado Correctamente' });
   });
 });
+// Agrega un vuelo a la base de datos
+app.post('/api/agregarVuelo', async (req, res) => {
+  const { vuelo, compania } = req.body; // Extrae vuelo y compania del cuerpo de la solicitud
+  try {
+      // Inserta el vuelo y la compañía en la base de datos
+      await connection.query('INSERT INTO vuelos (vuelo, compania) VALUES (?, ?)', [vuelo, compania]);
+      res.status(201).send('Vuelo agregado correctamente');
+  } catch (error) {
+      console.error('Error al agregar vuelo:', error);
+      res.status(500).send('Error al agregar vuelo');
+  }
+});
 
+// Define el endpoint para obtener los vuelos
+app.get('/api/previewvuelos', (req, res) => {
+  const query = 'SELECT * FROM vuelos'; // Cambia el nombre de la tabla si es diferente
 
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener vuelos:', error);
+          res.status(500).json({ error: 'Error al obtener vuelos' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+// Define el endpoint para obtener vuelos
+app.get('/api/obtenervuelos', (req, res) => {
+  const query = 'SELECT * FROM vuelos'; // Cambia el nombre de la tabla si es diferente
+
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener vuelos:', error);
+          res.status(500).json({ error: 'Error al obtener vuelos' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+//elimina el vuelo
+app.delete('/api/eliminarvuelo/:id', (req, res) => {
+  const { id } = req.params;
+  const query = 'DELETE FROM vuelos WHERE idVuelos = ?';
+
+  connection.query(query, [id], (error, results) => {
+      if (error) {
+          console.error('Error al eliminar vuelo:', error);
+          res.status(500).json({ error: 'Error al eliminar vuelo' });
+      } else {
+          res.status(200).json({ message: 'Vuelo eliminado correctamente' });
+      }
+  });
+});
+
+//agrega un ciudad a la bd
+app.post('/api/agregarCiudad', async (req, res) => {
+  const { ciudad } = req.body;
+  try {
+      // Inserta el vuelo en la base de datos. Actualiza esta lógica según tu configuración
+      await connection.query('INSERT INTO ciudades (ciudad) VALUES (?)', [ciudad]);
+      res.status(201).send('Ciudad agregada correctamente');
+  } catch (error) {
+      console.error('Error al agregar la ciudad:', error);
+      res.status(500).send('Error al agregar Ciudad');
+  }
+});
+// Define el endpoint para obtener ciudades
+app.get('/api/obtenerciudades', (req, res) => {
+  const query = 'SELECT ciudad FROM ciudades'; // Cambia el nombre de la tabla si es diferente
+
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener ciudades:', error);
+          res.status(500).json({ error: 'Error al obtener ciudades' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+
+// Define el endpoint para obtener ciudades
+app.get('/api/previewciudades', (req, res) => {
+  const query = 'SELECT * FROM ciudades'; // Cambia el nombre de la tabla si es diferente
+
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener ciudades:', error);
+          res.status(500).json({ error: 'Error al obtener ciudades' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+//elimina la ciudad
+app.delete('/api/eliminarciudad/:id', (req, res) => {
+  const { id } = req.params;
+  const query = 'DELETE FROM ciudades WHERE idciudades = ?';
+
+  connection.query(query, [id], (error, results) => {
+      if (error) {
+          console.error('Error al eliminar ciudad:', error);
+          res.status(500).json({ error: 'Error al eliminar ciudad' });
+      } else {
+          res.status(200).json({ message: 'Ciudad eliminada correctamente' });
+      }
+  });
+});
+
+//agrega una moneda a la bd
+app.post('/api/agregarMoneda', async (req, res) => {
+  const { moneda } = req.body;
+  try {
+      // Inserta el vuelo en la base de datos. Actualiza esta lógica según tu configuración
+      await connection.query('INSERT INTO monedas (moneda) VALUES (?)', [moneda]);
+      res.status(201).send('Moneda agregada correctamente');
+  } catch (error) {
+      console.error('Error al agregar la moneda:', error);
+      res.status(500).send('Error al agregar moneda');
+  }
+});
+
+// Define el endpoint para obtener monedas
+app.get('/api/previewmonedas', (req, res) => {
+  const query = 'SELECT * FROM monedas'; // Cambia el nombre de la tabla si es diferente
+
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener monedas:', error);
+          res.status(500).json({ error: 'Error al obtener monedas' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+// Define el endpoint para obtener monedas
+app.get('/api/obtenermonedas', (req, res) => {
+  const query = 'SELECT moneda FROM monedas'; // Cambia el nombre de la tabla si es diferente
+
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener monedas:', error);
+          res.status(500).json({ error: 'Error al obtener monedas' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+//elimina la moneda
+app.delete('/api/eliminarmoneda/:id', (req, res) => {
+  const { id } = req.params;
+  const query = 'DELETE FROM monedas WHERE idmonedas = ?';
+
+  connection.query(query, [id], (error, results) => {
+      if (error) {
+          console.error('Error al eliminar moneda:', error);
+          res.status(500).json({ error: 'Error al eliminar moneda' });
+      } else {
+          res.status(200).json({ message: 'Moneda eliminada correctamente' });
+      }
+  });
+});
+//--------------------------------------------------------------------------------------------------------------------
+//agrega una moneda a la bd
+app.post('/api/agregarCompania', async (req, res) => {
+  const { compania } = req.body;
+  try {
+      // Inserta el vuelo en la base de datos. Actualiza esta lógica según tu configuración
+      await connection.query('INSERT INTO companias (compania) VALUES (?)', [compania]);
+      res.status(201).send('Compañia agregada correctamente');
+  } catch (error) {
+      console.error('Error al agregar la Compañia:', error);
+      res.status(500).send('Error al agregar Compañia');
+  }
+});
+
+// Define el endpoint para obtener monedas
+app.get('/api/previewcompanias', (req, res) => {
+  const query = 'SELECT * FROM companias'; // Cambia el nombre de la tabla si es diferente
+
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener compañias:', error);
+          res.status(500).json({ error: 'Error al obtener compañias' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+// Define el endpoint para obtener monedas
+app.get('/api/obtenercompanias', (req, res) => {
+  const query = 'SELECT compania FROM companias'; // Cambia el nombre de la tabla si es diferente
+
+  connection.query(query, (error, results) => {
+      if (error) {
+          console.error('Error al obtener companias:', error);
+          res.status(500).json({ error: 'Error al obtener companias' });
+      } else {
+          res.status(200).json(results); // Envía los resultados como respuesta JSON
+      }
+  });
+});
+//elimina la moneda
+app.delete('/api/eliminarcompania/:id', (req, res) => {
+  const { id } = req.params;
+  const query = 'DELETE FROM companias WHERE idcompanias = ?';
+
+  connection.query(query, [id], (error, results) => {
+      if (error) {
+          console.error('Error al eliminar compañia:', error);
+          res.status(500).json({ error: 'Error al eliminar compañia' });
+      } else {
+          res.status(200).json({ message: 'Compañia eliminada correctamente' });
+      }
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

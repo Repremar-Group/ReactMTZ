@@ -1,0 +1,41 @@
+.tabla-monedas th,
+.tabla-monedas td {
+    padding: 12px 15px;
+    /* Espaciado interno en celdas */
+    text-align: center;
+    /* Alinear texto a la izquierda */
+    border: 1px solid #dddddd;
+    /* Bordes de celdas */
+}
+
+.tabla-monedas th {
+    background-color: #143361;
+    /* Color de fondo de los encabezados */
+    color: white;
+    /* Color de texto de los encabezados */
+}
+
+.tabla-monedas {
+    font-size: 1em;
+    /* Tamaño de fuente más pequeño */
+    border-collapse: collapse;
+    /* Sin espacios entre celdas */
+    table-layout: fixed;
+    /* Establece anchos fijos para las columnas */
+    width: 100%;
+    /* Asegura que la tabla use el ancho completo */
+    max-height: 500px;
+
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    display: block;
+    /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+    margin: 20px 0;
+
+
+}
+.div-moneda{
+    display: flex;
+   
+}

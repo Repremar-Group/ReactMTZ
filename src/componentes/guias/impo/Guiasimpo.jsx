@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import './Guiasimpo.css'
+import axios from 'axios';
+import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 
 const Guiasimpo = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -10,7 +12,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
   const [giempresavuelo, setGiEmpresaVuelo] = useState('');
   const [ginroembarque, setGiNroEmbarque] = useState('');
   const [ginroguia, setGiNroGuia] = useState('');
-  const [giconsignatario, setGiConsignatario] = useState('');
   const [giembarcador, setGiEmbarcador] = useState('');
   const [giagente, setGiAgente] = useState('');
   const [gifechaemisionguia, setGiFechaEmisionGuia] = useState('');
@@ -49,6 +50,86 @@ const Guiasimpo = ({ isLoggedIn }) => {
   const [ginrovueloembarques, setGiNroVueloEmbarques] = useState('');
   const [gifechaembarques, setGiFechaEmbarques] = useState('');
 
+  // Estado para la búsqueda de clientes
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Manejo del input de búsqueda
+  const handleInputChange = (e) => setSearchTerm(e.target.value);
+
+  // Búsqueda de clientes al presionar Enter
+  const handleKeyPress = async (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      e.preventDefault();
+      try {
+        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        setFilteredClientes(response.data);
+        setIsModalOpen(true); // Abre el modal con los resultados
+      } catch (error) {
+        console.error('Error al buscar clientes:', error);
+      }
+    }
+  };
+
+  // Selección de un cliente desde el modal
+  const handleSelectCliente = (cliente) => {
+    setSelectedCliente(cliente);
+    setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setIsModalOpen(false); // Cierra el modal
+  };
+
+  // Cerrar modal
+  const closeModal = () => setIsModalOpen(false);
+
+  const [monedas, setMonedas] = useState([]);
+  const [isFetched, setIsFetched] = useState(false); // Para evitar múltiples llamadas
+
+  const fetchMonedas = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+      setMonedas(response.data);
+      setIsFetched(true); // Indica que ya se obtuvieron los datos
+    } catch (error) {
+      console.error('Error al obtener monedas:', error);
+    }
+  }
+
+  const [ciudades, setCiudades] = useState([]);
+  const [origenguiaSeleccionado, setOrigenGuiaSeleccionado] = useState('');
+  const [conexionguiaSeleccionado, setConexionGuiaSeleccionado] = useState('');
+  const [destinoguiaSeleccionado, setDestinoGuiaSeleccionado] = useState('MVD');
+  const [isFetchedCiudades, setIsFetchedCiudades] = useState(false); // Para evitar múltiples llamadas
+
+  const fetchCiudades = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/obtenerciudades');
+      setCiudades(response.data);
+      setIsFetchedCiudades(true); // Indica que ya se obtuvieron los datos
+    } catch (error) {
+      console.error('Error al obtener monedas:', error);
+    }
+  }
+  //Estados para obtener el numero de vuelo al cargar la guia
+  const [vuelos, setVuelos] = useState([]);
+  const [vueloSeleccionado, setVueloSeleccionado] = useState(null);
+  const [isFetchedVuelos, setIsFetchedVuelos] = useState(false); // Para evitar múltiples llamadas
+
+  const fetchVuelos = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/obtenervuelos');
+      setVuelos(response.data);
+      setIsFetchedVuelos(true); // Indica que ya se obtuvieron los datos
+    } catch (error) {
+      console.error('Error al obtener vuelos:', error);
+    }
+  }
+  const handleSelectVuelo = (e) => {
+    const vuelo = vuelos.find(v => v.vuelo === e.target.value); // Busca el vuelo completo
+    setVueloSeleccionado(vuelo); // Guarda el vuelo completo
+    console.log("Vuelo seleccionado:", vuelo); // Depuración
+};
 
   const datos = [
     { guia: "510-10198856", Cliente: "Repremar Logistics", total: "500" },
@@ -141,11 +222,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
 
 
-  const [ecfecha, setEcFecha] = useState('');
-  const [ecguia, setEcGuia] = useState('');
-  const [ecdescripcion, setEcDescripcion] = useState('');
-  const [ecmonedaguia, setEcMonedaGuia] = useState('');
-  const [ecimporte, setEcImporte] = useState('');
   const [eclistadeguiasasociadas, setEcListaDeGuiasAsociadas] = useState([]);
 
 
@@ -168,21 +244,11 @@ const Guiasimpo = ({ isLoggedIn }) => {
       setEcGuiaSeleccionada(null); // Limpiar la selección
     }
   };
-  // Función para agregar una factura asociada a la tabla
-  const handleAgregarGuiaAsociada = () => {
-    if (ecguia && ecdescripcion && ecmonedaguia && ecimporte) {
-      const nuevaguiaasociada = { ecguia, ecdescripcion, ecmonedaguia, ecimporte };
-      setEcListaDeGuiasAsociadas([...eclistadeguiasasociadas, nuevaguiaasociada]);
-      setEcGuia('');
-      setEcDescripcion('');
-      setEcMonedaGuia('');
-      setEcImporte('');
-    }
-  };
+
 
   useEffect(() => {
     const icfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
-    setEcFecha(icfechaactual);
+    setGiFechaEmisionGuia(icfechaactual);
   }, []); // Se ejecuta solo una vez al montar el componente
 
   // Función para manejar el envío del formulario
@@ -209,13 +275,22 @@ const Guiasimpo = ({ isLoggedIn }) => {
             <div className='div-primerrenglon-datos-comprobante'>
               <div>
                 <label htmlFor="ginrovuelo">Nro.Vuelo:</label>
-                <input
-                  type="text"
-                  id="ginrovuelo"
-                  value={ginroimpo}
-                  onChange={(e) => setGiNroImpo(e.target.value)}
+                <select
+                  id="Vuelo"
                   required
-                />
+                  value={vueloSeleccionado ? vueloSeleccionado.vuelo : ''}
+                  onChange={handleSelectVuelo}
+                  onClick={() => {
+                    if (!isFetchedVuelos) fetchVuelos();
+                  }}
+                >
+                  <option value="">Seleccione un Vuelo</option>
+                  {vuelos.map((vuelo, index) => (
+                    <option key={index} value={vuelo.vuelo}>
+                      {vuelo.vuelo}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="givuelofecha">Fecha:</label>
@@ -244,17 +319,12 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
               <div>
                 <label htmlFor="giempresavuelo">Empresa:</label>
-                <select
+                <input
+                  type="text"
                   id="giempresavuelo"
-                  value={giempresavuelo}
-                  onChange={(e) => setGiEmpresaVuelo(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Empresa</option>
-                  <option value="AIRCLASS">AIR CLASS CARGO</option>
-                  <option value="AIREUROPA">AIREUROPA</option>
-                  <option value="etc">Etc</option>
-                </select>
+                  value={vueloSeleccionado ? vueloSeleccionado.compania : ''}
+                  readOnly
+                />
               </div>
             </div>
           </div>
@@ -301,35 +371,16 @@ const Guiasimpo = ({ isLoggedIn }) => {
                 />
               </div>
               <div>
-                <label htmlFor="giconsignatario">Consignatario:</label>
+                <label htmlFor="consignatario">Consignatario:</label>
                 <input
                   type="text"
-                  id="giconsignatario"
-                  value={giconsignatario}
-                  onChange={(e) => setGiConsignatario(e.target.value)}
-                  required
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Buscar consignatario"
                 />
               </div>
-              <div>
-                <label htmlFor="giembarcador">Embarcador:</label>
-                <input
-                  type="text"
-                  id="giembarcador"
-                  value={giembarcador}
-                  onChange={(e) => setGiEmbarcador(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="giagente">Agente:</label>
-                <input
-                  type="text"
-                  id="giagente"
-                  value={giagente}
-                  onChange={(e) => setGiAgente(e.target.value)}
-                  required
-                />
-              </div>
+
             </div>
 
 
@@ -337,43 +388,55 @@ const Guiasimpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="giorigenguia">Origen:</label>
                 <select
-                  id="giorigenguia"
-                  value={giorigenguia}
-                  onChange={(e) => setGiOrigenGuia(e.target.value)}
-                  required
+                  id="ciudad"
+                  value={origenguiaSeleccionado}
+                  onChange={(e) =>setOrigenGuiaSeleccionado(e.target.value)}
+                  onClick={() => {
+                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                  }}
                 >
-                  <option value="">Selecciona una Origen</option>
-                  <option value="EZE">EZE</option>
-                  <option value="x">x</option>
-                  <option value="etc">Etc</option>
+                  <option value="">Seleccione un origen</option>
+                  {ciudades.map((ciudad, index) => (
+                    <option key={index} value={ciudad.ciudad}>
+                      {ciudad.ciudad}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label htmlFor="giconexionguia">Conexion:</label>
                 <select
-                  id="giconexionguia"
-                  value={giconexionguia}
-                  onChange={(e) => setGiConexionGuia(e.target.value)}
-                  required
+                  id="ciudad"
+                  value={conexionguiaSeleccionado}
+                  onChange={(e) =>setConexionGuiaSeleccionado(e.target.value)}
+                  onClick={() => {
+                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                  }}
                 >
-                  <option value="">Selecciona una Origen</option>
-                  <option value="EZE">EZE</option>
-                  <option value="x">x</option>
-                  <option value="etc">Etc</option>
+                  <option value="">Seleccione una Conexion</option>
+                  {ciudades.map((ciudad, index) => (
+                    <option key={index} value={ciudad.ciudad}>
+                      {ciudad.ciudad}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label htmlFor="gidestinoguia">Destino:</label>
                 <select
-                  id="gidestinoguia"
-                  value={gidestinoguia}
-                  onChange={(e) => setGiDestinoGuia(e.target.value)}
-                  required
+                  id="ciudad"
+                  value={destinoguiaSeleccionado}
+                  onChange={(e) =>setDestinoGuiaSeleccionado(e.target.value)}
+                  onClick={() => {
+                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                  }}
                 >
-                  <option value="">Selecciona una Origen</option>
-                  <option value="EZE">EZE</option>
-                  <option value="x">x</option>
-                  <option value="etc">Etc</option>
+                  <option value="MVD">MVD</option>
+                  {ciudades.map((ciudad, index) => (
+                    <option key={index} value={ciudad.ciudad}>
+                      {ciudad.ciudad}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -387,7 +450,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
                   <option value="">Selecciona una Tipo</option>
                   <option value="P">PREPAID</option>
                   <option value="C">COLLECT</option>
-                  <option value="ivay">X</option>
                 </select>
               </div>
               <div>
@@ -460,17 +522,19 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
             <div className='div-primerrenglon-datos-comprobante'>
               <div>
-                <label htmlFor="gimonedaguia">Moneda:</label>
+                <label htmlFor="moneda">Moneda:</label>
                 <select
-                  id="gimonedaguia"
-                  value={gimonedaguia}
-                  onChange={(e) => setGiMonedaGuia(e.target.value)}
-                  required
+                  id="moneda"
+                  onClick={() => {
+                    if (!isFetched) fetchMonedas(); // Solo llama a fetchMonedas una vez
+                  }}
                 >
-                  <option value="">Selecciona una Moneda</option>
-                  <option value="Dolares">Dolares</option>
-                  <option value="Pesos">Pesos</option>
-                  <option value="Euros">Euros</option>
+                  <option value="">Seleccione una moneda</option>
+                  {monedas.map((moneda, index) => (
+                    <option key={index} value={moneda.moneda}>
+                      {moneda.moneda}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -749,6 +813,14 @@ const Guiasimpo = ({ isLoggedIn }) => {
           <Link to="/home"><button className="btn-estandar">Volver</button></Link>
         </div>
       </form>
+
+      {/* Modal de búsqueda de clientes */}
+      <ModalBusquedaClientes
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        filteredClientes={filteredClientes}
+        handleSelectCliente={handleSelectCliente}
+      />
     </div>
   );
 }

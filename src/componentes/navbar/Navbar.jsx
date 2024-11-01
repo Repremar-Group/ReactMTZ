@@ -58,10 +58,14 @@ const NavBar = () => {
 
                 <Link to="/deudores"><button className="botonNavBar">Deudores</button></Link>
 
-                {/* Botón de Reportes con submenú */}
+                {/* Botón de Parametros con submenú */}
                 <div className="botonConSubmenu">
                     <button className="botonNavBar">Parametros</button>
                     <div className="submenu">
+                        <Link to="/parametros/monedas" className="submenuItem">Monedas</Link>
+                        <Link to="/parametros/ciudades" className="submenuItem">Ciudades</Link>
+                        <Link to="/parametros/vuelos" className="submenuItem">Vuelos</Link>
+                        <Link to="/parametros/companias_aereas" className="submenuItem">Compañias Aereas</Link>
                         <Link to="/parametros/datosempresa" className="submenuItem">Datos de la Empresa</Link>
                         <Link to="/parametros/usuarios" className="submenuItem">Usuarios</Link>
                     </div>

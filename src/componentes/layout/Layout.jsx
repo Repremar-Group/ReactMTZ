@@ -37,6 +37,11 @@ import AgregarCliente from '../clientes/agregar/AgregarCliente';
 import DatosEmpresa from '../parametros/DatosEmpresa';
 import Usuarios from '../parametros/Usuarios';
 import AgregarUsuario from '../parametros/manejousuarios/AgregarUsuario';
+import Vuelos from '../parametros/Vuelos';
+import Ciudades from '../parametros/Ciudades';
+import Monedas from '../parametros/Monedas';
+import CompaniaAerea from '../parametros/CompaniaAerea';
+
 
 function Layout({ isLoggedIn, handleLogin }) {
     const location = useLocation();
@@ -238,12 +243,56 @@ function Layout({ isLoggedIn, handleLogin }) {
                         )
                     }
                 />
+                {/* Ruta monedas: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/parametros/monedas"
+                    element={
+                        isLoggedIn ? (
+                            <Monedas isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                {/* Ruta ciudades: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/parametros/ciudades"
+                    element={
+                        isLoggedIn ? (
+                            <Ciudades isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                {/* Ruta vuelos: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/parametros/vuelos"
+                    element={
+                        isLoggedIn ? (
+                            <Vuelos isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
                 {/* Ruta Datos de la Empresa: Solo accesible si el usuario está logueado */}
                 <Route
                     path="/parametros/datosempresa"
                     element={
                         isLoggedIn ? (
                             <DatosEmpresa isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                {/* Ruta compañias aereas: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/parametros/companias_aereas"
+                    element={
+                        isLoggedIn ? (
+                            <CompaniaAerea isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )
@@ -264,7 +313,7 @@ function Layout({ isLoggedIn, handleLogin }) {
 
                 {/* Ruta Agregar Usuarios: Solo accesible si el usuario está logueado */}
                 <Route
-                    path="/usuarios/agregar"
+                    path="/parametros/agregar_usuarios"
                     element={
                         isLoggedIn ? (
                             <AgregarUsuario isLoggedIn={isLoggedIn} />
