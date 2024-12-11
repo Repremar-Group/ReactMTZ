@@ -79,6 +79,22 @@
     font-weight: bold;
     padding: 2px 5px;
 }
+/* Estilo del scrollbar */
+ .tabla-embarques::-webkit-scrollbar {
+    width: 10px; 
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+  
+.tabla-embarques::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+  
+.tabla-embarques::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
+}
 
 /* Define anchos para las columnas */
 .tabla-embarques th:nth-child(1),
@@ -95,3 +111,6 @@
 .tabla-embarques td:nth-child(3) {
     width: 10%; 
 }
+.contenedorformularioimpo {
+    position: relative;
+  }
