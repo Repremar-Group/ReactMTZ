@@ -483,7 +483,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
     console.log(guiaData);
     try {
       const response = await axios.post('http://localhost:3000/api/insertguiaimpo', guiaData);
-      toast.success(response.data.message); // Muestra el mensaje de éxito
       fetchGuias();
       setGiNroEmbarque('');
       setGiNroGuia('');
@@ -505,6 +504,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
       setGiVerificacionGuia('');
       setGiTotalGuia('');
       setGiTotaldelaGuia('');
+      toast.success('Guia Ingresada Con Exito');
     } catch (error) {
       // Si la guía ya existe
       if (error.response && error.response.data.message === 'Este número de guía ya existe') {
