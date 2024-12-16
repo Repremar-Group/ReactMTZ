@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import "./Guiasexpo.css";
+import axios from 'axios';
+import { convertirAComa, convertirADecimal } from '../../funcionesgenerales';
 
 const Guiasexpo = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -49,6 +51,42 @@ const Guiasexpo = ({ isLoggedIn }) => {
   const [ginrovueloembarques, setGiNroVueloEmbarques] = useState('');
   const [gifechaembarques, setGiFechaEmbarques] = useState('');
 
+  //Estados para obtener el numero de vuelo al cargar la guia
+  const [vuelos, setVuelos] = useState([]);
+  const [vueloSeleccionado, setVueloSeleccionado] = useState(null);
+  const [isFetchedVuelos, setIsFetchedVuelos] = useState(false); // Para evitar múltiples llamadas
+
+  const fetchVuelos = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/obtenervuelos');
+      setVuelos(response.data);
+      setIsFetchedVuelos(true); // Indica que ya se obtuvieron los datos
+    } catch (error) {
+      console.error('Error al obtener vuelos:', error);
+    }
+  }
+  const handleSelectVuelo = (e) => {
+    const vuelo = vuelos.find(v => v.vuelo === e.target.value); // Busca el vuelo completo
+    setVueloSeleccionado(vuelo); // Guarda el vuelo completo
+    console.log("Vuelo seleccionado:", vuelo); // Depuración
+  };
+  //Estados para obtenerlas ciudades desde bd 
+  const [ciudades, setCiudades] = useState([]);
+  const [origenVueloSeleccionado, setOrigenVueloSeleccionado] = useState('');
+  const [conexionVueloSeleccionado, setConexionVueloSeleccionado] = useState('');
+  const [destinoVueloSeleccionado, setDestinoVueloSeleccionado] = useState('MVD');
+  const [isFetchedCiudades, setIsFetchedCiudades] = useState(false); // Para evitar múltiples llamadas
+
+  const fetchCiudades = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/obtenerciudades');
+      setCiudades(response.data);
+      setIsFetchedCiudades(true); // Indica que ya se obtuvieron los datos
+    } catch (error) {
+      console.error('Error al obtener monedas:', error);
+    }
+  }
+
 
   const datos = [
     { numero: "1", fecha: "01/11/2024", agente: "Cielosur", origen: "MVD", destino: "EZE", peso: "500" },
@@ -88,35 +126,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
     { largo: "280", ancho: "140", alto: "160", cantidad: "900", volumen: "18" },
     { largo: "290", ancho: "145", alto: "165", cantidad: "950", volumen: "19" }
   ];
-  const TablaMercaderia = ({ mercaderia }) => (
-    <table className='tabla-mercaderia-guias-expo' >
-      <thead>
-        <tr>
-          <th>Largo</th>
-          <th>Ancho</th>
-          <th>Alto</th>
-          <th>Cantidad</th>
-          <th>Volumen</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {mercaderia.map((mercaderia, index) => (
-          <tr key={index}>
-            <td>{mercaderia.largo}</td>
-            <td>{mercaderia.ancho}</td>
-            <td>{mercaderia.alto}</td>
-            <td>{mercaderia.cantidad}</td>
-            <td>{mercaderia.volumen}</td>
-            <td>
-              <button type="button" className="action-button"  >✏️</button>
-              <button type="button" className="action-button"  >❌</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+
 
   const TablaPagos = ({ pago }) => (
     <table className='tabla-pago-guias-expo' >
@@ -179,33 +189,14 @@ const Guiasexpo = ({ isLoggedIn }) => {
   );
 
 
-  const [ecid, setEcId] = useState('');
-  const [ecnombre, setEcNombre] = useState('');
-  const [ectipocomprobante, setEcTipoComprobante] = useState('');
-  const [eccomprobanteelectronico, setEcComprobanteElectronico] = useState('');
-  const [ecciudad, setEcCiudad] = useState('');
-  const [ecpais, setEcPais] = useState('');
-  const [ecrazonsocial, setEcRazonSocial] = useState('');
-  const [ectipoiva, setEcTipoIva] = useState('');
-  const [ecmoneda, setEcMoneda] = useState('');
+
   const [ecfecha, setEcFecha] = useState('');
-  const [eccomprobante, setEcComprobante] = useState('');
-  const [ecelectronico, setEcElectronico] = useState('');
-  const [ecdireccionfiscal, setEcDireccionFiscal] = useState('');
-  const [eccompania, setEcCompania] = useState('');
-  const [ecrutcedula, setEcrutcedula] = useState('');
-  const [eccass, setEcCass] = useState('');
-  const [ectipodeembarque, setEcTipoDeEmbarque] = useState('');
-  const [ectc, setEcTc] = useState('');
+
   const [ecguia, setEcGuia] = useState('');
   const [ecdescripcion, setEcDescripcion] = useState('');
   const [ecmonedaguia, setEcMonedaGuia] = useState('');
   const [ecimporte, setEcImporte] = useState('');
-  const [ectotalacobrar, setEcTotalACobrar] = useState('');
-  const [ecsubtotal, setEcsubtotal] = useState('');
-  const [eciva, setEcIva] = useState('');
-  const [ecredondeo, setEcRedondeo] = useState('');
-  const [ectotal, setEcTotal] = useState('');
+
   const [eclistadeguiasasociadas, setEcListaDeGuiasAsociadas] = useState([]);
 
 
@@ -245,6 +236,49 @@ const Guiasexpo = ({ isLoggedIn }) => {
     setEcFecha(icfechaactual);
   }, []); // Se ejecuta solo una vez al montar el componente
 
+  // useEffect para actualizar Flete Neto cuando Tarifa Neta o Peso Tarifado cambian
+  useEffect(() => {
+    if (getarifanetaguia && gepesotarifadoguia) {
+      // Convertir coma a punto antes de hacer el cálculo
+      const tarifanetaconvertida = convertirADecimal(getarifanetaguia);
+      const pesotarifadoconvertido = convertirADecimal(gepesotarifadoguia);
+
+      // Realizar el cálculo
+      const fleteNetoCalculado = parseFloat(tarifanetaconvertida) * parseFloat(pesotarifadoconvertido);
+
+      // Si el cálculo es un número válido, actualizar el estado de Flete Original
+      if (!isNaN(fleteNetoCalculado)) {
+        setGeFleteNetoGuia(convertirAComa(fleteNetoCalculado.toFixed(2))); // Mantener dos decimales
+      } else {
+        setGeFleteNetoGuia(''); // Si el cálculo no es válido, limpiar el valor
+      }
+    } else {
+      setGeFleteNetoGuia(''); // Si alguno de los campos está vacío, borrar Flete Original
+    }
+  }, [getarifanetaguia, gepesotarifadoguia]);
+
+  // useEffect para actualizar Flete Awb cuando Tarifa Venta o Peso Tarifado cambian
+  useEffect(() => {
+    if (getarifaventaguia && gepesotarifadoguia) {
+      // Convertir coma a punto antes de hacer el cálculo
+      const tarifaventaconvertida = convertirADecimal(getarifaventaguia);
+      const pesotarifadoconvertido = convertirADecimal(gepesotarifadoguia);
+
+      // Realizar el cálculo
+      const fleteAwbCalculado = parseFloat(tarifaventaconvertida) * parseFloat(pesotarifadoconvertido);
+
+      // Si el cálculo es un número válido, actualizar el estado de Flete Original
+      if (!isNaN(fleteAwbCalculado)) {
+        setGeFleteAwbGuia(convertirAComa(fleteAwbCalculado.toFixed(2))); // Mantener dos decimales
+      } else {
+        setGeFleteAwbGuia(''); // Si el cálculo no es válido, limpiar el valor
+      }
+    } else {
+      setGeFleteAwbGuia(''); // Si alguno de los campos está vacío, borrar Flete Original
+    }
+  }, [getarifaventaguia, gepesotarifadoguia]);
+
+
   // Función para manejar el envío del formulario
   const handleSubmitAgregarRecibo = (e) => {
     e.preventDefault();
@@ -269,13 +303,22 @@ const Guiasexpo = ({ isLoggedIn }) => {
             <div className='div-primerrenglon-datos-comprobante'>
               <div>
                 <label htmlFor="genrovuelo">Nro.Vuelo:</label>
-                <input
-                  type="text"
-                  id="genrovuelo"
-                  value={genrovuelo}
-                  onChange={(e) => setGeNroVuelo(e.target.value)}
+                <select
+                  id="Vuelo"
                   required
-                />
+                  value={vueloSeleccionado ? vueloSeleccionado.vuelo : ''}
+                  onChange={handleSelectVuelo}
+                  onClick={() => {
+                    if (!isFetchedVuelos) fetchVuelos();
+                  }}
+                >
+                  <option value="">Seleccione un Vuelo</option>
+                  {vuelos.map((vuelo, index) => (
+                    <option key={index} value={vuelo.vuelo}>
+                      {vuelo.vuelo}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="gevuelofecha">Fecha:</label>
@@ -290,94 +333,93 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="georigenvuelo">Origen:</label>
                 <select
-                  id="georigenvuelo"
-                  value={georigenvuelo}
-                  onChange={(e) => setGeOrigenVuelo(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Origen</option>
-                  <option value="EZE">EZE</option>
-                  <option value="x">x</option>
-                  <option value="etc">Etc</option>
-                </select>
+                      id="georigenvuelo"
+                      value={origenVueloSeleccionado}
+                      onChange={(e) => setOrigenVueloSeleccionado(e.target.value)}
+                      onClick={() => {
+                        if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchCiudades una vez
+                      }}
+                      required
+                    >
+                      <option value="MVD">MVD</option>
+                      {ciudades.map((ciudad, index) => (
+                        <option key={index} value={ciudad.ciudad}>
+                          {ciudad.ciudad}
+                        </option>
+                      ))}
+                    </select>
               </div>
               <div>
                 <label htmlFor="geconexionvuelo">Conexion:</label>
                 <select
-                  id="geconexionvuelo"
-                  value={geconexionvuelo}
-                  onChange={(e) => setGeConexionVuelo(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Origen</option>
-                  <option value="EZE">EZE</option>
-                  <option value="x">x</option>
-                  <option value="etc">Etc</option>
-                </select>
+                      id="ciudad"
+                      value={conexionVueloSeleccionado}
+                      onChange={(e) => setConexionVueloSeleccionado(e.target.value)}
+                      onClick={() => {
+                        if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                      }}
+                    >
+                      <option value="">Seleccione una Conexion</option>
+                      {ciudades.map((ciudad, index) => (
+                        <option key={index} value={ciudad.ciudad}>
+                          {ciudad.ciudad}
+                        </option>
+                      ))}
+                    </select>
               </div>
               <div>
                 <label htmlFor="gedestinovuelo">Destino:</label>
                 <select
-                  id="gedestinovuelo"
-                  value={gedestinovuelo}
-                  onChange={(e) => setGeDestinoVuelo(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Origen</option>
-                  <option value="EZE">EZE</option>
-                  <option value="x">x</option>
-                  <option value="etc">Etc</option>
-                </select>
+                      id="ciudad"
+                      required
+                      value={destinoVueloSeleccionado}
+                      onChange={(e) => setDestinoVueloSeleccionado(e.target.value)}
+                      onClick={() => {
+                        if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                      }}
+                    >
+                      <option value="">Seleccione un Destino</option>
+                      {ciudades.map((ciudad, index) => (
+                        <option key={index} value={ciudad.ciudad}>
+                          {ciudad.ciudad}
+                        </option>
+                      ))}
+                    </select>
               </div>
 
               <div>
                 <label htmlFor="geempresavuelo">Empresa:</label>
-                <select
+                <input
+                  type="text"
                   id="geempresavuelo"
-                  value={geempresavuelo}
-                  onChange={(e) => setGeEmpresaVuelo(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Empresa</option>
-                  <option value="AIRCLASS">AIR CLASS CARGO</option>
-                  <option value="AIREUROPA">AIREUROPA</option>
-                  <option value="etc">Etc</option>
-                </select>
+                  value={vueloSeleccionado ? vueloSeleccionado.compania : ''}
+                  readOnly
+                />
               </div>
               <div>
                 <label htmlFor="gecassvuelo">Cass:</label>
-                <input
-                  type="text"
+                <select
                   id="gecassvuelo"
                   value={gecassvuelo}
                   onChange={(e) => setGecassVuelo(e.target.value)}
                   required
-                />
+                >
+                  <option value="">Seleccione una Opcion</option>
+                  <option value="S">Si</option>
+                  <option value="N">No</option>
+                </select>
               </div>
             </div>
           </div>
 
-          <div>
-            <div className='contenedor-tabla-embarques'>
-              <h3 className='subtitulo-estandar'>Pago de la Guia</h3>
-              <TablaPagos pago={datospagos} />
-            </div>
+          <div className='para generar espacio'>
           </div>
 
           <div className='div-datos-comprobante'>
             <h3 className='subtitulo-estandar'>Datos del Embarque</h3>
 
             <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="genroembarque">Nro. Embarque:</label>
-                <input
-                  type="text"
-                  id="genroembarque"
-                  value={genroembarque}
-                  onChange={(e) => setGeNroEmbarque(e.target.value)}
-                  required
-                />
-              </div>
+              
               <div>
                 <label htmlFor="geagente">Agente:</label>
                 <input
@@ -429,12 +471,8 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   <option value="">Selecciona una Tipo</option>
                   <option value="P">PREPAID</option>
                   <option value="C">COLLECT</option>
-                  <option value="ivay">X</option>
                 </select>
               </div>
-            </div>
-            <div>
-              <TablaMercaderia mercaderia={datosmercaderia} />
             </div>
 
 
@@ -456,26 +494,6 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   id="gepesobrutoguia"
                   value={gepesobrutoguia}
                   onChange={(e) => setGePesoBrutoGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="gevolumenguia">Volumen:</label>
-                <input
-                  type="text"
-                  id="gevolumenguia"
-                  value={gevolumenguia}
-                  onChange={(e) => setGeVolumenGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="geacordadoguia">Acordado:</label>
-                <input
-                  type="text"
-                  id="geacordadoguia"
-                  value={geacordadoguia}
-                  onChange={(e) => setGeAcordadoGuia(e.target.value)}
                   required
                 />
               </div>
@@ -521,6 +539,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   value={gefletenetoguia}
                   onChange={(e) => setGeFleteNetoGuia(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -531,6 +550,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   value={gefleteawbguia}
                   onChange={(e) => setGeFleteAwbGuia(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -601,16 +621,6 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-              <div>
-                <label htmlFor="geccaguia">Nro. CCA:</label>
-                <input
-                  type="text"
-                  id="geccaguia"
-                  value={geccaguia}
-                  onChange={(e) => setGeCcaGuia(e.target.value)}
-                  required
-                />
-              </div>
             </div>
 
             <div className='div-primerrenglon-datos-comprobante'>
@@ -641,37 +651,6 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   id="getotalguia"
                   value={getotalguia}
                   onChange={(e) => setGeTotalGuia(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="geembarcadorguia">Embarcador:</label>
-                <input
-                  type="text"
-                  id="geembarcadorguia"
-                  value={geembarcadorguia}
-                  onChange={(e) => setGeEmbarcadorGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="geconsignatarioguia">Consignatario:</label>
-                <input
-                  type="text"
-                  id="geconsignatarioguia"
-                  value={geconsignatarioguia}
-                  onChange={(e) => setGeConsignatarioGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="gemercaderiaguia">Mercaderia:</label>
-                <input
-                  type="text"
-                  id="gemercaderiaguia"
-                  value={gemercaderiaguia}
-                  onChange={(e) => setGeMercaderiaGuia(e.target.value)}
                   required
                 />
               </div>
