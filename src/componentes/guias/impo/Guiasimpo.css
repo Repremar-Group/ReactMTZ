@@ -75,7 +75,11 @@
 }
 
 .tabla-embarques th {
-    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    top: 0; 
+    z-index: 0; 
+    position: sticky;
+    background-color: #143361; /* Color de fondo para las cabeceras */
+    color:white;
     font-weight: bold;
     padding: 2px 5px;
 }

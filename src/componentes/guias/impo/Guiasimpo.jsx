@@ -14,7 +14,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
   const [givuelofecha, setGiVueloFecha] = useState('');
   const [giorigenvuelo, setGiOrigenVuelo] = useState('');
   const [giempresavuelo, setGiEmpresaVuelo] = useState('');
-  const [ginroembarque, setGiNroEmbarque] = useState('');
   const [ginroguia, setGiNroGuia] = useState('');
   const [giembarcador, setGiEmbarcador] = useState('');
   const [giagente, setGiAgente] = useState('');
@@ -451,7 +450,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
       vueloSeleccionado: vueloSeleccionado.idVuelos || vueloSeleccionado,
       givuelofecha,
       giorigenvuelo,
-      ginroembarque,
       ginroguia,
       gifechaemisionguia,
       searchTerm,
@@ -483,8 +481,11 @@ const Guiasimpo = ({ isLoggedIn }) => {
     console.log(guiaData);
     try {
       const response = await axios.post('http://localhost:3000/api/insertguiaimpo', guiaData);
+      console.log(response);
+      if (response.status === 200) {
+        toast.success('Guia Ingresada Con Exito');
+      }
       fetchGuias();
-      setGiNroEmbarque('');
       setGiNroGuia('');
       setGiFechaEmisionGuia('');
       setSearchTerm('');
@@ -504,7 +505,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
       setGiVerificacionGuia('');
       setGiTotalGuia('');
       setGiTotaldelaGuia('');
-      toast.success('Guia Ingresada Con Exito');
     } catch (error) {
       // Si la guía ya existe
       if (error.response && error.response.data.message === 'Este número de guía ya existe') {
@@ -607,16 +607,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
                 <h3 className='subtitulo-estandar'>Datos del Embarque</h3>
 
                 <div className='div-primerrenglon-datos-comprobante'>
-                  <div>
-                    <label htmlFor="ginroembarque">Nro. Embarque:</label>
-                    <input
-                      type="text"
-                      id="ginroembarque"
-                      value={ginroembarque}
-                      onChange={(e) => setGiNroEmbarque(e.target.value)}
-                      required
-                    />
-                  </div>
+                
                   <div>
                     <label htmlFor="ginroguia">Guia:</label>
                     <input
@@ -992,7 +983,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
                     />
                   </div>
                 </div>
-                <div className='contenedor-tabla-embarques'>
+                <div className='contenedor-tabla-embarques'style={{ marginTop: '15px' }}>
                   <TablaEmbarques tablaguias={tablaguias} />
                 </div>
 

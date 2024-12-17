@@ -574,7 +574,6 @@ app.post('/api/insertguiaimpo', async (req, res) => {
     vueloSeleccionado,
     givuelofecha,
     giorigenvuelo,
-    ginroembarque,
     ginroguia,
     gifechaemisionguia,
     searchTerm,
@@ -607,7 +606,7 @@ app.post('/api/insertguiaimpo', async (req, res) => {
   try {
     // Consulta SQL para verificar si el número de guía ya existe
     const checkGuiaQuery = 'SELECT * FROM guiasimpo WHERE guia = ?';
-    
+
     // Verificamos si la guía ya existe
     connection.query(checkGuiaQuery, [ginroguia], (err, results) => {
       if (err) {
@@ -623,15 +622,14 @@ app.post('/api/insertguiaimpo', async (req, res) => {
       // Si la guía no existe, procedemos con la inserción
       const insertGuiaQuery = `
         INSERT INTO guiasimpo (
-          nrovuelo, fechavuelo, origenvuelo,
-          nroembarque, guia, emision, consignatario,
+          nrovuelo, fechavuelo, origenvuelo, guia, emision, consignatario,
           origenguia, conexionguia, destinoguia, tipodepagoguia,
           mercaderia, piezas, peso, pesovolumetrico,
           moneda, arbitraje, tarifa, fleteoriginal,
           dcoriginal, daoriginal, flete, ivas3,
           duecarrier, dueagent, verificacion,
           collectfee, cfiva, ajuste, total, totalguia
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       // Ejecutar la consulta con los valores correspondientes
@@ -639,7 +637,6 @@ app.post('/api/insertguiaimpo', async (req, res) => {
         vueloSeleccionado,
         givuelofecha,
         giorigenvuelo,
-        ginroembarque,
         ginroguia,
         gifechaemisionguia,
         searchTerm,
@@ -693,6 +690,7 @@ app.post('/api/fetchguiasimpo', async (req, res) => {
       SELECT guia, consignatario, total, tipodepagoguia
       FROM guiasimpo
       WHERE nrovuelo = ? AND fechavuelo = ?
+      ORDER BY fechaingresada DESC
     `;
 
     // Ejecutar la consulta para obtener las guías según los filtros
@@ -719,7 +717,7 @@ app.get('/api/obtenerguia/:guia', async (req, res) => {
   try {
     const fetchGuiaQuery = `
       SELECT 
-        nrovuelo, fechavuelo, origenvuelo, nroembarque, guia, emision, consignatario,
+        nrovuelo, fechavuelo, origenvuelo, guia, emision, consignatario,
         origenguia, conexionguia, destinoguia, tipodepagoguia, mercaderia, piezas, peso, 
         pesovolumetrico, moneda, arbitraje, tarifa, fleteoriginal, dcoriginal, daoriginal, 
         flete, ivas3, duecarrier, dueagent, verificacion, collectfee, cfiva, ajuste, 
@@ -753,11 +751,11 @@ app.post('/api/modificarguia', async (req, res) => {
   const datosGuia = req.body; // Datos recibidos desde el frontend
 
   const {
-      guia, nrovuelo, fechavuelo, origenvuelo, nroembarque, emision, consignatario,
-      origenguia, conexionguia, destinoguia, tipodepagoguia, mercaderia, piezas, peso, 
-      pesovolumetrico, moneda, arbitraje, tarifa, fleteoriginal, dcoriginal, daoriginal, 
-      flete, ivas3, duecarrier, dueagent, verificacion, collectfee, cfiva, ajuste, total, 
-      totalguia
+    guia, nrovuelo, fechavuelo, origenvuelo, emision, consignatario,
+    origenguia, conexionguia, destinoguia, tipodepagoguia, mercaderia, piezas, peso,
+    pesovolumetrico, moneda, arbitraje, tarifa, fleteoriginal, dcoriginal, daoriginal,
+    flete, ivas3, duecarrier, dueagent, verificacion, collectfee, cfiva, ajuste, total,
+    totalguia
   } = datosGuia;
 
   // Query para actualizar los datos de la guía en la base de datos
@@ -767,7 +765,6 @@ app.post('/api/modificarguia', async (req, res) => {
           nrovuelo = ?, 
           fechavuelo = ?, 
           origenvuelo = ?, 
-          nroembarque = ?, 
           emision = ?, 
           consignatario = ?, 
           origenguia = ?, 
@@ -797,28 +794,28 @@ app.post('/api/modificarguia', async (req, res) => {
       WHERE guia = ?`;
 
   try {
-      // Ejecutar la consulta de actualización
-      connection.query(updateGuiaQuery, [
-          nrovuelo, fechavuelo, origenvuelo, nroembarque, emision, consignatario, origenguia,
-          conexionguia, destinoguia, tipodepagoguia, mercaderia, piezas, peso, pesovolumetrico, 
-          moneda, arbitraje, tarifa, fleteoriginal, dcoriginal, daoriginal, flete, ivas3, duecarrier,
-          dueagent, verificacion, collectfee, cfiva, ajuste, total, totalguia, guia
-      ], (err, result) => {
-          if (err) {
-              console.error('Error al actualizar la guía:', err);
-              return res.status(500).json({ error: 'Error al actualizar la guía' });
-          }
+    // Ejecutar la consulta de actualización
+    connection.query(updateGuiaQuery, [
+      nrovuelo, fechavuelo, origenvuelo, emision, consignatario, origenguia,
+      conexionguia, destinoguia, tipodepagoguia, mercaderia, piezas, peso, pesovolumetrico,
+      moneda, arbitraje, tarifa, fleteoriginal, dcoriginal, daoriginal, flete, ivas3, duecarrier,
+      dueagent, verificacion, collectfee, cfiva, ajuste, total, totalguia, guia
+    ], (err, result) => {
+      if (err) {
+        console.error('Error al actualizar la guía:', err);
+        return res.status(500).json({ error: 'Error al actualizar la guía' });
+      }
 
-          // Si se actualiza correctamente
-          if (result.affectedRows > 0) {
-              res.status(200).json({ message: 'Guía actualizada correctamente' });
-          } else {
-              res.status(404).json({ message: 'No se encontró la guía para actualizar' });
-          }
-      });
+      // Si se actualiza correctamente
+      if (result.affectedRows > 0) {
+        res.status(200).json({ message: 'Guía actualizada correctamente' });
+      } else {
+        res.status(404).json({ message: 'No se encontró la guía para actualizar' });
+      }
+    });
   } catch (error) {
-      console.error('Error al procesar la solicitud:', error);
-      res.status(500).json({ error: 'Error al procesar la solicitud' });
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
 

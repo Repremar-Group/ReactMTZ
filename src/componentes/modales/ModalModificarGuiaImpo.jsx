@@ -16,7 +16,6 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, guia }) => {
         nrovuelo: '',
         fechavuelo: '',
         origenvuelo: '',
-        nroembarque: '',
         guia: '',
         emision: '',
         consignatario: '',
@@ -425,16 +424,7 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, guia }) => {
                     <div>
                         <form className='formulario-estandar' onSubmit={handleSubmitGuardarGuiaImpo}>
                             <div className='div-primerrenglon-datos-comprobante'>
-                                <div>
-                                    <label htmlFor="ginroembarque">Nro. Embarque:</label>
-                                    <input
-                                        type="text"
-                                        id="ginroembarque"
-                                        value={datosGuia.nroembarque}
-                                        onChange={(e) => setDatosGuia({ ...datosGuia, nroembarque: e.target.value })}
-                                        required
-                                    />
-                                </div>
+                               
                                 <div>
                                     <label htmlFor="ginroguia">Guia:</label>
                                     <input

@@ -278,6 +278,77 @@ const Guiasexpo = ({ isLoggedIn }) => {
     }
   }, [getarifaventaguia, gepesotarifadoguia]);
 
+  //UseEffect para calcular todos los campos si la guia es Collect
+  useEffect(() => {
+    if (gefletenetoguia && getipodepagoguia === 'C') {
+      console.log("gefleteneto:", gefletenetoguia);
+      console.log("getipodepagoguia:", getipodepagoguia);
+      const fleteNetoConvertido = convertirADecimal(gefletenetoguia);
+      console.log("fleteNetoConvertido:", fleteNetoConvertido);
+
+      //Calculo de total a cobrar
+      const totalacobrar = (
+        (parseFloat(convertirADecimal(gefletenetoguia)) || 0) +
+        (parseFloat(convertirADecimal(geduecarrierguia)) || 0) +
+        (parseFloat(convertirADecimal(gedueagentguia)) || 0)
+      )
+      //Calculo total de la guia
+      const totaldelaguia = (
+        (parseFloat(convertirADecimal(gefleteawbguia)) || 0) +
+        (parseFloat(convertirADecimal(geduecarrierguia)) || 0)
+      )
+
+      //Asignación de las Varibles.
+      setGeTotalGuia(totaldelaguia.toFixed(2));
+      setGeCobrarPagarGuia(totalacobrar.toFixed(2));
+
+    } else {
+      if (!gefletenetoguia && getipodepagoguia != 'P') {
+        setGeTotalGuia('');
+        setGeCobrarPagarGuia('');
+      }
+    }
+  }, [
+    gefletenetoguia,
+    getipodepagoguia,
+    gedueagentguia,
+    geduecarrierguia
+  ]);
+
+  //UseEffect para calcular todos los campos si la guia es PrePaid
+  useEffect(() => {
+    if (gefletenetoguia && getipodepagoguia === 'P') {
+      const fleteNetoConvertido = convertirADecimal(gefletenetoguia);
+   
+      //Calculo de total a cobrar
+      const totalacobrar = (
+        (parseFloat(convertirADecimal(gefletenetoguia)) || 0) +
+        (parseFloat(convertirADecimal(geduecarrierguia)) || 0)
+      )
+      //Calculo total de la guia
+      const totaldelaguia = (
+        (parseFloat(convertirADecimal(gefleteawbguia)) || 0) +
+        (parseFloat(convertirADecimal(geduecarrierguia)) || 0)
+      )
+
+      //Asignación de las Varibles.
+
+      setGeTotalGuia(totaldelaguia.toFixed(2));
+      setGeCobrarPagarGuia(totalacobrar.toFixed(2));
+    } else {
+
+      if (!gefletenetoguia && getipodepagoguia != 'C') {
+        setGeTotalGuia('');
+        setGeCobrarPagarGuia('');
+      }
+
+    }
+  }, [
+    gefletenetoguia,
+    getipodepagoguia,
+    gedueagentguia,
+    geduecarrierguia
+  ]);
 
   // Función para manejar el envío del formulario
   const handleSubmitAgregarRecibo = (e) => {
@@ -333,58 +404,58 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="georigenvuelo">Origen:</label>
                 <select
-                      id="georigenvuelo"
-                      value={origenVueloSeleccionado}
-                      onChange={(e) => setOrigenVueloSeleccionado(e.target.value)}
-                      onClick={() => {
-                        if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchCiudades una vez
-                      }}
-                      required
-                    >
-                      <option value="MVD">MVD</option>
-                      {ciudades.map((ciudad, index) => (
-                        <option key={index} value={ciudad.ciudad}>
-                          {ciudad.ciudad}
-                        </option>
-                      ))}
-                    </select>
+                  id="georigenvuelo"
+                  value={origenVueloSeleccionado}
+                  onChange={(e) => setOrigenVueloSeleccionado(e.target.value)}
+                  onClick={() => {
+                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchCiudades una vez
+                  }}
+                  required
+                >
+                  <option value="MVD">MVD</option>
+                  {ciudades.map((ciudad, index) => (
+                    <option key={index} value={ciudad.ciudad}>
+                      {ciudad.ciudad}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="geconexionvuelo">Conexion:</label>
                 <select
-                      id="ciudad"
-                      value={conexionVueloSeleccionado}
-                      onChange={(e) => setConexionVueloSeleccionado(e.target.value)}
-                      onClick={() => {
-                        if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
-                      }}
-                    >
-                      <option value="">Seleccione una Conexion</option>
-                      {ciudades.map((ciudad, index) => (
-                        <option key={index} value={ciudad.ciudad}>
-                          {ciudad.ciudad}
-                        </option>
-                      ))}
-                    </select>
+                  id="ciudad"
+                  value={conexionVueloSeleccionado}
+                  onChange={(e) => setConexionVueloSeleccionado(e.target.value)}
+                  onClick={() => {
+                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                  }}
+                >
+                  <option value="">Seleccione una Conexion</option>
+                  {ciudades.map((ciudad, index) => (
+                    <option key={index} value={ciudad.ciudad}>
+                      {ciudad.ciudad}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="gedestinovuelo">Destino:</label>
                 <select
-                      id="ciudad"
-                      required
-                      value={destinoVueloSeleccionado}
-                      onChange={(e) => setDestinoVueloSeleccionado(e.target.value)}
-                      onClick={() => {
-                        if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
-                      }}
-                    >
-                      <option value="">Seleccione un Destino</option>
-                      {ciudades.map((ciudad, index) => (
-                        <option key={index} value={ciudad.ciudad}>
-                          {ciudad.ciudad}
-                        </option>
-                      ))}
-                    </select>
+                  id="ciudad"
+                  required
+                  value={destinoVueloSeleccionado}
+                  onChange={(e) => setDestinoVueloSeleccionado(e.target.value)}
+                  onClick={() => {
+                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                  }}
+                >
+                  <option value="">Seleccione un Destino</option>
+                  {ciudades.map((ciudad, index) => (
+                    <option key={index} value={ciudad.ciudad}>
+                      {ciudad.ciudad}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -419,7 +490,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
             <h3 className='subtitulo-estandar'>Datos del Embarque</h3>
 
             <div className='div-primerrenglon-datos-comprobante'>
-              
+
               <div>
                 <label htmlFor="geagente">Agente:</label>
                 <input
