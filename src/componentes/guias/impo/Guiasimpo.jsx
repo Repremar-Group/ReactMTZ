@@ -970,6 +970,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
                       value={ginrovueloembarques}
                       onChange={(e) => setGiNroVueloEmbarques(e.target.value)}
                       required
+                      readOnly
                     />
                   </div>
                   <div>
@@ -980,6 +981,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
                       value={gifechaembarques}
                       onChange={(e) => setGiFechaEmbarques(e.target.value)}
                       required
+                      readOnly
                     />
                   </div>
                 </div>

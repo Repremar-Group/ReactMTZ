@@ -22,6 +22,7 @@ import Clientes from '../clientes/Clientes';
 //Importo componentes de Guias
 import Guiasimpo from '../guias/impo/Guiasimpo';
 import Guiasexpo from '../guias/expo/Guiasexpo';
+import Buscarguia from '../guias/Buscar/Buscarguias';
 
 //Importo componentes de Tablas
 import Historialdecambios from '../tablas/historialdecambios/Historialdecambios';
@@ -178,6 +179,16 @@ function Layout({ isLoggedIn, handleLogin }) {
                     element={
                         isLoggedIn ? (
                             <AgregarCliente isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                <Route
+                    path="/guias/buscar"
+                    element={
+                        isLoggedIn ? (
+                            <Buscarguia isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )

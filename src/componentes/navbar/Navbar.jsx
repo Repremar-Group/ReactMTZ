@@ -42,8 +42,9 @@ const NavBar = () => {
                 <div className="botonConSubmenu">
                     <button className="botonNavBar">Guias</button>
                     <div className="submenu">
-                        <Link to="/guias/impo" className="submenuItem">Impo</Link>
-                        <Link to="/guias/expo" className="submenuItem">Expo</Link>
+                        <Link to="/guias/buscar" className="submenuItem">Buscar Guias</Link>
+                        <Link to="/guias/impo" className="submenuItem">Ingresar Importación</Link>
+                        <Link to="/guias/expo" className="submenuItem">Ingresar Exportación</Link>
                     </div>
                 </div>
 

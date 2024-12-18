@@ -819,6 +819,48 @@ app.post('/api/modificarguia', async (req, res) => {
   }
 });
 
+// server.js o donde tengas configuradas tus rutas
+app.delete('/api/eliminarGuia/:guia', async (req, res) => {
+  const { guia } = req.params;
+
+  try {
+    // Aquí ejecutas la lógica para eliminar la guía de tu base de datos
+    await connection.query('DELETE FROM guiasimpo WHERE guia = ?', [guia]);
+    res.status(200).json({ message: 'Guía eliminada exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Hubo un error al eliminar la guía' });
+  }
+});
+
+app.get('/api/previewguias', async (req, res) => {
+  console.log('Received request for /api/previewguias');
+
+  try {
+    const fetchGuiasQuery = `
+      SELECT 
+      g.*, 
+      v.vuelo AS nombreVuelo, 
+      v.compania
+      FROM guiasimpo g
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+    `;
+    // Ejecutar la consulta para obtener todas las guías
+    connection.query(fetchGuiasQuery, (err, results) => {
+      if (err) {
+        console.error('Error al obtener las guías:', err);
+        return res.status(500).json({ error: 'Error al obtener las guías' });
+      }
+
+      // Enviar todas las guías obtenidas
+      res.status(200).json(results);
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

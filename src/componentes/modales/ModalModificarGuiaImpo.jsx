@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ModalBusquedaClientes from './ModalBusquedaClientes';
+import './modales.css'
 import { convertirAComa, convertirADecimal } from '../funcionesgenerales';
 import { ToastContainer, toast } from 'react-toastify';
 

@@ -78,6 +78,10 @@ body{
     background: none; /* Sin fondo */
 }
 
+.action-button:focus {
+outline: none; /* Elimina el borde azul predeterminado del navegador */
+}
+
 .btn-eliminar-estandar{
     padding: 10px;
     margin: 5px;
@@ -107,6 +111,16 @@ body{
     background-color: #f0f0f0;
     color: gray;
     
+}
+.formulario-estandar input:focus {
+    outline: none; /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5); /* Sombra sutil */
+    border-color: #1a4a8e; /* Opcional: cambia ligeramente el borde */
+}
+.formulario-estandar select:focus {
+    outline: none; /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5); /* Sombra sutil */
+    border-color: #1a4a8e; /* Opcional: cambia ligeramente el borde */
 }
 
 .subtitulo-estandar{
@@ -169,7 +183,7 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%; /* Altura completa de la pantalla */
+    height: 50%; /* Altura completa de la pantalla */
     font-size: 1.5rem;
   }
   .loading-overlay {

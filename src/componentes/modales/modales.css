@@ -30,3 +30,63 @@
     width: 80%;
     max-width: 1100px;
   }
+
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alert-icon {
+  width: 35px; 
+  height: 30px; 
+}
+/* Estilo personalizado para el botón de confirmación */
+.custom-confirm-button {
+  padding: 15px 30px; /* Aumenta el tamaño del padding */
+  margin: 5px;
+  background-color: #8B0000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px; /* Aumenta el tamaño del texto */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 200px; /* Igualar el tamaño de los botones */
+}
+
+.custom-confirm-button:hover {
+  background-color: #ed0018;
+}
+.custom-confirm-button:focus {
+  outline: none;
+}
+
+/* Estilo personalizado para el botón de cancelación */
+.custom-cancel-button {
+  padding: 15px 30px; /* Aumenta el tamaño del padding */
+  background-color: #143361;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px; /* Aumenta el tamaño del texto */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 5px;
+  width: 200px; /* Igualar el tamaño de los botones */
+}
+
+.custom-cancel-button:hover {
+  background-color: #007bff;
+}
+.custom-cancel-button:focus {
+  outline: none;
+}
+
+/* Estilo del contenedor de los botones */
+.modal-buttons {
+  display: flex;  /* Alinea los botones horizontalmente */
+  justify-content: center;  /* Centra los botones horizontalmente */
+  gap: 10px;  /* Espaciado entre los botones */
+}
