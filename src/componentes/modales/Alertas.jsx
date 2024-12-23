@@ -2,40 +2,40 @@ import React from 'react';
 import Swal from 'sweetalert2';
 import './modales.css';
 
-const ModalAlerta = ({ isOpen, message, onConfirm, onCancel, type }) => {
-  if (!isOpen) return null; // Si el modal no está abierto, no renderiza nada.
+const ModalAlerta = ({ isOpen, message, onConfirm = () => {}, onCancel = () => {}, type = 'alert' }) => {
+  const [isAlertShown, setIsAlertShown] = React.useState(false);
 
-  const showAlert = () => {
-    Swal.fire({
-      title: message,
-      icon: 'warning', // Puedes usar 'success', 'error', 'info', etc.
-      imageAlt: 'Alerta',
-      showCancelButton: type === 'confirm',  // Solo muestra el botón de cancelar si es confirmación
-      confirmButtonText: type === 'confirm' ? 'Sí' : 'Cerrar',
-      cancelButtonText: type === 'confirm' ? 'No' : undefined,
-      customClass: {
-        confirmButton: 'custom-confirm-button',
-        cancelButton: 'custom-cancel-button',
-        actions: 'modal-buttons',  // Clase para el contenedor de los botones
-      },
-      scrollbarPadding: false, 
-    }).then((result) => {
-      if (result.isConfirmed) {
-        onConfirm();  // Si se confirma, ejecuta la función onConfirm
-      } else {
-        onCancel();  // Si se cancela, ejecuta la función onCancel
-      }
-    });
-  };
-
-  // Llamar a la alerta cuando el modal esté abierto
   React.useEffect(() => {
-    if (isOpen) {
-      showAlert();
-    }
-  }, [isOpen]);
+    if (isOpen && !isAlertShown) {
+      setIsAlertShown(true);
 
-  return null;  // No es necesario renderizar nada, la alerta se maneja por SweetAlert2
+      Swal.fire({
+        title: message,
+        icon: type === 'confirm' ? 'warning' : 'info',
+        showCancelButton: type === 'confirm',
+        confirmButtonText: type === 'confirm' ? 'Sí' : 'Cerrar',
+        cancelButtonText: type === 'confirm' ? 'No' : undefined,
+        customClass: {
+          confirmButton: 'custom-confirm-button',
+          cancelButton: 'custom-cancel-button',
+          actions: 'modal-buttons',
+        },
+        scrollbarPadding: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          onConfirm();
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          onCancel();
+        }
+
+        setTimeout(() => {
+          setIsAlertShown(false); // Resetea el estado después de un pequeño delay para evitar reactivaciones no deseadas
+        }, 100);
+      });
+    }
+  }, [isOpen, isAlertShown, message, type, onConfirm, onCancel]);
+
+  return null;
 };
 
 export default ModalAlerta;

@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 import "./Guiasexpo.css";
 import axios from 'axios';
 import { convertirAComa, convertirADecimal } from '../../funcionesgenerales';
+import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
+import { ToastContainer, toast } from 'react-toastify';
+import ModalAlerta from '../../modales/Alertas';
+import ModalVerGuiaExpo from '../../modales/ModalVerGuiaExpo';
+import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 
 const Guiasexpo = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -45,11 +50,112 @@ const Guiasexpo = ({ isLoggedIn }) => {
   const [gefacturadoguia, setGeFacturadoGuia] = useState('');
   const [genrofacturaguia, setGeNroFacturaGuia] = useState('');
   const [gereciboguia, setGeReciboGuia] = useState('');
+  const [tablaguias, setTablaGuias] = useState([]);
 
+  //Estados para las alertas
+  const [isModalOpenEliminar, setIsModalOpenEliminar] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalType, setModalType] = useState('alert'); // 'alert' o 'confirm'
+  const [guiaAEliminar, setGuiaAEliminar] = useState([]);
 
+  //Funcion para modal de eliminar
+  const openModalConfirmDelete = (guia) => {
+    console.log(guia)
+    setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
+    setModalType('confirm');
+    setIsModalOpenEliminar(true);
+    setGuiaAEliminar(guia);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await axios.delete(`http://localhost:3000/api/eliminarGuiaExpo/${guiaAEliminar.guia}`); // Realiza la solicitud DELETE
+      if (response.status === 200) {
+        console.log('Guía eliminada:', guiaAEliminar);
+        toast.success('Guía eliminada exitosamente');
+        fetchGuias();
+        closeModalEliminar();
+      }
+    } catch (error) {
+      console.error('Error eliminando la guía:', error);
+      toast.error('No se pudo eliminar la guía, por favor intenta nuevamente.');
+    }
+  };
+  const handleCancel = () => {
+    closeModalEliminar();
+  };
+
+  const closeModalEliminar = () => {
+    setIsModalOpenEliminar(false);
+    setModalMessage('');
+    setModalType('alert');
+    setGuiaAEliminar([]);
+  };
+  useEffect(() => {
+    if (!isModalOpenEliminar) {
+      setModalMessage('');
+      setGuiaAEliminar(null);
+    }
+  }, [isModalOpenEliminar]);
 
   const [ginrovueloembarques, setGiNroVueloEmbarques] = useState('');
   const [gifechaembarques, setGiFechaEmbarques] = useState('');
+
+  // Estado para la búsqueda de clientes
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Manejo del input de búsqueda
+  const handleInputChange = (e) => setSearchTerm(e.target.value);
+
+  // Búsqueda de clientes al presionar Enter
+  const handleKeyPress = async (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      e.preventDefault();
+      try {
+        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        setFilteredClientes(response.data);
+        setIsModalOpen(true); // Abre el modal con los resultados
+      } catch (error) {
+        console.error('Error al buscar clientes:', error);
+      }
+    }
+  };
+
+  // Selección de un cliente desde el modal
+  const handleSelectCliente = (cliente) => {
+    setSelectedCliente(cliente);
+    setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setIsModalOpen(false); // Cierra el modal
+  };
+
+  // Cerrar modal
+  const closeModal = () => setIsModalOpen(false);
+
+  //Estados para controlar si esta abierto el modal de modificar
+  const [isModalOpenModificar, setIsModalOpenModificar] = useState(false);
+  const [guiaSeleccionada, setGuiaSeleccionada] = useState(null);
+  const openModalModificar = (guia) => {
+    setGuiaSeleccionada(guia);
+    setIsModalOpenModificar(true);
+  };
+  const closeModalModificar = () => {
+    setIsModalOpenModificar(false);
+    setGuiaSeleccionada(null);
+    fetchGuias();
+  };
+  //Estados para el modal de ver 
+  const [isModalOpenVer, setIsModalOpenVer] = useState(false);
+  const openModalVer = (guia) => {
+    setGuiaSeleccionada(guia);
+    setIsModalOpenVer(true);
+  };
+  const closeModalVer = () => {
+    setIsModalOpenVer(false);
+    setGuiaSeleccionada(null);
+  };
 
   //Estados para obtener el numero de vuelo al cargar la guia
   const [vuelos, setVuelos] = useState([]);
@@ -70,11 +176,52 @@ const Guiasexpo = ({ isLoggedIn }) => {
     setVueloSeleccionado(vuelo); // Guarda el vuelo completo
     console.log("Vuelo seleccionado:", vuelo); // Depuración
   };
+
+  //Manejo para traer las guias despues de seleccionar el vuelo y la fecha
+  const fetchGuias = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/fetchguiasexpo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          vueloSeleccionado: vueloSeleccionado.idVuelos,
+          gevuelofecha,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTablaGuias(data); // Almacena las guías en el estado
+        console.log(data);
+      } else {
+        console.error('Error al obtener las guías');
+      }
+    } catch (error) {
+      console.error('Error al hacer el fetch:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (vueloSeleccionado && gevuelofecha) {
+      setGiNroVueloEmbarques(vueloSeleccionado.vuelo);
+      setGiFechaEmbarques(gevuelofecha);
+      fetchGuias();
+    } else {
+      setGiNroVueloEmbarques('');
+      setGiFechaEmbarques('');
+    }
+
+  }, [
+    vueloSeleccionado,
+    gevuelofecha
+  ]);
   //Estados para obtenerlas ciudades desde bd 
   const [ciudades, setCiudades] = useState([]);
-  const [origenVueloSeleccionado, setOrigenVueloSeleccionado] = useState('');
+  const [origenVueloSeleccionado, setOrigenVueloSeleccionado] = useState('MVD');
   const [conexionVueloSeleccionado, setConexionVueloSeleccionado] = useState('');
-  const [destinoVueloSeleccionado, setDestinoVueloSeleccionado] = useState('MVD');
+  const [destinoVueloSeleccionado, setDestinoVueloSeleccionado] = useState('');
   const [isFetchedCiudades, setIsFetchedCiudades] = useState(false); // Para evitar múltiples llamadas
 
   const fetchCiudades = async () => {
@@ -156,31 +303,28 @@ const Guiasexpo = ({ isLoggedIn }) => {
     </table>
   );
 
-  const TablaEmbarques = ({ datos }) => (
-    <table className='tabla-embarques-expo' >
+  const TablaEmbarques = ({ tablaguias }) => (
+    <table className='tabla-embarques' >
       <thead>
         <tr>
-          <th>Numero</th>
-          <th>Fecha</th>
-          <th>Agente</th>
-          <th>Origen</th>
-          <th>Destino</th>
-          <th>Peso</th>
+          <th>Guia</th>
+          <th>Cliente</th>
+          <th>Total</th>
+          <th>Tipo</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        {datos.map((embarque, index) => (
+        {tablaguias.map((embarque, index) => (
           <tr key={index}>
-            <td>{embarque.numero}</td>
-            <td>{embarque.fecha}</td>
+            <td>{embarque.guia}</td>
             <td>{embarque.agente}</td>
-            <td>{embarque.origen}</td>
-            <td>{embarque.destino}</td>
-            <td>{embarque.peso}</td>
+            <td>{embarque.total}</td>
+            <td>{embarque.tipodepago}</td>
             <td>
-              <button type="button" className="action-button"  >✏️</button>
-              <button type="button" className="action-button"  >❌</button>
+              <button type="button" className="action-button" onClick={() => openModalVer(embarque.guia)}  >🔍</button>
+              <button type="button" className="action-button" onClick={() => openModalModificar(embarque.guia)}>✏️</button>
+              <button type="button" className="action-button" onClick={() => openModalConfirmDelete(embarque)}>❌</button>
             </td>
           </tr>
         ))}
@@ -243,16 +387,33 @@ const Guiasexpo = ({ isLoggedIn }) => {
       const tarifanetaconvertida = convertirADecimal(getarifanetaguia);
       const pesotarifadoconvertido = convertirADecimal(gepesotarifadoguia);
 
+
       // Realizar el cálculo
       const fleteNetoCalculado = parseFloat(tarifanetaconvertida) * parseFloat(pesotarifadoconvertido);
+      const gsa = fleteNetoCalculado * 0.05;
+
+      // Verificar el tercer decimal
+      const tercerDecimal = Math.floor((gsa * 1000) % 10); // Obtiene el tercer decimal
+      let gsaRedondeado;
+
+      if (tercerDecimal >= 5) {
+        // Redondear hacia arriba
+        gsaRedondeado = Math.ceil(gsa * 100) / 100;
+      } else {
+        // Mantener el redondeo estándar
+        gsaRedondeado = Math.floor(gsa * 100) / 100;
+      }
 
       // Si el cálculo es un número válido, actualizar el estado de Flete Original
       if (!isNaN(fleteNetoCalculado)) {
         setGeFleteNetoGuia(convertirAComa(fleteNetoCalculado.toFixed(2))); // Mantener dos decimales
+        setGeGsaGuia(convertirADecimal(gsaRedondeado.toFixed(2)));
       } else {
         setGeFleteNetoGuia(''); // Si el cálculo no es válido, limpiar el valor
+        setGeGsaGuia('');
       }
     } else {
+      setGeGsaGuia('');
       setGeFleteNetoGuia(''); // Si alguno de los campos está vacío, borrar Flete Original
     }
   }, [getarifanetaguia, gepesotarifadoguia]);
@@ -278,9 +439,26 @@ const Guiasexpo = ({ isLoggedIn }) => {
     }
   }, [getarifaventaguia, gepesotarifadoguia]);
 
+  // useEffect para actualizar DBF cuando Due Agent cambia
+  useEffect(() => {
+    if (gedueagentguia) {
+      let DBFCalculado = parseFloat(gedueagentguia) * 0.10;
+      if (DBFCalculado <= 20) {
+        DBFCalculado = 20;
+        setGeDbfGuia(DBFCalculado.toFixed(2));
+      } else {
+        DBFCalculado = parseFloat(gedueagentguia) * 0.10;
+        setGeDbfGuia(DBFCalculado.toFixed(2));
+      }
+
+    } else {
+      setGeDbfGuia('');
+    }
+  }, [gedueagentguia]);
+
   //UseEffect para calcular todos los campos si la guia es Collect
   useEffect(() => {
-    if (gefletenetoguia && getipodepagoguia === 'C') {
+    if ((gefleteawbguia && gefletenetoguia) && getipodepagoguia === 'C') {
       console.log("gefleteneto:", gefletenetoguia);
       console.log("getipodepagoguia:", getipodepagoguia);
       const fleteNetoConvertido = convertirADecimal(gefletenetoguia);
@@ -290,73 +468,159 @@ const Guiasexpo = ({ isLoggedIn }) => {
       const totalacobrar = (
         (parseFloat(convertirADecimal(gefletenetoguia)) || 0) +
         (parseFloat(convertirADecimal(geduecarrierguia)) || 0) +
-        (parseFloat(convertirADecimal(gedueagentguia)) || 0)
-      )
+        (parseFloat(convertirADecimal(gesecurityguia)) || 0) +
+        (parseFloat(convertirADecimal(gedbfguia)) || 0)
+      );
+
       //Calculo total de la guia
       const totaldelaguia = (
         (parseFloat(convertirADecimal(gefleteawbguia)) || 0) +
-        (parseFloat(convertirADecimal(geduecarrierguia)) || 0)
-      )
+        (parseFloat(convertirADecimal(geduecarrierguia)) || 0) +
+        (parseFloat(convertirADecimal(gesecurityguia)) || 0) +
+        (parseFloat(convertirADecimal(gedueagentguia)) || 0) +
+        (parseFloat(convertirADecimal(gedbfguia)) || 0)
+      );
+
+      const AgenteCollect = (totaldelaguia - totalacobrar);
 
       //Asignación de las Varibles.
       setGeTotalGuia(totaldelaguia.toFixed(2));
       setGeCobrarPagarGuia(totalacobrar.toFixed(2));
+      setGeAgenteCollectGuia(AgenteCollect.toFixed(2));
 
     } else {
-      if (!gefletenetoguia && getipodepagoguia != 'P') {
+      if ((!gefleteawbguia || !gefletenetoguia) && getipodepagoguia != 'P') {
         setGeTotalGuia('');
         setGeCobrarPagarGuia('');
+        setGeAgenteCollectGuia('');
       }
     }
   }, [
     gefletenetoguia,
+    gefleteawbguia,
     getipodepagoguia,
     gedueagentguia,
-    geduecarrierguia
+    geduecarrierguia,
+    gedbfguia,
+    gesecurityguia
   ]);
 
   //UseEffect para calcular todos los campos si la guia es PrePaid
   useEffect(() => {
     if (gefletenetoguia && getipodepagoguia === 'P') {
-      const fleteNetoConvertido = convertirADecimal(gefletenetoguia);
-   
+
       //Calculo de total a cobrar
       const totalacobrar = (
         (parseFloat(convertirADecimal(gefletenetoguia)) || 0) +
-        (parseFloat(convertirADecimal(geduecarrierguia)) || 0)
+        (parseFloat(convertirADecimal(geduecarrierguia)) || 0) +
+        (parseFloat(convertirADecimal(gesecurityguia)) || 0)
       )
       //Calculo total de la guia
       const totaldelaguia = (
-        (parseFloat(convertirADecimal(gefleteawbguia)) || 0) +
-        (parseFloat(convertirADecimal(geduecarrierguia)) || 0)
+        (parseFloat(convertirADecimal(gesecurityguia)) || 0) +
+        (parseFloat(convertirADecimal(geduecarrierguia)) || 0) +
+        (parseFloat(convertirADecimal(gefleteawbguia)) || 0)
       )
 
       //Asignación de las Varibles.
 
       setGeTotalGuia(totaldelaguia.toFixed(2));
       setGeCobrarPagarGuia(totalacobrar.toFixed(2));
+      setGeAgenteCollectGuia(0);
     } else {
 
       if (!gefletenetoguia && getipodepagoguia != 'C') {
         setGeTotalGuia('');
         setGeCobrarPagarGuia('');
+        setGeAgenteCollectGuia('');
       }
 
     }
   }, [
     gefletenetoguia,
+    gefleteawbguia,
     getipodepagoguia,
-    gedueagentguia,
-    geduecarrierguia
+    geduecarrierguia,
+    gesecurityguia
   ]);
 
-  // Función para manejar el envío del formulario
-  const handleSubmitAgregarRecibo = (e) => {
+  const [loading, setLoading] = useState(false);
+  const handleSubmitAgregarGuiaExpo = async (e) => {
     e.preventDefault();
-    // Aquí puedes manejar la lógica para enviar la información
-    console.log({
-      razonSocial
-    });
+    // Datos que enviarás al endpoint
+    // Activar el spinner
+    setLoading(true);
+
+    const guiaData = {
+      vueloSeleccionado: vueloSeleccionado.idVuelos || vueloSeleccionado,
+      gevuelofecha,
+      origenVueloSeleccionado,
+      conexionVueloSeleccionado,
+      destinoVueloSeleccionado,
+      empresavuelo: vueloSeleccionado.compania,
+      gecassvuelo,
+      searchTerm,
+      gereserva,
+      genroguia,
+      geemision,
+      getipodepagoguia,
+      gepiezasguia,
+      gepesobrutoguia: convertirADecimal(gepesobrutoguia),
+      gepesotarifadoguia: convertirADecimal(gepesotarifadoguia),
+      getarifanetaguia: convertirADecimal(getarifanetaguia),
+      getarifaventaguia: convertirADecimal(getarifaventaguia),
+      gefletenetoguia: convertirADecimal(gefletenetoguia),
+      gefleteawbguia: convertirADecimal(gefleteawbguia),
+      geduecarrierguia: convertirADecimal(geduecarrierguia),
+      gedueagentguia: convertirADecimal(gedueagentguia),
+      gedbfguia: convertirADecimal(gedbfguia),
+      gegsaguia: convertirADecimal(gegsaguia),
+      gesecurityguia: convertirADecimal(gesecurityguia),
+      gecobrarpagarguia: convertirADecimal(gecobrarpagarguia),
+      geagentecollectguia: convertirADecimal(geagentecollectguia),
+      getotalguia: convertirADecimal(getotalguia),
+
+    };
+    console.log(guiaData);
+    try {
+      const response = await axios.post('http://localhost:3000/api/insertguiaexpo', guiaData);
+      console.log(response);
+      if (response.status === 200) {
+        toast.success('Guia Ingresada Con Exito');
+      }
+      setSearchTerm('');
+      setGeReserva('');
+      setGeNroGuia('');
+      setGeEmision('');
+      setGeTipoDePagoGuia('');
+      setGePiezasGuia('');
+      setGePesoBrutoGuia('');
+      setGePesoTarifadoGuia('');
+      setGeTarifaNetaGuia('');
+      setGeTarifaVentaGuia('');
+      setGeFleteNetoGuia('');
+      setGeFleteAwbGuia('');
+      setGeDueCarrierGuia('');
+      setGeDueAgentGuia('');
+      setGeDbfGuia('');
+      setGeGsaGuia('');
+      setGeSecurityGuia('');
+      setGeCobrarPagarGuia('');
+      setGeAgenteCollectGuia('');
+      setGeTotalGuia('');
+      //Aca se restablecen los campos
+    } catch (error) {
+      // Si la guía ya existe
+      if (error.response && error.response.data.message === 'Este número de guía ya existe') {
+        toast.error('Este número de guía ya existe. Por favor, verifica y prueba nuevamente.');
+      } else {
+        toast.error('Error al enviar la guía. Por favor, revisa la consola para más detalles.');
+      }
+    } finally {
+      // Desactivar el spinner al finalizar
+      setLoading(false);
+      fetchGuias();
+    }
   };
 
 
@@ -365,7 +629,13 @@ const Guiasexpo = ({ isLoggedIn }) => {
   return (
     <div className="EmitirComprobante-container">
       <h2 className='titulo-estandar'>Embarques de Exportación</h2>
-      <form onSubmit={handleSubmitAgregarRecibo} className='formulario-estandar'>
+      {loading && (
+        <div className="loading-overlay">
+          {/* El spinner se muestra cuando loading es true */}
+          <div className="loading-spinner"></div>
+        </div>
+      )}
+      <form onSubmit={handleSubmitAgregarGuiaExpo} className='formulario-estandar'>
 
         <div className='primeracolumnaguiasimpo'>
           <div className='div-datos-comprobante'>
@@ -495,9 +765,10 @@ const Guiasexpo = ({ isLoggedIn }) => {
                 <label htmlFor="geagente">Agente:</label>
                 <input
                   type="text"
-                  id="geagente"
-                  value={geagente}
-                  onChange={(e) => setGeAgente(e.target.value)}
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Buscar Agente"
                   required
                 />
               </div>
@@ -551,7 +822,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="gepiezasguia">Piezas:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="gepiezasguia"
                   value={gepiezasguia}
                   onChange={(e) => setGePiezasGuia(e.target.value)}
@@ -561,7 +832,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="gepesobrutoguia">Peso Bruto:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="gepesobrutoguia"
                   value={gepesobrutoguia}
                   onChange={(e) => setGePesoBrutoGuia(e.target.value)}
@@ -571,7 +842,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="gepesotarifadoguia">Peso Tarifado:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="gepesotarifadoguia"
                   value={gepesotarifadoguia}
                   onChange={(e) => setGePesoTarifadoGuia(e.target.value)}
@@ -585,7 +856,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="getarifanetaguia">Tarifa Neta:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="getarifanetaguia"
                   value={getarifanetaguia}
                   onChange={(e) => setGeTarifaNetaGuia(e.target.value)}
@@ -595,7 +866,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="getarifaventaguia">Tarifa Venta:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="getarifaventaguia"
                   value={getarifaventaguia}
                   onChange={(e) => setGeTarifaVentaGuia(e.target.value)}
@@ -624,19 +895,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   readOnly
                 />
               </div>
-              <div>
-                <label htmlFor="geincluirduecarrierguia">Incluir Due Carrier:</label>
-                <select
-                  id="geincluirduecarrierguia"
-                  value={geincluirduecarrierguia}
-                  onChange={(e) => setGeIncluirDueCarrierGuia(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Opcion</option>
-                  <option value="SI">Si</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
+
               <div></div>
             </div>
 
@@ -645,21 +904,21 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="geduecarrierguia">Due Carrier:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="geduecarrierguia"
                   value={geduecarrierguia}
                   onChange={(e) => setGeDueCarrierGuia(e.target.value)}
-                  required
+
                 />
               </div>
               <div>
                 <label htmlFor="gedueagentguia">Due Agent:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="gedueagentguia"
                   value={gedueagentguia}
                   onChange={(e) => setGeDueAgentGuia(e.target.value)}
-                  required
+                  readOnly={getipodepagoguia === 'P'}
                 />
               </div>
               <div>
@@ -670,6 +929,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   value={gedbfguia}
                   onChange={(e) => setGeDbfGuia(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -680,12 +940,13 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   value={gegsaguia}
                   onChange={(e) => setGeGsaGuia(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
                 <label htmlFor="gesecurityguia">Security:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="gesecurityguia"
                   value={gesecurityguia}
                   onChange={(e) => setGeSecurityGuia(e.target.value)}
@@ -698,21 +959,23 @@ const Guiasexpo = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="gecobrarpagarguia">Cobrar/Pagar:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="gecobrarpagarguia"
                   value={gecobrarpagarguia}
                   onChange={(e) => setGeCobrarPagarGuia(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
                 <label htmlFor="geagentecollectguia">Agente Collect:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="geagentecollectguia"
                   value={geagentecollectguia}
                   onChange={(e) => setGeAgenteCollectGuia(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -723,55 +986,11 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   value={getotalguia}
                   onChange={(e) => setGeTotalGuia(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
             </div>
 
-            <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="geusuarioguia">Usuario:</label>
-                <input
-                  type="text"
-                  id="geusuarioguia"
-                  value={geusuarioguia}
-                  onChange={(e) => setGeUsuarioGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="gefacturadoguia">Facturado:</label>
-                <input
-                  type="text"
-                  id="gefacturadoguia"
-                  value={gefacturadoguia}
-                  onChange={(e) => setGeFacturadoGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="genrofacturaguia">Nro. Factura:</label>
-                <input
-                  type="text"
-                  id="genrofacturaguia"
-                  value={genrofacturaguia}
-                  onChange={(e) => setGeNroFacturaGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="gereciboguia">Recibo:</label>
-                <input
-                  type="text"
-                  id="gereciboguia"
-                  value={gereciboguia}
-                  onChange={(e) => setGeReciboGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div></div>
-              <div></div>
-
-            </div>
           </div>
           <div>
             <h3 className='subtitulo-estandar'>Embarques del Vuelo</h3>
@@ -784,6 +1003,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   value={ginrovueloembarques}
                   onChange={(e) => setGiNroVueloEmbarques(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -794,11 +1014,12 @@ const Guiasexpo = ({ isLoggedIn }) => {
                   value={gifechaembarques}
                   onChange={(e) => setGiFechaEmbarques(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
             </div>
             <div className='contenedor-tabla-embarques'>
-              <TablaEmbarques datos={datos} />
+              <TablaEmbarques tablaguias={tablaguias} />
             </div>
 
           </div>
@@ -814,7 +1035,34 @@ const Guiasexpo = ({ isLoggedIn }) => {
           <Link to="/home"><button className="btn-estandar">Volver</button></Link>
         </div>
       </form>
+      <ModalVerGuiaExpo
+        isOpen={isModalOpenVer}
+        closeModal={closeModalVer}
+        guia={guiaSeleccionada}
+      />
+
+      {/* Modal de búsqueda de clientes */}
+      <ModalBusquedaClientes
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        filteredClientes={filteredClientes}
+        handleSelectCliente={handleSelectCliente}
+      />
+      <ModalAlerta
+        isOpen={isModalOpenEliminar}
+        message={modalMessage}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancel}
+        type={modalType}
+      />
+      <ModalModificarGuiaExpo
+        isOpen={isModalOpenModificar}
+        closeModal={closeModalModificar}
+        guia={guiaSeleccionada}
+      />
+      <ToastContainer />
     </div>
+
   );
 }
 export default Guiasexpo

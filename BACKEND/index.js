@@ -708,6 +708,35 @@ app.post('/api/fetchguiasimpo', async (req, res) => {
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
+//Endpoint que trae todas las guias de epo que coincidan con el vuelo y la fecha del mismo
+app.post('/api/fetchguiasexpo', async (req, res) => {
+  console.log('Received request for /api/fetchguias');
+
+  const { vueloSeleccionado, gevuelofecha } = req.body;
+
+  try {
+    const fetchGuiasQuery = `
+      SELECT guia, agente, total, tipodepago
+      FROM guiasexpo
+      WHERE nrovuelo = ? AND fechavuelo = ?
+      ORDER BY fechaingresada DESC
+    `;
+
+    // Ejecutar la consulta para obtener las guías según los filtros
+    connection.query(fetchGuiasQuery, [vueloSeleccionado, gevuelofecha], (err, results) => {
+      if (err) {
+        console.error('Error al obtener las guías:', err);
+        return res.status(500).json({ error: 'Error al obtener las guías' });
+      }
+
+      // Responder con las guías encontradas
+      res.status(200).json(results);
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
 
 app.get('/api/obtenerguia/:guia', async (req, res) => {
   console.log('Received request for /api/obtenerguia');
@@ -723,6 +752,43 @@ app.get('/api/obtenerguia/:guia', async (req, res) => {
         flete, ivas3, duecarrier, dueagent, verificacion, collectfee, cfiva, ajuste, 
         total, totalguia
       FROM guiasimpo
+      WHERE guia = ?
+    `;
+
+    // Ejecutar la consulta para obtener los detalles de la guía seleccionada
+    connection.query(fetchGuiaQuery, [guia], (err, results) => {
+      if (err) {
+        console.error('Error al obtener la guía:', err);
+        return res.status(500).json({ error: 'Error al obtener la guía' });
+      }
+
+      // Si se encuentra la guía, enviamos los datos
+      if (results.length > 0) {
+        res.status(200).json(results[0]); // Enviamos el primer (y único) resultado
+      } else {
+        res.status(404).json({ message: 'Guía no encontrada' });
+      }
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+app.get('/api/obtenerexpo/:guia', async (req, res) => {
+  console.log('Received request for /api/obtenerexpo');
+
+  const { guia } = req.params; // Obtener el parámetro 'guia' de la URL
+
+  try {
+    const fetchGuiaQuery = `
+      SELECT 
+        idguiasexpo, nrovuelo, fechavuelo, origenvuelo, conexionvuelo, destinovuelo, 
+        empresavuelo, cass, agente, reserva, guia, emision, tipodepago, piezas, 
+        pesobruto, pesotarifado, tarifaneta, tarifaventa, fleteneto, fleteawb, 
+        duecarrier, dueagent, dbf, gsa, security, cobrarpagar, agentecollect, 
+        total, fechaingresada, tipo
+      FROM guiasexpo
       WHERE guia = ?
     `;
 
@@ -818,14 +884,95 @@ app.post('/api/modificarguia', async (req, res) => {
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
+// Endpoint para modificar una guia expo
+app.post('/api/modificarguiaexpo', async (req, res) => {
+  const datosGuia = req.body; // Datos recibidos desde el frontend
 
-// server.js o donde tengas configuradas tus rutas
+  const {
+    guia, nrovuelo, fechavuelo, origenvuelo, emision, agente,
+    cass, conexionvuelo, destinovuelo, empresavuelo, reserva, tipodepago,
+    piezas, pesobruto, pesotarifado, tarifaneta, tarifaventa, fleteneto,
+    fleteawb, duecarrier, dueagent, dbf, gsa, security, cobrarpagar,
+    agentecollect, total
+  } = datosGuia;
+
+  // Query para actualizar los datos de la guía en la base de datos
+  const updateGuiaQuery = `
+    UPDATE guiasexpo
+    SET 
+      nrovuelo = ?, 
+      fechavuelo = ?, 
+      origenvuelo = ?, 
+      conexionvuelo = ?, 
+      destinovuelo = ?, 
+      empresavuelo = ?, 
+      cass = ?, 
+      agente = ?, 
+      reserva = ?, 
+      emision = ?, 
+      tipodepago = ?, 
+      piezas = ?, 
+      pesobruto = ?, 
+      pesotarifado = ?, 
+      tarifaneta = ?, 
+      tarifaventa = ?, 
+      fleteneto = ?, 
+      fleteawb = ?, 
+      duecarrier = ?, 
+      dueagent = ?, 
+      dbf = ?, 
+      gsa = ?, 
+      security = ?, 
+      cobrarpagar = ?, 
+      agentecollect = ?, 
+      total = ?
+    WHERE guia = ?
+  `;
+
+  try {
+    // Ejecutar la consulta de actualización
+    connection.query(updateGuiaQuery, [
+      nrovuelo, fechavuelo, origenvuelo, conexionvuelo, destinovuelo, empresavuelo,
+      cass, agente, reserva, emision, tipodepago, piezas, pesobruto, pesotarifado,
+      tarifaneta, tarifaventa, fleteneto, fleteawb, duecarrier, dueagent, dbf, gsa,
+      security, cobrarpagar, agentecollect, total, guia
+    ], (err, result) => {
+      if (err) {
+        console.error('Error al actualizar la guía:', err);
+        return res.status(500).json({ error: 'Error al actualizar la guía' });
+      }
+
+      // Si se actualiza correctamente
+      if (result.affectedRows > 0) {
+        res.status(200).json({ message: 'Guía actualizada correctamente' });
+      } else {
+        res.status(404).json({ message: 'No se encontró la guía para actualizar' });
+      }
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+
 app.delete('/api/eliminarGuia/:guia', async (req, res) => {
   const { guia } = req.params;
 
   try {
-    // Aquí ejecutas la lógica para eliminar la guía de tu base de datos
     await connection.query('DELETE FROM guiasimpo WHERE guia = ?', [guia]);
+    res.status(200).json({ message: 'Guía eliminada exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Hubo un error al eliminar la guía' });
+  }
+});
+
+app.delete('/api/eliminarGuiaExpo/:guiaAEliminar', async (req, res) => {
+  const { guiaAEliminar } = req.params;
+console.log('Eliminando guia', guiaAEliminar)
+  try {
+    await connection.query('DELETE FROM guiasexpo WHERE guia = ?', [guiaAEliminar]);
     res.status(200).json({ message: 'Guía eliminada exitosamente' });
   } catch (error) {
     console.error(error);
@@ -841,7 +988,8 @@ app.get('/api/previewguias', async (req, res) => {
       SELECT 
       g.*, 
       v.vuelo AS nombreVuelo, 
-      v.compania
+      v.compania, 
+      DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada, tipo
       FROM guiasimpo g
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
     `;
@@ -854,6 +1002,143 @@ app.get('/api/previewguias', async (req, res) => {
 
       // Enviar todas las guías obtenidas
       res.status(200).json(results);
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+// Endpoint para obtener guías Expo
+app.get('/api/previewguiasexpo', async (req, res) => {
+  console.log('Received request for /api/previewguiasexpo');
+
+  try {
+    const fetchGuiasExpoQuery = `
+      SELECT 
+        e.*, 
+        v.vuelo AS nombreVuelo, 
+        v.compania, 
+        DATE_FORMAT(e.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada, tipo
+      FROM guiasexpo e
+      LEFT JOIN vuelos v ON e.nrovuelo = v.idVuelos
+    `;
+    // Ejecutar la consulta para obtener todas las guías expo
+    connection.query(fetchGuiasExpoQuery, (err, results) => {
+      if (err) {
+        console.error('Error al obtener las guías expo:', err);
+        return res.status(500).json({ error: 'Error al obtener las guías expo' });
+      }
+
+      // Enviar todas las guías expo obtenidas
+      res.status(200).json(results);
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+//Endpoint para inserter una guia impo.
+app.post('/api/insertguiaexpo', async (req, res) => {
+  console.log('Received request for /api/insertguiaimpo');
+
+  // Datos enviados desde el formulario
+  const {
+    vueloSeleccionado,
+    gevuelofecha,
+    origenVueloSeleccionado,
+    conexionVueloSeleccionado,
+    destinoVueloSeleccionado,
+    empresavuelo,
+    gecassvuelo, 
+    searchTerm,
+    gereserva,
+    genroguia,
+    geemision,
+    getipodepagoguia,
+    gepiezasguia,
+    gepesobrutoguia,
+    gepesotarifadoguia,
+    getarifanetaguia,
+    getarifaventaguia,
+    gefletenetoguia,
+    gefleteawbguia,
+    geduecarrierguia,
+    gedueagentguia,
+    gedbfguia,
+    gegsaguia,
+    gesecurityguia,
+    gecobrarpagarguia,
+    geagentecollectguia,
+    getotalguia,
+  } = req.body;
+
+  try {
+    // Consulta SQL para verificar si el número de guía ya existe
+    const checkGuiaQuery = 'SELECT * FROM guiasexpo WHERE guia = ?';
+
+    // Verificamos si la guía ya existe
+    connection.query(checkGuiaQuery, [genroguia], (err, results) => {
+      if (err) {
+        console.error('Error al verificar la guía:', err);
+        return res.status(500).json({ error: 'Error al verificar la guía' });
+      }
+
+      // Si ya existe la guía, retornamos un error con un mensaje específico
+      if (results.length > 0) {
+        return res.status(400).json({ message: 'Este número de guía ya existe' });
+      }
+
+      // Si la guía no existe, procedemos con la inserción
+      const insertGuiaQuery = `
+        INSERT INTO guiasexpo (
+          nrovuelo, fechavuelo, origenvuelo, conexionvuelo, destinovuelo, empresavuelo, cass, agente, reserva, guia, emision, tipodepago, piezas, pesobruto, pesotarifado,
+          tarifaneta, tarifaventa, fleteneto, fleteawb,
+          duecarrier, dueagent, dbf, gsa,
+          security, cobrarpagar, agentecollect,
+          total
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      // Ejecutar la consulta con los valores correspondientes
+      connection.query(insertGuiaQuery, [
+        vueloSeleccionado,
+        gevuelofecha,
+        origenVueloSeleccionado,
+        conexionVueloSeleccionado,
+        destinoVueloSeleccionado,
+        empresavuelo,
+        gecassvuelo, 
+        searchTerm,
+        gereserva,
+        genroguia,
+        geemision,
+        getipodepagoguia,
+        gepiezasguia,
+        gepesobrutoguia,
+        gepesotarifadoguia,
+        getarifanetaguia,
+        getarifaventaguia,
+        gefletenetoguia,
+        gefleteawbguia,
+        geduecarrierguia,
+        gedueagentguia,
+        gedbfguia,
+        gegsaguia,
+        gesecurityguia,
+        gecobrarpagarguia,
+        geagentecollectguia,
+        getotalguia,
+      ], (err, results) => {
+        if (err) {
+          console.error('Error al insertar la guía:', err);
+          return res.status(500).json({ error: 'Error al insertar la guía' });
+        }
+
+        // Respuesta exitosa
+        res.status(200).json({ message: 'Guía insertada exitosamente' });
+      });
     });
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);

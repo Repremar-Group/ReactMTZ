@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import ModalVerGuiaImpo from '../../modales/ModalVerGuiaImpo';
 import ModalModificarGuiaImpo from '../../modales/ModalModificarGuiaImpo';
+import ModalVerGuiaExpo from '../../modales/ModalVerGuiaExpo';
+import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -24,25 +26,25 @@ const PreviewGuias = () => {
     //Funcion para modal de eliminar
     const openModalConfirmDelete = (guia) => {
         console.log(guia)
-        setModalMessage('Estás seguro de eliminar la guia '+ guia.guia );
+        setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
         setModalType('confirm');
         setIsModalOpen(true);
         setGuiaAEliminar(guia);
     };
     const handleConfirmDelete = async () => {
         try {
-          const response = await axios.delete(`http://localhost:3000/api/eliminarGuia/${guiaAEliminar.idguia}`); // Realiza la solicitud DELETE
-          if (response.status === 200) {
-            console.log('Guía eliminada:', guiaAEliminar);
-            toast.success('Guía eliminada exitosamente');
-            closeModal();
-            fetchGuias();
-          }
+            const response = await axios.delete(`http://localhost:3000/api/eliminarGuia/${guiaAEliminar.idguia}`); // Realiza la solicitud DELETE
+            if (response.status === 200) {
+                console.log('Guía eliminada:', guiaAEliminar);
+                toast.success('Guía eliminada exitosamente');
+                closeModal();
+                fetchGuias();
+            }
         } catch (error) {
-          console.error('Error eliminando la guía:', error);
-          toast.error('No se pudo eliminar la guía, por favor intenta nuevamente.');
+            console.error('Error eliminando la guía:', error);
+            toast.error('No se pudo eliminar la guía, por favor intenta nuevamente.');
         }
-      };
+    };
 
     //Funcion para el modal de alerta
     const openModalAlert = (message) => {
@@ -70,12 +72,27 @@ const PreviewGuias = () => {
     // Función para obtener las Guias
     const fetchGuias = async () => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/previewguias`);
-            console.log(response.data);
-            setGuias(response.data);
+            setLoadingTabla(true); // Activar indicador de carga
+
+            // Hacer solicitudes a ambos endpoints
+            const [guiasImpoResponse, guiasExpoResponse] = await Promise.all([
+                axios.get('http://localhost:3000/api/previewguias'), // Endpoint para guías impo
+                axios.get('http://localhost:3000/api/previewguiasexpo') // Endpoint para guías expo
+            ]);
+
+            // Combinar los datos de ambas respuestas
+            const combinedGuias = [
+                ...guiasImpoResponse.data,
+                ...guiasExpoResponse.data
+            ];
+
+            // Actualizar el estado con las guías combinadas
+            setGuias(combinedGuias);
+            console.log(combinedGuias);
+
         } catch (err) {
-            console.error('Error al obtener facturas:', err);
-            setError('No se pudieron cargar las facturas.');
+            console.error('Error al obtener las guías:', err);
+            setError('No se pudieron cargar las guías.');
         } finally {
             setLoadingTabla(false); // Desactivar indicador de carga
         }
@@ -119,9 +136,12 @@ const PreviewGuias = () => {
 
     const filteredGuias = Array.isArray(guias)
         ? guias.filter((row) =>
-            (row.guia && row.guia.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (row.consignatario && row.consignatario.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (row.destinoguia && row.destinoguia.toLowerCase().includes(searchTerm.toLowerCase()))
+            (row.tipo === (isImpo ? 'IMPO' : 'EXPO')) &&  // Filtrar por tipo
+            (
+                (row.guia && row.guia.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (row.consignatario && row.consignatario.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (row.destinoguia && row.destinoguia.toLowerCase().includes(searchTerm.toLowerCase()))
+            )
         )
         : [];
 
@@ -162,7 +182,7 @@ const PreviewGuias = () => {
                             <tr>
                                 <th>Guía</th>
                                 <th>Vuelo</th>
-                                <th>Cliente</th>
+                                <th>Cliente / Agente</th>
                                 <th>Destino</th>
                                 <th>Monto</th>
                                 <th>Acciones</th>
@@ -172,16 +192,16 @@ const PreviewGuias = () => {
                             {filteredGuias.map((row) => (
                                 <tr key={row.idguia}>
                                     <td>{row.guia}</td>
-                                    <td>{row.nombreVuelo + ' Fecha: ' + row.fechavuelo}</td>
-                                    <td>{row.consignatario}</td>
-                                    <td>{row.destinoguia}</td>
-                                    <td>{row.total + " " + row.moneda}</td>
+                                    <td>{row.nombreVuelo + ' Fecha: ' + row.fechavuelo_formateada}</td>
+                                    <td>{row.consignatario || row.agente}</td>
+                                    <td>{row.destinoguia || '-'}</td>
+                                    <td>{(row.moneda ? row.total + " " + row.moneda : row.total)}</td>
 
                                     <td>
                                         <div className="action-buttons">
                                             <button type="button" className="action-button" onClick={() => openModalVer(row.guia)}  >🔍</button>
                                             <button type="button" className="action-button" onClick={() => openModalModificar(row.guia)}>✏️</button>
-                                            <button className="action-button"  onClick={() => openModalConfirmDelete(row)}>❌</button>
+                                            <button className="action-button" onClick={() => openModalConfirmDelete(row)}>❌</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -191,7 +211,7 @@ const PreviewGuias = () => {
 
                 </div>
             )}
-    
+
             {/* Modal para modificar */}
             <ModalModificarGuiaImpo
                 isOpen={isModalOpenModificar}
@@ -210,7 +230,7 @@ const PreviewGuias = () => {
                 onCancel={handleCancel}
                 type={modalType}
             />
-            
+
 
 
         </div>
