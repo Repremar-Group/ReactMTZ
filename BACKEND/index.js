@@ -958,9 +958,10 @@ app.post('/api/modificarguiaexpo', async (req, res) => {
 
 app.delete('/api/eliminarGuia/:guia', async (req, res) => {
   const { guia } = req.params;
+  console.log('Eliminando guia Impo', guia)
 
   try {
-    await connection.query('DELETE FROM guiasimpo WHERE guia = ?', [guia]);
+    await connection.query('DELETE FROM guiasimpo WHERE idguia = ?', [guia]);
     res.status(200).json({ message: 'Guía eliminada exitosamente' });
   } catch (error) {
     console.error(error);
@@ -970,9 +971,9 @@ app.delete('/api/eliminarGuia/:guia', async (req, res) => {
 
 app.delete('/api/eliminarGuiaExpo/:guiaAEliminar', async (req, res) => {
   const { guiaAEliminar } = req.params;
-console.log('Eliminando guia', guiaAEliminar)
+console.log('Eliminando guia Expo', guiaAEliminar)
   try {
-    await connection.query('DELETE FROM guiasexpo WHERE guia = ?', [guiaAEliminar]);
+    await connection.query('DELETE FROM guiasexpo WHERE idguiasexpo = ?', [guiaAEliminar]);
     res.status(200).json({ message: 'Guía eliminada exitosamente' });
   } catch (error) {
     console.error(error);

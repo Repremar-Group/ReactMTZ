@@ -11,6 +11,7 @@ import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
 import 'react-toastify/dist/ReactToastify.css';
 
+
 const PreviewGuias = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
@@ -33,7 +34,14 @@ const PreviewGuias = () => {
     };
     const handleConfirmDelete = async () => {
         try {
-            const response = await axios.delete(`http://localhost:3000/api/eliminarGuia/${guiaAEliminar.idguia}`); // Realiza la solicitud DELETE
+            let response; // Declarar la variable antes del bloque if-else
+    
+            if (guiaAEliminar.tipo === 'IMPO') {
+                response = await axios.delete(`http://localhost:3000/api/eliminarGuia/${guiaAEliminar.idguia}`);
+            } else {
+                response = await axios.delete(`http://localhost:3000/api/eliminarGuiaExpo/${guiaAEliminar.idguiasexpo}`);
+            }
+    
             if (response.status === 200) {
                 console.log('Guía eliminada:', guiaAEliminar);
                 toast.success('Guía eliminada exitosamente');
@@ -116,6 +124,18 @@ const PreviewGuias = () => {
         setGuiaSeleccionada(null);
         fetchGuias();
     };
+
+    const [isModalOpenModificarExpo, setIsModalOpenModificarExpo] = useState(false);
+
+    const openModalModificarExpo = (guia) => {
+        setGuiaSeleccionada(guia);
+        setIsModalOpenModificarExpo(true);
+    };
+    const closeModalModificarExpo = () => {
+        setIsModalOpenModificarExpo(false);
+        setGuiaSeleccionada(null);
+        fetchGuias();
+    };
     //Estados para el modal de ver 
     const [isModalOpenVer, setIsModalOpenVer] = useState(false);
     const openModalVer = (guia) => {
@@ -124,6 +144,17 @@ const PreviewGuias = () => {
     };
     const closeModalVer = () => {
         setIsModalOpenVer(false);
+        setGuiaSeleccionada(null);
+    };
+
+    //Estados para el modal de ver 
+    const [isModalOpenVerExpo, setIsModalOpenVerExpo] = useState(false);
+    const openModalVerExpo = (guia) => {
+        setGuiaSeleccionada(guia);
+        setIsModalOpenVerExpo(true);
+    };
+    const closeModalVerExpo = () => {
+        setIsModalOpenVerExpo(false);
         setGuiaSeleccionada(null);
     };
 
@@ -184,6 +215,7 @@ const PreviewGuias = () => {
                                 <th>Vuelo</th>
                                 <th>Cliente / Agente</th>
                                 <th>Destino</th>
+                                <th>Tipo</th>
                                 <th>Monto</th>
                                 <th>Acciones</th>
                             </tr>
@@ -195,13 +227,14 @@ const PreviewGuias = () => {
                                     <td>{row.nombreVuelo + ' Fecha: ' + row.fechavuelo_formateada}</td>
                                     <td>{row.consignatario || row.agente}</td>
                                     <td>{row.destinoguia || '-'}</td>
+                                    <td>{row.tipo || '-'}</td>
                                     <td>{(row.moneda ? row.total + " " + row.moneda : row.total)}</td>
 
                                     <td>
                                         <div className="action-buttons">
-                                            <button type="button" className="action-button" onClick={() => openModalVer(row.guia)}  >🔍</button>
-                                            <button type="button" className="action-button" onClick={() => openModalModificar(row.guia)}>✏️</button>
-                                            <button className="action-button" onClick={() => openModalConfirmDelete(row)}>❌</button>
+                                            <button type="button" className="action-button" onClick={() => row.tipo === "IMPO" ? openModalVer(row.guia) : openModalVerExpo(row.guia)}  >🔍</button>
+                                            <button type="button" className="action-button" onClick={() => row.tipo === "IMPO" ? openModalModificar(row.guia) : openModalModificarExpo(row.guia)}>✏️</button>
+                                            <button className="action-button" onClick={() =>  openModalConfirmDelete(row)}>❌</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -230,7 +263,17 @@ const PreviewGuias = () => {
                 onCancel={handleCancel}
                 type={modalType}
             />
+            <ModalVerGuiaExpo
+                isOpen={isModalOpenVerExpo}
+                closeModal={closeModalVerExpo}
+                guia={guiaSeleccionada}
+            />
 
+            <ModalModificarGuiaExpo
+                isOpen={isModalOpenModificarExpo}
+                closeModal={closeModalModificarExpo}
+                guia={guiaSeleccionada}
+            />
 
 
         </div>
