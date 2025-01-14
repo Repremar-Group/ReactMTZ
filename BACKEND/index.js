@@ -971,7 +971,7 @@ app.delete('/api/eliminarGuia/:guia', async (req, res) => {
 
 app.delete('/api/eliminarGuiaExpo/:guiaAEliminar', async (req, res) => {
   const { guiaAEliminar } = req.params;
-console.log('Eliminando guia Expo', guiaAEliminar)
+  console.log('Eliminando guia Expo', guiaAEliminar)
   try {
     await connection.query('DELETE FROM guiasexpo WHERE idguiasexpo = ?', [guiaAEliminar]);
     res.status(200).json({ message: 'Guía eliminada exitosamente' });
@@ -1052,7 +1052,7 @@ app.post('/api/insertguiaexpo', async (req, res) => {
     conexionVueloSeleccionado,
     destinoVueloSeleccionado,
     empresavuelo,
-    gecassvuelo, 
+    gecassvuelo,
     searchTerm,
     gereserva,
     genroguia,
@@ -1110,7 +1110,7 @@ app.post('/api/insertguiaexpo', async (req, res) => {
         conexionVueloSeleccionado,
         destinoVueloSeleccionado,
         empresavuelo,
-        gecassvuelo, 
+        gecassvuelo,
         searchTerm,
         gereserva,
         genroguia,
@@ -1145,6 +1145,186 @@ app.post('/api/insertguiaexpo', async (req, res) => {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
+});
+
+app.get('/api/obtenertipocambio', (req, res) => {
+  console.log('Received request for /api/obtenertipocambio');
+
+
+  const fetchTipoCambioQuery = `
+  SELECT id, DATE_FORMAT(fecha, '%d/%m/%Y') AS fecha, tipo_cambio 
+      FROM tipocambio ORDER BY fecha DESC
+    `;
+
+  connection.query(fetchTipoCambioQuery, (err, results) => {
+    if (err) {
+      console.error('Error al obtener los tipos de cambio:', err);
+      return res.status(500).json({ error: 'Error al obtener los tipos de cambio' });
+    }
+
+    res.status(200).json(results);
+  });
+});
+
+app.post('/api/agregartipocambio', async (req, res) => {
+  console.log('Received request for /api/agregartipocambio');
+
+  const { fecha, tipo_cambio } = req.body;
+
+  // Validar que los datos estén presentes
+  if (!fecha || !tipo_cambio) {
+    return res.status(400).json({ error: 'Fecha y tipo de cambio son requeridos' });
+  }
+
+  try {
+    const insertTipoCambioQuery = `
+      INSERT INTO tipocambio (fecha, tipo_cambio)
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE tipo_cambio = VALUES(tipo_cambio);
+    `;
+
+    // Ejecutar la consulta para insertar o actualizar el tipo de cambio
+    connection.query(insertTipoCambioQuery, [fecha, tipo_cambio], (err, results) => {
+      if (err) {
+        console.error('Error al insertar el tipo de cambio:', err);
+        return res.status(500).json({ error: 'Error al insertar el tipo de cambio' });
+      }
+
+      res.status(200).json({ message: 'Tipo de cambio agregado/actualizado correctamente' });
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+app.put('/api/modificartipocambio', async (req, res) => {
+  console.log('Received request for /api/modificartipocambio');
+
+  const { id, tipo_cambio } = req.body;
+
+  // Validar que los datos estén presentes
+  if (!id || !tipo_cambio) {
+    return res.status(400).json({ error: 'ID, fecha y tipo de cambio son requeridos' });
+  }
+
+  try {
+    const updateTipoCambioQuery = `
+      UPDATE tipocambio
+      SET  tipo_cambio = ?
+      WHERE id = ?;
+    `;
+
+    // Ejecutar la consulta para actualizar el tipo de cambio
+    connection.query(updateTipoCambioQuery, [tipo_cambio, id], (err, results) => {
+      if (err) {
+        console.error('Error al modificar el tipo de cambio:', err);
+        return res.status(500).json({ error: 'Error al modificar el tipo de cambio' });
+      }
+
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
+      }
+
+      res.status(200).json({ message: 'Tipo de cambio modificado correctamente' });
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+// Endpoint para eliminar un tipo de cambio
+app.delete('/api/eliminartipocambio', async (req, res) => {
+  console.log('Received request to delete tipo de cambio');
+
+  const { id } = req.body; // Obtener el id del tipo de cambio que se va a eliminar
+
+  // Validar que el id esté presente
+  if (!id) {
+    return res.status(400).json({ error: 'ID del tipo de cambio es requerido' });
+  }
+
+  try {
+    const deleteTipoCambioQuery = `
+      DELETE FROM tipocambio WHERE id = ?;
+    `;
+
+    // Ejecutar la consulta para eliminar el tipo de cambio
+    connection.query(deleteTipoCambioQuery, [id], (err, results) => {
+      if (err) {
+        console.error('Error al eliminar el tipo de cambio:', err);
+        return res.status(500).json({ error: 'Error al eliminar el tipo de cambio' });
+      }
+
+      // Verificar si se eliminó algún registro
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
+      }
+
+      res.status(200).json({ message: 'Tipo de cambio eliminado correctamente' });
+    });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+// Endpoint para obtener el tipo de cambio de la fecha actual
+app.get('/api/obtenertipocambioparacomprobante', (req, res) => {
+  console.log('Received request for /api/obtenertipocambioparacomprobante');
+  const query = 'SELECT tipo_cambio FROM tipocambio WHERE fecha = CURDATE()';
+
+  connection.query(query, (err, results) => {
+    if (err) {
+      console.log('Error en la consulta');
+      return res.status(500).json({ error: 'Error en la consulta' });
+    }
+
+    if (results.length === 0) {
+      console.log('No hay tipo de cambio para la fecha actual');
+      return res.status(400).json({ error: 'No hay tipo de cambio para la fecha actual' });
+    }
+    console.log(results[0].tipo_cambio);
+    res.json({ tipo_cambio: results[0].tipo_cambio });
+  });
+});
+
+app.get('/api/obtenerembarques', (req, res) => {
+  console.log('Received request for /api/obtenerembarques');
+  const { tipoEmbarque, clienteId } = req.query; // Obtener los parámetros de la consulta
+
+  if (!tipoEmbarque || !clienteId) {
+    return res.status(400).json({ error: 'Faltan parámetros (tipoEmbarque o clienteId)' });
+  }
+
+  let query = '';
+  if (tipoEmbarque === 'Impo') {
+    // Consulta para la tabla guiasimpo, buscando por el consignatario (cliente)
+    query = `SELECT * FROM guiasimpo WHERE consignatario = ?`;
+  } else if (tipoEmbarque === 'Expo') {
+    // Consulta para la tabla guiasexpo, buscando por el agente (cliente)
+    query = `SELECT * FROM guiasexpo WHERE agente = ?`;
+  } else {
+    return res.status(400).json({ error: 'Tipo de embarque no válido' });
+  }
+
+  // Ejecutar la consulta
+  connection.query(query, [clienteId], (err, results) => {
+    if (err) {
+      console.log('Error en la consulta:', err);
+      return res.status(500).json({ error: 'Error en la consulta' });
+    }
+
+    if (results.length === 0) {
+      console.log('No se encontraron embarques para el cliente y tipo de embarque');
+      return res.status(404).json({ error: 'No se encontraron embarques' });
+    }
+
+    // Si la consulta es exitosa, devolver los embarques
+    console.log(results);
+    res.json(results);
+  });
 });
 
 const PORT = process.env.PORT || 3000;

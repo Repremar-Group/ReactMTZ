@@ -19,6 +19,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
     const [cass, setCass] = useState('');//*
     const [tipoComprobante, setTipoComprobante] = useState(false);//*
     const [tipoMoneda, setTipoMoneda] = useState(false);//*
+    const [monedas, setMonedas] = useState([]);
     const [tipoIVA, setTipoIVA] = useState(false);//*
     const [pais, setPais] = useState('');
     const [email, setEmail] = useState('');
@@ -27,6 +28,17 @@ const AgregarCliente = ({ isLoggedIn }) => {
     const [alertasVisible, setAlertasVisible] = useState(false);
     const [alertasMessage, setAlertasMessage] = useState('');
     const navigate = useNavigate();
+    const [isFetched, setIsFetched] = useState(false);
+
+    const fetchMonedas = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+            setMonedas(response.data);
+            setIsFetched(true); // Indica que ya se obtuvieron los datos
+        } catch (error) {
+            console.error('Error al obtener monedas:', error);
+        }
+    }
 
     // Función para manejar el envío del formulario
     const handleSubmitAgregarUsuario = (e) => {
@@ -234,15 +246,20 @@ const AgregarCliente = ({ isLoggedIn }) => {
                     <div>
                         <label htmlFor="tipoMoneda">Moneda:</label>
                         <select
-                            id="tipoMoneda"
+                            id="moneda"
+                            required
                             value={tipoMoneda}
                             onChange={(e) => setTipoMoneda(e.target.value)}
-                            required
+                            onClick={() => {
+                                if (!isFetched) fetchMonedas(); // Solo llama a fetchMonedas una vez
+                            }}
                         >
-                            <option value="">Selecciona una Moneda</option>
-                            <option value="dolares">Dolares</option>
-                            <option value="pesos">Pesos</option>
-                            <option value="euros">Euros</option>
+                            <option value="">Seleccione una moneda</option>
+                            {monedas.map((moneda, index) => (
+                                <option key={index} value={moneda.moneda}>
+                                    {moneda.moneda}
+                                </option>
+                            ))}
                         </select>
                     </div>
 

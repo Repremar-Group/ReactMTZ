@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Comprobantes.css'
 import { Link } from "react-router-dom";
+import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import ModalBusquedaEmbarque from '../../modales/ModalBusquedaEmbarque';
 
 const Comprobantes = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -19,6 +23,8 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [ecelectronico, setEcElectronico] = useState('');
   const [ecdireccionfiscal, setEcDireccionFiscal] = useState('');
   const [eccompania, setEcCompania] = useState('');
+  const [companias, setCompanias] = useState([]);
+  const [isFetchedCompanias, setIsFetchedCompanias] = useState(false);
   const [ecrutcedula, setEcrutcedula] = useState('');
   const [eccass, setEcCass] = useState('');
   const [ectipodeembarque, setEcTipoDeEmbarque] = useState('');
@@ -33,7 +39,19 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [ecredondeo, setEcRedondeo] = useState('');
   const [ectotal, setEcTotal] = useState('');
   const [eclistadeguiasasociadas, setEcListaDeGuiasAsociadas] = useState([]);
+  const navigate = useNavigate();
+  const hasFetched = useRef(false);
+  const [monedas, setMonedas] = useState([]);
+  const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [embarques, setEmbarques] = useState([]);
+  const [embarquesSeleccionados, setEmbarquesSeleccionados] = useState([]);
 
+  // Función para manejar los embarques seleccionados
+  const handleSelectEmbarques = (embarques) => {
+    setEmbarquesSeleccionados(embarques);
+    console.log("Embarques seleccionados:", embarques);
+  };
 
   // Estado para la cheque seleccionado
   const [ecguiaseleccionada, setEcGuiaSeleccionada] = useState(null);
@@ -43,6 +61,22 @@ const Comprobantes = ({ isLoggedIn }) => {
     setEcGuiaSeleccionada(icindex);
   };
 
+  const fetchEmbarques = async () => {
+    try {
+      const clienteId = searchTerm;  // Asumiendo que el cliente es identificado por nombre o algún campo
+      const response = await axios.get('http://localhost:3000/api/obtenerembarques', {
+        params: {
+          tipoEmbarque: ectipodeembarque,
+          clienteId: clienteId
+        }
+      });
+
+      setEmbarques(response.data);  // Guardamos los embarques en el estado
+      setShowModal(true);  // Mostramos el modal con los embarques
+    } catch (error) {
+      console.error('Error al obtener embarques:', error);
+    }
+  };
 
 
   // Función para eliminar el cheque seleccionado
@@ -65,11 +99,118 @@ const Comprobantes = ({ isLoggedIn }) => {
       setEcImporte('');
     }
   };
-
+  // Se ejecuta solo una vez al montar el componente
   useEffect(() => {
+    if (hasFetched.current) return; // Si ya se ejecutó, no vuelve a hacerlo
+    hasFetched.current = true;
+
     const icfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
     setEcFecha(icfechaactual);
-  }, []); // Se ejecuta solo una vez al montar el componente
+
+    // Llamar al endpoint para obtener el tipo de cambio
+    const obtenerTipoCambio = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/obtenertipocambioparacomprobante");
+        if (response.data.tipo_cambio == undefined) {
+          alert("No hay tipo de cambio para la fecha actual.");
+          navigate("/tablas/cambio");
+        } else {
+          setEcTc(response.data.tipo_cambio);
+        }
+        console.log(response.data.tipo_cambio);
+      } catch (error) {
+        if (error.response) {
+          alert("Hubo un error al obtener el tipo de cambio");
+        } else {
+          console.error("Error en la consulta:", error);
+        }
+      }
+    };
+
+    const fetchMonedas = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+        setMonedas(response.data);
+        setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
+      } catch (error) {
+        console.error('Error al obtener monedas:', error);
+      }
+    }
+
+    const fetchCompanias = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/obtenercompanias');
+        setCompanias(response.data);
+        setIsFetchedCompanias(true); // Indica que ya se obtuvieron los datos
+      } catch (error) {
+        console.error('Error al obtener monedas:', error);
+      }
+    }
+    fetchCompanias();
+    fetchMonedas();
+    obtenerTipoCambio();
+
+  }, []);
+
+
+
+  // Estado para la búsqueda de clientes
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Manejo del input de búsqueda
+  const handleInputChange = (e) => setSearchTerm(e.target.value);
+
+  // Búsqueda de clientes al presionar Enter
+  const handleKeyPress = async (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      e.preventDefault();
+      try {
+        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        setFilteredClientes(response.data);
+        setIsModalOpen(true); // Abre el modal con los resultados
+      } catch (error) {
+        console.error('Error al buscar clientes:', error);
+      }
+    }
+  };
+
+  // Selección de un cliente desde el modal
+  const handleSelectCliente = (cliente) => {
+    setSelectedCliente(cliente);
+    console.log('Cliente Seleccionado:', cliente)
+    setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setIsModalOpen(false); // Cierra el modal
+  };
+
+  // Cerrar modal
+  const closeModal = () => setIsModalOpen(false);
+
+  // Actualizar el estado del formulario luego se seleccionar un cliente 
+  useEffect(() => {
+    if (selectedCliente) {
+      setEcComprobanteElectronico(selectedCliente.Tcomprobante);
+      setEcId(selectedCliente.Id);
+      setEcCiudad(selectedCliente.Ciudad);
+      setEcPais(selectedCliente.Pais);
+      setEcRazonSocial(selectedCliente.RazonSocial);
+      setEcTipoIva(selectedCliente.Tiva);
+      setEcMoneda(selectedCliente.Moneda);
+      setEcDireccionFiscal(selectedCliente.Direccion);
+      setEcCass(selectedCliente.Cass);
+      setEcrutcedula(selectedCliente.Rut);
+    }
+  }, [selectedCliente]);
+
+  useEffect(() => {
+    if (ectipodeembarque && searchTerm) {
+      fetchEmbarques();
+    }
+  }, [ectipodeembarque, searchTerm]);
+
+
 
   // Función para manejar el envío del formulario
   const handleSubmitAgregarRecibo = (e) => {
@@ -108,34 +249,43 @@ const Comprobantes = ({ isLoggedIn }) => {
                 <input
                   type="text"
                   id="ecnombre"
-                  value={ecnombre}
-                  onChange={(e) => setEcNombre(e.target.value)}
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Buscar Cliente"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="ectipocomprobante">Tipo de Comprobante:</label>
+                <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
                 <select
-                  id="ectipocomprobante"
+                  id="tipoComprobante"
                   value={ectipocomprobante}
                   onChange={(e) => setEcTipoComprobante(e.target.value)}
                   required
                 >
-                  <option value="">Selecciona una Tipo</option>
-                  <option value="fcredito">Factura de Credito</option>
-                  <option value="fcontado">Factura Contado</option>
-                  <option value="etc">Etc</option>
+                  <option value="">Selecciona un tipo de Comprobante</option>
+                  <option value="efactura">E-Factura</option>
+                  <option value="eticket">E-Ticket</option>
+                  <option value="efacturaca">E-Factura Cuenta Ajena</option>
+                  <option value="eticketca">E-Ticket Cuenta Ajena</option>
                 </select>
               </div>
               <div>
                 <label htmlFor="eccomprobanteelectronico">Comprobante Electronico:</label>
-                <input
-                  type="text"
-                  id="eccomprobanteelectronico"
+                <select
+                  id="tipoComprobante"
                   value={eccomprobanteelectronico}
                   onChange={(e) => setEcComprobanteElectronico(e.target.value)}
                   required
-                />
+                >
+                  <option value="">Comprobante Electronico</option>
+                  <option value="efactura">E-Factura</option>
+                  <option value="eticket">E-Ticket</option>
+                  <option value="efacturaca">E-Factura Cuenta Ajena</option>
+                  <option value="eticketca">E-Ticket Cuenta Ajena</option>
+                </select>
+
               </div>
               <div>
                 <label htmlFor="ecciudad">Ciudad:</label>
@@ -174,15 +324,14 @@ const Comprobantes = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="ectipoiva">Tipo de IVA:</label>
                 <select
-                  id="ectipoiva"
+                  id="tipoIVA"
                   value={ectipoiva}
                   onChange={(e) => setEcTipoIva(e.target.value)}
                   required
                 >
-                  <option value="">Selecciona una Tipo</option>
-                  <option value="iva22">IVA 22 %</option>
-                  <option value="ivax">IVA X %</option>
-                  <option value="ivay">IVA Y %</option>
+                  <option value="">Seleccione un tipo de IVA</option>
+                  <option value="iva22">IVA 22%</option>
+                  <option value="excento">Exento</option>
                 </select>
               </div>
               <div>
@@ -194,9 +343,11 @@ const Comprobantes = ({ isLoggedIn }) => {
                   required
                 >
                   <option value="">Selecciona una Moneda</option>
-                  <option value="dolares">Dolares</option>
-                  <option value="pesos">Pesos</option>
-                  <option value="Euros">Euros</option>
+                  {monedas.map((moneda, index) => (
+                    <option key={index} value={moneda.moneda}>
+                      {moneda.moneda}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="fecha-emision-comprobante">
@@ -250,9 +401,12 @@ const Comprobantes = ({ isLoggedIn }) => {
                   onChange={(e) => setEcCompania(e.target.value)}
                   required
                 >
-                  <option value="">Selecciona una Compania</option>
-                  <option value="Airclass">Airclass</option>
-                  <option value="Aireuropa">AirEuropa</option>
+                  <option value="">Seleccione una compañía</option>
+                  {companias.map((compania, index) => (
+                    <option key={index} value={compania.compania}>
+                      {compania.compania}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -273,10 +427,9 @@ const Comprobantes = ({ isLoggedIn }) => {
                   onChange={(e) => setEcCass(e.target.value)}
                   required
                 >
-                  <option value="">Seleccione Cass</option>
-                  <option value="Cass1">Cass1</option>
-                  <option value="Cass2">Cass2</option>
-                  <option value="Cass3">Cass3</option>
+                  <option value="">Selecciona el Cass</option>
+                  <option value="false">No</option>
+                  <option value="true">Si</option>
                 </select>
               </div>
               <div>
@@ -355,6 +508,9 @@ const Comprobantes = ({ isLoggedIn }) => {
 
               <div className='botonesfacturasasociadas'>
                 <button type="button" onClick={handleAgregarGuiaAsociada} className='btn-estandar'>Agregar</button>
+              </div>
+              <div className='botonesfacturasasociadas'>
+                <button type="button" onClick={handleAgregarGuiaAsociada} className='btn-estandar'>Comprobante GSM</button>
               </div>
 
             </div>
@@ -471,7 +627,21 @@ const Comprobantes = ({ isLoggedIn }) => {
 
 
       </form>
+      {/* Modal de búsqueda de clientes */}
+      <ModalBusquedaClientes
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        filteredClientes={filteredClientes}
+        handleSelectCliente={handleSelectCliente}
+      />
+      <ModalBusquedaEmbarque
+        showModal={showModal}
+        onClose={() => setShowModal(false)}
+        embarques={embarques}
+        onSelectEmbarques={handleSelectEmbarques}
+      />
     </div>
+
   );
 }
 

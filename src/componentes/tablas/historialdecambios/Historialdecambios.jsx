@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Eliminarcambio from './eliminarcambio/EliminarCambio';
 import ModificarCambio from './modificarcambio/Modificarcambio';
 import './Historialdecambios.css';
+import axios from 'axios';
 
 const Historialdecambios = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -13,25 +14,30 @@ const Historialdecambios = ({ isLoggedIn }) => {
   //Variables de estado para eliminar cambios
   const [hccotizacionAEliminar, setHcCotizacionAEliminar] = useState(null);
   const [hcfechaAEliminar, setHcFechaAEliminar] = useState(null);
+  const [idAEliminar, setIdAEliminar] = useState(null);
 
   //Variables de estado para modificar documentos
   const [hcfechaAModificar, setFechaAModificar] = useState(null);
   const [hccotizacionAModificar, setCotizacionAModificar] = useState(null);
+  const [idAModificar, setIdAModificar] = useState(null);
 
   //Handle Modificar lo que hace es cargar las variables de estado para la Modificacion con la info de la empresa.
-  const handleModificar = (cotizacion, fecha) => {
+  const handleModificar = (cotizacion, fecha, id) => {
     setFechaAModificar(fecha);
     setCotizacionAModificar(cotizacion);
+    setIdAModificar(id);
   };
 
   //Handle Eliminar lo que hace es cargar las variables de estado para la eliminacion
-  const handleEliminar = (cotizacion,fecha) => {
+  const handleEliminar = (cotizacion, fecha, id) => {
     setHcCotizacionAEliminar(cotizacion);
     setHcFechaAEliminar(fecha);
+    setIdAEliminar(fecha);
   };
   const closeModalModificar = () => {
     setCotizacionAModificar(null);
     setFechaAModificar(null);
+    FetchTiposDeCambio();
   };
 
   //Los CloseModal Devuelven las variables de estados a null
@@ -39,44 +45,29 @@ const Historialdecambios = ({ isLoggedIn }) => {
     setHcCotizacionAEliminar(null);
     setHcFechaAEliminar(null);
   };
-  const datosIniciales = [
-    { hcfecha: '2024-01-01', hccotizacion: '43.023' },
-    { hcfecha: '2024-01-02', hccotizacion: '43.105' },
-    { hcfecha: '2024-01-03', hccotizacion: '43.089' },
-    { hcfecha: '2024-01-04', hccotizacion: '43.112' },
-    { hcfecha: '2024-01-05', hccotizacion: '43.034' },
-    { hcfecha: '2024-01-06', hccotizacion: '43.200' },
-    { hcfecha: '2024-01-07', hccotizacion: '43.215' },
-    { hcfecha: '2024-01-08', hccotizacion: '43.178' },
-    { hcfecha: '2024-01-09', hccotizacion: '43.199' },
-    { hcfecha: '2024-01-10', hccotizacion: '43.220' },
-    { hcfecha: '2024-01-11', hccotizacion: '43.054' },
-    { hcfecha: '2024-01-12', hccotizacion: '43.101' },
-    { hcfecha: '2024-01-13', hccotizacion: '43.165' },
-    { hcfecha: '2024-01-14', hccotizacion: '43.134' },
-    { hcfecha: '2024-01-15', hccotizacion: '43.067' },
-    { hcfecha: '2024-01-16', hccotizacion: '43.084' },
-    { hcfecha: '2024-01-17', hccotizacion: '43.121' },
-    { hcfecha: '2024-01-18', hccotizacion: '43.180' },
-    { hcfecha: '2024-01-19', hccotizacion: '43.210' },
-    { hcfecha: '2024-01-20', hccotizacion: '43.240' },
-    { hcfecha: '2024-01-21', hccotizacion: '43.193' },
-    { hcfecha: '2024-01-22', hccotizacion: '43.225' },
-    { hcfecha: '2024-01-23', hccotizacion: '43.156' },
-    { hcfecha: '2024-01-24', hccotizacion: '43.142' },
-    { hcfecha: '2024-01-25', hccotizacion: '43.202' },
-    { hcfecha: '2024-01-26', hccotizacion: '43.180' },
-    { hcfecha: '2024-01-27', hccotizacion: '43.176' },
-    { hcfecha: '2024-01-28', hccotizacion: '43.159' },
-    { hcfecha: '2024-01-29', hccotizacion: '43.138' },
-    { hcfecha: '2024-01-30', hccotizacion: '43.121' }
-  ];
 
-  const [hctablacambio, setHcTablaCambio] = useState(datosIniciales);
-
+  const [hctablacambio, setHcTablaCambio] = useState([]);
   // Estado para la cheque seleccionado
   const [hccotizacionseleccionado, setHcCotizacionSeleccionado] = useState(null);
 
+  // Función para cargar los datos de tipos de cambio
+  const FetchTiposDeCambio = async () => {
+    try {
+      // Realizamos la solicitud GET para obtener los tipos de cambio
+      const response = await axios.get('http://localhost:3000/api/obtenertipocambio');
+      console.log(response.data);
+      // Actualizamos el estado con los datos recibidos
+      setHcTablaCambio(response.data);
+    } catch (error) {
+      console.error('Error al cargar los tipos de cambio:', error);
+      alert('Hubo un error al cargar los tipos de cambio');
+    }
+  };
+
+  // Usamos useEffect para cargar los datos al montar el componente
+  useEffect(() => {
+    FetchTiposDeCambio();
+  }, []); // Solo se ejecuta una vez cuando el componente se monta
 
   // Función para seleccionar una factura al hacer clic en una fila
   const handleSeleccionarCambio = (icindex) => {
@@ -84,11 +75,27 @@ const Historialdecambios = ({ isLoggedIn }) => {
   };
 
   // Función para agregar una factura asociada a la tabla
-  const handleAgregarCambio = () => {
+  const handleAgregarCambio = async () => {
     if (hcfecha && hccotizacion) {
-      const nuevocambio = { hcfecha, hccotizacion };
-      setHcTablaCambio([nuevocambio, ...hctablacambio]);
-      setHcCotizacion('');
+      try {
+        // Crear el objeto con los datos a enviar
+        const nuevocambio = { fecha: hcfecha, tipo_cambio: hccotizacion };
+
+        // Realizar la solicitud POST al endpoint
+        const response = await axios.post('http://localhost:3000/api/agregartipocambio', nuevocambio);
+
+        // Si la respuesta es exitosa, actualizamos la tabla localmente
+        if (response.status === 200) {
+          setHcCotizacion('');
+          alert('Tipo de cambio agregado/actualizado correctamente');
+          FetchTiposDeCambio();
+        }
+      } catch (error) {
+        console.log('Error al agregar el tipo de cambio:', error);
+        alert('Error al agregar el tipo de cambio. Verifique los datos e intente nuevamente.');
+      }
+    } else {
+      alert('Debe completar ambos campos: fecha y cotización.');
     }
   };
 
@@ -170,11 +177,11 @@ const Historialdecambios = ({ isLoggedIn }) => {
                         cursor: 'pointer' // Indica que la fila es clickeable
                       }}
                     >
-                      <td>{cambio.hcfecha}</td>
-                      <td>{cambio.hccotizacion}</td>
+                      <td>{cambio.fecha}</td>
+                      <td>{cambio.tipo_cambio}</td>
                       <td>
-                        <button type="button" className="action-button" disabled={hccotizacionseleccionado !== indexec} onClick={() => handleModificar(cambio.hccotizacion, cambio.hcfecha)}>✏️</button>
-                        <button type="button" className="action-button" disabled={hccotizacionseleccionado !== indexec} onClick={() => handleEliminar(cambio.hccotizacion, cambio.hcfecha)}>❌</button>
+                        <button type="button" className="action-button" disabled={hccotizacionseleccionado !== indexec} onClick={() => handleModificar(cambio.tipo_cambio, cambio.fecha, cambio.id)}>✏️</button>
+                        <button type="button" className="action-button" disabled={hccotizacionseleccionado !== indexec} onClick={() => handleEliminar(cambio.tipo_cambio, cambio.fecha, cambio.id)}>❌</button>
                       </td>
                     </tr>
                   ))}
@@ -193,7 +200,6 @@ const Historialdecambios = ({ isLoggedIn }) => {
 
 
         <div className='botonesemitircomprobante'>
-          <button type="submit" className='btn-estandar'>Confirmar</button>
 
           <Link to="/home"><button className="btn-estandar">Volver</button></Link>
         </div>
@@ -206,7 +212,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
         <>
           <div className="modal-overlay active" onClick={closeModalEliminar}></div>
           <div className="modal-containercambio active">
-            <Eliminarcambio fecha={hcfechaAEliminar} cotizacion={hccotizacionAEliminar} closeModal={closeModalEliminar} />
+            <Eliminarcambio fecha={hcfechaAEliminar} cotizacion={hccotizacionAEliminar} closeModal={closeModalEliminar} id = {idAEliminar} />
           </div>
         </>
       )}
@@ -216,7 +222,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
         <>
           <div className="modal-overlay active" onClick={closeModalModificar}></div>
           <div className="modal-containercambio active">
-            <ModificarCambio fecha={hcfechaAModificar} cotizacion={hccotizacionAModificar} closeModal={closeModalModificar} />
+            <ModificarCambio fecha={hcfechaAModificar} cotizacion={hccotizacionAModificar} closeModal={closeModalModificar} id = {idAModificar} />
           </div>
         </>
       )}
