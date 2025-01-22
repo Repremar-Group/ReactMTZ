@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarques }) => {
     const [selectedEmbarques, setSelectedEmbarques] = useState([]); // Estado de los embarques seleccionados
+
+    // Reinicia las selecciones al cambiar el listado de embarques
+    useEffect(() => {
+        if (showModal) {
+            setSelectedEmbarques([]); // Reiniciar el estado de seleccionados
+        }
+    }, [embarques, showModal]);
 
     if (!showModal) return null; // Si no debe mostrarse el modal, no renderiza nada
 
@@ -11,24 +18,30 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
 
         if (checked) {
             // Agregar el embarque al estado seleccionado
-            setSelectedEmbarques(prevState => [...prevState, embarque]);
+            setSelectedEmbarques((prevState) => [...prevState, embarque]);
         } else {
             // Eliminar el embarque del estado seleccionado
-            setSelectedEmbarques(prevState => prevState.filter(item => item.idguiasexpo !== embarqueId && item.idguia !== embarqueId));
+            setSelectedEmbarques((prevState) =>
+                prevState.filter(
+                    (item) => item.idguiasexpo !== embarqueId && item.idguia !== embarqueId
+                )
+            );
         }
     };
 
-    // Función para manejar el envío de los embarques seleccionados al componente padre
     const handleSelect = () => {
-        onSelectEmbarques(selectedEmbarques); // Llama a la función del componente padre pasando los embarques seleccionados
+        // Envía solo los embarques seleccionados al padre
+        onSelectEmbarques(selectedEmbarques);
         onClose(); // Cierra el modal
     };
 
     return (
-        <div className="modal" onClick={onClose}> {/* Cerrar modal si se hace clic fuera */}
-            <div className="modal-content-grande" onClick={(e) => e.stopPropagation()}> {/* Evita cerrar el modal al hacer clic dentro */}
+        <div className="modal" onClick={onClose}>
+            {/* Cerrar modal si se hace clic fuera */}
+            <div className="modal-content-grande" onClick={(e) => e.stopPropagation()}>
+                {/* Evita cerrar el modal al hacer clic dentro */}
 
-                <h2 className='subtitulo-estandar'>Embarques de Cliente</h2>
+                <h2 className="subtitulo-estandar">Embarques de Cliente</h2>
 
                 {embarques.length > 0 ? (
                     <>
@@ -44,19 +57,32 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                             </thead>
                             <tbody>
                                 {embarques.map((embarque) => {
-                                    const embarqueId = embarque.idguiasexpo ? embarque.idguiasexpo : embarque.idguia; // Verificación de clave
+                                    const embarqueId = embarque.idguiasexpo
+                                        ? embarque.idguiasexpo
+                                        : embarque.idguia; // Verificación de clave
                                     return (
-                                        <tr key={embarqueId}> {/* Asegurarse de que la clave sea única */}
+                                        <tr key={embarqueId}>
+                                            {/* Asegurarse de que la clave sea única */}
                                             <td>{embarque.guia}</td>
                                             <td>{embarque.fechavuelo}</td>
                                             <td>{embarque.origenguia}</td>
-                                            <td>{embarque.destinoguia || embarque.destinovuelo}</td>
+                                            <td>
+                                                {embarque.destinoguia || embarque.destinovuelo}
+                                            </td>
                                             <td>
                                                 <input
-                                                    
                                                     type="checkbox"
-                                                    checked={selectedEmbarques.some(item => item.idguiasexpo === embarqueId || item.idguia === embarqueId)} // Verificar si el embarque está en el estado
-                                                    onChange={(e) => handleCheckboxChange(embarque, e.target.checked)} // Actualizar el estado al cambiar el checkbox
+                                                    checked={selectedEmbarques.some(
+                                                        (item) =>
+                                                            item.idguiasexpo === embarqueId ||
+                                                            item.idguia === embarqueId
+                                                    )}
+                                                    onChange={(e) =>
+                                                        handleCheckboxChange(
+                                                            embarque,
+                                                            e.target.checked
+                                                        )
+                                                    }
                                                 />
                                             </td>
                                         </tr>
@@ -64,7 +90,10 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                                 })}
                             </tbody>
                         </table>
-                        <button className='btn-estandar' onClick={handleSelect}>Aceptar</button> {/* Botón para confirmar selección */}
+                        <button className="btn-estandar" onClick={handleSelect}>
+                            Aceptar
+                        </button>
+                        {/* Botón para confirmar selección */}
                     </>
                 ) : (
                     <p>No se encontraron embarques.</p> // Mensaje cuando no hay resultados

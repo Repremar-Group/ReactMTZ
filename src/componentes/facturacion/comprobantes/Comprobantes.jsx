@@ -46,20 +46,228 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [showModal, setShowModal] = useState(false);
   const [embarques, setEmbarques] = useState([]);
   const [embarquesSeleccionados, setEmbarquesSeleccionados] = useState([]);
+  const [guiasconconceptos, setGuiasConConceptos] = useState([]);
 
   // Función para manejar los embarques seleccionados
-  const handleSelectEmbarques = (embarques) => {
-    setEmbarquesSeleccionados(embarques);
-    console.log("Embarques seleccionados:", embarques);
+  const handleSelectEmbarques = (nuevosEmbarques) => {
+    setGuiasConConceptos((prev) => {
+      const actualizados = [...prev]; // Clona el estado actual
+
+      nuevosEmbarques.forEach((nuevoEmbarque) => {
+        // Verifica que el embarque y sus conceptos estén definidos
+        if (!nuevoEmbarque || !nuevoEmbarque.conceptos) return;
+
+        const existeGuia = actualizados.find((guia) => guia.id === nuevoEmbarque.id);
+
+        if (existeGuia) {
+          // Actualiza conceptos evitando duplicados
+          existeGuia.conceptos = [
+            ...existeGuia.conceptos,
+            ...nuevoEmbarque.conceptos.filter(
+              (conceptoNuevo) =>
+                !existeGuia.conceptos.some(
+                  (conceptoExistente) =>
+                    conceptoExistente.id === conceptoNuevo.id
+                )
+            ),
+          ];
+        } else {
+          // Agrega la nueva guía si no existe
+          actualizados.push({
+            ...nuevoEmbarque,
+            conceptos: nuevoEmbarque.conceptos || [], // Asegura que conceptos sea un array
+          });
+        }
+      });
+
+      return actualizados;
+    });
+
+    setEmbarquesSeleccionados((prevEmbarques) => [
+      ...prevEmbarques,
+      ...nuevosEmbarques,
+    ]);
   };
 
-  // Estado para la cheque seleccionado
-  const [ecguiaseleccionada, setEcGuiaSeleccionada] = useState(null);
+  // Función para eliminar un concepto
+  const eliminarConcepto = (idGuia) => {
+    // Actualizar guiás eliminando la guía con el idGuia
+    setGuiasConConceptos((prev) =>
+      prev.filter((guia) => guia.id !== idGuia) // Elimina la guía que coincide con idGuia
+    );
 
-  // Función para seleccionar una factura al hacer clic en una fila
-  const handleSeleccionarGuiaAsociada = (icindex) => {
-    setEcGuiaSeleccionada(icindex);
+    // También eliminar la guía de embarquesSeleccionados
+    setEmbarquesSeleccionados((prevSeleccionados) =>
+      prevSeleccionados.filter((embarque) => embarque.idguia !== idGuia) // Filtra la guía eliminada
+    );
   };
+
+  // useEffect para detectar cambios en embarquesSeleccionados
+  useEffect(() => {
+    console.log("embarquesSeleccionados ha cambiado:", embarquesSeleccionados);
+    console.log("Tipo de embarque seleccionado:", ectipodeembarque);
+    if (ectipodeembarque !== 'Impo' && ectipodeembarque !== 'Expo') return;
+    // Filtrar los embarques según el tipo y tipodepagoguia
+    const guiasimpoprepaid = embarquesSeleccionados.filter(
+      (embarque) => embarque.Tipo === 'IMPO' && embarque.tipodepagoguia === 'P'
+    );
+    const guiasimpocollect = embarquesSeleccionados.filter(
+      (embarque) => embarque.Tipo === 'IMPO' && embarque.tipodepagoguia === 'C'
+    );
+    const guiasexpoprepaid = embarquesSeleccionados.filter(
+      (embarque) => embarque.tipo === 'EXPO' && embarque.tipodepago === 'P'
+    );
+
+    // Crear el array de guías con conceptos
+    const nuevasGuiasConConceptos = [
+      // Agregar guías impo prepaid
+      ...guiasimpoprepaid.map((embarque) => ({
+        id: embarque.idguia,
+        numero_guia: embarque.guia,
+        origen: embarque.origenvuelo,
+        destino: embarque.destinoguia,
+        fecha_envio: embarque.fechavuelo,
+        conceptos: [
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `Viaje: ${embarque.nrovuelo} ${embarque.fechavuelo} Import`,
+            moneda: embarque.moneda,
+            importe: 0,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
+            moneda: embarque.moneda,
+            importe: 0,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 8,
+            descripcion: `Verificación Carga Recinto Aduanero: U$S ${embarque.verificacion}`,
+            moneda: embarque.moneda,
+            importe: embarque.verificacion,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 47,
+            descripcion: `Redondeo: U$S ${embarque.ajuste}`,
+            moneda: embarque.moneda,
+            importe: embarque.ajuste,
+          },
+        ],
+      })),
+      // Agregar guías impo collect
+      ...guiasimpocollect.map((embarque) => ({
+        id: embarque.idguia,
+        numero_guia: embarque.guia,
+        origen: embarque.origenvuelo,
+        destino: embarque.destinoguia,
+        fecha_envio: embarque.fechavuelo,
+        conceptos: [
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `Viaje: ${embarque.nrovuelo} ${embarque.fechavuelo} Import`,
+            moneda: embarque.moneda,
+            importe: 0,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
+            moneda: embarque.moneda,
+            importe: 0,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 2,
+            descripcion: `Collect Fee: U$S: ${embarque.collectfee + embarque.cfiva}`,
+            moneda: embarque.moneda,
+            importe: 0,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 8,
+            descripcion: `Verificación Carga Recinto Aduanero: U$S ${embarque.verificacion}`,
+            moneda: embarque.moneda,
+            importe: embarque.verificacion,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 47,
+            descripcion: `Redondeo: U$S ${embarque.ajuste}`,
+            moneda: embarque.moneda,
+            importe: embarque.ajuste,
+          },
+        ],
+      })),
+      // Agregar guías expo prepaid
+      ...guiasexpoprepaid.map((embarque) => ({
+        id: embarque.idguiaexpo,
+        numero_guia: embarque.guia,
+        origen: embarque.origenvuelo,
+        destino: embarque.destinovuelo,
+        fecha_envio: embarque.fechavuelo,
+        conceptos: [
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `${embarque.empresavuelo}`,
+            moneda: 'USD',
+            importe: 0,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `Viaje: ${embarque.nrovuelo} ${embarque.fechavuelo} AWB: ${embarque.guia}`,
+            moneda: 'USD',
+            importe: 0,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 9,
+            descripcion: `Flete Exportación Aerea: U$S ${embarque.fleteneto}`,
+            moneda: 'USD',
+            importe: embarque.fleteneto,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 48,
+            descripcion: `Due Agent: U$S ${embarque.dueagent}`,
+            moneda: 'USD',
+            importe: embarque.dueagent,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 10,
+            descripcion: `Due Carrier: U$S ${embarque.duecarrier}`,
+            moneda: 'USD',
+            importe: embarque.duecarrier,
+          },
+        ],
+      })),
+    ];
+    // Actualizar el estado con las nuevas guías y conceptos combinados
+    setGuiasConConceptos(nuevasGuiasConConceptos);
+    console.log('Guias combinadas con conceptos:', nuevasGuiasConConceptos);
+  }, [embarquesSeleccionados]);  // El efecto se ejecutará cada vez que cambie `embarquesSeleccionados`
+
 
   const fetchEmbarques = async () => {
     try {
@@ -72,33 +280,13 @@ const Comprobantes = ({ isLoggedIn }) => {
       });
 
       setEmbarques(response.data);  // Guardamos los embarques en el estado
+      console.log('Embarques traidos desde la base:', response.data);
       setShowModal(true);  // Mostramos el modal con los embarques
     } catch (error) {
       console.error('Error al obtener embarques:', error);
     }
   };
 
-
-  // Función para eliminar el cheque seleccionado
-  const handleEliminarGuiaAsociada = () => {
-    if (ecguiaseleccionada !== null) {
-      // Filtrar todos los cheques excepto el seleccionado
-      const nuevoschequesseleccionados = eclistadeguiasasociadas.filter((_, icindex) => icindex !== ecguiaseleccionada);
-      setEcListaDeGuiasAsociadas(nuevoschequesseleccionados);
-      setEcGuiaSeleccionada(null); // Limpiar la selección
-    }
-  };
-  // Función para agregar una factura asociada a la tabla
-  const handleAgregarGuiaAsociada = () => {
-    if (ecguia && ecdescripcion && ecmonedaguia && ecimporte) {
-      const nuevaguiaasociada = { ecguia, ecdescripcion, ecmonedaguia, ecmonedaguia, ecimporte };
-      setEcListaDeGuiasAsociadas([...eclistadeguiasasociadas, nuevaguiaasociada]);
-      setEcGuia('');
-      setEcDescripcion('');
-      setEcMonedaGuia('');
-      setEcImporte('');
-    }
-  };
   // Se ejecuta solo una vez al montar el componente
   useEffect(() => {
     if (hasFetched.current) return; // Si ya se ejecutó, no vuelve a hacerlo
@@ -120,9 +308,11 @@ const Comprobantes = ({ isLoggedIn }) => {
         console.log(response.data.tipo_cambio);
       } catch (error) {
         if (error.response) {
-          alert("Hubo un error al obtener el tipo de cambio");
+          alert("No hay tipo de cambio para la fecha actual.");
+          navigate("/tablas/cambio");
         } else {
           console.error("Error en la consulta:", error);
+          navigate("/tablas/cambio");
         }
       }
     };
@@ -235,7 +425,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
             <div className='div-primerrenglon-datos-comprobante'>
               <div>
-                <label htmlFor="ecID">ID:</label>
+                <label htmlFor="ecID">ID de Cliente:</label>
                 <input
                   type="text"
                   id="ecID"
@@ -507,10 +697,10 @@ const Comprobantes = ({ isLoggedIn }) => {
               </div>
 
               <div className='botonesfacturasasociadas'>
-                <button type="button" onClick={handleAgregarGuiaAsociada} className='btn-estandar'>Agregar</button>
+                <button type="button" className='btn-estandar'>Agregar</button>
               </div>
               <div className='botonesfacturasasociadas'>
-                <button type="button" onClick={handleAgregarGuiaAsociada} className='btn-estandar'>Comprobante GSM</button>
+                <button type="button" className='btn-estandar'>Comprobante GSM</button>
               </div>
 
             </div>
@@ -518,14 +708,13 @@ const Comprobantes = ({ isLoggedIn }) => {
 
           <div className='div-tabla-facturas-asociadas'>
             <br />
-
             <div className='div-primerrenglon-datos-recibos'>
               {/* Tabla que muestra las facturas agregadas */}
-              <table className='tabla-guias-asociadas' >
+              <table className='tabla-guias-asociadas'>
                 <thead>
                   <tr>
                     <th>Tipo</th>
-                    <th>Guia</th>
+                    <th>Guía</th>
                     <th>Descripción</th>
                     <th>Moneda</th>
                     <th>Importe</th>
@@ -533,29 +722,40 @@ const Comprobantes = ({ isLoggedIn }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {eclistadeguiasasociadas.map((guia, indexec) => (
-                    <tr
-                      key={indexec}
-                      onClick={() => handleSeleccionarGuiaAsociada(indexec)}
-                      style={{
-                        cursor: 'pointer' // Indica que la fila es clickeable
-                      }}
-                    >
-                      <td>{guia.ectipo}</td>
-                      <td>{guia.ecguia}</td>
-                      <td>{guia.ecdescripcion}</td>
-                      <td>{guia.ecmonedaguia}</td>
-                      <td>{guia.ecimporte}</td>
-                      <td><button type="button" className="action-button" onClick={handleEliminarGuiaAsociada} disabled={ecguiaseleccionada !== indexec}>❌</button></td>
-                    </tr>
-                  ))}
+                  {/* Iterar sobre las guías y conceptos */}
+                  {guiasconconceptos.map((guia) =>
+                    guia.conceptos.map((concepto, index) => (
+                      <tr key={`${guia.id}-${index}`}>
+                        <td>{concepto.tipo}</td>
+                        <td>{concepto.guia}</td>
+                        <td>{concepto.descripcion}</td>
+                        <td>{concepto.moneda}</td>
+                        <td>{concepto.importe}</td>
+                        <td>
+                          {index === 0 && (
+                            <button
+                              type="button"
+                              onClick={() => eliminarConcepto(guia.id, index)}
+                              style={{
+                                backgroundColor: '#e74c3c',
+                                color: 'white',
+                                border: 'none',
+                                padding: '5px 10px',
+                                cursor: 'pointer',
+                                borderRadius: '4px',
+                              }}
+                            >
+                              Eliminar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
 
-
             </div>
-
-
           </div>
           <div className='div-totales-comprobante'>
             <h3 className='subtitulo-estandar'>Totales</h3>
