@@ -5,6 +5,7 @@ import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ModalBusquedaEmbarque from '../../modales/ModalBusquedaEmbarque';
+import ModalComprobanteGSM from '../../modales/ModalComprobanteGSM';
 
 const Comprobantes = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -47,7 +48,30 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [embarques, setEmbarques] = useState([]);
   const [embarquesSeleccionados, setEmbarquesSeleccionados] = useState([]);
   const [guiasconconceptos, setGuiasConConceptos] = useState([]);
+  const [botonDeshabilitado, setBotonDeshabilitado] = useState(false);
+  const [isSelectEnabled, setIsSelectEnabled] = useState(false);
 
+  const [isModalOpenGSM, setIsModalOpenGSM] = useState(false);
+  const [datosModal, setDatosModal] = useState([]);
+
+  const handleOpenModalGSM = () => {
+    // Extraer conceptos_cuentaajena de todas las guías
+    const conceptosCuentaAjena = guiasconconceptos.flatMap((guia) => guia.conceptos_cuentaajena);
+    setDatosModal(conceptosCuentaAjena);
+    setIsModalOpenGSM(true);
+  };
+
+  const handleCloseModalGSM = () => {
+    setIsModalOpenGSM(false);
+  };
+
+
+  const abrirModalEmbarques = () => {
+    setShowModal(true); // Abre el modal
+  };
+  const volver = () => {
+    navigate('/home'); // Redirige a la ruta /home
+  };
   // Función para manejar los embarques seleccionados
   const handleSelectEmbarques = (nuevosEmbarques) => {
     setGuiasConConceptos((prev) => {
@@ -132,7 +156,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: 0,
-            descripcion: `Viaje: ${embarque.nrovuelo} ${embarque.fechavuelo} Import`,
+            descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} Import`,
             moneda: embarque.moneda,
             importe: 0,
           },
@@ -161,6 +185,33 @@ const Comprobantes = ({ isLoggedIn }) => {
             importe: embarque.ajuste,
           },
         ],
+        conceptos_cuentaajena: [
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `${embarque.empresavuelo}`,
+            moneda: 'USD',
+            importe: 0,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
+            moneda: embarque.moneda,
+            importe: 0,
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: 5,
+            descripcion: `Iva Sobre Flete:`,
+            moneda: embarque.moneda,
+            importe: embarque.ivas3,
+          },
+
+        ],
       })),
       // Agregar guías impo collect
       ...guiasimpocollect.map((embarque) => ({
@@ -174,7 +225,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: 0,
-            descripcion: `Viaje: ${embarque.nrovuelo} ${embarque.fechavuelo} Import`,
+            descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} Import`,
             moneda: embarque.moneda,
             importe: 0,
           },
@@ -211,6 +262,57 @@ const Comprobantes = ({ isLoggedIn }) => {
             importe: embarque.ajuste,
           },
         ],
+        conceptos_cuentaajena: [
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `${embarque.empresavuelo}`,
+            moneda: 'USD',
+            importe: 0,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 0,
+            descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
+            moneda: embarque.moneda,
+            importe: 0,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 3,
+            descripcion: `Due Carrier Collect:`,
+            moneda: embarque.moneda,
+            importe: embarque.dcoriginal,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 4,
+            descripcion: `Flete Importacion Aerea:`,
+            moneda: embarque.moneda,
+            importe: embarque.flete,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 5,
+            descripcion: `Iva Sobre Flete:`,
+            moneda: embarque.moneda,
+            importe: embarque.ivas3,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: 6,
+            descripcion: `Otros Gastos Collect:`,
+            moneda: embarque.moneda,
+            importe: embarque.daoriginal,
+          },
+
+        ],
       })),
       // Agregar guías expo prepaid
       ...guiasexpoprepaid.map((embarque) => ({
@@ -232,7 +334,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: 0,
-            descripcion: `Viaje: ${embarque.nrovuelo} ${embarque.fechavuelo} AWB: ${embarque.guia}`,
+            descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} AWB: ${embarque.guia}`,
             moneda: 'USD',
             importe: 0,
           },
@@ -267,7 +369,29 @@ const Comprobantes = ({ isLoggedIn }) => {
     setGuiasConConceptos(nuevasGuiasConConceptos);
     console.log('Guias combinadas con conceptos:', nuevasGuiasConConceptos);
   }, [embarquesSeleccionados]);  // El efecto se ejecutará cada vez que cambie `embarquesSeleccionados`
+  const calcularTotal = () => {
+    // Calcular el total sumando todos los importes de los conceptos
+    const total = guiasconconceptos.reduce((suma, guia) => {
+      return (
+        suma +
+        guia.conceptos.reduce((subtotal, concepto) => subtotal + concepto.importe, 0)
+      );
+    }, 0);
 
+    // Calcular el redondeo hacia arriba
+    const redondeo = Math.ceil(total) - total;
+
+    // Calcular el total a cobrar sumando el redondeo
+    const totalACobrar = total + redondeo;
+
+    // Actualizar los estados correspondientes
+    setEcTotal(total.toFixed(2)); // Total formateado a dos decimales
+    setEcRedondeo(redondeo.toFixed(2)); // Redondeo formateado a dos decimales
+    setEcTotalACobrar(totalACobrar.toFixed(2)); // Total a cobrar formateado a dos decimales
+  };
+  useEffect(() => {
+    calcularTotal();
+  }, [guiasconconceptos]);
 
   const fetchEmbarques = async () => {
     try {
@@ -284,6 +408,15 @@ const Comprobantes = ({ isLoggedIn }) => {
       setShowModal(true);  // Mostramos el modal con los embarques
     } catch (error) {
       console.error('Error al obtener embarques:', error);
+    }
+  };
+  // Al hacer clic en el botón, ejecuta fetchEmbarques
+  const handleAgregarNuevaGuia = () => {
+
+    if (ectipodeembarque && searchTerm) {
+      fetchEmbarques();
+    } else {
+      alert('Debe seleccionar un cliente y un tipo de embarque.');
     }
   };
 
@@ -366,12 +499,22 @@ const Comprobantes = ({ isLoggedIn }) => {
       }
     }
   };
+  const handleChangeTipoEmbarque = (event) => {
+    const nuevoTipo = event.target.value;
 
+    if (guiasconconceptos.length > 0) {
+      alert('Ya existen conceptos cargados, debe eliminarlos para cambiar el tipo de embarque.');
+      return; // No actualizamos el estado de ectipodeembarque
+    }
+
+    setEcTipoDeEmbarque(nuevoTipo); // Solo actualizamos si no hay conceptos
+  };
   // Selección de un cliente desde el modal
   const handleSelectCliente = (cliente) => {
     setSelectedCliente(cliente);
     console.log('Cliente Seleccionado:', cliente)
     setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setIsSelectEnabled(true);
     setIsModalOpen(false); // Cierra el modal
   };
 
@@ -394,11 +537,18 @@ const Comprobantes = ({ isLoggedIn }) => {
     }
   }, [selectedCliente]);
 
+  //UserEffect para desplegar eventos cuando se cambia el tipo de embarque!
   useEffect(() => {
     if (ectipodeembarque && searchTerm) {
       fetchEmbarques();
     }
-  }, [ectipodeembarque, searchTerm]);
+    if (ectipodeembarque === "Expo") {
+      setEcComprobanteElectronico("efacturaca")
+    } else {
+      setEcComprobanteElectronico("efactura");
+    }
+    setBotonDeshabilitado(ectipodeembarque === "Expo");
+  }, [ectipodeembarque]);
 
 
 
@@ -443,6 +593,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   onChange={handleInputChange}
                   onKeyPress={handleKeyPress}
                   placeholder="Buscar Cliente"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -627,8 +778,9 @@ const Comprobantes = ({ isLoggedIn }) => {
                 <select
                   id="ectipoembarque"
                   value={ectipodeembarque}
-                  onChange={(e) => setEcTipoDeEmbarque(e.target.value)}
+                  onChange={handleChangeTipoEmbarque}
                   required
+                  disabled={!isSelectEnabled}
                 >
                   <option value="">Seleccione un tipo</option>
                   <option value="Impo">Impo</option>
@@ -645,64 +797,6 @@ const Comprobantes = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-            </div>
-          </div>
-
-          <div className='div-guias-asociadas'>
-            <h3 className='subtitulo-estandar'>Guias Asociadas</h3>
-            <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="ecguia">Guia:</label>
-                <input
-                  type="text"
-                  id="ecguia"
-                  value={ecguia}
-                  onChange={(e) => setEcGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="ecdescripcion">Descripción:</label>
-                <input
-                  type="text"
-                  id="ecdescripcion"
-                  value={ecdescripcion}
-                  onChange={(e) => setEcDescripcion(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="ecmonedaguia">Moneda:</label>
-                <select
-                  id="ecmonedaguia"
-                  value={ecmonedaguia}
-                  onChange={(e) => setEcMonedaGuia(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Moneda</option>
-                  <option value="dolares">Dolares</option>
-                  <option value="pesos">Pesos</option>
-                  <option value="Euros">Euros</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="ecimporte">Importe:</label>
-                <input
-                  type="text"
-                  id="ecimporte"
-                  value={ecimporte}
-                  onChange={(e) => setEcImporte(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className='botonesfacturasasociadas'>
-                <button type="button" className='btn-estandar'>Agregar</button>
-              </div>
-              <div className='botonesfacturasasociadas'>
-                <button type="button" className='btn-estandar'>Comprobante GSM</button>
-              </div>
-
             </div>
           </div>
 
@@ -734,18 +828,11 @@ const Comprobantes = ({ isLoggedIn }) => {
                         <td>
                           {index === 0 && (
                             <button
+                              className='action-button'
                               type="button"
                               onClick={() => eliminarConcepto(guia.id, index)}
-                              style={{
-                                backgroundColor: '#e74c3c',
-                                color: 'white',
-                                border: 'none',
-                                padding: '5px 10px',
-                                cursor: 'pointer',
-                                borderRadius: '4px',
-                              }}
                             >
-                              Eliminar
+                              ❌
                             </button>
                           )}
                         </td>
@@ -757,6 +844,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
             </div>
           </div>
+
           <div className='div-totales-comprobante'>
             <h3 className='subtitulo-estandar'>Totales</h3>
             <div className='div-primerrenglon-datos-comprobante'>
@@ -787,7 +875,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   type="text"
                   id="ecredondeo"
                   value={ecredondeo}
-                  onChange={(e) => setEcRedondeo(e.target.value)}
+                  readOnly
                   required
                 />
               </div>
@@ -797,7 +885,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   type="text"
                   id="ectotal"
                   value={ectotal}
-                  onChange={(e) => setEcTotal(e.target.value)}
+                  readOnly
                   required
                 />
               </div>
@@ -807,7 +895,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   type="text"
                   id="ectotalacobrar"
                   value={ectotalacobrar}
-                  onChange={(e) => setEcTotalACobrar(e.target.value)}
+                  readOnly
                   required
                 />
               </div>
@@ -819,10 +907,15 @@ const Comprobantes = ({ isLoggedIn }) => {
 
 
 
-        <div className='botonesemitircomprobante'>
-          <button type="submit" className='btn-estandar'>Confirmar</button>
+        <div className='div-primerrenglon-datos-comprobante' style={{ marginTop: '10px' }}>
 
-          <Link to="/home"><button className="btn-estandar">Volver</button></Link>
+          <button type="button" className="btn-estandar" onClick={handleAgregarNuevaGuia}>Agregar Nueva Guía</button>
+
+          <button type="button" disabled={botonDeshabilitado} onClick={handleOpenModalGSM} className='btn-estandar'>Comprobante GSM</button>
+
+          <button type="button" className="btn-facturar">Facturar</button>
+
+          <button type='button' className="btn-estandar" onClick={() => volver()} >Volver</button>
         </div>
 
 
@@ -839,6 +932,11 @@ const Comprobantes = ({ isLoggedIn }) => {
         onClose={() => setShowModal(false)}
         embarques={embarques}
         onSelectEmbarques={handleSelectEmbarques}
+      />
+      <ModalComprobanteGSM
+      isOpen={isModalOpenGSM} 
+      onClose={handleCloseModalGSM} 
+      datos={datosModal} 
       />
     </div>
 

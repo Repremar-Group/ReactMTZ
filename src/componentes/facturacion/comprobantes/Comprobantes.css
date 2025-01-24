@@ -11,15 +11,33 @@
     box-sizing: border-box;
 }
 
-.tabla-guias-asociadas {
-    font-size: 14px; /* Tamaño de fuente más pequeño */
-    border-collapse: collapse; /* Sin espacios entre celdas */
-    table-layout: fixed; /* Establece anchos fijos para las columnas */
-    width: 100%; /* Asegura que la tabla use el ancho completo */
-    max-height: 200px;
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    display: block; /* Hace que la tabla se comporte como un bloque */
+
+/* Estilo del scrollbar */
+.tabla-guias-asociadas::-webkit-scrollbar {
+    width: 10px; 
+    background-color: #f0f0f0;
     border-radius: 5px;
+}
+  
+.tabla-guias-asociadas::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+  
+.tabla-guias-asociadas::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
+}
+.tabla-guias-asociadas {
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
+    width: 100%; /* La tabla ocupará el 100% del contenedor */
+    max-height: 300px;
+    overflow-y: auto;
+    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
+    border-radius: 5px;
+    margin: 20px 0;
 }
 
 .tabla-guias-asociadas tbody {
@@ -34,9 +52,15 @@
 }
 
 .tabla-guias-asociadas th {
-    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    background-color: #143361;
     font-weight: bold;
+    color: white;
     padding: 2px 5px;
+}
+.tabla-guias-asociadas thead {
+    position: sticky;
+    top: 0; /* Fija el cabezal en la parte superior */
+    z-index: 1; /* Asegura que el cabezal quede encima del contenido */
 }
 
 /* Define anchos para las columnas */

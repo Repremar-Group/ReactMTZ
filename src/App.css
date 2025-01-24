@@ -29,7 +29,38 @@ body{
 .btn-estandar:hover {
     background-color: #007bff;
 }
+.btn-estandar:disabled {
+    background-color: #d3d3d3; /* Color gris claro */
+    color: #a9a9a9; /* Texto gris claro */
+    cursor: not-allowed; /* Cursor indicando que está deshabilitado */
+    opacity: 0.7; /* Hacer que parezca más tenue */
+}
+.btn-facturar {
+    padding: 10px;
+    background-color: #218838; /* Verde formal */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin: 5px;
+}
 
+.btn-facturar:hover {
+    background-color: #28a745; /* Verde más oscuro */
+}
+
+.btn-facturar:active {
+    background-color: #1e7e34; /* Verde aún más oscuro */
+    transform: scale(0.98); /* Efecto de clic */
+}
+
+.btn-facturar:disabled {
+    background-color: #94d3a2; /* Verde pálido para botones deshabilitados */
+    cursor: not-allowed;
+}
 .btn-estandartablas {
     background-color: #143361;
     color: white;
@@ -82,10 +113,9 @@ body{
 outline: none; /* Elimina el borde azul predeterminado del navegador */
 }
 
-.btn-eliminar-estandar{
+.btn-eliminar-estandar {
     padding: 10px;
-    margin: 5px;
-    background-color: rgb(100, 4, 4);
+    background-color: #c82333; /* Rojo formal */
     color: white;
     border: none;
     border-radius: 4px;
@@ -93,11 +123,21 @@ outline: none; /* Elimina el borde azul predeterminado del navegador */
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-   
+    margin: 5px;
 }
 
 .btn-eliminar-estandar:hover {
-    background-color: #ed0018;
+    background-color: #dc3545; /* Rojo más oscuro */
+}
+
+.btn-eliminar-estandar:active {
+    background-color: #bd2130; /* Rojo aún más oscuro */
+    transform: scale(0.98); /* Efecto de clic */
+}
+
+.btn-eliminar-estandar:disabled {
+    background-color: #f5b3b8; /* Rojo pálido para botones deshabilitados */
+    cursor: not-allowed;
 }
 
 /*Estilo para los campos*/
@@ -208,7 +248,56 @@ outline: none; /* Elimina el borde azul predeterminado del navegador */
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
-  
+  input[type="checkbox"] {
+    /* Ocultar el estilo nativo */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* Dimensiones */
+    width: 17px;
+    height: 17px;
+
+    /* Estilo básico */
+    border: 2px solid #143361; /* Borde con el color deseado */
+    border-radius: 4px; /* Esquinas ligeramente redondeadas */
+    background-color: #fff; /* Fondo blanco */
+    cursor: pointer; /* Cambiar el cursor al pasar por encima */
+    display: inline-block; /* Asegura el control de alineación */
+    transition: all 0.3s ease; /* Animación suave */
+    position: relative; /* Posicionamiento relativo para el check */
+}
+
+input[type="checkbox"]::after {
+    /* Icono de check oculto por defecto */
+    content: '';
+    display: block;
+    width: 100%; /* Asegura que coincida con el tamaño del checkbox */
+    height: 100%; /* Mantén el tamaño */
+    background-color: transparent; /* Fondo transparente */
+    color: transparent; /* Color invisible */
+    font-size: 14px; /* Tamaño del texto */
+    position: absolute; /* Asegura que se coloque dentro del checkbox */
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+input[type="checkbox"]:checked {
+    /* Estilo cuando está marcado */
+    background-color: #143361; /* Fondo con el color deseado */
+    border-color: #143361; /* Mantén el borde del mismo color */
+}
+
+input[type="checkbox"]:checked::after {
+    /* Icono de check */
+    content: '✔'; /* Carácter de check */
+    color: white; /* Color del check */
+    background-color: transparent; /* Mantén el fondo transparente */
+}
   @keyframes spin {
     from {
       transform: rotate(0deg);

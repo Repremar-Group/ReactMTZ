@@ -2,13 +2,30 @@ import React, { useState, useEffect } from 'react';
 
 const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarques }) => {
     const [selectedEmbarques, setSelectedEmbarques] = useState([]); // Estado de los embarques seleccionados
+    const [searchTerm, setSearchTerm] = useState(''); // Estado para el término de búsqueda
+    const [filteredEmbarques, setFilteredEmbarques] = useState(embarques); // Embarques filtrados
 
     // Reinicia las selecciones al cambiar el listado de embarques
     useEffect(() => {
         if (showModal) {
             setSelectedEmbarques([]); // Reiniciar el estado de seleccionados
+            setSearchTerm('');
+            setFilteredEmbarques(embarques);
         }
     }, [embarques, showModal]);
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredEmbarques(embarques);
+        } else {
+            const lowercasedTerm = searchTerm.toLowerCase();
+            setFilteredEmbarques(
+                embarques.filter(
+                    (embarque) =>
+                        embarque.guia?.toLowerCase().includes(lowercasedTerm) 
+                )
+            );
+        }
+    }, [searchTerm, embarques]);
 
     if (!showModal) return null; // Si no debe mostrarse el modal, no renderiza nada
 
@@ -42,8 +59,16 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                 {/* Evita cerrar el modal al hacer clic dentro */}
 
                 <h2 className="subtitulo-estandar">Embarques de Cliente</h2>
+                {/* Barra de búsqueda */}
+                <input
+                    type="text"
+                    placeholder="Buscar Nro. Guia"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="input_buscar"
+                />
 
-                {embarques.length > 0 ? (
+                {filteredEmbarques.length > 0 ? (
                     <>
                         <table className="tabla-clientesbusqueda">
                             <thead>
@@ -56,7 +81,7 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                                 </tr>
                             </thead>
                             <tbody>
-                                {embarques.map((embarque) => {
+                                {filteredEmbarques.map((embarque) => {
                                     const embarqueId = embarque.idguiasexpo
                                         ? embarque.idguiasexpo
                                         : embarque.idguia; // Verificación de clave
@@ -64,8 +89,8 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                                         <tr key={embarqueId}>
                                             {/* Asegurarse de que la clave sea única */}
                                             <td>{embarque.guia}</td>
-                                            <td>{embarque.fechavuelo}</td>
-                                            <td>{embarque.origenguia}</td>
+                                            <td>{embarque.fechavuelo_formateada}</td>
+                                            <td>{embarque.origenguia || embarque.origenvuelo}</td>
                                             <td>
                                                 {embarque.destinoguia || embarque.destinovuelo}
                                             </td>

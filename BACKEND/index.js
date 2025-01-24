@@ -1301,10 +1301,26 @@ app.get('/api/obtenerembarques', (req, res) => {
   let query = '';
   if (tipoEmbarque === 'Impo') {
     // Consulta para la tabla guiasimpo, buscando por el consignatario (cliente)
-    query = `SELECT * FROM guiasimpo WHERE consignatario = ?`;
+    query = 
+    ` SELECT 
+      g.*, 
+      v.vuelo AS nombreVuelo, 
+      DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada
+      FROM guiasimpo g
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+      WHERE g.consignatario = ?
+    `;
   } else if (tipoEmbarque === 'Expo') {
     // Consulta para la tabla guiasexpo, buscando por el agente (cliente)
-    query = `SELECT * FROM guiasexpo WHERE agente = ?`;
+    query = `
+    SELECT 
+      g.*, 
+      v.vuelo AS nombreVuelo, 
+      DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada
+      FROM guiasexpo g
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+      WHERE g.agente = ? AND g.tipodepago = 'P'
+    `;
   } else {
     return res.status(400).json({ error: 'Tipo de embarque no válido' });
   }
