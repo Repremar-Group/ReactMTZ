@@ -58,9 +58,9 @@
     padding: 2px 5px;
 }
 .tabla-guias-asociadas thead {
-    position: sticky;
+    position: relative;
     top: 0; /* Fija el cabezal en la parte superior */
-    z-index: 1; /* Asegura que el cabezal quede encima del contenido */
+    
 }
 
 /* Define anchos para las columnas */
@@ -104,4 +104,96 @@
 
 .div-primerrenglon-datos-comprobante div {
     width: 48%;
+}
+.div-totales-comprobante input,
+.div-totales-comprobante select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    color: gray;
+    
+}
+/* Estilo del scrollbar */
+.tabla-comprobantegsm::-webkit-scrollbar {
+    width: 10px; 
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+  
+.tabla-comprobantegsm::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+  
+.tabla-comprobantegsm::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
+}
+.tabla-comprobantegsm {
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
+    width: 100%; /* La tabla ocupará el 100% del contenedor */
+    max-height: 300px;
+    overflow-y: auto;
+    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.tabla-comprobantegsm tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 150px; /* Ajusta la altura para 3 filas */
+}
+
+.tabla-comprobantegsm th, .tabla-comprobantegsm td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-comprobantegsm th {
+    background-color: #143361;
+    font-weight: bold;
+    color: white;
+    padding: 2px 5px;
+}
+.tabla-comprobantegsm thead {
+    position: relative;
+    top: 0; /* Fija el cabezal en la parte superior */
+    
+}
+
+/* Define anchos para las columnas */
+.tabla-comprobantegsm th:nth-child(1),
+.tabla-comprobantegsm td:nth-child(1) {
+    width: 5%; /* Columna Tipo */
+}
+
+.tabla-comprobantegsm th:nth-child(2),
+.tabla-comprobantegsm td:nth-child(2) {
+    width: 5%; /* Columna Guia */
+}
+
+.tabla-comprobantegsm th:nth-child(3),
+.tabla-comprobantegsm td:nth-child(3) {
+    width: 15%; /* Columna Descripción */
+}
+
+.tabla-comprobantegsm th:nth-child(4),
+.tabla-comprobantegsm td:nth-child(4) {
+    width: 50%; /* Columna Moneda */
+}
+
+.tabla-comprobantegsm th:nth-child(5),
+.tabla-comprobantegsm td:nth-child(5) {
+    width: 5%; /* Columna Importe */
+}
+
+.tabla-comprobantegsm th:nth-child(6),
+.tabla-comprobantegsm td:nth-child(6) {
+    width: 15%; /* Columna Acciones */
 }

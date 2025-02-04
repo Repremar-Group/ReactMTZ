@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from "react-router-dom";
 import './Facturasmanuales.css'
-
+import axios from 'axios';
+import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
+import { useNavigate } from 'react-router-dom';
 const Facturasmanuales = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
 
@@ -34,7 +36,13 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [fmtotal, setFmTotal] = useState('');
   const [fmivaconcepto, setFmIvaConcepto] = useState('');
   const [fmlistadeconceptos, setFmListaDeConceptos] = useState([]);
-
+  const [monedas, setMonedas] = useState([]);
+  const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
+  const [conceptoactual, setConceptoActual] = useState([]);
+  const navigate = useNavigate();
+  const hasFetched = useRef(false);
+  const [botonActivo, setBotonActivo] = useState(false);
+  
 
   // Estado para la cheque seleccionado
   const [fmconceptoseleccionado, setFmConceptoSeleccionado] = useState(null);
@@ -43,8 +51,46 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const handleSeleccionarConceptoAsociado = (icindex) => {
     setFmConceptoSeleccionado(icindex);
   };
+  // Llamar al endpoint para obtener el tipo de cambio
 
+  const fetchConceptoPorCodigo = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/buscarconcepto/${fmcodigoconcepto}`);
+      if (response.data) {
+        setFmDescripcion(response.data.descripcion || '');
+        setFmCodigoConcepto(response.data.codigo || '');
+        setConceptoActual(response.data);
+        console.log('Concepto Actual:', response.data);
+        setBotonActivo(true);
+      } else {
+        alert('Concepto no encontrado');
+      }
+    } catch (error) {
+      console.error('Error al obtener el concepto:', error);
+      alert('Error al obtener el concepto');
+    }
+  };
+  const fetchMonedas = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+      setMonedas(response.data);
+      setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
+    } catch (error) {
+      console.error('Error al obtener monedas:', error);
+    }
+  }
+  useEffect(() => {
+    setFmMonedaConcepto(fmmoneda);
+  }, [fmmoneda]);
 
+  useEffect(() => {
+    if (conceptoactual?.exento === 0 && fmimporte) {
+      const ivaCalculado = (parseFloat(fmimporte) * 0.22).toFixed(2); // 22% de IVA
+      setFmIvaConcepto(ivaCalculado);
+    } else {
+      setFmIvaConcepto('0'); // Si es exento, el IVA es 0
+    }
+  }, [fmimporte, conceptoactual]);
 
   // Función para eliminar el cheque seleccionado
   const handleEliminarConceptoAsociado = () => {
@@ -58,19 +104,46 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   // Función para agregar una factura asociada a la tabla
   const handleAgregarConceptoAsociado = () => {
     if (fmcodigoconcepto && fmdescripcion && fmmonedaconcepto && fmivaconcepto && fmimporte) {
-      const nuevoconceptoasociado = { fmcodigoconcepto, fmdescripcion, fmmonedaconcepto,fmivaconcepto, fmimporte };
+      const nuevoconceptoasociado = { fmcodigoconcepto, fmdescripcion, fmmonedaconcepto, fmivaconcepto, fmimporte };
       setFmListaDeConceptos([...fmlistadeconceptos, nuevoconceptoasociado]);
       setFmCodigoConcepto('');
       setFmDescripcion('');
-      setFmMonedaConcepto('');
       setFmIvaConcepto('');
       setFmImporte('');
+      setBotonActivo(false);
     }
   };
 
+
   useEffect(() => {
+    if (hasFetched.current) return; // Si ya se ejecutó, no vuelve a hacerlo
+    hasFetched.current = true;
+
+    // Llamar al endpoint para obtener el tipo de cambio
+    const obtenerTipoCambio = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/obtenertipocambioparacomprobante");
+        if (response.data.tipo_cambio == undefined) {
+          alert("No hay tipo de cambio para la fecha actual.");
+          navigate("/tablas/cambio");
+        } else {
+          setFmTc(response.data.tipo_cambio);
+        }
+        console.log(response.data.tipo_cambio);
+      } catch (error) {
+        if (error.response) {
+          alert("No hay tipo de cambio para la fecha actual.");
+          navigate("/tablas/cambio");
+        } else {
+          console.error("Error en la consulta:", error);
+          navigate("/tablas/cambio");
+        }
+      }
+    };
     const icfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
     setFmFecha(icfechaactual);
+    fetchMonedas();
+    obtenerTipoCambio();
   }, []); // Se ejecuta solo una vez al montar el componente
 
   // Función para manejar el envío del formulario
@@ -82,7 +155,82 @@ const Facturasmanuales = ({ isLoggedIn }) => {
     });
   };
 
+  // Estado para la búsqueda de clientes
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSelectEnabled, setIsSelectEnabled] = useState(false);
 
+  // Manejo del input de búsqueda
+  const handleInputChange = (e) => setSearchTerm(e.target.value);
+
+  // Búsqueda de clientes al presionar Enter
+  const handleKeyPress = async (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      e.preventDefault();
+      try {
+        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        setFilteredClientes(response.data);
+        setIsModalOpen(true); // Abre el modal con los resultados
+      } catch (error) {
+        console.error('Error al buscar clientes:', error);
+      }
+    }
+  };
+  // Selección de un cliente desde el modal
+  const handleSelectCliente = (cliente) => {
+    setSelectedCliente(cliente);
+    console.log('Cliente Seleccionado:', cliente)
+    setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setIsSelectEnabled(true);
+    setIsModalOpen(false); // Cierra el modal
+  };
+
+  // Actualizar el estado del formulario luego se seleccionar un cliente 
+  useEffect(() => {
+    if (selectedCliente) {
+      setFmComprobanteElectronico(selectedCliente.Tcomprobante);
+      setFmId(selectedCliente.Id);
+      setFmCiudad(selectedCliente.Ciudad);
+      setFmPais(selectedCliente.Pais);
+      setFmRazonSocial(selectedCliente.RazonSocial);
+      setFmTipoIva(selectedCliente.Tiva);
+      setFmMoneda(selectedCliente.Moneda);
+      setFmDireccionFiscal(selectedCliente.Direccion);
+      setFmCass(selectedCliente.Cass);
+      setFmRutCedula(selectedCliente.Rut);
+    }
+  }, [selectedCliente]);
+
+  // Cerrar modal
+  const closeModal = () => setIsModalOpen(false);
+  //Actualización de campos de totales
+  useEffect(() => {
+    let nuevoSubtotal = 0;
+    let nuevoIVA = 0;
+  
+    // Recorrer la lista de conceptos y sumar los valores directamente
+    fmlistadeconceptos.forEach((concepto) => {
+      const importe = parseFloat(concepto.fmimporte) || 0;
+      const iva = parseFloat(concepto.fmivaconcepto) || 0; // Se asume que ya viene calculado
+  
+      nuevoSubtotal += importe;
+      nuevoIVA += iva; // Sumar IVA directamente en lugar de calcularlo
+    });
+  
+    const nuevoTotal = nuevoSubtotal + nuevoIVA;
+    const nuevoRedondeo = Math.ceil(nuevoTotal) - nuevoTotal; // Redondeo siempre hacia arriba
+    const nuevoTotalACobrar = nuevoTotal + nuevoRedondeo;
+  
+    // Actualizar estados
+    setFmsubtotal(nuevoSubtotal.toFixed(2));
+    setFmIva(nuevoIVA.toFixed(2)); // IVA ahora es la suma directa de los valores fmivaconcepto
+    setFmTotal(nuevoTotal.toFixed(2));
+    setFmRedondeo(nuevoRedondeo.toFixed(2));
+    setFmTotalACobrar(nuevoTotalACobrar.toFixed(2));
+  
+  }, [fmlistadeconceptos]); // Se ejecuta cada vez que cambia la lista de conceptos
 
 
   return (
@@ -106,38 +254,34 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                 />
               </div>
               <div>
-                <label htmlFor="fmnombre">Nombre:</label>
+                <label htmlFor="ecnombre">Nombre:</label>
                 <input
                   type="text"
-                  id="fmnombre"
-                  value={fmnombre}
-                  onChange={(e) => setFmNombre(e.target.value)}
+                  id="ecnombre"
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Buscar Cliente"
+                  autoComplete="off"
                   required
                 />
               </div>
+
               <div>
-                <label htmlFor="fmtipocomprobante">Tipo de Comprobante:</label>
+                <label htmlFor="eccomprobanteelectronico">Comprobante Electronico:</label>
                 <select
-                  id="fmtipocomprobante"
-                  value={fmtipocomprobante}
-                  onChange={(e) => setFmTipoComprobante(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Tipo</option>
-                  <option value="fcredito">Factura de Credito</option>
-                  <option value="fcontado">Factura Contado</option>
-                  <option value="etc">Etc</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="fmcomprobanteelectronico">Comprobante Electronico:</label>
-                <input
-                  type="text"
-                  id="fmcomprobanteelectronico"
+                  id="tipoComprobante"
                   value={fmcomprobanteelectronico}
                   onChange={(e) => setFmComprobanteElectronico(e.target.value)}
                   required
-                />
+                >
+                  <option value="">Comprobante Electronico</option>
+                  <option value="efactura">E-Factura</option>
+                  <option value="eticket">E-Ticket</option>
+                  <option value="efacturaca">E-Factura Cuenta Ajena</option>
+                  <option value="eticketca">E-Ticket Cuenta Ajena</option>
+                </select>
+
               </div>
               <div>
                 <label htmlFor="fmciudad">Ciudad:</label>
@@ -159,6 +303,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   required
                 />
               </div>
+              <div></div>
             </div>
 
 
@@ -181,24 +326,25 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   onChange={(e) => setFmTipoIva(e.target.value)}
                   required
                 >
-                  <option value="">Selecciona una Tipo</option>
-                  <option value="iva22">IVA 22 %</option>
-                  <option value="ivax">IVA X %</option>
-                  <option value="ivay">IVA Y %</option>
+                  <option value="">Seleccione un tipo de IVA</option>
+                  <option value="iva22">IVA 22%</option>
+                  <option value="excento">Exento</option>
                 </select>
               </div>
               <div>
                 <label htmlFor="fmmoneda">Moneda:</label>
                 <select
-                  id="fmmoneda"
+                  id="ecmoneda"
                   value={fmmoneda}
                   onChange={(e) => setFmMoneda(e.target.value)}
                   required
                 >
                   <option value="">Selecciona una Moneda</option>
-                  <option value="dolares">Dolares</option>
-                  <option value="pesos">Pesos</option>
-                  <option value="Euros">Euros</option>
+                  {monedas.map((moneda, index) => (
+                    <option key={index} value={moneda.moneda}>
+                      {moneda.moneda}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="fecha-emision-comprobante">
@@ -258,15 +404,14 @@ const Facturasmanuales = ({ isLoggedIn }) => {
               <div>
                 <label htmlFor="fmcass">Cass:</label>
                 <select
-                  id="fmcass"
+                  id="eccass"
                   value={fmcass}
                   onChange={(e) => setFmCass(e.target.value)}
                   required
                 >
-                  <option value="">Seleccione Cass</option>
-                  <option value="Cass1">Cass1</option>
-                  <option value="Cass2">Cass2</option>
-                  <option value="Cass3">Cass3</option>
+                  <option value="">Selecciona el Cass</option>
+                  <option value="false">No</option>
+                  <option value="true">Si</option>
                 </select>
               </div>
               <div>
@@ -292,7 +437,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-              <div></div> 
+              <div></div>
             </div>
           </div>
 
@@ -306,6 +451,12 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmguia"
                   value={fmcodigoconcepto}
                   onChange={(e) => setFmCodigoConcepto(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      fetchConceptoPorCodigo();
+                    }
+                  }}
                   required
                 />
               </div>
@@ -325,12 +476,14 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmmonedaconcepto"
                   value={fmmonedaconcepto}
                   onChange={(e) => setFmMonedaConcepto(e.target.value)}
-                  required
+                  disabled
                 >
                   <option value="">Selecciona una Moneda</option>
-                  <option value="dolares">Dolares</option>
-                  <option value="pesos">Pesos</option>
-                  <option value="Euros">Euros</option>
+                  {monedas.map((moneda, index) => (
+                    <option key={index} value={moneda.moneda}>
+                      {moneda.moneda}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -340,13 +493,13 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmimporte"
                   value={fmivaconcepto}
                   onChange={(e) => setFmIvaConcepto(e.target.value)}
-                  required
+                  disabled
                 />
               </div>
               <div>
                 <label htmlFor="fmimporte">Importe:</label>
                 <input
-                  type="text"
+                  type="number"
                   id="fmimporte"
                   value={fmimporte}
                   onChange={(e) => setFmImporte(e.target.value)}
@@ -355,7 +508,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
               </div>
 
               <div className='botonesfacturasasociadas'>
-                <button type="button" onClick={handleAgregarConceptoAsociado} className='btn-estandar'>Agregar</button>
+                <button type="button"  disabled={!botonActivo} onClick={handleAgregarConceptoAsociado} className='btn-estandar'>Agregar</button>
               </div>
 
             </div>
@@ -366,7 +519,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
             <div className='div-primerrenglon-datos-recibos'>
               {/* Tabla que muestra las facturas agregadas */}
-              <table className='tabla-conceptos' >
+              <table className='tabla-conceptos-asociados' >
                 <thead>
                   <tr>
                     <th>Codigo</th>
@@ -413,7 +566,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmsubtotal"
                   value={fmsubtotal}
                   onChange={(e) => setFmsubtotal(e.target.value)}
-                  required
+                  readOnly
                 />
               </div>
               <div>
@@ -423,7 +576,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmivatotal"
                   value={fmiva}
                   onChange={(e) => setFmIva(e.target.value)}
-                  required
+                  readOnly
                 />
               </div>
               <div>
@@ -433,7 +586,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmredondeo"
                   value={fmredondeo}
                   onChange={(e) => setFmRedondeo(e.target.value)}
-                  required
+                  readOnly
                 />
               </div>
               <div>
@@ -443,7 +596,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmtotal"
                   value={fmtotal}
                   onChange={(e) => setFmTotal(e.target.value)}
-                  required
+                  readOnly
                 />
               </div>
               <div>
@@ -453,7 +606,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmtotalacobrar"
                   value={fmtotalacobrar}
                   onChange={(e) => setFmTotalACobrar(e.target.value)}
-                  required
+                  readOnly
                 />
               </div>
             </div>
@@ -472,6 +625,13 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
 
       </form>
+      {/* Modal de búsqueda de clientes */}
+      <ModalBusquedaClientes
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        filteredClientes={filteredClientes}
+        handleSelectCliente={handleSelectCliente}
+      />
     </div>
   );
 }

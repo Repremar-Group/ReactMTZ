@@ -63,6 +63,7 @@ const NavBar = () => {
                 <div className="botonConSubmenu">
                     <button className="botonNavBar">Parametros</button>
                     <div className="submenu">
+                        <Link to="/parametros/conceptos" className="submenuItem">Conceptos</Link>
                         <Link to="/parametros/monedas" className="submenuItem">Monedas</Link>
                         <Link to="/parametros/ciudades" className="submenuItem">Ciudades</Link>
                         <Link to="/parametros/vuelos" className="submenuItem">Vuelos</Link>

@@ -241,9 +241,9 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: 2,
-            descripcion: `Collect Fee: U$S: ${embarque.collectfee + embarque.cfiva}`,
+            descripcion: `Collect Fee( Iva inc.): U$S: ${parseFloat((Number(embarque.collectfee) + Number(embarque.cfiva)).toFixed(2))}`,
             moneda: embarque.moneda,
-            importe: 0,
+            importe: Number(embarque.collectfee),
           },
           {
             tipo: 'C',
@@ -368,6 +368,16 @@ const Comprobantes = ({ isLoggedIn }) => {
     // Actualizar el estado con las nuevas guías y conceptos combinados
     setGuiasConConceptos(nuevasGuiasConConceptos);
     console.log('Guias combinadas con conceptos:', nuevasGuiasConConceptos);
+
+    const totalEcIva = guiasimpocollect.reduce((sum, embarque) => {
+      const valor = parseFloat(embarque.cfiva) || 0;
+      console.log(`Sumando: ${sum} + ${valor}`); // Muestra cada paso de la suma
+      return sum + valor;
+    }, 0);
+
+    console.log(`Total calculado: ${totalEcIva.toFixed(2)}`); // Muestra el total final
+    setEcIva(Number(totalEcIva.toFixed(2))); // Aseguramos que sea número
+
   }, [embarquesSeleccionados]);  // El efecto se ejecutará cada vez que cambie `embarquesSeleccionados`
   const calcularTotal = () => {
     // Calcular el total sumando todos los importes de los conceptos
@@ -379,10 +389,13 @@ const Comprobantes = ({ isLoggedIn }) => {
     }, 0);
 
     // Calcular el redondeo hacia arriba
-    const redondeo = Math.ceil(total) - total;
+    const redondeo = (Math.ceil(total + eciva) - (total + eciva));
+    const totalNum = Number(total) || 0;
+    const redondeoNum = Number(redondeo) || 0;
+    const ecivaNum = Number(eciva) || 0;
 
     // Calcular el total a cobrar sumando el redondeo
-    const totalACobrar = total + redondeo;
+    const totalACobrar = totalNum + redondeoNum + ecivaNum;
 
     // Actualizar los estados correspondientes
     setEcTotal(total.toFixed(2)); // Total formateado a dos decimales
@@ -597,21 +610,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-              <div>
-                <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
-                <select
-                  id="tipoComprobante"
-                  value={ectipocomprobante}
-                  onChange={(e) => setEcTipoComprobante(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona un tipo de Comprobante</option>
-                  <option value="efactura">E-Factura</option>
-                  <option value="eticket">E-Ticket</option>
-                  <option value="efacturaca">E-Factura Cuenta Ajena</option>
-                  <option value="eticketca">E-Ticket Cuenta Ajena</option>
-                </select>
-              </div>
+              
               <div>
                 <label htmlFor="eccomprobanteelectronico">Comprobante Electronico:</label>
                 <select
@@ -648,6 +647,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   required
                 />
               </div>
+              <div></div>
             </div>
 
 
@@ -865,8 +865,9 @@ const Comprobantes = ({ isLoggedIn }) => {
                   type="text"
                   id="ecivatotal"
                   value={eciva}
+                  readOnly
                   onChange={(e) => setEcIva(e.target.value)}
-                  required
+
                 />
               </div>
               <div>
@@ -934,9 +935,9 @@ const Comprobantes = ({ isLoggedIn }) => {
         onSelectEmbarques={handleSelectEmbarques}
       />
       <ModalComprobanteGSM
-      isOpen={isModalOpenGSM} 
-      onClose={handleCloseModalGSM} 
-      datos={datosModal} 
+        isOpen={isModalOpenGSM}
+        onClose={handleCloseModalGSM}
+        datos={datosModal}
       />
     </div>
 

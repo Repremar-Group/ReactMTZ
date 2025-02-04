@@ -42,6 +42,7 @@ import Vuelos from '../parametros/Vuelos';
 import Ciudades from '../parametros/Ciudades';
 import Monedas from '../parametros/Monedas';
 import CompaniaAerea from '../parametros/CompaniaAerea';
+import Conceptos from '../parametros/Conceptos';
 
 
 function Layout({ isLoggedIn, handleLogin }) {
@@ -249,6 +250,17 @@ function Layout({ isLoggedIn, handleLogin }) {
                     element={
                         isLoggedIn ? (
                             <Deudores isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                {/* Ruta Conceptos: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/parametros/conceptos"
+                    element={
+                        isLoggedIn ? (
+                            <Conceptos isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )

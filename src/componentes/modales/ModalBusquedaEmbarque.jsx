@@ -73,6 +73,7 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                         <table className="tabla-clientesbusqueda">
                             <thead>
                                 <tr>
+                                    <th>Tipo</th>
                                     <th>Guía</th>
                                     <th>Fecha Vuelo</th>
                                     <th>Origen</th>
@@ -87,7 +88,7 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                                         : embarque.idguia; // Verificación de clave
                                     return (
                                         <tr key={embarqueId}>
-                                            {/* Asegurarse de que la clave sea única */}
+                                            <td>{embarque.tipodepago || embarque.tipodepagoguia}</td>
                                             <td>{embarque.guia}</td>
                                             <td>{embarque.fechavuelo_formateada}</td>
                                             <td>{embarque.origenguia || embarque.origenvuelo}</td>

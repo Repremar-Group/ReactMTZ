@@ -1301,15 +1301,16 @@ app.get('/api/obtenerembarques', (req, res) => {
   let query = '';
   if (tipoEmbarque === 'Impo') {
     // Consulta para la tabla guiasimpo, buscando por el consignatario (cliente)
-    query = 
-    ` SELECT 
+    query = `
+    SELECT 
       g.*, 
       v.vuelo AS nombreVuelo, 
+      v.compania AS empresavuelo, 
       DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada
-      FROM guiasimpo g
-      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-      WHERE g.consignatario = ?
-    `;
+    FROM guiasimpo g
+    LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+    WHERE g.consignatario = ?
+`;
   } else if (tipoEmbarque === 'Expo') {
     // Consulta para la tabla guiasexpo, buscando por el agente (cliente)
     query = `
@@ -1343,6 +1344,86 @@ app.get('/api/obtenerembarques', (req, res) => {
   });
 });
 
+app.post('/api/agregarconcepto', (req, res) => {
+  console.log('Received request for /api/agregarconcepto');
+
+  const { codigo, descripcion, exento } = req.body;
+
+  if (!codigo || !descripcion || exento === undefined) {
+    console.log('Faltan datos obligatorios');
+    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+  }
+
+  const query = 'INSERT INTO conceptos (codigo, descripcion, exento) VALUES (UPPER(?), ?, ?)';
+  const values = [codigo, descripcion, exento ? 1 : 0];
+
+  connection.query(query, values, (err, result) => {
+    if (err) {
+      console.log('Error en la inserción:', err);
+      return res.status(500).json({ error: 'Error al agregar el concepto' });
+    }
+
+    console.log('Concepto agregado con ID:', result.insertId);
+    res.json({ message: 'Concepto agregado con éxito', id: result.insertId });
+  });
+});
+app.get('/api/previewconceptos', (req, res) => {
+  console.log('Received request for /api/previewconceptos');
+
+  const query = 'SELECT * FROM conceptos'; // Consulta para obtener todos los conceptos
+
+  connection.query(query, (err, results) => {
+    if (err) {
+      console.log('Error al obtener los conceptos:', err);
+      return res.status(500).json({ error: 'Error al obtener los conceptos' });
+    }
+
+    console.log('Conceptos obtenidos:', results);
+    res.json(results); // Devuelve los conceptos como respuesta
+  });
+});
+app.delete('/api/eliminarconcepto/:id', (req, res) => {
+  const { id } = req.params; // Obtiene el id del concepto a eliminar
+
+  // Asegúrate de que el ID sea un número válido antes de intentar eliminar
+  if (!id || isNaN(id)) {
+    return res.status(400).json({ error: 'ID de concepto inválido' });
+  }
+
+  const query = 'DELETE FROM conceptos WHERE idconcepto = ?';
+
+  connection.query(query, [id], (err, result) => {
+    if (err) {
+      console.log('Error al eliminar el concepto:', err);
+      return res.status(500).json({ error: 'Error al eliminar el concepto' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Concepto no encontrado' });
+    }
+
+    console.log('Concepto eliminado con ID:', id);
+    res.json({ message: 'Concepto eliminado con éxito' });
+  });
+});
+app.get('/api/buscarconcepto/:codigo', (req, res) => {
+  const { codigo } = req.params;
+  console.log('Código recibido en backend:', codigo);
+  const query = 'SELECT * FROM conceptos WHERE codigo = ?';
+  
+  connection.query(query, [codigo], (err, results) => {
+      if (err) {
+          console.error('Error al obtener el concepto:', err);
+          return res.status(500).json({ error: 'Error en la consulta' });
+      }
+
+      if (results.length === 0) {
+          return res.status(404).json({ error: 'Concepto no encontrado' });
+      }
+
+      res.json(results[0]); // Devuelve el primer resultado encontrado
+  });
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

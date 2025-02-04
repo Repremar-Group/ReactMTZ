@@ -32,11 +32,13 @@ const Historialdecambios = ({ isLoggedIn }) => {
   const handleEliminar = (cotizacion, fecha, id) => {
     setHcCotizacionAEliminar(cotizacion);
     setHcFechaAEliminar(fecha);
-    setIdAEliminar(fecha);
+    setIdAEliminar(id);
+    FetchTiposDeCambio();
   };
   const closeModalModificar = () => {
     setCotizacionAModificar(null);
     setFechaAModificar(null);
+    FetchTiposDeCambio();
     FetchTiposDeCambio();
   };
 
