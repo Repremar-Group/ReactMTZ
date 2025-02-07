@@ -398,9 +398,10 @@ const Comprobantes = ({ isLoggedIn }) => {
     const totalACobrar = totalNum + redondeoNum + ecivaNum;
 
     // Actualizar los estados correspondientes
-    setEcTotal(total.toFixed(2)); // Total formateado a dos decimales
+    setEcTotal((total + ecivaNum).toFixed(2)); // Total formateado a dos decimales
     setEcRedondeo(redondeo.toFixed(2)); // Redondeo formateado a dos decimales
     setEcTotalACobrar(totalACobrar.toFixed(2)); // Total a cobrar formateado a dos decimales
+    setEcsubtotal(total.toFixed(2));
   };
   useEffect(() => {
     calcularTotal();
@@ -566,12 +567,72 @@ const Comprobantes = ({ isLoggedIn }) => {
 
 
   // Función para manejar el envío del formulario
-  const handleSubmitAgregarRecibo = (e) => {
-    e.preventDefault();
-    // Aquí puedes manejar la lógica para enviar la información
-    console.log({
-      razonSocial
-    });
+  const handleSubmitFacturar = async (event) => {
+    event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+
+    const conceptoscuentaajena = guiasconconceptos.flatMap((guia) => guia.conceptos_cuentaajena);
+    console.log('Conceptoscuentaajena: ', conceptoscuentaajena);
+    // Recopilar los datos del formulario en un objeto
+    const datosFormulario = {
+      IdCliente: ecid,
+      Nombre: searchTerm,
+      RazonSocial: ecrazonsocial,
+      DireccionFiscal: ecdireccionfiscal,
+      Ciudad: ecciudad,
+      Pais: ecpais,
+      RutCedula: ecrutcedula,
+      ComprobanteElectronico: eccomprobanteelectronico,
+      Comprobante: eccomprobante,
+      Compania: eccompania,
+      Electronico: ecelectronico,
+      Moneda: ecmoneda,
+      Fecha: ecfecha,
+      TipoIVA: ectipoiva,
+      CASS: eccass,
+      TipoEmbarque: ectipodeembarque,
+      TC: parseFloat(ectc).toFixed(2),
+      Subtotal: parseFloat(ecsubtotal).toFixed(2),
+      IVA: parseFloat(eciva).toFixed(2),
+      Redondeo: parseFloat(ecredondeo).toFixed(2),
+      Total: parseFloat(ectotal).toFixed(2),
+      TotalCobrar: parseFloat(ectotalacobrar).toFixed(2),
+      DetalleFactura: guiasconconceptos,
+      EmbarquesSeleccionados: embarquesSeleccionados // Aquí puede que necesites mapearlo si es necesario
+    };
+    console.log('info al backend: ', datosFormulario);
+
+
+    if (Array.isArray(conceptoscuentaajena) && conceptoscuentaajena.length > 0 && !conceptoscuentaajena.includes(undefined)) {
+      // Sumar los importes de conceptos cuenta ajena
+      const subtotalca = (conceptoscuentaajena.reduce((acc, concepto) => acc + parseFloat(concepto.importe || 0), 0)).toFixed(2);
+      const ivaca = (0).toFixed(2); // Suponiendo que el IVA es 0
+      const totalca = (parseFloat(subtotalca) + parseFloat(ivaca)).toFixed(2);
+      const redondeoca = (Math.ceil(totalca) - totalca).toFixed(2); // Redondeo
+      const totalACobrarca = (parseFloat(totalca) + parseFloat(redondeoca)).toFixed(2);
+
+      // Agregar los nuevos valores al objeto SIN reasignarlo
+      datosFormulario.SubtotalCuentaAjena = subtotalca;
+      datosFormulario.IVACuentaAjena = ivaca;
+      datosFormulario.TotalCuentaAjena = totalca;
+      datosFormulario.RedondeoCuentaAjena = redondeoca;
+      datosFormulario.TotalCobrarCuentaAjena = totalACobrarca;
+    }
+
+    try {
+      // Enviar los datos del formulario a tu servidor
+      console.log('Datos del formulario a Backend: ', datosFormulario);
+      const response = await axios.post('http://localhost:3000/api/insertfactura', datosFormulario);
+
+      // Si la respuesta es exitosa, puedes manejar la respuesta aquí
+      console.log('Recibo agregado:', response.data);
+
+      // Opcionalmente, puedes redirigir o actualizar el estado
+      alert('Recibo agregado exitosamente');
+    } catch (error) {
+      // Si ocurre un error, manejarlo aquí
+      console.error('Error al agregar el recibo:', error);
+      alert('Hubo un error al facturar');
+    }
   };
 
 
@@ -580,7 +641,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   return (
     <div className="EmitirComprobante-container">
       <h2 className='titulo-estandar'>Emisión de Comprobantes</h2>
-      <form onSubmit={handleSubmitAgregarRecibo} className='formulario-estandar'>
+      <form onSubmit={handleSubmitFacturar} className='formulario-estandar'>
 
         <div className='primerafilaemisiondecomprobantes'>
           <div className='div-datos-comprobante'>
@@ -610,7 +671,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="eccomprobanteelectronico">Comprobante Electronico:</label>
                 <select
@@ -914,7 +975,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
           <button type="button" disabled={botonDeshabilitado} onClick={handleOpenModalGSM} className='btn-estandar'>Comprobante GSM</button>
 
-          <button type="button" className="btn-facturar">Facturar</button>
+          <button type="submit" className="btn-facturar">Facturar</button>
 
           <button type='button' className="btn-estandar" onClick={() => volver()} >Volver</button>
         </div>

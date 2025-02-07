@@ -16,7 +16,7 @@ const ModalComprobanteGSM = ({ isOpen, onClose, datos }) => {
       const subtotal = datos.reduce((acc, concepto) => acc + parseFloat(concepto.importe || 0), 0);
       const iva = 0;
       const total = subtotal + iva;
-      const redondeo = Math.round(total) - total; // Redondeo
+      const redondeo = Math.ceil(total) - total; // Redondeo
       const totalACobrar = total + redondeo;
 
       setEcsubtotal(subtotal.toFixed(2));
