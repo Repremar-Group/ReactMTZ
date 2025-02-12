@@ -1,9 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Ingresodecheque.css'
 import { Link } from "react-router-dom";
+import axios from 'axios';
 
-const Ingresodecheques = ({ isLoggedIn }) => {
+const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, fechaActual, totalfacturas }) => {
     // Estado para los campos del formulario
+    if (!isOpen) return null;
+
+    const [monedas, setMonedas] = useState([]);
+    const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
+    //Traigo las monedas desde la BD
+    const fetchMonedas = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+            setMonedas(response.data);
+            setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
+        } catch (error) {
+            console.error('Error al obtener monedas:', error);
+        }
+    }
+
+    useEffect(() => {
+        fetchMonedas();
+        setIcFecha(fechaActual);
+        setIcFechavencimiento(fechaActual);
+        setIcArbitraje(1);
+        setIcImpDelCheque(datosRecibo.erimporte);
+        setIcImporteEnDolares(datosRecibo.erimporte);
+        setIcTipoMoneda(datosRecibo.ertipoMoneda);
+        setIcTotalDeLasGuias(totalfacturas);
+        setIcSaldoDelDocumento(totalfacturas);
+        saldoOriginalRef.current = totalfacturas;
+    }, []); // Se ejecuta solo una vez al montar el componente
 
     const [icnrocheque, setIcNroCheque] = useState('');
     const [icbanco, setIcBanco] = useState('');
@@ -14,12 +42,12 @@ const Ingresodecheques = ({ isLoggedIn }) => {
     const [icimporteendolares, setIcImporteEnDolares] = useState('');
     const [icfechavencimiento, setIcFechavencimiento] = useState('');
     const [ictotaldelasguias, setIcTotalDeLasGuias] = useState('');
-    const [ictotalingresado, setIcTotalIngresado] = useState('');
-    const [icsaldodelcheque, setIcSaldoDelCheque] = useState('');
+    const [ictotalingresado, setIcTotalIngresado] = useState(0);
+    const [icsaldodelcheque, setIcSaldoDelCheque] = useState(0);
     const [icimpdeldocumento, setIcImpDelDocumento] = useState('');
     const [icsaldodeldocumento, setIcSaldoDelDocumento] = useState('');
     const [iclistadecheques, setIcListaDeCheques] = useState([]);
-
+    const saldoOriginalRef = useRef(icsaldodeldocumento);
 
 
     // Estado para la cheque seleccionado
@@ -47,12 +75,8 @@ const Ingresodecheques = ({ isLoggedIn }) => {
             const nuevocheque = { icfecha, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
             setIcListaDeCheques([...iclistadecheques, nuevocheque]);
             setIcNroCheque('');
-            setIcBanco('');
-            setIcTipoMoneda(false);
-            setIcArbitraje('');
             setIcImpDelCheque('');
             setIcImporteEnDolares('');
-            setIcFechavencimiento('');
         }
     };
 
@@ -60,246 +84,266 @@ const Ingresodecheques = ({ isLoggedIn }) => {
         const icfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
         setIcFecha(icfechaactual);
     }, []); // Se ejecuta solo una vez al montar el componente
+    //UseEffect para actualizar los totales de los pagos 
+    useEffect(() => {
+        const totalImportes = iclistadecheques.reduce((total, cheque) => total + parseFloat(cheque.icimpdelcheque || 0), 0);
+        setIcTotalIngresado(totalImportes);
+        setIcSaldoDelDocumento(saldoOriginalRef.current - totalImportes);
+        setIcSaldoDelCheque(totalImportes - totalfacturas)
+    }, [iclistadecheques]); // Se ejecuta solo una vez al montar el componente
 
     // Función para manejar el envío del formulario
-    const handleSubmitAgregarRecibo = (e) => {
+    const handleSubmitAgregarRecibo = async (e) => {
         e.preventDefault();
-        // Aquí puedes manejar la lógica para enviar la información
-        console.log({
-            razonSocial
-        });
+        const nuevoRecibo = {
+            nrorecibo: datosRecibo.ernumrecibo,
+            fecha: datosRecibo.erfecharecibo,
+            idcliente: datosRecibo.erid,
+            nombrecliente: datosRecibo.searchTerm,
+            moneda: datosRecibo.ertipoMoneda,
+            importe: datosRecibo.erimporte,
+            formapago: datosRecibo.erformadepago,
+            razonsocial: datosRecibo.errazonSocial,
+            rut: datosRecibo.errut,
+            direccion: datosRecibo.erdireccion
+        };
+    
+        try {
+            const response = await axios.post('http://localhost:3000/api/insertrecibo', nuevoRecibo);
+            alert('Recibo guardado con éxito');
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error al guardar el recibo:', error);
+            alert('Error al guardar el recibo');
+        }
     };
 
 
 
 
     return (
-        <div className="IngresarCheque-container">
-            <h2 className='Titulo-ingreso-recibos'>Ingreso de Cheques</h2>
-            <form onSubmit={handleSubmitAgregarRecibo} className='formulario-emitir-recibo'>
+        <div className="modal" onClick={closeModal}>
+            <div className="modal-content-muygrande" onClick={(e) => e.stopPropagation()}>
+                <h2 className='Titulo-ingreso-recibos'>Ingreso de Pagos</h2>
+                <form onSubmit={handleSubmitAgregarRecibo} className='formulario-emitir-recibo'>
 
-                <div className='primerafilaingresocheques'>
-                    <div className='div-datos-cheque'>
-                        <h3 className='Titulos-formularios-ingreso-recibos'>Datos del Cheque</h3>
+                    <div className='primerafilaingresocheques'>
+                        <div className='div-datos-cheque'>
+                            <h3 className='Titulos-formularios-ingreso-recibos'>Datos del Pago</h3>
 
-                        <div className='div-primerrenglon-datos-cheque'>
-                            <div>
-                                <label htmlFor="nrocheque">Nro. de Cheque:</label>
-                                <input
-                                    type="text"
-                                    id="nrocheque"
-                                    value={icnrocheque}
-                                    onChange={(e) => setIcNroCheque(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="icbanco">Banco:</label>
-                                <select
-                                    id="icbanco"
-                                    value={icbanco}
-                                    onChange={(e) => setIcBanco(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Selecciona un Banco</option>
-                                    <option value="itau">Itau</option>
-                                    <option value="santander">Santander</option>
-                                    <option value="brou">Brou</option>
-                                </select>
-                            </div>
-                            <div className="fecha-ingreso-cheque">
-                                <label htmlFor="fechaingresocheque">Fecha:</label>
-                                <input
-                                    type="date"
-                                    id="fechaingresocheque"
-                                    value={icfecha}
-                                    onChange={(e) => setIcFecha(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="ictipoMoneda">Moneda:</label>
-                                <select
-                                    id="ictipoMoneda"
-                                    value={ictipoMoneda}
-                                    onChange={(e) => setIcTipoMoneda(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Selecciona una Moneda</option>
-                                    <option value="dolares">Dolares</option>
-                                    <option value="pesos">Pesos</option>
-                                    <option value="Euros">Euros</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="icarbitraje">Arbitraje:</label>
-                                <input
-                                    type="text"
-                                    id="icarbitraje"
-                                    value={icarbitraje}
-                                    onChange={(e) => setIcArbitraje(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="icimpdelcheque">Imp. del Cheque:</label>
-                                <input
-                                    type="text"
-                                    id="icimpdelcheque"
-                                    value={icimpdelcheque}
-                                    onChange={(e) => setIcImpDelCheque(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="icimporteendolares">Importe en USD:</label>
-                                <input
-                                    type="text"
-                                    id="icimporteendolares"
-                                    value={icimporteendolares}
-                                    onChange={(e) => setIcImporteEnDolares(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="fecha-vencimiento-cheque">
-                                <label htmlFor="fechavencimientocheque">Fecha Vencimiento:</label>
-                                <input
-                                    type="date"
-                                    id="fechavencimientocheque"
-                                    value={icfechavencimiento}
-                                    onChange={(e) => setIcFechavencimiento(e.target.value)}
-                                    required
-                                />
-                            </div>
+                            <div className='div-primerrenglon-datos-cheque'>
+                                <div>
+                                    <label htmlFor="nrocheque">Nro. de Pago:</label>
+                                    <input
+                                        type="text"
+                                        id="nrocheque"
+                                        value={icnrocheque}
+                                        onChange={(e) => setIcNroCheque(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="icbanco">Banco:</label>
+                                    <select
+                                        id="icbanco"
+                                        value={icbanco}
+                                        onChange={(e) => setIcBanco(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Selecciona un Banco</option>
+                                        <option value="itau">Itau</option>
+                                        <option value="santander">Santander</option>
+                                        <option value="brou">Brou</option>
+                                        <option value="giro">Giro</option>
+                                    </select>
+                                </div>
+                                <div className="fecha-ingreso-cheque">
+                                    <label htmlFor="fechaingresocheque">Fecha:</label>
+                                    <input
+                                        type="date"
+                                        id="fechaingresocheque"
+                                        value={icfecha}
+                                        onChange={(e) => setIcFecha(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="ecmoneda">Moneda:</label>
+                                    <select
+                                        id="ecmoneda"
+                                        value={ictipoMoneda}
+                                        onChange={(e) => setIcTipoMoneda(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Selecciona una Moneda</option>
+                                        {monedas.map((moneda, index) => (
+                                            <option key={index} value={moneda.moneda}>
+                                                {moneda.moneda}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="icarbitraje">Arbitraje:</label>
+                                    <input
+                                        type="text"
+                                        id="icarbitraje"
+                                        value={icarbitraje}
+                                        onChange={(e) => setIcArbitraje(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="icimpdelcheque">Imp. del Cheque:</label>
+                                    <input
+                                        type="text"
+                                        id="icimpdelcheque"
+                                        value={icimpdelcheque}
+                                        onChange={(e) => setIcImpDelCheque(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="icimporteendolares">Importe en USD:</label>
+                                    <input
+                                        type="text"
+                                        id="icimporteendolares"
+                                        value={icimporteendolares}
+                                        onChange={(e) => setIcImporteEnDolares(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="fecha-vencimiento-cheque">
+                                    <label htmlFor="fechavencimientocheque">Fecha Vencimiento:</label>
+                                    <input
+                                        type="date"
+                                        id="fechavencimientocheque"
+                                        value={icfechavencimiento}
+                                        onChange={(e) => setIcFechavencimiento(e.target.value)}
+                                        required
+                                    />
+                                </div>
 
-                        </div>
-                        <div className='div-segundorenglon-datos-cheque'>
-                            <div className='botonesfacturasasociadas'>
-                                <button type="button" className='btn-estandar'>Nuevo</button>
-                                <button type="button" className='btn-estandar'>Usar Anterior</button>
-                                <button type="button" className='btn-estandar'>Modificar</button>
-                                <button type="button" className='btn-eliminar-estandar'>Eliminar</button>
-                                <button type="button" onClick={handleAgregarChequeCargado} className='btn-estandar'>Confirmar</button>
                             </div>
-                        </div>
-
-                    </div>
-
-
-
-                    <div className='div-totales-cheque'>
-                        <h3 className='Titulos-formularios-ingreso-recibos'>Totales del Cheque</h3>
-
-                        <div className='div-primerrenglon-datos-recibos'>
-                            <div>
-                                <label htmlFor="ictotaldelasguias">Total de las Guias:</label>
-                                <input
-                                    type="text"
-                                    id="ictotaldelasguias"
-                                    value={ictotaldelasguias}
-                                    onChange={(e) => setIcTotalDeLasGuias(e.target.value)}
-                                    required
-                                />
+                            <div className='div-segundorenglon-datos-cheque'>
+                                <div className='botonesfacturasasociadas'>
+                                    <button type="button" className='btn-estandar'>Nuevo</button>
+                                    <button type="button" className='btn-estandar'>Usar Anterior</button>
+                                    <button type="button" className='btn-estandar'>Modificar</button>
+                                    <button type="button" className='btn-eliminar-estandar'>Eliminar</button>
+                                    <button type="button" onClick={handleAgregarChequeCargado} className='btn-estandar'>Confirmar</button>
+                                </div>
                             </div>
-                            <div>
-                                <label htmlFor="ictotalingresado">Total Ingresado:</label>
-                                <input
-                                    type="text"
-                                    id="ictotalingresado"
-                                    value={ictotalingresado}
-                                    onChange={(e) => setIcTotalIngresado(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="icsaldodelcheque">Saldo Del Cheque:</label>
-                                <input
-                                    type="text"
-                                    id="icsaldodelcheque"
-                                    value={icsaldodelcheque}
-                                    onChange={(e) => setIcSaldoDelCheque(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="icimpdeldocumento">Imp. del Documento:</label>
-                                <input
-                                    type="text"
-                                    id="icimpdeldocumento"
-                                    value={icimpdeldocumento}
-                                    onChange={(e) => setIcImpDelDocumento(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="icsaldodeldocumento">Saldo del Documento:</label>
-                                <input
-                                    type="text"
-                                    id="icsaldodeldocumento"
-                                    value={icsaldodeldocumento}
-                                    onChange={(e) => setIcSaldoDelDocumento(e.target.value)}
-                                    required
-                                />
-                            </div>
-
 
                         </div>
-                    </div>
 
-                    <div className='div-tabla-cheque'>
-                        <h3 className='Titulos-formularios-ingreso-recibos'>Totales del Cheque</h3>
 
-                        <div className='div-primerrenglon-datos-recibos'>
-                            {/* Tabla que muestra las facturas agregadas */}
-                            <table className='tabla-cheques' >
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Banco</th>
-                                        <th>Nro. de Cheque</th>
-                                        <th>Moneda</th>
-                                        <th>Importe</th>
-                                        <th>Vencimiento</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {iclistadecheques.map((cheque, indexic) => (
-                                        <tr
-                                            key={indexic}
-                                            onClick={() => handleSeleccionarChequeLista(indexic)}
-                                            style={{
-                                                cursor: 'pointer' // Indica que la fila es clickeable
-                                            }}
-                                        >
-                                            <td>{cheque.icfecha}</td>
-                                            <td>{cheque.icbanco}</td>
-                                            <td>{cheque.icnrocheque}</td>
-                                            <td>{cheque.ictipoMoneda}</td>
-                                            <td>{cheque.icimpdelcheque}</td>
-                                            <td>{cheque.icfechavencimiento}</td>
-                                            <td><button type="button" className="action-button" onClick={handleEliminarChequeCargado} disabled={icchequeseleccionado !== indexic}>❌</button></td>
+
+                        <div className='div-totales-cheque'>
+                            <h3 className='Titulos-formularios-ingreso-recibos'>Totales del Pago</h3>
+
+                            <div className='div-primerrenglon-datos-recibos'>
+                                <div>
+                                    <label htmlFor="ictotaldelasguias">Total de las Guias:</label>
+                                    <input
+                                        type="text"
+                                        id="ictotaldelasguias"
+                                        value={ictotaldelasguias}
+                                        onChange={(e) => setIcTotalDeLasGuias(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="ictotalingresado">Total Ingresado:</label>
+                                    <input
+                                        type="text"
+                                        id="ictotalingresado"
+                                        value={ictotalingresado}
+                                        onChange={(e) => setIcTotalIngresado(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="icsaldodelcheque">Saldo Del Pago:</label>
+                                    <input
+                                        type="text"
+                                        id="icsaldodelcheque"
+                                        value={icsaldodelcheque}
+                                        onChange={(e) => setIcSaldoDelCheque(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="icsaldodeldocumento">Saldo del Documento:</label>
+                                    <input
+                                        type="text"
+                                        id="icsaldodeldocumento"
+                                        value={icsaldodeldocumento}
+                                        onChange={(e) => setIcSaldoDelDocumento(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                        <div className='div-tabla-cheque'>
+                            <h3 className='Titulos-formularios-ingreso-recibos'>Medios de Pago</h3>
+
+                            <div className='div-primerrenglon-datos-recibos'>
+                                {/* Tabla que muestra las facturas agregadas */}
+                                <table className='tabla-cheques' >
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Banco</th>
+                                            <th>Nro. de Pago</th>
+                                            <th>Moneda</th>
+                                            <th>Importe</th>
+                                            <th>Vencimiento</th>
+                                            <th>Acciones</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {iclistadecheques.map((cheque, indexic) => (
+                                            <tr
+                                                key={indexic}
+                                                onClick={() => handleSeleccionarChequeLista(indexic)}
+                                                style={{
+                                                    cursor: 'pointer' // Indica que la fila es clickeable
+                                                }}
+                                            >
+                                                <td>{cheque.icfecha}</td>
+                                                <td>{cheque.icbanco}</td>
+                                                <td>{cheque.icnrocheque}</td>
+                                                <td>{cheque.ictipoMoneda}</td>
+                                                <td>{cheque.icimpdelcheque}</td>
+                                                <td>{cheque.icfechavencimiento}</td>
+                                                <td><button type="button" className="action-button" onClick={handleEliminarChequeCargado} disabled={icchequeseleccionado !== indexic}>❌</button></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
 
 
+                            </div>
                         </div>
+
                     </div>
 
-                </div>
 
 
+                    <div className='botonesagregarcheque'>
+                        <button type="submit" className='btn-estandar'>Confirmar</button>
 
-                <div className='botonesagregarcheque'>
-                    <button type="submit" className='btn-estandar'>Confirmar</button>
-
-                    <Link to="/home"><button className="btn-estandar">Volver</button></Link>
-                </div>
+                        <Link to="/home"><button className="btn-estandar">Volver</button></Link>
+                    </div>
 
 
-            </form>
+                </form>
+            </div>
         </div>
     );
 }

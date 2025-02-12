@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './Emisionrecibos.css';
 import { Link } from "react-router-dom";
+import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
+import axios from 'axios';
+import Ingresodecheques from './ingresocheques/Ingresodecheques';
 
 const Emisionrecibos = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -22,20 +25,150 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
   const [erimportedelrecibo, setErImporteDelRecibo] = useState('');//*
   const [ersaldodelrecibo, setErSaldoDelRecibo] = useState('');//*
+  //Estados para traer las monedas
+  const [monedas, setMonedas] = useState([]);
+  const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
+
+  // Estado para la búsqueda de clientes
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [isSelectEnabled, setIsSelectEnabled] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saldoSelectedCliente, setSaldoSelectedCliente] = useState(0);
+
+  // Manejo del input de búsqueda
+  const handleInputChange = (e) => setSearchTerm(e.target.value);
+
+  // Búsqueda de clientes al presionar Enter
+  const handleKeyPress = async (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      e.preventDefault();
+      try {
+        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        setFilteredClientes(response.data);
+        setIsModalOpen(true); // Abre el modal con los resultados
+      } catch (error) {
+        console.error('Error al buscar clientes:', error);
+      }
+    }
+  };
+
+  // Manejar la búsqueda al presionar "Enter"
+  const handleKeyPressDocumento = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Evita que el formulario se envíe
+      if (erdocumentoasociado.trim() !== "") {
+        buscarFactura(erdocumentoasociado);
+      }
+    }
+  };
+
+  const buscarFactura = (comprobante) => {
+    axios.get(`http://localhost:3000/api/buscarfacturaporcomprobante/${comprobante}`)
+      .then(response => {
+        console.log("Factura encontrada:", response.data);
+        setErDocumentoAsociado("");
+        // Agregar la nueva factura al array sin duplicados
+        setErFacturasAsociadas(prevFacturas => {
+          const existe = prevFacturas.some(f => f.erdocumentoasociado === response.data.Comprobante);
+          return existe ? prevFacturas : [...prevFacturas, {
+            erdocumentoasociado: response.data.Id,
+            erimportefacturaasociada: response.data.TotalCobrar
+          }];
+        });
+      })
+      .catch(error => {
+        console.error("Error al buscar factura:", error);
+        alert('Factura no encontrada. Favor de ingresar un Nro Correcto')
+      });
+  };
+
+  // Selección de un cliente desde el modal
+  const handleSelectCliente = (cliente) => {
+    setSelectedCliente(cliente);
+    console.log('Cliente Seleccionado:', cliente)
+    setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setIsSelectEnabled(true);
+    setIsModalOpen(false); // Cierra el modal
+  };
+  //Cerrar modal de clientes
+  const closeModal = () => setIsModalOpen(false);
+
+  const [movimientos, setMovimientos] = useState([]);
+
+  //UseEffect que trae los movimientos de la cuenta corriente luego de selecionar el cliente
+  useEffect(() => {
+
+    if (selectedCliente?.Id) {
+      // Realiza ambas solicitudes en paralelo
+      Promise.all([
+        axios.get(`http://localhost:3000/api/movimientos/${selectedCliente.Id}`),
+        axios.get(`http://localhost:3000/api/saldo/${selectedCliente.Id}`)
+      ])
+        .then(([movimientosRes, saldoRes]) => {
+          console.log('Movimientos recibidos:', movimientosRes.data);
+          console.log('Saldo recibido:', saldoRes.data.saldo);
+
+          setMovimientos(movimientosRes.data);
+          setSaldoSelectedCliente(saldoRes.data.saldo); // Guarda el saldo en el estado
+          //Actualizo todos los campos del formulario 
+          setErID(selectedCliente.Id);
+          setErRazonSocial(selectedCliente.RazonSocial);
+          setErRut(selectedCliente.Rut);
+          setErDireccion(selectedCliente.Direccion);
+          setErTipoMoneda(selectedCliente.Moneda)
+        })
+        .catch(error => console.error('Error al obtener datos:', error));
+    }
+  }, [selectedCliente]);
+
+  //Traigo las monedas desde la BD
+  const fetchMonedas = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+      setMonedas(response.data);
+      setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
+    } catch (error) {
+      console.error('Error al obtener monedas:', error);
+    }
+  }
+
+
+
 
 
   // Estado para el documento y el importe de facturas asociadas
   const [erdocumentoasociado, setErDocumentoAsociado] = useState('');
   const [erimportefacturaasociada, setErImporteFacturaAsociada] = useState('');
   const [erfacturasasociadas, setErFacturasAsociadas] = useState([]);
-
+  const [ertotaldefacturas, setErTotalDeFacturas] = useState('');
   // Estado para la factura seleccionada
   const [erfacturaSeleccionada, setErFacturaSeleccionada] = useState(null);
+
+  //UseEffect para actualizar el saldo y el total de los recibos.
+  useEffect(() => {
+    // Copiar erimporte en erimportedelrecibo
+    setErImporteDelRecibo(erimporte);
+  }, [erimporte]);
+
+  useEffect(() => {
+    // Calcular ersaldodelrecibo
+    const totalFacturas = erfacturasasociadas.reduce(
+      (total, factura) => total + Number(factura.erimportefacturaasociada || 0),
+      0
+    );
+    setErTotalDeFacturas(totalFacturas);
+    setErSaldoDelRecibo(erimportedelrecibo - totalFacturas);
+  }, [erimportedelrecibo, erfacturasasociadas]);
 
   // Función para seleccionar una factura al hacer clic en una fila
   const handleSeleccionarFacturaAsociada = (index) => {
     setErFacturaSeleccionada(index);
   };
+
+  const [isModalOpenCheque, setIsModalOpenCheque] = useState(false);
+  const closeModalCheque = () => setIsModalOpenCheque(false);
 
   // Función para eliminar la factura seleccionada
   const handleEliminarFacturaAsociada = () => {
@@ -46,37 +179,15 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     }
   };
 
-  // Ejemplo de datos para la tabla
-  const movimientos = [
-    { fecha: "2024-10-01", tipo: "R", descuento: "", recibo: "1001", debe: "", haber: "$30" },
-    { fecha: "2024-10-02", tipo: "F", descuento: "500", recibo: "1002", debe: "$150", haber: "" },
-    { fecha: "2024-10-03", tipo: "R", descuento: "", recibo: "1003", debe: "", haber: "$60" },
-    { fecha: "2024-10-04", tipo: "F", descuento: "1000", recibo: "1004", debe: "$250", haber: "" },
-    { fecha: "2024-10-05", tipo: "R", descuento: "", recibo: "1005", debe: "", haber: "$80" },
-    { fecha: "2024-10-06", tipo: "F", descuento: "1200", recibo: "1006", debe: "$400", haber: "" },
-    { fecha: "2024-10-07", tipo: "R", descuento: "", recibo: "1007", debe: "", haber: "$90" },
-    { fecha: "2024-10-08", tipo: "F", descuento: "700", recibo: "1008", debe: "$100", haber: "" },
-    { fecha: "2024-10-09", tipo: "R", descuento: "", recibo: "1009", debe: "", haber: "$100" },
-    { fecha: "2024-10-10", tipo: "F", descuento: "2000", recibo: "1010", debe: "$300", haber: "" },
-    { fecha: "2024-10-11", tipo: "R", descuento: "", recibo: "1011", debe: "", haber: "$120" },
-    { fecha: "2024-10-12", tipo: "F", descuento: "1500", recibo: "1012", debe: "$180", haber: "" },
-    { fecha: "2024-10-13", tipo: "R", descuento: "", recibo: "1013", debe: "", haber: "$110" },
-    { fecha: "2024-10-14", tipo: "F", descuento: "300", recibo: "1014", debe: "$220", haber: "" },
-    { fecha: "2024-10-15", tipo: "R", descuento: "", recibo: "1015", debe: "", haber: "$140" },
-    { fecha: "2024-10-16", tipo: "F", descuento: "600", recibo: "1016", debe: "$130", haber: "" },
-    { fecha: "2024-10-17", tipo: "R", descuento: "", recibo: "1017", debe: "", haber: "$160" },
-    { fecha: "2024-10-18", tipo: "F", descuento: "400", recibo: "1018", debe: "$170", haber: "" },
-    { fecha: "2024-10-19", tipo: "R", descuento: "", recibo: "1019", debe: "", haber: "$180" },
-    { fecha: "2024-10-20", tipo: "F", descuento: "900", recibo: "1020", debe: "$190", haber: "" },
-  ];
+
 
   const TablaMovimientos = ({ datos }) => (
-    <table className='tabla-cuentacorriente-recibos' >
+    <table className='tabla-cuentacorriente' >
       <thead>
         <tr>
           <th>Fecha</th>
           <th>Tipo</th>
-          <th>Descuento</th>
+          <th>Documento</th>
           <th>Recibo</th>
           <th>Debe</th>
           <th>Haber</th>
@@ -85,12 +196,12 @@ const Emisionrecibos = ({ isLoggedIn }) => {
       <tbody>
         {datos.map((movimiento, index) => (
           <tr key={index}>
-            <td>{movimiento.fecha}</td>
-            <td>{movimiento.tipo}</td>
-            <td>{movimiento.descuento}</td>
-            <td>{movimiento.recibo}</td>
-            <td>{movimiento.debe}</td>
-            <td>{movimiento.haber}</td>
+            <td>{movimiento.Fecha}</td>
+            <td>{movimiento.TipoDocumento === 'Factura' ? 'F' : movimiento.TipoDocumento === 'Recibo' ? 'R' : movimiento.TipoDocumento}</td>
+            <td>{movimiento.IdFactura}</td>
+            <td>{movimiento.NumeroRecibo}</td>
+            <td>{movimiento.Debe}</td>
+            <td>{movimiento.Haber}</td>
           </tr>
         ))}
       </tbody>
@@ -100,15 +211,19 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   useEffect(() => {
     const erfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
     setErFechaRecibo(erfechaactual);
+    fetchMonedas();
   }, []); // Se ejecuta solo una vez al montar el componente
 
   // Función para manejar el envío del formulario
   const handleSubmitAgregarRecibo = (e) => {
     e.preventDefault();
-    // Aquí puedes manejar la lógica para enviar la información
-    console.log({
-      razonSocial
-    });
+    
+  if (erfacturasasociadas.length === 0) {
+    alert("Debes asociar al menos una factura antes de continuar.");
+    return; // Detiene la ejecución y no abre el modal
+  }
+
+  setIsModalOpenCheque(true);
   };
 
   // Función para agregar una factura asociada a la tabla
@@ -119,6 +234,18 @@ const Emisionrecibos = ({ isLoggedIn }) => {
       setErDocumentoAsociado(''); // Limpiar el input
       setErImporteFacturaAsociada(''); // Limpiar el input
     }
+  };
+  const datosRecibo = {
+    ernumrecibo,
+    erfecharecibo,
+    erid,
+    searchTerm,
+    ertipoMoneda,
+    erimporte,
+    erformadepago,
+    errazonSocial,
+    errut,
+    erdireccion,
   };
 
 
@@ -163,15 +290,19 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                   value={erid}
                   onChange={(e) => setErID(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
-                <label htmlFor="ernombre">Nombre:</label>
+                <label htmlFor="ecnombre">Nombre:</label>
                 <input
                   type="text"
-                  id="ernombre"
-                  value={ernombre}
-                  onChange={(e) => setErNombre(e.target.value)}
+                  id="ecnombre"
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Buscar Cliente"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -179,17 +310,19 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
             <div className='div-tercerrenglon-datos-recibos'>
               <div>
-                <label htmlFor="ertipoMoneda">Moneda:</label>
+                <label htmlFor="ecmoneda">Moneda:</label>
                 <select
-                  id="ertipoMoneda"
+                  id="ecmoneda"
                   value={ertipoMoneda}
                   onChange={(e) => setErTipoMoneda(e.target.value)}
                   required
                 >
                   <option value="">Selecciona una Moneda</option>
-                  <option value="dolares">Dolares</option>
-                  <option value="pesos">Pesos</option>
-                  <option value="Euros">Euros</option>
+                  {monedas.map((moneda, index) => (
+                    <option key={index} value={moneda.moneda}>
+                      {moneda.moneda}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -216,7 +349,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                   <option value="">Forma de pago</option>
                   <option value="cheques">Cheque</option>
                   <option value="transferencia">Transferencia</option>
-                  <option value="x">X</option>
+                  <option value="efectivo">Efectivo</option>
                 </select>
               </div>
             </div>
@@ -230,6 +363,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                   value={errazonSocial}
                   onChange={(e) => setErRazonSocial(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -240,6 +374,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                   value={errut}
                   onChange={(e) => setErRut(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
             </div>
@@ -253,6 +388,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                   value={erdireccion}
                   onChange={(e) => setErDireccion(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
             </div>
@@ -262,6 +398,9 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           <div className='div-ercuentacorriente'>
             <h3 className='Titulos-formularios-ingreso-recibos'>Cuenta Corriente</h3>
             <TablaMovimientos datos={movimientos} />
+            <div>
+              <label htmlFor="Saldo"><strong>Saldo: </strong> {saldoSelectedCliente ?? '0.00'}</label>
+            </div>
           </div>
 
         </div>
@@ -279,19 +418,12 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                     id="documento"
                     value={erdocumentoasociado}
                     onChange={(e) => setErDocumentoAsociado(e.target.value)}
-                    required
+                    onKeyDown={handleKeyPressDocumento}
+                    placeholder='Nro. Comprobante'
+                    
                   />
                 </div>
-                <div>
-                  <label htmlFor="importeFactura">Importe:</label>
-                  <input
-                    type="number"
-                    id="importeFactura"
-                    value={erimportefacturaasociada}
-                    onChange={(e) => setErImporteFacturaAsociada(e.target.value)}
-                    required
-                  />
-                </div>
+
               </div>
 
               {/* Tabla que muestra las facturas agregadas */}
@@ -308,7 +440,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                       key={index}
                       onClick={() => handleSeleccionarFacturaAsociada(index)}
                       style={{
-                        cursor: 'pointer' // Indica que la fila es clickeable
+                        cursor: 'pointer', fontWeight: erfacturaSeleccionada === index ? "bold" : "normal"
                       }}
                     >
                       <td>{factura.erdocumentoasociado}</td>
@@ -321,8 +453,20 @@ const Emisionrecibos = ({ isLoggedIn }) => {
             </div>
 
             <div className='botonesfacturasasociadas'>
-              <button type="button" onClick={handleAgregarFacturaAsociada} className='btn-agregar-Recibo'>Agregar</button>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
               <button type="button" onClick={handleEliminarFacturaAsociada} disabled={erfacturaSeleccionada === null} className='btn-eliminar-fasociada'>Eliminar Factura</button>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
             </div>
 
           </div>
@@ -354,13 +498,29 @@ const Emisionrecibos = ({ isLoggedIn }) => {
         </div>
 
         <div className='botonesagregarrecibo'>
-          <Link to="/facturacion/recibos/ingresocheques"><button type="submit" className='btn-agregar-Recibo'>Confirmar</button></Link>
+          <button type="submit" className='btn-agregar-Recibo'>Confirmar</button>
 
           <Link to="/home"><button className="btn-Salir-Agregar-Recibo">Volver</button></Link>
         </div>
 
 
       </form>
+      {/* Modal de búsqueda de clientes */}
+      <ModalBusquedaClientes
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        filteredClientes={filteredClientes}
+        handleSelectCliente={handleSelectCliente}
+      />
+
+      <Ingresodecheques
+        isOpen={isModalOpenCheque}
+        closeModal={closeModalCheque}
+        facturasAsociadas={erfacturasasociadas}
+        datosRecibo={datosRecibo}
+        fechaActual={erfecharecibo}
+        totalfacturas={ertotaldefacturas}
+      />
     </div>
   );
 }

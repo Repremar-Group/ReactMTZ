@@ -147,12 +147,55 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   }, []); // Se ejecuta solo una vez al montar el componente
 
   // Función para manejar el envío del formulario
-  const handleSubmitAgregarFm = (e) => {
-    e.preventDefault();
-    // Aquí puedes manejar la lógica para enviar la información
-    console.log({
-      razonSocial
-    });
+  const handleSubmitAgregarFm = async (event) => {
+    event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+
+    // Recopilar los datos del formulario en un objeto
+    const datosFormulario = {
+      IdCliente: fmid,
+      Nombre: searchTerm,
+      RazonSocial: fmrazonsocial,
+      DireccionFiscal: fmdireccionfiscal,
+      Ciudad: fmciudad,
+      Pais: fmpais,
+      RutCedula: fmrutcedula,
+      ComprobanteElectronico: fmcomprobanteelectronico,
+      Comprobante: fmcomprobante,
+      Electronico: fmelectronico,
+      Moneda: fmmoneda,
+      Fecha: fmfecha,
+      TipoIVA:fmtipoiva,
+      CASS: fmcass,
+      TipoEmbarque: fmtipodeembarque,
+      TC: parseFloat(fmtc).toFixed(2),
+      Subtotal: parseFloat(fmsubtotal).toFixed(2),
+      IVA: parseFloat(fmiva).toFixed(2),
+      Redondeo: parseFloat(fmredondeo).toFixed(2),
+      Total: parseFloat(fmtotal).toFixed(2),
+      TotalCobrar: parseFloat(fmtotalacobrar).toFixed(2),
+      DetalleFactura: fmlistadeconceptos,
+      
+    };
+    console.log('info al backend: ', datosFormulario);
+
+
+    try {
+      // Enviar los datos del formulario a tu servidor
+      console.log('Datos del formulario a Backend: ', datosFormulario);
+      const response = await axios.post('http://localhost:3000/api/insertfacturamanual', datosFormulario);
+
+      // Si la respuesta es exitosa, puedes manejar la respuesta aquí
+      console.log('Factura Agregada:', response.data);
+
+      // Opcionalmente, puedes redirigir o actualizar el estado
+      alert('Factura agregado exitosamente');
+    } catch (error) {
+      // Si ocurre un error, manejarlo aquí
+      console.error('Error al agregar la factura:', error);
+      alert('Hubo un error al facturar');
+    } finally{
+      window.location.reload();
+    }
   };
 
   // Estado para la búsqueda de clientes
@@ -457,7 +500,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                       fetchConceptoPorCodigo();
                     }
                   }}
-                  required
+                  
                 />
               </div>
               <div>
@@ -467,7 +510,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmdescripcion"
                   value={fmdescripcion}
                   onChange={(e) => setFmDescripcion(e.target.value)}
-                  required
+                  
                 />
               </div>
               <div>
@@ -503,7 +546,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmimporte"
                   value={fmimporte}
                   onChange={(e) => setFmImporte(e.target.value)}
-                  required
+                  
                 />
               </div>
 

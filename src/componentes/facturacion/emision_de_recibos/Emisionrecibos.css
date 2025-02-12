@@ -281,3 +281,85 @@ p {
 .Titulos-formularios-ingreso-recibos{
     color:#143361;
 }
+
+/* Estilo del scrollbar */
+.tabla-cuentacorriente::-webkit-scrollbar {
+    width: 10px; 
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+  
+.tabla-cuentacorriente::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+  
+.tabla-cuentacorriente::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
+}
+.tabla-cuentacorriente {
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
+    width: 100%; /* La tabla ocupará el 100% del contenedor */
+    max-height: 200px;
+    overflow-y: auto;
+    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.tabla-cuentacorriente tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 150px; /* Ajusta la altura para 3 filas */
+}
+
+.tabla-cuentacorriente th, .tabla-cuentacorriente td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-cuentacorriente th {
+    background-color: #143361;
+    font-weight: bold;
+    color: white;
+    padding: 2px 5px;
+}
+.tabla-cuentacorriente thead {
+    position: relative;
+    top: 0; /* Fija el cabezal en la parte superior */
+    position: sticky;
+}
+
+/* Define anchos para las columnas */
+.tabla-cuentacorriente th:nth-child(1),
+.tabla-cuentacorriente td:nth-child(1) {
+    width: 10%; /* Columna Tipo */
+}
+
+.tabla-cuentacorriente th:nth-child(2),
+.tabla-cuentacorriente td:nth-child(2) {
+    width: 10%; /* Columna Guia */
+}
+
+.tabla-cuentacorriente th:nth-child(3),
+.tabla-cuentacorriente td:nth-child(3) {
+    width: 70%; /* Columna Descripción */
+}
+
+.tabla-cuentacorriente th:nth-child(4),
+.tabla-cuentacorriente td:nth-child(4) {
+    width: 10%; /* Columna Moneda */
+}
+
+.tabla-cuentacorriente th:nth-child(5),
+.tabla-cuentacorriente td:nth-child(5) {
+    width: 15%; /* Columna Importe */
+}
+
+.tabla-cuentacorriente th:nth-child(6),
+.tabla-cuentacorriente td:nth-child(6) {
+    width: 5%; /* Columna Acciones */
+}

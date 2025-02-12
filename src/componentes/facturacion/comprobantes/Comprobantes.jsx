@@ -50,6 +50,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [guiasconconceptos, setGuiasConConceptos] = useState([]);
   const [botonDeshabilitado, setBotonDeshabilitado] = useState(false);
   const [isSelectEnabled, setIsSelectEnabled] = useState(false);
+  
 
   const [isModalOpenGSM, setIsModalOpenGSM] = useState(false);
   const [datosModal, setDatosModal] = useState([]);
@@ -141,6 +142,21 @@ const Comprobantes = ({ isLoggedIn }) => {
     const guiasexpoprepaid = embarquesSeleccionados.filter(
       (embarque) => embarque.tipo === 'EXPO' && embarque.tipodepago === 'P'
     );
+    //Controlo que los embarques sean de la misma empresa
+    if (embarquesSeleccionados.length > 0) {
+      // Obtener todas las empresas de los embarques seleccionados
+      const empresas = embarquesSeleccionados.map(e => e.empresavuelo);
+
+      // Verificar si todas son iguales
+      const todasIguales = empresas.every((empresa) => empresa === empresas[0]);
+
+      if (todasIguales) {
+        setEcCompania(empresas[0]); // Setea el estado con la única empresa
+      } else {
+        alert("⚠️ Los embarques seleccionados tienen empresas de vuelo diferentes.");
+        return;
+      }
+    }
 
     // Crear el array de guías con conceptos
     const nuevasGuiasConConceptos = [
@@ -377,6 +393,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
     console.log(`Total calculado: ${totalEcIva.toFixed(2)}`); // Muestra el total final
     setEcIva(Number(totalEcIva.toFixed(2))); // Aseguramos que sea número
+  
 
   }, [embarquesSeleccionados]);  // El efecto se ejecutará cada vez que cambie `embarquesSeleccionados`
   const calcularTotal = () => {
@@ -597,7 +614,7 @@ const Comprobantes = ({ isLoggedIn }) => {
       Total: parseFloat(ectotal).toFixed(2),
       TotalCobrar: parseFloat(ectotalacobrar).toFixed(2),
       DetalleFactura: guiasconconceptos,
-      EmbarquesSeleccionados: embarquesSeleccionados // Aquí puede que necesites mapearlo si es necesario
+      EmbarquesSeleccionados: embarquesSeleccionados 
     };
     console.log('info al backend: ', datosFormulario);
 
@@ -624,14 +641,16 @@ const Comprobantes = ({ isLoggedIn }) => {
       const response = await axios.post('http://localhost:3000/api/insertfactura', datosFormulario);
 
       // Si la respuesta es exitosa, puedes manejar la respuesta aquí
-      console.log('Recibo agregado:', response.data);
+      console.log('Factura Agregada:', response.data);
 
       // Opcionalmente, puedes redirigir o actualizar el estado
-      alert('Recibo agregado exitosamente');
+      alert('Factura agregado exitosamente');
     } catch (error) {
       // Si ocurre un error, manejarlo aquí
-      console.error('Error al agregar el recibo:', error);
+      console.error('Error al agregar la factura:', error);
       alert('Hubo un error al facturar');
+    } finally{
+      window.location.reload();
     }
   };
 
@@ -656,6 +675,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   value={ecid}
                   onChange={(e) => setEcId(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -696,6 +716,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   value={ecciudad}
                   onChange={(e) => setEcCiudad(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -706,6 +727,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   value={ecpais}
                   onChange={(e) => setEcPais(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div></div>
@@ -721,6 +743,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   value={ecrazonsocial}
                   onChange={(e) => setEcRazonSocial(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -793,6 +816,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   value={ecdireccionfiscal}
                   onChange={(e) => setEcDireccionFiscal(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -819,6 +843,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   value={ecrutcedula}
                   onChange={(e) => setEcrutcedula(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -856,6 +881,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   value={ectc}
                   onChange={(e) => setEcTc(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
             </div>
