@@ -2,6 +2,11 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const { PDFDocument, rgb } = require('pdf-lib');
+const path = require('path');
+const fs = require('fs');
+const { NumeroALetras } = require('./numeroALetras');
+
 
 // Configura la conexión a tu servidor MySQL flexible de Azure
 const connection = mysql.createConnection({
@@ -26,6 +31,12 @@ const app = express();
 app.use(express.json());
 
 app.use(cors());
+
+// Función para generar el mensaje en el backend
+function generarMensaje(monto) {
+  const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
+  return `Son dólares americanos U$S ${montoEnLetras}`;
+}
 
 //Consulta para cargar la tabla de preview de clientes.
 
@@ -1838,7 +1849,7 @@ app.get('/api/buscarfacturaporcomprobante/:comprobante', (req, res) => {
     if (err) {
       return res.status(500).json({ message: 'Error al buscar la factura.' });
     }
-    
+
     if (result.length === 0) {
       return res.status(404).json({ message: 'Factura no encontrada.' });
     }
@@ -1849,7 +1860,7 @@ app.get('/api/buscarfacturaporcomprobante/:comprobante', (req, res) => {
 // Ruta para insertar un recibo
 app.post('/api/insertrecibo', (req, res) => {
   console.log('Received request for /api/insertrecibo');
-  
+
   const {
     nrorecibo,
     fecha,
@@ -1878,6 +1889,167 @@ app.post('/api/insertrecibo', (req, res) => {
     // Respuesta exitosa con el ID del recibo insertado
     res.status(200).json({ message: 'Recibo insertado exitosamente', idrecibo: results.insertId });
   });
+});
+
+
+app.put('/api/actualizarFactura/:idFactura', (req, res) => {
+  const { idFactura } = req.params;
+  const { idrecibo } = req.body;
+
+  console.log(`Actualizando factura ${idFactura} con idrecibo: ${idrecibo}`);
+
+  const updateQuery = `UPDATE facturas SET idrecibo = ? WHERE Id = ?`;
+
+  connection.query(updateQuery, [idrecibo, idFactura], (err, result) => {
+    if (err) {
+      console.error('Error al actualizar la factura:', err);
+      return res.status(500).json({ error: 'Error al actualizar la factura' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'No se encontró la factura para actualizar' });
+    }
+
+    res.status(200).json({ message: 'Factura actualizada con éxito' });
+  });
+});
+
+app.post('/api/insertarCuentaCorriente', (req, res) => {
+  const { idcliente, fecha, tipodocumento, numerorecibo, moneda, debe, haber } = req.body;
+
+  const insertQuery = `
+      INSERT INTO cuenta_corriente (IdCliente, Fecha, TipoDocumento, NumeroRecibo, Moneda, Debe, Haber)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  connection.query(insertQuery, [idcliente, fecha, tipodocumento, numerorecibo, moneda, debe, haber], (err, result) => {
+    if (err) {
+      console.error('Error al insertar en cuenta corriente:', err);
+      return res.status(500).json({ error: 'Error al insertar en cuenta corriente' });
+    }
+    res.status(200).json({ message: 'Recibo agregado a cuenta corriente' });
+  });
+});
+app.post('/api/obtenerFacturasdesdeRecibo', (req, res) => {
+  const { ids } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'No se proporcionaron IDs de facturas válidos.' });
+  }
+
+  const placeholders = ids.map(() => '?').join(',');
+  const sql = `
+    SELECT 
+      *,
+      DATE_FORMAT(Fecha, '%Y-%m-%d') AS FechaFormateada  -- Formatear solo la fecha
+    FROM facturas
+    WHERE Id IN (${placeholders})
+  `;
+
+  connection.query(sql, ids, (err, results) => {
+    if (err) {
+      console.error('Error al obtener facturas:', err);
+      return res.status(500).json({ error: 'Error al obtener facturas.' });
+    }
+
+    res.status(200).json(results);
+  });
+});
+
+
+
+app.post('/api/generarReciboPDF', async (req, res) => {
+  try {
+    const datosRecibo = req.body;
+    console.log("Datos recibidos:", datosRecibo);
+    const fecha = datosRecibo.erfecharecibo; // Suponiendo que tiene el formato "2025-02-18"
+    const [year, month, day] = fecha.split('-'); // Divide la fecha en partes
+
+    // Cargar el PDF base
+    const pdfBasePath = path.join(__dirname, 'pdfs', 'recibo_base.pdf'); // Ruta del PDF base
+    const pdfBytes = fs.readFileSync(pdfBasePath);
+
+    // Cargar el PDF en PDF-Lib
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    const pages = pdfDoc.getPages();
+    const primeraPagina = pages[0];
+
+    // Insertar los datos estaticos del recibo
+    primeraPagina.drawText(`Recibo N°: ${datosRecibo.ernumrecibo}`, { x: 460, y: 760, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.errut}`, { x: 310, y: 760, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${day}`, { x: 470, y: 700, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${month}`, { x: 510, y: 700, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${year}`, { x: 545, y: 700, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.errazonSocial}`, { x: 150, y: 720, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.erdireccion}`, { x: 150, y: 700, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`Recibo sobre Facturas Detalladas:`, { x: 50, y: 630, size: 12 });
+    primeraPagina.drawText(`Documento:`, { x: 50, y: 610, size: 10 });
+    primeraPagina.drawText(`Fecha:`, { x: 150, y: 610, size: 10 });
+    primeraPagina.drawText(`Saldo:`, { x: 220, y: 610, size: 10 });
+    primeraPagina.drawLine({
+      start: { x: 50, y: 600 }, // Punto de inicio de la línea
+      end: { x: 300, y: 600 },   // Punto final de la línea (ajusta el valor de x para cambiar el largo)
+      thickness: 1,              // Grosor de la línea
+      color: rgb(0, 0, 0)        // Color negro
+    });
+    // Verificar si 'facturas' existe y es un arreglo
+    if (Array.isArray(datosRecibo.facturas)) {
+      let facturaYPos = 590; // Posición Y inicial para las facturas
+      datosRecibo.facturas.forEach((factura) => {
+        primeraPagina.drawText(`${factura.Comprobante}`, { x: 50, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+        primeraPagina.drawText(`${factura.FechaFormateada}`, { x: 150, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+        primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 220, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+        primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 520, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+        facturaYPos -= 20; // Decrementar la posición Y para la siguiente factura
+      });
+      primeraPagina.drawText(`Banco:`, { x: 50, y: facturaYPos, size: 10 });
+      primeraPagina.drawText(`Vencimiento:`, { x: 150, y: facturaYPos, size: 10 });
+      primeraPagina.drawText(`Nro.Documento:`, { x: 220, y: facturaYPos, size: 10 });
+      primeraPagina.drawText(`Moneda:`, { x: 310, y: facturaYPos, size: 10 });
+      primeraPagina.drawText(`Arbitraje:`, { x: 371, y: facturaYPos, size: 10 });
+      primeraPagina.drawText(`Importe:`, { x: 435, y: facturaYPos, size: 10 });
+      primeraPagina.drawLine({
+        start: { x: 50, y: facturaYPos - 10 }, // Punto de inicio de la línea
+        end: { x: 470, y: facturaYPos - 10 },   // Punto final de la línea (ajusta el valor de x para cambiar el largo)
+        thickness: 1,              // Grosor de la línea
+        color: rgb(0, 0, 0)        // Color negro
+      });
+      if (Array.isArray(datosRecibo.listadepagos)) {
+        let pagosYPos = facturaYPos - 20; // Posición Y inicial para las facturas
+        datosRecibo.listadepagos.forEach((pago) => {
+          primeraPagina.drawText(`${pago.icbanco.toUpperCase()}`, { x: 50, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.icfechavencimiento}`, { x: 150, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.icnrocheque}`, { x: 220, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.ictipoMoneda}`, { x: 310, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${datosRecibo.arbitraje}`, { x: 371, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.icimpdelcheque}`, { x: 435, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+          pagosYPos -= 20; // Decrementar la posición Y para la siguiente factura
+        });
+        //Sumo todos los improes
+        let montototalpagos = datosRecibo.totalrecibo;
+        let montoenletras = generarMensaje(montototalpagos);
+        primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10 });
+        primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, color: rgb(0, 0, 0) });
+      } else {
+        console.error("No se encontraron pagos en los datos recibidos.", datosRecibo.listadepagos);
+      }
+
+    } else {
+      console.error("No se encontraron facturas en los datos recibidos.", datosRecibo.facturas);
+    }
+
+    // Guardar el nuevo PDF en memoria
+    const pdfFinalBytes = await pdfDoc.save();
+
+    // Enviar el PDF como respuesta
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=Recibo_${datosRecibo.ernumrecibo}.pdf`);
+    res.send(Buffer.from(pdfFinalBytes));
+
+  } catch (error) {
+    console.error('Error al generar el PDF:', error);
+    res.status(500).json({ error: 'Error al generar el PDF' });
+  }
 });
 
 

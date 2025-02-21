@@ -3,7 +3,7 @@ import './Ingresodecheque.css'
 import { Link } from "react-router-dom";
 import axios from 'axios';
 
-const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, fechaActual, totalfacturas }) => {
+const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, fechaActual, totalfacturas, clienteAsociado }) => {
     // Estado para los campos del formulario
     if (!isOpen) return null;
 
@@ -92,26 +92,96 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         setIcSaldoDelCheque(totalImportes - totalfacturas)
     }, [iclistadecheques]); // Se ejecuta solo una vez al montar el componente
 
+    const descargarPDF = async (datosRecibo) => {
+        try {
+            const response = await fetch('http://localhost:3000/api/generarReciboPDF', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datosRecibo)
+            });
+
+            if (!response.ok) throw new Error('Error al generar el PDF');
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Recibo_${datosRecibo.ernumrecibo}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            alert('PDF descargado correctamente');
+        } catch (error) {
+            console.error('Error al descargar el PDF:', error);
+            alert('Error al descargar el PDF');
+        }
+    };
+
     // Función para manejar el envío del formulario
     const handleSubmitAgregarRecibo = async (e) => {
+
         e.preventDefault();
-        const nuevoRecibo = {
-            nrorecibo: datosRecibo.ernumrecibo,
-            fecha: datosRecibo.erfecharecibo,
-            idcliente: datosRecibo.erid,
-            nombrecliente: datosRecibo.searchTerm,
-            moneda: datosRecibo.ertipoMoneda,
-            importe: datosRecibo.erimporte,
-            formapago: datosRecibo.erformadepago,
-            razonsocial: datosRecibo.errazonSocial,
-            rut: datosRecibo.errut,
-            direccion: datosRecibo.erdireccion
-        };
-    
+        console.log('Estas son las facturas asociadas al Recibo: ', facturasAsociadas);
+
+
         try {
+            const idsFacturas = facturasAsociadas.map(factura => factura.erdocumentoasociado);
+            console.log("IDs de facturas a consultar:", idsFacturas);
+
+            const responsefacturas = await axios.post('http://localhost:3000/api/obtenerFacturasdesdeRecibo', { ids: idsFacturas });
+            console.log("Facturas obtenidas:", responsefacturas.data);
+            datosRecibo.facturas = responsefacturas.data;
+            datosRecibo.listadepagos = iclistadecheques;
+            datosRecibo.arbitraje = icarbitraje;
+            datosRecibo.totalrecibo = ictotaldelasguias;
+
+            const nuevoRecibo = {
+                nrorecibo: datosRecibo.ernumrecibo,
+                fecha: datosRecibo.erfecharecibo,
+                idcliente: datosRecibo.erid,
+                nombrecliente: datosRecibo.searchTerm,
+                moneda: datosRecibo.ertipoMoneda,
+                importe: datosRecibo.erimporte,
+                formapago: datosRecibo.erformadepago,
+                razonsocial: datosRecibo.errazonSocial,
+                rut: datosRecibo.errut,
+                direccion: datosRecibo.erdireccion
+            };
+
             const response = await axios.post('http://localhost:3000/api/insertrecibo', nuevoRecibo);
-            alert('Recibo guardado con éxito');
-            console.log(response.data);
+            const idrecibo = response.data.idrecibo;
+
+            if (facturasAsociadas.length > 0) {
+                await Promise.all(
+                    facturasAsociadas.map(async (factura) => {
+                        await axios.put(`http://localhost:3000/api/actualizarFactura/${factura.erdocumentoasociado}`, {
+                            idrecibo: idrecibo
+                        });
+                    })
+                );
+                alert('Facturas actualizadas con el ID de recibo.');
+            }
+            //Insertar el recibo en la cuenta corriente después de actualizar las facturas
+            const movimientoCuentaCorriente = {
+                idcliente: datosRecibo.erid, // ID del cliente
+                fecha: datosRecibo.erfecharecibo, // Fecha del recibo
+                tipodocumento: "Recibo", // Tipo de documento siempre "Recibo"
+                numerorecibo: datosRecibo.ernumrecibo, // Número de recibo
+                moneda: datosRecibo.ertipoMoneda, // Moneda del recibo
+                debe: 0, // No afecta la columna "Debe"
+                haber: datosRecibo.erimporte // El total del recibo va en "Haber"
+            };
+
+            // Enviar datos al backend para insertar en cuenta corriente
+            await axios.post('http://localhost:3000/api/insertarCuentaCorriente', movimientoCuentaCorriente);
+
+            alert('Recibo agregado a la cuenta corriente.');
+
+            await descargarPDF(datosRecibo);
+
         } catch (error) {
             console.error('Error al guardar el recibo:', error);
             alert('Error al guardar el recibo');

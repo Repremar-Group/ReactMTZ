@@ -520,6 +520,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
         datosRecibo={datosRecibo}
         fechaActual={erfecharecibo}
         totalfacturas={ertotaldefacturas}
+        clienteAsociado={erid}
       />
     </div>
   );
