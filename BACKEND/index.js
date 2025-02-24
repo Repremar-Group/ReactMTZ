@@ -1854,6 +1854,11 @@ app.get('/api/buscarfacturaporcomprobante/:comprobante', (req, res) => {
       return res.status(404).json({ message: 'Factura no encontrada.' });
     }
 
+     // Comprobamos si la factura tiene un valor en el campo idrecibo
+    const factura = result[0];
+    if (factura.idrecibo) {
+      return res.status(200).json({ message: 'Tiene Recibo.', factura: factura }); // Cambiar a 200 y enviar la factura
+    }
     res.status(200).json(result[0]); // Devuelve solo la primera coincidencia
   });
 });

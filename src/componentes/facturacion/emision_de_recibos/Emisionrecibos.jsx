@@ -69,20 +69,30 @@ const Emisionrecibos = ({ isLoggedIn }) => {
       .then(response => {
         console.log("Factura encontrada:", response.data);
         setErDocumentoAsociado("");
-        // Agregar la nueva factura al array sin duplicados
-        setErFacturasAsociadas(prevFacturas => {
-          const existe = prevFacturas.some(f => f.erdocumentoasociado === response.data.Comprobante);
-          return existe ? prevFacturas : [...prevFacturas, {
-            erdocumentoasociado: response.data.Id,
-            erimportefacturaasociada: response.data.TotalCobrar
-          }];
-        });
-      })
-      .catch(error => {
-        console.error("Error al buscar factura:", error);
-        alert('Factura no encontrada. Favor de ingresar un Nro Correcto')
+        // Comprobar si la factura ya está facturada
+        if (response.data.message && response.data.message === 'Tiene Recibo.') {
+          alert('Esta factura ya tiene un recibo asociado.');
+          return; // Salir de la función para evitar agregarla a las facturas asociadas
+        }
+       // Comprobar si la factura ya está en el array de facturas asociadas
+      setErFacturasAsociadas(prevFacturas => {
+        const existe = prevFacturas.some(f => f.erdocumentoasociado === response.data.Id);
+        if (existe) {
+          alert('Esta factura ya ha sido agregada.');
+          return prevFacturas; // Si ya existe, no la agrega
+        }
+
+        return [...prevFacturas, {
+          erdocumentoasociado: response.data.Id,
+          erimportefacturaasociada: response.data.TotalCobrar
+        }];
       });
-  };
+    })
+    .catch(error => {
+      console.error("Error al buscar factura:", error);
+      alert('Factura no encontrada. Favor de ingresar un Nro Correcto');
+    });
+};
 
   // Selección de un cliente desde el modal
   const handleSelectCliente = (cliente) => {
@@ -217,13 +227,17 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   // Función para manejar el envío del formulario
   const handleSubmitAgregarRecibo = (e) => {
     e.preventDefault();
+    if(ersaldodelrecibo != 0){
+      alert("El recibo debe cancelar exactamente el total de las facturas");
+      return;
+      
+    } else if (erfacturasasociadas.length === 0 ) {
+      alert("Debes asociar al menos una factura antes de continuar.");
+      return; // Detiene la ejecución y no abre el modal
+    }
     
-  if (erfacturasasociadas.length === 0) {
-    alert("Debes asociar al menos una factura antes de continuar.");
-    return; // Detiene la ejecución y no abre el modal
-  }
 
-  setIsModalOpenCheque(true);
+    setIsModalOpenCheque(true);
   };
 
   // Función para agregar una factura asociada a la tabla
@@ -250,11 +264,13 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
 
   return (
-    <div className="EmitirRecibos-container">
-      <h2 className='Titulo-ingreso-recibos'>Ingreso de Recibos</h2>
-      <form onSubmit={handleSubmitAgregarRecibo} className='formulario-emitir-recibo'>
+    <div className="EmitirRecibos-wrapper">
+      <h2 className="Titulo-ingreso-recibos">Ingreso de Recibos</h2>
+      <div className="EmitirRecibos-container">
 
-        <div className='primerafilaemitirrecibo'>
+        <form onSubmit={handleSubmitAgregarRecibo} className='formulario-emitir-recibo2'>
+
+
           <div className='div-datos-recibos'>
             <h3 className='Titulos-formularios-ingreso-recibos'>Datos del Recibo</h3>
 
@@ -395,17 +411,6 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
           </div>
 
-          <div className='div-ercuentacorriente'>
-            <h3 className='Titulos-formularios-ingreso-recibos'>Cuenta Corriente</h3>
-            <TablaMovimientos datos={movimientos} />
-            <div>
-              <label htmlFor="Saldo"><strong>Saldo: </strong> {saldoSelectedCliente ?? '0.00'}</label>
-            </div>
-          </div>
-
-        </div>
-
-        <div className='segundafilaemitirrecibo'>
           <div className='erfacturasasociadas'>
             <h3 className='Titulos-formularios-ingreso-recibos'>Facturas Asociadas</h3>
             <div className='primerafilafacturasasociadas'>
@@ -420,7 +425,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                     onChange={(e) => setErDocumentoAsociado(e.target.value)}
                     onKeyDown={handleKeyPressDocumento}
                     placeholder='Nro. Comprobante'
-                    
+
                   />
                 </div>
 
@@ -480,6 +485,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                 id="erimportedelrecibo"
                 value={erimportedelrecibo}
                 onChange={(e) => setErImporteDelRecibo(e.target.value)}
+                readOnly
                 required
               />
             </div>
@@ -490,38 +496,46 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                 id="ersaldodelrecibo"
                 value={ersaldodelrecibo}
                 onChange={(e) => setErSaldoDelRecibo(e.target.value)}
+                readOnly
                 required
               />
             </div>
           </div>
 
-        </div>
+          <div className='div-ercuentacorriente'>
+            <h3 className='Titulos-formularios-ingreso-recibos'>Cuenta Corriente</h3>
+            <TablaMovimientos datos={movimientos} />
+            <div>
+              <label htmlFor="Saldo"><strong>Saldo: </strong> {saldoSelectedCliente ?? '0.00'}</label>
+            </div>
+          </div>
+          <div></div>
+          <div className='botonesagregarrecibo'>
+            <button type="submit" className='btn-agregar-Recibo'>Confirmar</button>
 
-        <div className='botonesagregarrecibo'>
-          <button type="submit" className='btn-agregar-Recibo'>Confirmar</button>
-
-          <Link to="/home"><button className="btn-Salir-Agregar-Recibo">Volver</button></Link>
-        </div>
+            <Link to="/home"><button className="btn-Salir-Agregar-Recibo">Volver</button></Link>
+          </div>
 
 
-      </form>
-      {/* Modal de búsqueda de clientes */}
-      <ModalBusquedaClientes
-        isOpen={isModalOpen}
-        closeModal={closeModal}
-        filteredClientes={filteredClientes}
-        handleSelectCliente={handleSelectCliente}
-      />
+        </form>
+        {/* Modal de búsqueda de clientes */}
+        <ModalBusquedaClientes
+          isOpen={isModalOpen}
+          closeModal={closeModal}
+          filteredClientes={filteredClientes}
+          handleSelectCliente={handleSelectCliente}
+        />
 
-      <Ingresodecheques
-        isOpen={isModalOpenCheque}
-        closeModal={closeModalCheque}
-        facturasAsociadas={erfacturasasociadas}
-        datosRecibo={datosRecibo}
-        fechaActual={erfecharecibo}
-        totalfacturas={ertotaldefacturas}
-        clienteAsociado={erid}
-      />
+        <Ingresodecheques
+          isOpen={isModalOpenCheque}
+          closeModal={closeModalCheque}
+          facturasAsociadas={erfacturasasociadas}
+          datosRecibo={datosRecibo}
+          fechaActual={erfecharecibo}
+          totalfacturas={ertotaldefacturas}
+          clienteAsociado={erid}
+        />
+      </div>
     </div>
   );
 }

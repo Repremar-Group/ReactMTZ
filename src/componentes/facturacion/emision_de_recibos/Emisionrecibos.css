@@ -7,17 +7,26 @@
 }
 
 .EmitirRecibos-container {
-    max-width: 1000px;
-    /* Limita el ancho máximo del formulario */
-    max-height: 900px;
-    /* Limita el ancho máximo del formulario */
+    display: flex;
+    gap: 10px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    width: fit-content;
+    max-width: 100%;
+    margin: auto; /* Centra horizontalmente */
+}
+.EmitirRecibos-wrapper {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra todo horizontalmente */
     width: 100%;
-    padding: 20px;
     background-color: #f9f9f9;
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
     box-sizing: border-box;
 }
+
 
 
 /* Estilos para cada subcontenedor */
@@ -32,40 +41,38 @@
     box-sizing: border-box;
     /* Incluye el padding y el borde en el tamaño total */
     background-color: #f0f0f0;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
     /* Color de fondo por defecto */
 }
+
 
 /* Colores diferentes para cada subcontenedor */
 .div-datos-recibos {
     background-color: #f9f9f9;
-    /* Color específico */
-    max-width: 500px;
-    max-height: 100%;
     border-radius: 10px;
-    
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+    padding: 20px;
+
 }
 
 .div-ercuentacorriente {
     background-color: #f9f9f9;
-    width: 100%;
-    height: 396px;
-    padding: 30px;
+    grid-column: 3 / 4;
+    grid-row: 1 / 3;
+    padding: 20px;
     border-radius: 10px;
-    
+
 }
 
 .erfacturasasociadas {
-    display: flex;
-    flex-direction: column;
     background-color: #f9f9f9;
-    height: 300px;
-    max-height: 300px;
-    /* Altura fija del contenedor */
-    padding: 10px;
-
-    padding: 30px;
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    padding: 20px;
     border-radius: 10px;
-
+    
+    height: 280px; /* Establece la altura */
 }
 
 .primerafilafacturasasociadas {
@@ -78,14 +85,10 @@
 
 .ersaldodelrecibo {
     background-color: #f9f9f9;
-    /* Color específico */
-    width: 100%;
-    height: 300px;
-    max-height: 300px;
-    padding: 30px;
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    padding: 20px;
     border-radius: 10px;
-
-
 }
 
 .botonesfacturasasociadas {
@@ -167,7 +170,25 @@ p {
 .div-quintorenglon-datos-recibos div {
     width: 99%;
 }
+.formulario-emitir-recibo2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+    padding: 10px;
+}
+/*Estilo para los campos*/
+.formulario-emitir-recibo2 input,
+.formulario-emitir-recibo2 select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    color: gray;
 
+}
 /*Estilo para los campos*/
 .formulario-emitir-recibo input,
 .formulario-emitir-recibo select {
@@ -178,71 +199,118 @@ p {
     box-sizing: border-box;
     background-color: #f0f0f0;
     color: gray;
-    
+
+}
+.contenedorbotonconfirmarcheque {
+    display: grid;
+    grid-template-rows: auto 1fr auto; /* Separa en 3 filas, dejando el botón abajo */
+    height: 100%;
+}
+.btn-confirmarcheque{
+    width: 100%;
+    padding: 2px 5px; /* Reduce el espacio interno */
+    height: 30px; /* Ajusta la altura manualmente */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #143361;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+.btn-confirmarcheque:hover {
+    background-color: #007bff;
+}
+
+.tabla-facturasasociadas {
+    font-size: 12px;
+    /* Tamaño de fuente más pequeño */
+    border-collapse: collapse;
+    /* Sin espacios entre celdas */
+    table-layout: auto;
+    /* Permite que las celdas se ajusten al contenido */
+    width: 100%;
+    /* Asegúrate de que la tabla use el ancho completo */
+    max-height: 116px;
+    /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    display: block;
+    /* Hace que la tabla se comporte como un bloque */
 }
 
 
-.tabla-facturasasociadas {
-    font-size: 12px; /* Tamaño de fuente más pequeño */
-    border-collapse: collapse; /* Sin espacios entre celdas */
-    table-layout: auto; /* Permite que las celdas se ajusten al contenido */
-    width: 100%; /* Asegúrate de que la tabla use el ancho completo */
-    max-height: 116px; /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    display: block; /* Hace que la tabla se comporte como un bloque */
-  }
-  
 
-  
-  .tabla-facturasasociadas tbody {
-    
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    max-height: 75px; /* Ajusta la altura para 3 filas */
-  }
-  
-  .tabla-facturasasociadas th, .tabla-facturasasociadas td {
-    padding: 2px 5px; /* Espaciado reducido */
-    text-align: left; /* Alineación del texto a la izquierda */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-  }
-  
-  .tabla-facturasasociadas th {
-    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+.tabla-facturasasociadas tbody {
+
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    max-height: 75px;
+    /* Ajusta la altura para 3 filas */
+}
+
+.tabla-facturasasociadas th,
+.tabla-facturasasociadas td {
+    padding: 2px 5px;
+    /* Espaciado reducido */
+    text-align: left;
+    /* Alineación del texto a la izquierda */
+    white-space: nowrap;
+    /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-facturasasociadas th {
+    background-color: #f0f0f0;
+    /* Color de fondo para las cabeceras */
     font-weight: bold;
     padding: 2px 5px;
-  }
+}
 
 
-  .tabla-cuentacorriente-recibos{
-    font-size: 12px; /* Tamaño de fuente más pequeño */
-    border-collapse: collapse; /* Sin espacios entre celdas */
-    table-layout: auto; /* Permite que las celdas se ajusten al contenido */
-    width: 100%; /* Asegúrate de que la tabla use el ancho completo */
-    max-height: 280px; /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    display: block; /* Hace que la tabla se comporte como un bloque */
-  }
+.tabla-cuentacorriente-recibos {
+    font-size: 12px;
+    /* Tamaño de fuente más pequeño */
+    border-collapse: collapse;
+    /* Sin espacios entre celdas */
+    table-layout: auto;
+    /* Permite que las celdas se ajusten al contenido */
+    width: 100%;
+    /* Asegúrate de que la tabla use el ancho completo */
+    max-height: 280px;
+    /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    display: block;
+    /* Hace que la tabla se comporte como un bloque */
+}
 
-  .tabla-cuentacorriente-recibos tbody {
-    
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    max-height: 75px; /* Ajusta la altura para 3 filas */
-  }
-  
-  .tabla-cuentacorriente-recibos th, .tabla-cuentacorriente-recibos td {
-    padding: 2px 5px; /* Espaciado reducido */
-    text-align: left; /* Alineación del texto a la izquierda */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-  }
-  
-  .tabla-cuentacorriente-recibos th {
-    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+.tabla-cuentacorriente-recibos tbody {
+
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    max-height: 75px;
+    /* Ajusta la altura para 3 filas */
+}
+
+.tabla-cuentacorriente-recibos th,
+.tabla-cuentacorriente-recibos td {
+    padding: 2px 5px;
+    /* Espaciado reducido */
+    text-align: left;
+    /* Alineación del texto a la izquierda */
+    white-space: nowrap;
+    /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-cuentacorriente-recibos th {
+    background-color: #f0f0f0;
+    /* Color de fondo para las cabeceras */
     font-weight: bold;
     padding: 2px 5px;
-  }
+}
 
-  /* Botones para agregar y salir */
-.btn-agregar-Recibo, .btn-Salir-Agregar-Recibo {
+/* Botones para agregar y salir */
+.btn-agregar-Recibo,
+.btn-Salir-Agregar-Recibo {
     padding: 10px;
     background-color: #143361;
     color: white;
@@ -255,10 +323,12 @@ p {
     margin-top: 15px;
 }
 
-.btn-agregar-Recibo:hover, .btn-Salir-Agregar-Recibo:hover {
+.btn-agregar-Recibo:hover,
+.btn-Salir-Agregar-Recibo:hover {
     background-color: #007bff;
 }
-.btn-eliminar-fasociada{
+
+.btn-eliminar-fasociada {
     padding: 10px;
     background-color: rgb(100, 4, 4);
     color: white;
@@ -274,51 +344,96 @@ p {
 .btn-eliminar-fasociada:hover {
     background-color: #ed0018;
 }
-.Titulo-ingreso-recibos{
+
+.Titulo-ingreso-recibos {
     text-align: center;
-    color:#143361;
+    color: #143361;
 }
-.Titulos-formularios-ingreso-recibos{
-    color:#143361;
+
+.Titulos-formularios-ingreso-recibos {
+    color: #143361;
 }
 
 /* Estilo del scrollbar */
 .tabla-cuentacorriente::-webkit-scrollbar {
-    width: 10px; 
+    width: 10px;
     background-color: #f0f0f0;
     border-radius: 5px;
 }
-  
+
 .tabla-cuentacorriente::-webkit-scrollbar-thumb {
     background-color: #143361;
     border-radius: 5px;
     border: 2px solid #f0f0f0;
 }
-  
+
 .tabla-cuentacorriente::-webkit-scrollbar-thumb:hover {
     background-color: #4885e2;
+}
+/* Estilo del scrollbar */
+.tabla-facturasasociadas::-webkit-scrollbar {
+    width: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.tabla-facturasasociadas::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+
+.tabla-facturasasociadas::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
+}
+.tabla-facturasasociadas tbody {
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    max-height: 150px;
+    /* Ajusta la altura para 3 filas */
+}
+.tabla-facturasasociadas th {
+    background-color: #143361;
+    font-weight: bold;
+    color: white;
+    padding: 2px 5px;
+}
+.tabla-facturasasociadas thead {
+    position: relative;
+    top: 0;
+    /* Fija el cabezal en la parte superior */
+    position: sticky;
 }
 .tabla-cuentacorriente {
     font-size: 14px;
     border-collapse: collapse;
-    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
-    width: 100%; /* La tabla ocupará el 100% del contenedor */
-    max-height: 200px;
+    table-layout: fixed;
+    /* Asegura que las columnas tengan un ancho fijo */
+    width: 100%;
+    /* La tabla ocupará el 100% del contenedor */
+    max-height: 345px;
     overflow-y: auto;
-    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
+    display: block;
+    /* Hace que la tabla se comporte como un bloque para aplicar scroll */
     border-radius: 5px;
     margin: 20px 0;
 }
 
 .tabla-cuentacorriente tbody {
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    max-height: 150px; /* Ajusta la altura para 3 filas */
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    max-height: 150px;
+    /* Ajusta la altura para 3 filas */
 }
 
-.tabla-cuentacorriente th, .tabla-cuentacorriente td {
-    padding: 2px 5px; /* Espaciado reducido */
-    text-align: left; /* Alineación del texto a la izquierda */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+.tabla-cuentacorriente th,
+.tabla-cuentacorriente td {
+    padding: 2px 5px;
+    /* Espaciado reducido */
+    text-align: left;
+    /* Alineación del texto a la izquierda */
+    white-space: nowrap;
+    /* Evita que el texto se divida en varias líneas */
 }
 
 .tabla-cuentacorriente th {
@@ -327,39 +442,47 @@ p {
     color: white;
     padding: 2px 5px;
 }
+
 .tabla-cuentacorriente thead {
     position: relative;
-    top: 0; /* Fija el cabezal en la parte superior */
+    top: 0;
+    /* Fija el cabezal en la parte superior */
     position: sticky;
 }
 
 /* Define anchos para las columnas */
 .tabla-cuentacorriente th:nth-child(1),
 .tabla-cuentacorriente td:nth-child(1) {
-    width: 10%; /* Columna Tipo */
+    width: 15%;
+    /* Columna Tipo */
 }
 
 .tabla-cuentacorriente th:nth-child(2),
 .tabla-cuentacorriente td:nth-child(2) {
-    width: 10%; /* Columna Guia */
+    width: 10%;
+    /* Columna Guia */
 }
 
 .tabla-cuentacorriente th:nth-child(3),
 .tabla-cuentacorriente td:nth-child(3) {
-    width: 70%; /* Columna Descripción */
+    width: 20%;
+    /* Columna Descripción */
 }
 
 .tabla-cuentacorriente th:nth-child(4),
 .tabla-cuentacorriente td:nth-child(4) {
-    width: 10%; /* Columna Moneda */
+    width: 20%;
+    /* Columna Moneda */
 }
 
 .tabla-cuentacorriente th:nth-child(5),
 .tabla-cuentacorriente td:nth-child(5) {
-    width: 15%; /* Columna Importe */
+    width: 15%;
+    /* Columna Importe */
 }
 
 .tabla-cuentacorriente th:nth-child(6),
 .tabla-cuentacorriente td:nth-child(6) {
-    width: 5%; /* Columna Acciones */
+    width: 15%;
+    /* Columna Acciones */
 }
