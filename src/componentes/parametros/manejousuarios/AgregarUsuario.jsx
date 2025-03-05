@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
 import Alertas from '../../modales/Alertas';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const AgregarUsuario = () => {
     // Estados para los campos del formulario
@@ -34,13 +36,14 @@ const AgregarUsuario = () => {
                 }, 2000);
             })
             .catch(error => {
-                alert('Error al agregar el usuario');
+                toast.error('Error al agregar el usuario');
                 console.error(error);
             });
     };
 
     return (
         <div className="estandar-container">
+            <ToastContainer />
             <form onSubmit={handleSubmit} className='formulario-estandar'>
                 <h2 className='titulo-estandar'>Agregar Usuario</h2>
 

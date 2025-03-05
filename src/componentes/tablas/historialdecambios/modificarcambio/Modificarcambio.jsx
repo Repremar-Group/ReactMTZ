@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'; // Asegúrate de importar useEffect
 import'./Modificarcambio.css';
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const ModificarCambio = ({fecha, cotizacion, closeModal, id }) => {
     if (!fecha || !cotizacion) return null; // No muestra nada si no hay empresa seleccionada
@@ -29,16 +31,24 @@ const ModificarCambio = ({fecha, cotizacion, closeModal, id }) => {
           });
     
           // Si la solicitud es exitosa
-          alert('Tipo de cambio modificado exitosamente');
+          toast.success('Tipo de cambio modificado exitosamente');
           closeModal(); // Cierra el modal después de la modificación
         } catch (error) {
-          console.error('Error al modificar el tipo de cambio:', error);
-          alert('Hubo un error al modificar el tipo de cambio');
-        }
+            console.error('Error al modificar el tipo de cambio:', error);
+          
+            // Acceder al error y mostrar el mensaje adecuado
+            if (error.response && error.response.status === 450) {
+              toast.error(error.response.data.error); // Mostrar el mensaje de error desde el backend
+            } else {
+              toast.error('Hubo un error al modificar el tipo de cambio');
+            }
+          }
       };
 
     return (
-        <form className='formulario-editar-cambio' onSubmit={handleSubmit}>
+        <div>
+            <ToastContainer />
+            <form className='formulario-editar-cambio' onSubmit={handleSubmit}>
             <h2 className='subtitulo-estandar'>Modificar Cambio: {modfecha}</h2>
             <div className="formulario-estandar">
                 <div className='div_primerrenglon-modificarccambio'>
@@ -60,6 +70,8 @@ const ModificarCambio = ({fecha, cotizacion, closeModal, id }) => {
                 </div>
             </div>
         </form>
+        </div>
+        
     );
 };
 

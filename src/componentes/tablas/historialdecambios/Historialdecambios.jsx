@@ -4,9 +4,13 @@ import Eliminarcambio from './eliminarcambio/EliminarCambio';
 import ModificarCambio from './modificarcambio/Modificarcambio';
 import './Historialdecambios.css';
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Historialdecambios = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
+  const today = new Date();
+  const todayFormatted = today.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   const [hcfecha, setHcFecha] = useState('');
   const [hccotizacion, setHcCotizacion] = useState('');
@@ -49,6 +53,10 @@ const Historialdecambios = ({ isLoggedIn }) => {
   };
 
   const [hctablacambio, setHcTablaCambio] = useState([]);
+
+   // Verificar si existe un tipo de cambio para la fecha actual
+   const isTipoCambioHoy = hctablacambio.some(cambio => cambio.fecha === todayFormatted);
+   
   // Estado para la cheque seleccionado
   const [hccotizacionseleccionado, setHcCotizacionSeleccionado] = useState(null);
 
@@ -60,9 +68,10 @@ const Historialdecambios = ({ isLoggedIn }) => {
       console.log(response.data);
       // Actualizamos el estado con los datos recibidos
       setHcTablaCambio(response.data);
+      console.log('Fecha Actual', todayFormatted);
     } catch (error) {
       console.error('Error al cargar los tipos de cambio:', error);
-      alert('Hubo un error al cargar los tipos de cambio');
+      toast.error('Hubo un error al cargar los tipos de cambio');
     }
   };
 
@@ -89,15 +98,15 @@ const Historialdecambios = ({ isLoggedIn }) => {
         // Si la respuesta es exitosa, actualizamos la tabla localmente
         if (response.status === 200) {
           setHcCotizacion('');
-          alert('Tipo de cambio agregado/actualizado correctamente');
+          toast.success('Tipo de cambio agregado/actualizado correctamente');
           FetchTiposDeCambio();
         }
       } catch (error) {
         console.log('Error al agregar el tipo de cambio:', error);
-        alert('Error al agregar el tipo de cambio. Verifique los datos e intente nuevamente.');
+        toast.error('Error al agregar el tipo de cambio. Verifique los datos e intente nuevamente.');
       }
     } else {
-      alert('Debe completar ambos campos: fecha y cotización.');
+      toast.error('Debe completar ambos campos: fecha y cotización.');
     }
   };
 
@@ -120,6 +129,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
 
   return (
     <div className="estandar-container">
+      <ToastContainer />
       <h2 className='titulo-estandar'>Tipo de cambio</h2>
       <form onSubmit={handleSubmit} className='formulario-estandar'>
 
@@ -147,6 +157,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
                   value={hccotizacion}
                   onChange={(e) => setHcCotizacion(e.target.value)}
                   required
+                  disabled={isTipoCambioHoy}
                 />
               </div>
 
@@ -182,8 +193,26 @@ const Historialdecambios = ({ isLoggedIn }) => {
                       <td>{cambio.fecha}</td>
                       <td>{cambio.tipo_cambio}</td>
                       <td>
-                        <button type="button" className="action-button" disabled={hccotizacionseleccionado !== indexec} onClick={() => handleModificar(cambio.tipo_cambio, cambio.fecha, cambio.id)}>✏️</button>
-                        <button type="button" className="action-button" disabled={hccotizacionseleccionado !== indexec} onClick={() => handleEliminar(cambio.tipo_cambio, cambio.fecha, cambio.id)}>❌</button>
+                        {cambio.fecha === todayFormatted && (
+                          <>
+                            <button
+                              type="button"
+                              className="action-button"
+                              disabled={hccotizacionseleccionado !== indexec}
+                              onClick={() => handleModificar(cambio.tipo_cambio, cambio.fecha, cambio.id)}
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              type="button"
+                              className="action-button"
+                              disabled={hccotizacionseleccionado !== indexec}
+                              onClick={() => handleEliminar(cambio.tipo_cambio, cambio.fecha, cambio.id)}
+                            >
+                              ❌
+                            </button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -214,7 +243,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
         <>
           <div className="modal-overlay active" onClick={closeModalEliminar}></div>
           <div className="modal-containercambio active">
-            <Eliminarcambio fecha={hcfechaAEliminar} cotizacion={hccotizacionAEliminar} closeModal={closeModalEliminar} id = {idAEliminar} />
+            <Eliminarcambio fecha={hcfechaAEliminar} cotizacion={hccotizacionAEliminar} closeModal={closeModalEliminar} id={idAEliminar} />
           </div>
         </>
       )}
@@ -224,7 +253,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
         <>
           <div className="modal-overlay active" onClick={closeModalModificar}></div>
           <div className="modal-containercambio active">
-            <ModificarCambio fecha={hcfechaAModificar} cotizacion={hccotizacionAModificar} closeModal={closeModalModificar} id = {idAModificar} />
+            <ModificarCambio fecha={hcfechaAModificar} cotizacion={hccotizacionAModificar} closeModal={closeModalModificar} id={idAModificar} />
           </div>
         </>
       )}

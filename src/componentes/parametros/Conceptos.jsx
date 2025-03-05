@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactPaginate from 'react-paginate';
 import './monedas.css';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Conceptos = ({ isLoggedIn }) => {
     const [codigo, setCodigo] = useState('');
@@ -58,7 +60,7 @@ const Conceptos = ({ isLoggedIn }) => {
         e.preventDefault();
 
         if (!codigo.trim() || !descripcion.trim()) {
-            alert("Por favor, completa todos los campos.");
+            toast.error("Por favor, completa todos los campos.");
             return;
         }
 
@@ -69,19 +71,20 @@ const Conceptos = ({ isLoggedIn }) => {
                 exento: isChecked, // Enviamos true o false
             });
 
-            alert("Concepto agregado con éxito!");
+            toast.success("Concepto agregado con éxito!");
             setCodigo("");
             setDescripcion("");
             setIsChecked(false);
             fetchConceptos();
         } catch (error) {
             console.error("Error al agregar el concepto:", error);
-            alert("Error al agregar el concepto.");
+            toast.error("Error al agregar el concepto.");
         }
     };
 
     return (
         <div className="formulariosmedianos">
+            <ToastContainer />
             <div className='titulo-estandar'><h1>Conceptos</h1></div>
 
             <div className='table-container'>

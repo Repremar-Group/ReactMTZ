@@ -4,6 +4,8 @@ import './Facturasmanuales.css'
 import axios from 'axios';
 import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 import { useNavigate } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 const Facturasmanuales = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
 
@@ -63,11 +65,11 @@ const Facturasmanuales = ({ isLoggedIn }) => {
         console.log('Concepto Actual:', response.data);
         setBotonActivo(true);
       } else {
-        alert('Concepto no encontrado');
+        toast.error('Concepto no encontrado');
       }
     } catch (error) {
       console.error('Error al obtener el concepto:', error);
-      alert('Error al obtener el concepto');
+      toast.error('Error al obtener el concepto');
     }
   };
   const fetchMonedas = async () => {
@@ -188,11 +190,11 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       console.log('Factura Agregada:', response.data);
 
       // Opcionalmente, puedes redirigir o actualizar el estado
-      alert('Factura agregado exitosamente');
+      toast.success('Factura agregado exitosamente');
     } catch (error) {
       // Si ocurre un error, manejarlo aquí
       console.error('Error al agregar la factura:', error);
-      alert('Hubo un error al facturar');
+      toast.error('Hubo un error al facturar');
     } finally{
       window.location.reload();
     }
@@ -278,6 +280,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
   return (
     <div className="EmitirFacturaManual-container">
+      <ToastContainer />
       <h2 className='titulo-estandar'>Emisión de Factura Manual</h2>
       <form onSubmit={handleSubmitAgregarFm} className='formulario-estandar'>
 

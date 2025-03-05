@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'; // Asegúrate de importar useState
 import './modificarcliente.css';
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const ModificarCliente = ({ closeModal, id }) => {
   if (!id) return null; // No muestra nada si no hay empresa seleccionada
@@ -43,11 +45,11 @@ const ModificarCliente = ({ closeModal, id }) => {
         tipoMoneda,
         tipoIVA
       });
-      alert(response.data.message); // Mensaje de éxito
+      toast.success(response.data.message); // Mensaje de éxito
       closeModal(); // Cerrar el modal después de modificar
     } catch (error) {
       console.error(':', error);
-      alert('Error al modificar el cliente');
+      toast.error('Error al modificar el cliente');
     }
   };
 
@@ -75,7 +77,7 @@ const ModificarCliente = ({ closeModal, id }) => {
       setTipoMoneda(clienteData.Moneda)
     } catch (error) {
       console.error('Error fetching client data:', error);
-      alert('Error al obtener los datos del cliente');
+      toast.error('Error al obtener los datos del cliente');
     }
   };
 
@@ -90,6 +92,7 @@ const ModificarCliente = ({ closeModal, id }) => {
 
   return (
     <div className='estandar-container'>
+      <ToastContainer />
       <form className='formulario-editar-cliente' onSubmit={handleSubmit}>
         <h2 className='subtitulo-estandar'>Modificar Empresa: {razonSocial} </h2>
         <div className="contenido-modificar-empresa">

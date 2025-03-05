@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Ingresodecheque.css'
 import { Link } from "react-router-dom";
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, fechaActual, totalfacturas, clienteAsociado }) => {
     // Estado para los campos del formulario
@@ -77,8 +79,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
             setIcNroCheque('');
             setIcImpDelCheque('');
             setIcImporteEnDolares('');
-        }else{
-            alert('Debes completar todos los campos para agregar el pago');
+        } else {
+            toast.error('Debes completar todos los campos para agregar el pago');
         }
     };
 
@@ -115,32 +117,32 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
             a.click();
             document.body.removeChild(a);
 
-            alert('PDF descargado correctamente');
+            toast.success('PDF descargado correctamente');
         } catch (error) {
             console.error('Error al descargar el PDF:', error);
-            alert('Error al descargar el PDF');
+            toast.error('Error al descargar el PDF');
         }
     };
-
+    const [loading, setLoading] = useState(false);
     // Función para manejar el envío del formulario
     const handleSubmitAgregarRecibo = async (e) => {
         e.preventDefault();
-
-        if(icsaldodeldocumento === 0){
+        setLoading(true);
+        if (icsaldodeldocumento === 0) {
             console.log('Estas son las facturas asociadas al Recibo: ', facturasAsociadas);
 
 
             try {
                 const idsFacturas = facturasAsociadas.map(factura => factura.erdocumentoasociado);
                 console.log("IDs de facturas a consultar:", idsFacturas);
-    
+
                 const responsefacturas = await axios.post('http://localhost:3000/api/obtenerFacturasdesdeRecibo', { ids: idsFacturas });
                 console.log("Facturas obtenidas:", responsefacturas.data);
                 datosRecibo.facturas = responsefacturas.data;
                 datosRecibo.listadepagos = iclistadecheques;
                 datosRecibo.arbitraje = icarbitraje;
                 datosRecibo.totalrecibo = ictotaldelasguias;
-    
+
                 const nuevoRecibo = {
                     nrorecibo: datosRecibo.ernumrecibo,
                     fecha: datosRecibo.erfecharecibo,
@@ -153,10 +155,10 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     rut: datosRecibo.errut,
                     direccion: datosRecibo.erdireccion
                 };
-    
+
                 const response = await axios.post('http://localhost:3000/api/insertrecibo', nuevoRecibo);
                 const idrecibo = response.data.idrecibo;
-    
+
                 if (facturasAsociadas.length > 0) {
                     await Promise.all(
                         facturasAsociadas.map(async (factura) => {
@@ -165,7 +167,6 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                             });
                         })
                     );
-                    alert('Facturas actualizadas con el ID de recibo.');
                 }
                 //Insertar el recibo en la cuenta corriente después de actualizar las facturas
                 const movimientoCuentaCorriente = {
@@ -177,20 +178,24 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     debe: 0, // No afecta la columna "Debe"
                     haber: datosRecibo.erimporte // El total del recibo va en "Haber"
                 };
-    
+
                 // Enviar datos al backend para insertar en cuenta corriente
                 await axios.post('http://localhost:3000/api/insertarCuentaCorriente', movimientoCuentaCorriente);
-    
-                alert('Recibo agregado a la cuenta corriente.');
-    
+
+
                 await descargarPDF(datosRecibo);
-    
+
             } catch (error) {
                 console.error('Error al guardar el recibo:', error);
-                alert('Error al guardar el recibo');
+                toast.error('Error al guardar el recibo');
+            } finally {
+                // Desactivar el spinner al finalizar
+                setLoading(false);
+
             }
-        } else { alert('Los pagos deben corresponder a exactamente el total de las Guias') }
-        
+        } else { toast.error('Los pagos deben corresponder a exactamente el total de las Guias'); setLoading(false); }
+
+
     };
 
 
@@ -198,7 +203,14 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
     return (
         <div className="modal" onClick={closeModal}>
+            <ToastContainer />
             <div className="modal-content-muygrande" onClick={(e) => e.stopPropagation()}>
+                {loading && (
+                    <div className="loading-overlay">
+                        {/* El spinner se muestra cuando loading es true */}
+                        <div className="loading-spinner"></div>
+                    </div>
+                )}
                 <h2 className='Titulo-ingreso-recibos'>Ingreso de Pagos</h2>
                 <form onSubmit={handleSubmitAgregarRecibo} className='formulario-emitir-recibo'>
 
@@ -214,7 +226,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="nrocheque"
                                         value={icnrocheque}
                                         onChange={(e) => setIcNroCheque(e.target.value)}
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -223,7 +235,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="icbanco"
                                         value={icbanco}
                                         onChange={(e) => setIcBanco(e.target.value)}
-                                        
+
                                     >
                                         <option value="">Selecciona un Banco</option>
                                         <option value="itau">Itau</option>
@@ -239,7 +251,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="fechaingresocheque"
                                         value={icfecha}
                                         onChange={(e) => setIcFecha(e.target.value)}
-                                    
+
                                     />
                                 </div>
                                 <div>
@@ -248,7 +260,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="ecmoneda"
                                         value={ictipoMoneda}
                                         onChange={(e) => setIcTipoMoneda(e.target.value)}
-                                        
+
                                     >
                                         <option value="">Selecciona una Moneda</option>
                                         {monedas.map((moneda, index) => (
@@ -265,7 +277,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="icarbitraje"
                                         value={icarbitraje}
                                         onChange={(e) => setIcArbitraje(e.target.value)}
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -275,7 +287,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="icimpdelcheque"
                                         value={icimpdelcheque}
                                         onChange={(e) => setIcImpDelCheque(e.target.value)}
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -285,7 +297,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="icimporteendolares"
                                         value={icimporteendolares}
                                         onChange={(e) => setIcImporteEnDolares(e.target.value)}
-                                        
+
                                     />
                                 </div>
                                 <div className="fecha-vencimiento-cheque">
@@ -295,16 +307,16 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="fechavencimientocheque"
                                         value={icfechavencimiento}
                                         onChange={(e) => setIcFechavencimiento(e.target.value)}
-                                        
+
                                     />
                                 </div>
                                 <div className='contenedorbotonconfirmarcheque'>
-                                <br />
-                                <button type="button" onClick={handleAgregarChequeCargado} className='btn-confirmarcheque'>Confirmar</button>
+                                    <br />
+                                    <button type="button" onClick={handleAgregarChequeCargado} className='btn-confirmarcheque'>Confirmar</button>
                                 </div>
 
                             </div>
-                            
+
 
                         </div>
 

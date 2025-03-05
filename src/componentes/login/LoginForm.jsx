@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './LoginForm.css';
 import logo from './logo.png';
 import { useNavigate } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 
 const LoginForm = ({ onLoginSuccess }) => {
@@ -30,12 +32,13 @@ const LoginForm = ({ onLoginSuccess }) => {
 
 
         } else {
-            alert("Usuario o contraseña incorrectos");
+            toast.error("Usuario o contraseña incorrectos");
         }
     };
 
     return (
         <div className='Login'>
+            <ToastContainer />
             <form className= 'formularioschicos' onSubmit={handleSubmit}>
                 <img src={logo} alt="Logo Cielosur" />
 

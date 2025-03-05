@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './modificarusuario.css';
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const ModificarUsuario = ({ closeModal, id }) => {
     if (!id) return null; // No muestra nada si no hay usuario seleccionado
@@ -18,11 +20,11 @@ const ModificarUsuario = ({ closeModal, id }) => {
                 contraseña,
                 rol
             });
-            alert(response.data.message); // Mensaje de éxito
+            toast.success(response.data.message); // Mensaje de éxito
             closeModal(); // Cierra el modal después de modificar
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al modificar el usuario');
+            toast.error('Error al modificar el usuario');
         }
     };
 
@@ -37,7 +39,7 @@ const ModificarUsuario = ({ closeModal, id }) => {
             setRol(usuarioData.rol);
         } catch (error) {
             console.error('Error al obtener los datos del usuario:', error);
-            alert('Error al obtener los datos del usuario');
+            toast.error('Error al obtener los datos del usuario');
         }
     };
 
@@ -49,6 +51,7 @@ const ModificarUsuario = ({ closeModal, id }) => {
 
     return (
         <div className='estandar-container'>
+            <ToastContainer />
             <form className='formulario-estandar' onSubmit={handleSubmit}>
                 <h2 className='subtitulo-estandar'>Modificar Usuario</h2>
                 <div className="contenido-modificar-usuario">

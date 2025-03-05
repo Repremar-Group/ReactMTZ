@@ -6,6 +6,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ModalBusquedaEmbarque from '../../modales/ModalBusquedaEmbarque';
 import ModalComprobanteGSM from '../../modales/ModalComprobanteGSM';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Comprobantes = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -50,7 +52,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [guiasconconceptos, setGuiasConConceptos] = useState([]);
   const [botonDeshabilitado, setBotonDeshabilitado] = useState(false);
   const [isSelectEnabled, setIsSelectEnabled] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
 
   const [isModalOpenGSM, setIsModalOpenGSM] = useState(false);
   const [datosModal, setDatosModal] = useState([]);
@@ -153,7 +155,7 @@ const Comprobantes = ({ isLoggedIn }) => {
       if (todasIguales) {
         setEcCompania(empresas[0]); // Setea el estado con la única empresa
       } else {
-        alert("⚠️ Los embarques seleccionados tienen empresas de vuelo diferentes.");
+        toast.error("Los embarques seleccionados tienen empresas de vuelo diferentes.");
         return;
       }
     }
@@ -393,7 +395,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
     console.log(`Total calculado: ${totalEcIva.toFixed(2)}`); // Muestra el total final
     setEcIva(Number(totalEcIva.toFixed(2))); // Aseguramos que sea número
-  
+
 
   }, [embarquesSeleccionados]);  // El efecto se ejecutará cada vez que cambie `embarquesSeleccionados`
   const calcularTotal = () => {
@@ -438,6 +440,11 @@ const Comprobantes = ({ isLoggedIn }) => {
       console.log('Embarques traidos desde la base:', response.data);
       setShowModal(true);  // Mostramos el modal con los embarques
     } catch (error) {
+      if (error.response && error.response.status === 404) {
+        toast.error('No hay embarques a facturar.');
+      } else {
+        toast.error('Error al obtener los embarques.');
+      }
       console.error('Error al obtener embarques:', error);
     }
   };
@@ -447,7 +454,7 @@ const Comprobantes = ({ isLoggedIn }) => {
     if (ectipodeembarque && searchTerm) {
       fetchEmbarques();
     } else {
-      alert('Debe seleccionar un cliente y un tipo de embarque.');
+      toast.error('Debe seleccionar un cliente y un tipo de embarque.');
     }
   };
 
@@ -534,7 +541,7 @@ const Comprobantes = ({ isLoggedIn }) => {
     const nuevoTipo = event.target.value;
 
     if (guiasconconceptos.length > 0) {
-      alert('Ya existen conceptos cargados, debe eliminarlos para cambiar el tipo de embarque.');
+      toast.error('Ya existen conceptos cargados, debe eliminarlos para cambiar el tipo de embarque.');
       return; // No actualizamos el estado de ectipodeembarque
     }
 
@@ -586,7 +593,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   // Función para manejar el envío del formulario
   const handleSubmitFacturar = async (event) => {
     event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
-
+    setLoading(true);
     const conceptoscuentaajena = guiasconconceptos.flatMap((guia) => guia.conceptos_cuentaajena);
     console.log('Conceptoscuentaajena: ', conceptoscuentaajena);
     // Recopilar los datos del formulario en un objeto
@@ -614,7 +621,7 @@ const Comprobantes = ({ isLoggedIn }) => {
       Total: parseFloat(ectotal).toFixed(2),
       TotalCobrar: parseFloat(ectotalacobrar).toFixed(2),
       DetalleFactura: guiasconconceptos,
-      EmbarquesSeleccionados: embarquesSeleccionados 
+      EmbarquesSeleccionados: embarquesSeleccionados
     };
     console.log('info al backend: ', datosFormulario);
 
@@ -644,13 +651,16 @@ const Comprobantes = ({ isLoggedIn }) => {
       console.log('Factura Agregada:', response.data);
 
       // Opcionalmente, puedes redirigir o actualizar el estado
-      alert('Factura agregado exitosamente');
+      toast.success('Factura agregada exitosamente', {
+        autoClose: 2000,
+        onClose: () => window.location.reload() // Ejecuta después de que el toast se cierre
+      });
     } catch (error) {
       // Si ocurre un error, manejarlo aquí
       console.error('Error al agregar la factura:', error);
-      alert('Hubo un error al facturar');
+      toast.error('Hubo un error al facturar');
     } finally{
-      window.location.reload();
+      setLoading(false);
     }
   };
 
@@ -659,9 +669,15 @@ const Comprobantes = ({ isLoggedIn }) => {
 
   return (
     <div className="EmitirComprobante-container">
+      {loading && (
+        <div className="loading-overlay">
+          {/* El spinner se muestra cuando loading es true */}
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       <h2 className='titulo-estandar'>Emisión de Comprobantes</h2>
       <form onSubmit={handleSubmitFacturar} className='formulario-estandar'>
-
+        <ToastContainer />
         <div className='primerafilaemisiondecomprobantes'>
           <div className='div-datos-comprobante'>
             <h3 className='subtitulo-estandar'>Datos del Comprobante</h3>

@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import Alertas from '../../modales/Alertas';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 
 const AgregarCliente = ({ isLoggedIn }) => {
@@ -73,7 +75,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
             })
             .catch(error => {
                 // Mostrar una alerta de error si la solicitud falla
-                alert('Error al agregar el cliente');
+                toast.error('Error al agregar el cliente');
                 console.error(error);
             });
     };
@@ -81,6 +83,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
 
     return (
         <div className="AgregarCliente-container">
+            <ToastContainer />
             <form onSubmit={handleSubmitAgregarUsuario} className='formulario-agregar-cliente'>
                 <h2 className='titulo-estandar'>Agregar Cliente</h2>
                 <div className='div_primerrenglon-agregarusuario'>

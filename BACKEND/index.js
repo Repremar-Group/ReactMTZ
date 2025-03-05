@@ -1164,7 +1164,7 @@ app.get('/api/obtenertipocambio', (req, res) => {
 
   const fetchTipoCambioQuery = `
   SELECT id, DATE_FORMAT(fecha, '%d/%m/%Y') AS fecha, tipo_cambio 
-      FROM tipocambio ORDER BY fecha DESC
+      FROM tipocambio ORDER BY tipocambio.fecha DESC
     `;
 
   connection.query(fetchTipoCambioQuery, (err, results) => {
@@ -1212,51 +1212,93 @@ app.post('/api/agregartipocambio', async (req, res) => {
 app.put('/api/modificartipocambio', async (req, res) => {
   console.log('Received request for /api/modificartipocambio');
 
-  const { id, tipo_cambio } = req.body;
+  const { id, tipo_cambio, fecha } = req.body;
 
   // Validar que los datos estén presentes
-  if (!id || !tipo_cambio) {
+  if (!id || !tipo_cambio || !fecha) {
     return res.status(400).json({ error: 'ID, fecha y tipo de cambio son requeridos' });
   }
 
+  // Convertir la fecha al formato YYYY-MM-DD
+  const fechaConvertida = fecha.split('/').reverse().join('-');
+
   try {
-    const updateTipoCambioQuery = `
+    // Verificar si existe una factura con la misma fecha
+    const checkFacturaQuery = `
+     SELECT COUNT(*) AS facturaCount
+     FROM facturas
+     WHERE Fecha = ?;
+   `;
+
+    connection.query(checkFacturaQuery, [fechaConvertida], (err, results) => {
+      if (err) {
+        console.error('Error al verificar las facturas:', err);
+        return res.status(500).json({ error: 'Error al verificar las facturas' });
+      }
+
+      // Si hay una factura con la misma fecha, no permitir la modificación
+      if (results[0].facturaCount > 0) {
+        return res.status(450).json({ error: 'No se puede modificar el tipo de cambio, ya existe una factura con la misma fecha.' });
+      }
+
+      const updateTipoCambioQuery = `
       UPDATE tipocambio
       SET  tipo_cambio = ?
       WHERE id = ?;
     `;
 
-    // Ejecutar la consulta para actualizar el tipo de cambio
-    connection.query(updateTipoCambioQuery, [tipo_cambio, id], (err, results) => {
-      if (err) {
-        console.error('Error al modificar el tipo de cambio:', err);
-        return res.status(500).json({ error: 'Error al modificar el tipo de cambio' });
-      }
+      // Ejecutar la consulta para actualizar el tipo de cambio
+      connection.query(updateTipoCambioQuery, [tipo_cambio, id], (err, results) => {
+        if (err) {
+          console.error('Error al modificar el tipo de cambio:', err);
+          return res.status(500).json({ error: 'Error al modificar el tipo de cambio' });
+        }
 
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
-      }
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
+        }
 
-      res.status(200).json({ message: 'Tipo de cambio modificado correctamente' });
+        res.status(200).json({ message: 'Tipo de cambio modificado correctamente' });
+      });
     });
-  } catch (error) {
-    console.error('Error al procesar la solicitud:', error);
-    res.status(500).json({ error: 'Error al procesar la solicitud' });
-  }
-});
+    } catch (error) {
+      console.error('Error al procesar la solicitud:', error);
+      res.status(500).json({ error: 'Error al procesar la solicitud' });
+    }
+  });
 
 // Endpoint para eliminar un tipo de cambio
 app.delete('/api/eliminartipocambio', async (req, res) => {
   console.log('Received request to delete tipo de cambio');
 
-  const { id } = req.body; // Obtener el id del tipo de cambio que se va a eliminar
+  const { id, fecha} = req.body; // Obtener el id del tipo de cambio que se va a eliminar
 
   // Validar que el id esté presente
   if (!id) {
     return res.status(400).json({ error: 'ID del tipo de cambio es requerido' });
   }
+  // Convertir la fecha al formato YYYY-MM-DD
+  const fechaConvertida = fecha.split('/').reverse().join('-');
 
   try {
+     // Verificar si existe una factura con la misma fecha
+     const checkFacturaQuery = `
+     SELECT COUNT(*) AS facturaCount
+     FROM facturas
+     WHERE Fecha = ?;
+   `;
+
+    connection.query(checkFacturaQuery, [fechaConvertida], (err, results) => {
+      if (err) {
+        console.error('Error al verificar las facturas:', err);
+        return res.status(500).json({ error: 'Error al verificar las facturas' });
+      }
+
+      // Si hay una factura con la misma fecha, no permitir la modificación
+      if (results[0].facturaCount > 0) {
+        return res.status(450).json({ error: 'No se puede eliminar el tipo de cambio, ya que existe una factura con la misma fecha.' });
+      }
+
     const deleteTipoCambioQuery = `
       DELETE FROM tipocambio WHERE id = ?;
     `;
@@ -1274,6 +1316,7 @@ app.delete('/api/eliminartipocambio', async (req, res) => {
       }
 
       res.status(200).json({ message: 'Tipo de cambio eliminado correctamente' });
+      });
     });
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
@@ -1320,7 +1363,7 @@ app.get('/api/obtenerembarques', (req, res) => {
       DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada
     FROM guiasimpo g
     LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-    WHERE g.consignatario = ?
+    WHERE g.consignatario = ? AND g.facturada <> 1
 `;
   } else if (tipoEmbarque === 'Expo') {
     // Consulta para la tabla guiasexpo, buscando por el agente (cliente)
@@ -1331,7 +1374,7 @@ app.get('/api/obtenerembarques', (req, res) => {
       DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada
       FROM guiasexpo g
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-      WHERE g.agente = ? AND g.tipodepago = 'P'
+      WHERE g.agente = ? AND g.tipodepago = 'P' AND g.facturada <> 1
     `;
   } else {
     return res.status(400).json({ error: 'Tipo de embarque no válido' });
@@ -1854,7 +1897,7 @@ app.get('/api/buscarfacturaporcomprobante/:comprobante', (req, res) => {
       return res.status(404).json({ message: 'Factura no encontrada.' });
     }
 
-     // Comprobamos si la factura tiene un valor en el campo idrecibo
+    // Comprobamos si la factura tiene un valor en el campo idrecibo
     const factura = result[0];
     if (factura.idrecibo) {
       return res.status(200).json({ message: 'Tiene Recibo.', factura: factura }); // Cambiar a 200 y enviar la factura
@@ -2056,6 +2099,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     res.status(500).json({ error: 'Error al generar el PDF' });
   }
 });
+
 
 
 

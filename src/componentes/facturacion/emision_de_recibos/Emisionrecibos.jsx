@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 import axios from 'axios';
 import Ingresodecheques from './ingresocheques/Ingresodecheques';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Emisionrecibos = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -71,14 +73,14 @@ const Emisionrecibos = ({ isLoggedIn }) => {
         setErDocumentoAsociado("");
         // Comprobar si la factura ya está facturada
         if (response.data.message && response.data.message === 'Tiene Recibo.') {
-          alert('Esta factura ya tiene un recibo asociado.');
+          toast.error('Esta factura ya tiene un recibo asociado.');
           return; // Salir de la función para evitar agregarla a las facturas asociadas
         }
        // Comprobar si la factura ya está en el array de facturas asociadas
       setErFacturasAsociadas(prevFacturas => {
         const existe = prevFacturas.some(f => f.erdocumentoasociado === response.data.Id);
         if (existe) {
-          alert('Esta factura ya ha sido agregada.');
+          toast.error('Esta factura ya ha sido agregada.');
           return prevFacturas; // Si ya existe, no la agrega
         }
 
@@ -90,7 +92,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     })
     .catch(error => {
       console.error("Error al buscar factura:", error);
-      alert('Factura no encontrada. Favor de ingresar un Nro Correcto');
+      toast.error('Factura no encontrada. Favor de ingresar un Nro Correcto');
     });
 };
 
@@ -228,11 +230,11 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   const handleSubmitAgregarRecibo = (e) => {
     e.preventDefault();
     if(ersaldodelrecibo != 0){
-      alert("El recibo debe cancelar exactamente el total de las facturas");
+      toast.error("El recibo debe cancelar exactamente el total de las facturas");
       return;
       
     } else if (erfacturasasociadas.length === 0 ) {
-      alert("Debes asociar al menos una factura antes de continuar.");
+      toast.error("Debes asociar al menos una factura antes de continuar.");
       return; // Detiene la ejecución y no abre el modal
     }
     
@@ -265,6 +267,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
   return (
     <div className="EmitirRecibos-wrapper">
+      <ToastContainer />
       <h2 className="Titulo-ingreso-recibos">Ingreso de Recibos</h2>
       <div className="EmitirRecibos-container">
 
