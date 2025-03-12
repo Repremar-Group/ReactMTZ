@@ -11,6 +11,7 @@
     "mysql": "^2.18.1",
     "number-to-words": "^1.2.4",
     "numero-a-letras": "^1.0.6",
-    "pdf-lib": "^1.17.1"
+    "pdf-lib": "^1.17.1",
+    "xml2js": "^0.6.2"
   }
 }

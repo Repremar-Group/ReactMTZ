@@ -56,7 +56,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
 
    // Verificar si existe un tipo de cambio para la fecha actual
    const isTipoCambioHoy = hctablacambio.some(cambio => cambio.fecha === todayFormatted);
-   
+
   // Estado para la cheque seleccionado
   const [hccotizacionseleccionado, setHcCotizacionSeleccionado] = useState(null);
 
@@ -162,7 +162,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
               </div>
 
               <div className='botonesfacturasasociadas'>
-                <button type="button" onClick={handleAgregarCambio} className='btn-estandar'>Agregar</button>
+                <button onClick={handleAgregarCambio} className='btn-estandar'>Agregar</button>
               </div>
 
             </div>
@@ -232,7 +232,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
 
         <div className='botonesemitircomprobante'>
 
-          <Link to="/home"><button className="btn-estandar">Volver</button></Link>
+          <Link to="/home"><button type="button" className="btn-estandar">Volver</button></Link>
         </div>
 
 

@@ -6,7 +6,8 @@ const { PDFDocument, rgb } = require('pdf-lib');
 const path = require('path');
 const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
-
+const axios = require('axios');
+const xml2js = require('xml2js');
 
 // Configura la conexión a tu servidor MySQL flexible de Azure
 const connection = mysql.createConnection({
@@ -1261,17 +1262,17 @@ app.put('/api/modificartipocambio', async (req, res) => {
         res.status(200).json({ message: 'Tipo de cambio modificado correctamente' });
       });
     });
-    } catch (error) {
-      console.error('Error al procesar la solicitud:', error);
-      res.status(500).json({ error: 'Error al procesar la solicitud' });
-    }
-  });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
 
 // Endpoint para eliminar un tipo de cambio
 app.delete('/api/eliminartipocambio', async (req, res) => {
   console.log('Received request to delete tipo de cambio');
 
-  const { id, fecha} = req.body; // Obtener el id del tipo de cambio que se va a eliminar
+  const { id, fecha } = req.body; // Obtener el id del tipo de cambio que se va a eliminar
 
   // Validar que el id esté presente
   if (!id) {
@@ -1281,8 +1282,8 @@ app.delete('/api/eliminartipocambio', async (req, res) => {
   const fechaConvertida = fecha.split('/').reverse().join('-');
 
   try {
-     // Verificar si existe una factura con la misma fecha
-     const checkFacturaQuery = `
+    // Verificar si existe una factura con la misma fecha
+    const checkFacturaQuery = `
      SELECT COUNT(*) AS facturaCount
      FROM facturas
      WHERE Fecha = ?;
@@ -1299,23 +1300,23 @@ app.delete('/api/eliminartipocambio', async (req, res) => {
         return res.status(450).json({ error: 'No se puede eliminar el tipo de cambio, ya que existe una factura con la misma fecha.' });
       }
 
-    const deleteTipoCambioQuery = `
+      const deleteTipoCambioQuery = `
       DELETE FROM tipocambio WHERE id = ?;
     `;
 
-    // Ejecutar la consulta para eliminar el tipo de cambio
-    connection.query(deleteTipoCambioQuery, [id], (err, results) => {
-      if (err) {
-        console.error('Error al eliminar el tipo de cambio:', err);
-        return res.status(500).json({ error: 'Error al eliminar el tipo de cambio' });
-      }
+      // Ejecutar la consulta para eliminar el tipo de cambio
+      connection.query(deleteTipoCambioQuery, [id], (err, results) => {
+        if (err) {
+          console.error('Error al eliminar el tipo de cambio:', err);
+          return res.status(500).json({ error: 'Error al eliminar el tipo de cambio' });
+        }
 
-      // Verificar si se eliminó algún registro
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
-      }
+        // Verificar si se eliminó algún registro
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
+        }
 
-      res.status(200).json({ message: 'Tipo de cambio eliminado correctamente' });
+        res.status(200).json({ message: 'Tipo de cambio eliminado correctamente' });
       });
     });
   } catch (error) {
@@ -2100,6 +2101,67 @@ app.post('/api/generarReciboPDF', async (req, res) => {
   }
 });
 
+// Ruta de proxy para enviar la solicitud SOAP
+app.post('/pruebaws', async (req, res) => {
+  const xml = req.body.xml; // Se espera que el XML venga en el cuerpo de la solicitud
+  const xmlBuffer = Buffer.from(xml, 'utf-8');
+  try {
+    const response = await axios.post('http://srvgfe.grep.local:8082/gfeclient/servlet/awsexterno', xmlBuffer, {
+      headers: {
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': '"GFE_Clientaction/AWSEXTERNO.GRABAR"',
+        'Accept-Encoding': 'gzip,deflate',
+        'Host': 'srvgfe.grep.local:8082',
+        'Connection': 'Keep-Alive',
+        'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+
+      },
+    });
+    // Imprimir la respuesta del servidor en su formato original (XML)
+    console.log('Respuesta directa del servidor (XML):', response.data);
+    // Procesar la respuesta XML usando xml2js
+    const parser = new xml2js.Parser({
+      explicitArray: false, // Para evitar arrays innecesarios
+      tagNameProcessors: [xml2js.processors.stripPrefix] // Remueve prefijos como "SOAP-ENV:"
+    });
+
+    parser.parseString(response.data, (err, result) => {
+      if (err) {
+        console.error('Error al parsear el XML:', err);
+        return res.status(500).send('Error al procesar la respuesta SOAP');
+      }
+
+      // Imprimir la estructura del XML recibido para depuración
+      console.log('Estructura del XML recibido:', result);
+
+      try {
+        const body = result.Envelope.Body;
+        const response = body['WSExterno.GRABARResponse'];
+        const xmlRetorno = response.Xmlretorno;
+        console.log('Tipo de xmlRetorno:', typeof xmlRetorno);
+        console.log('Contenido de xmlRetorno:', xmlRetorno);
+        // Extraemos la descripción directamente del XML como se había hecho antes
+        const descripcion = xmlRetorno._.match(/<Descripcion>(.*?)<\/Descripcion>/)[1];
+
+        // Si la descripción es 'Ok', respondemos con éxito
+        if (descripcion === 'Ok') {
+          res.status(200).json({ success: true, message: 'Factura procesada correctamente' });
+        } else {
+          // Si no es 'Ok', respondemos con error concatenando la descripción
+          res.status(400).json({ success: false, message: `Error: ${descripcion}` });
+        }
+
+        console.log('Respuesta procesada:', xmlRetorno);
+      } catch (error) {
+        console.error('Error accediendo a los elementos del XML:', error);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al enviar la factura:', error);
+    res.status(500).send('Error al enviar la factura');
+  }
+});
 
 
 
