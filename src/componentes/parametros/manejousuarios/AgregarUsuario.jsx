@@ -14,7 +14,7 @@ const AgregarUsuario = () => {
     const [alertasVisible, setAlertasVisible] = useState(false);
     const [alertasMessage, setAlertasMessage] = useState('');
     const navigate = useNavigate();
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     // Manejar envío del formulario
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -26,7 +26,7 @@ const AgregarUsuario = () => {
         };
 
         // Realizar solicitud POST a la API
-        axios.post('http://localhost:3000/api/insertusuarios', nuevoUsuario)
+        axios.post(`${backURL}/api/insertusuarios`, nuevoUsuario)
             .then(response => {
                 setAlertasMessage('Usuario agregado exitosamente');
                 setAlertasVisible(true);

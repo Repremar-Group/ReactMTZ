@@ -1,6 +1,6 @@
 function Unidades(num) {
     switch(num) {
-        case 1: return "UN";
+        case 1: return "UNO";
         case 2: return "DOS";
         case 3: return "TRES";
         case 4: return "CUATRO";

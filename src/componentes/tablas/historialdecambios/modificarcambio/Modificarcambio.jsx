@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 
 const ModificarCambio = ({fecha, cotizacion, closeModal, id }) => {
+    const backURL = import.meta.env.VITE_BACK_URL;
     if (!fecha || !cotizacion) return null; // No muestra nada si no hay empresa seleccionada
 
     // Establece el estado local para los campos que se pueden modificar
@@ -24,7 +25,7 @@ const ModificarCambio = ({fecha, cotizacion, closeModal, id }) => {
     
         // Llamar al endpoint para modificar el tipo de cambio
         try {
-          const response = await axios.put('http://localhost:3000/api/modificartipocambio', {
+          const response = await axios.put(`${backURL}/api/modificartipocambio`, {
             id: modid,
             fecha: modfecha,
             tipo_cambio: modcotizacion,

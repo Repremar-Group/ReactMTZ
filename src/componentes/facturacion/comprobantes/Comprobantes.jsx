@@ -8,10 +8,11 @@ import ModalBusquedaEmbarque from '../../modales/ModalBusquedaEmbarque';
 import ModalComprobanteGSM from '../../modales/ModalComprobanteGSM';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
+import ModalAlertaGFE from '../../modales/AlertasGFE';
 
 const Comprobantes = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
-
+  const backURL = import.meta.env.VITE_BACK_URL;
   const [ecid, setEcId] = useState('');
   const [ecnombre, setEcNombre] = useState('');
   const [ectipocomprobante, setEcTipoComprobante] = useState('');
@@ -39,7 +40,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [ectotalacobrar, setEcTotalACobrar] = useState('');
   const [ecsubtotal, setEcsubtotal] = useState('');
   const [eciva, setEcIva] = useState('');
-  const [ecredondeo, setEcRedondeo] = useState('');
+  const [ecredondeo, setEcRedondeo] = useState(0);
   const [ectotal, setEcTotal] = useState('');
   const [eclistadeguiasasociadas, setEcListaDeGuiasAsociadas] = useState([]);
   const navigate = useNavigate();
@@ -56,6 +57,15 @@ const Comprobantes = ({ isLoggedIn }) => {
 
   const [isModalOpenGSM, setIsModalOpenGSM] = useState(false);
   const [datosModal, setDatosModal] = useState([]);
+  //Estados para Modal Alerta GFE
+  const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
+  const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
+  const [mensajeAlertaGFE, setmensajeAlertaGFE] = useState('');
+  const [iconoAlertaGFE, setIconoAlertaGFE] = useState('');
+  const handleConfirmAlertaGFE = () => {
+    setIsModalOpenAlertaGFE(false);
+    window.location.reload();
+  };
 
   const handleOpenModalGSM = () => {
     // Extraer conceptos_cuentaajena de todas las guías
@@ -408,17 +418,17 @@ const Comprobantes = ({ isLoggedIn }) => {
     }, 0);
 
     // Calcular el redondeo hacia arriba
-    const redondeo = (Math.ceil(total + eciva) - (total + eciva));
+
     const totalNum = Number(total) || 0;
-    const redondeoNum = Number(redondeo) || 0;
+
     const ecivaNum = Number(eciva) || 0;
 
     // Calcular el total a cobrar sumando el redondeo
-    const totalACobrar = totalNum + redondeoNum + ecivaNum;
+    const totalACobrar = totalNum + ecivaNum;
 
     // Actualizar los estados correspondientes
     setEcTotal((total + ecivaNum).toFixed(2)); // Total formateado a dos decimales
-    setEcRedondeo(redondeo.toFixed(2)); // Redondeo formateado a dos decimales
+    // Redondeo formateado a dos decimales
     setEcTotalACobrar(totalACobrar.toFixed(2)); // Total a cobrar formateado a dos decimales
     setEcsubtotal(total.toFixed(2));
   };
@@ -429,7 +439,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   const fetchEmbarques = async () => {
     try {
       const clienteId = searchTerm;  // Asumiendo que el cliente es identificado por nombre o algún campo
-      const response = await axios.get('http://localhost:3000/api/obtenerembarques', {
+      const response = await axios.get(`${backURL}/api/obtenerembarques`, {
         params: {
           tipoEmbarque: ectipodeembarque,
           clienteId: clienteId
@@ -469,7 +479,7 @@ const Comprobantes = ({ isLoggedIn }) => {
     // Llamar al endpoint para obtener el tipo de cambio
     const obtenerTipoCambio = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/obtenertipocambioparacomprobante");
+        const response = await axios.get(`${backURL}/api/obtenertipocambioparacomprobante`);
         if (response.data.tipo_cambio == undefined) {
           alert("No hay tipo de cambio para la fecha actual.");
           navigate("/tablas/cambio");
@@ -490,7 +500,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
     const fetchMonedas = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+        const response = await axios.get(`${backURL}/api/obtenermonedas`);
         setMonedas(response.data);
         setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
       } catch (error) {
@@ -500,7 +510,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
     const fetchCompanias = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/obtenercompanias');
+        const response = await axios.get(`${backURL}/api/obtenercompanias`);
         setCompanias(response.data);
         setIsFetchedCompanias(true); // Indica que ya se obtuvieron los datos
       } catch (error) {
@@ -529,7 +539,7 @@ const Comprobantes = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {
@@ -623,6 +633,8 @@ const Comprobantes = ({ isLoggedIn }) => {
       DetalleFactura: guiasconconceptos,
       EmbarquesSeleccionados: embarquesSeleccionados
     };
+
+
     console.log('info al backend: ', datosFormulario);
 
 
@@ -645,23 +657,65 @@ const Comprobantes = ({ isLoggedIn }) => {
     try {
       // Enviar los datos del formulario a tu servidor
       console.log('Datos del formulario a Backend: ', datosFormulario);
-      const response = await axios.post('http://localhost:3000/api/insertfactura', datosFormulario);
-
+      const response = await axios.post(`${backURL}/api/insertfactura`, datosFormulario);
+      // Extraer los IDs de la respuesta
+      const { facturaId, facturaCuentaAjenaId, error } = response.data;
       // Si la respuesta es exitosa, puedes manejar la respuesta aquí
       console.log('Factura Agregada:', response.data);
 
-      // Opcionalmente, puedes redirigir o actualizar el estado
-      toast.success('Factura agregada exitosamente', {
-        autoClose: 2000,
-        onClose: () => window.location.reload() // Ejecuta después de que el toast se cierre
-      });
-    } catch (error) {
-      // Si ocurre un error, manejarlo aquí
-      console.error('Error al agregar la factura:', error);
-      toast.error('Hubo un error al facturar');
-    } finally{
-      setLoading(false);
-    }
+       // Verificar el código de estado o el campo de error en la respuesta
+  if (response.status === 200) {
+    setTituloAlertaGfe('Factura Ingresada Correctamente');
+    setmensajeAlertaGFE('');
+    setIconoAlertaGFE('success');
+    setIsModalOpenAlertaGFE(true);
+  } else if (response.status === 422) {
+    // Si el código de estado es 422 (error relacionado con los datos)
+    setTituloAlertaGfe('Error al Impactar en GFE');
+    setmensajeAlertaGFE('Error en Facturación Electrónica', response.data.error || 'Error desconocido');
+    setIconoAlertaGFE('error');
+    setIsModalOpenAlertaGFE(true);
+  } else if (response.status === 500) {
+    // Si el código de estado es 500 (error del servidor)
+    setTituloAlertaGfe('Error al Cargar la Factura');
+    setmensajeAlertaGFE('');
+    setIconoAlertaGFE('error');
+    setIsModalOpenAlertaGFE(true);
+  } else {
+    setTituloAlertaGfe('Error Desconocido');
+    setmensajeAlertaGFE('Error desconocido en el ERP');
+    setIconoAlertaGFE('error');
+    setIsModalOpenAlertaGFE(true);
+  }
+
+} catch (error) {
+  // Aquí manejas errores relacionados con la red, como problemas de conexión o timeouts
+  console.error('Error en la solicitud:', error);
+  
+  // Si el error fue debido a una respuesta HTTP 422, puedes intentar manejarlo
+  if (error.response && error.response.status === 422) {
+    const errorMessage = error.response.data.error || 'Error desconocido';
+    console.log('Mensaje de error',errorMessage);
+    setTituloAlertaGfe('Error al Impactar en GFE');
+    setmensajeAlertaGFE(errorMessage);
+    setIconoAlertaGFE('error');
+    setIsModalOpenAlertaGFE(true);
+  } else if (error.response && error.response.status === 500) {
+    // Si el código de estado es 500 (error del servidor)
+    setTituloAlertaGfe('Error al Cargar la Factura');
+    setmensajeAlertaGFE('');
+    setIconoAlertaGFE('error');
+    setIsModalOpenAlertaGFE(true);
+  } else {
+    // Si el error es de otro tipo (por ejemplo, de red)
+    setTituloAlertaGfe('Error Desconocido');
+    setmensajeAlertaGFE('Error Desconocido en el ERP');
+    setIconoAlertaGFE('error');
+    setIsModalOpenAlertaGFE(true);
+  }
+} finally {
+  setLoading(false);
+}
   };
 
 
@@ -973,16 +1027,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
                 />
               </div>
-              <div>
-                <label htmlFor="ecredondeo">Redondeo:</label>
-                <input
-                  type="text"
-                  id="ecredondeo"
-                  value={ecredondeo}
-                  readOnly
-                  required
-                />
-              </div>
+
               <div>
                 <label htmlFor="ectotal">Total:</label>
                 <input
@@ -1042,6 +1087,14 @@ const Comprobantes = ({ isLoggedIn }) => {
         onClose={handleCloseModalGSM}
         datos={datosModal}
       />
+      <ModalAlertaGFE
+        isOpen={isModalOpenAlertaGFE}
+        title={tituloAlertaGfe}
+        message={mensajeAlertaGFE}
+        onConfirm={handleConfirmAlertaGFE}
+        iconType={iconoAlertaGFE}
+      />
+
     </div>
 
   );

@@ -7,6 +7,7 @@ import EliminarCliente from './eliminar/EliminarCliente';
 import ModificarCliente from './modificar/ModificarCliente';
 
 const Clientes = ({ isLoggedIn }) => {
+  const backURL = import.meta.env.VITE_BACK_URL;
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   
@@ -26,7 +27,7 @@ const Clientes = ({ isLoggedIn }) => {
 
   const fetchClientes = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/previewclientes');
+      const response = await axios.get(`${backURL}/api/previewclientes`);
       setClientes(response.data); // Asigna los datos de clientes al estado
     } catch (err) {
       setError('Error fetching clients');

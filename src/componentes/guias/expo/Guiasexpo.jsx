@@ -10,6 +10,7 @@ import ModalVerGuiaExpo from '../../modales/ModalVerGuiaExpo';
 import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 
 const Guiasexpo = ({ isLoggedIn }) => {
+  const backURL = import.meta.env.VITE_BACK_URL;
   // Estado para los campos del formulario
   const [genroembarque, setGeNroEmbarque] = useState('');
   const [geagente, setGeAgente] = useState('');
@@ -69,7 +70,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await axios.delete(`http://localhost:3000/api/eliminarGuiaExpo/${guiaAEliminar.guia}`); // Realiza la solicitud DELETE
+      const response = await axios.delete(`${backURL}/api/eliminarGuiaExpo/${guiaAEliminar.guia}`); // Realiza la solicitud DELETE
       if (response.status === 200) {
         console.log('Guía eliminada:', guiaAEliminar);
         toast.success('Guía eliminada exitosamente');
@@ -115,7 +116,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {
@@ -164,7 +165,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
 
   const fetchVuelos = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/obtenervuelos');
+      const response = await axios.get(`${backURL}/api/obtenervuelos`);
       setVuelos(response.data);
       setIsFetchedVuelos(true); // Indica que ya se obtuvieron los datos
     } catch (error) {
@@ -180,7 +181,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
   //Manejo para traer las guias despues de seleccionar el vuelo y la fecha
   const fetchGuias = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/fetchguiasexpo', {
+      const response = await fetch(`${backURL}/api/fetchguiasexpo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,7 +227,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
 
   const fetchCiudades = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/obtenerciudades');
+      const response = await axios.get(`${backURL}/api/obtenerciudades`);
       setCiudades(response.data);
       setIsFetchedCiudades(true); // Indica que ya se obtuvieron los datos
     } catch (error) {
@@ -583,7 +584,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
     };
     console.log(guiaData);
     try {
-      const response = await axios.post('http://localhost:3000/api/insertguiaexpo', guiaData);
+      const response = await axios.post(`${backURL}/api/insertguiaexpo`, guiaData);
       console.log(response);
       if (response.status === 200) {
         toast.success('Guia Ingresada Con Exito');

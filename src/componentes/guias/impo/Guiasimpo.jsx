@@ -9,6 +9,7 @@ import { convertirADecimal, convertirAComa } from '../../funcionesgenerales';
 import { ToastContainer, toast } from 'react-toastify';
 
 const Guiasimpo = ({ isLoggedIn }) => {
+  const backURL = import.meta.env.VITE_BACK_URL;
   // Estado para los campos del formulario
   const [ginroimpo, setGiNroImpo] = useState('');
   const [givuelofecha, setGiVueloFecha] = useState('');
@@ -92,7 +93,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {
@@ -116,7 +117,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
   const fetchMonedas = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+      const response = await axios.get(`${backURL}/api/obtenermonedas`);
       setMonedas(response.data);
       setIsFetched(true); // Indica que ya se obtuvieron los datos
     } catch (error) {
@@ -132,7 +133,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
   const fetchCiudades = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/obtenerciudades');
+      const response = await axios.get(`${backURL}/api/obtenerciudades`);
       setCiudades(response.data);
       setIsFetchedCiudades(true); // Indica que ya se obtuvieron los datos
     } catch (error) {
@@ -146,7 +147,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
   const fetchVuelos = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/obtenervuelos');
+      const response = await axios.get(`${backURL}/api/obtenervuelos`);
       setVuelos(response.data);
       setIsFetchedVuelos(true); // Indica que ya se obtuvieron los datos
     } catch (error) {
@@ -161,7 +162,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
   const fetchGuias = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/fetchguiasimpo', {
+      const response = await fetch(`${backURL}/api/fetchguiasimpo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -480,7 +481,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
     };
     console.log(guiaData);
     try {
-      const response = await axios.post('http://localhost:3000/api/insertguiaimpo', guiaData);
+      const response = await axios.post(`${backURL}/api/insertguiaimpo`, guiaData);
       console.log(response);
       if (response.status === 200) {
         toast.success('Guia Ingresada Con Exito');

@@ -9,6 +9,7 @@ import { saveAs } from 'file-saver';
 
 
 const Reportespendientesexpo = ({ isLoggedIn }) => {
+  const backURL = import.meta.env.VITE_BACK_URL;
   // Estado para los campos del formulario
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
@@ -33,7 +34,7 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {

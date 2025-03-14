@@ -10,7 +10,7 @@ import EliminarUsuario from './manejousuarios/EliminarUsuario';
 const Usuarios = ({ isLoggedIn }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
-    
+    const backURL = import.meta.env.VITE_BACK_URL;
     //Variables de estado para eliminar usuario
     const [idAEliminar, setIdAEliminar] = useState(null);
   
@@ -23,7 +23,7 @@ const Usuarios = ({ isLoggedIn }) => {
   
     const fetchClientes = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/previewusuarios');
+        const response = await axios.get(`${backURL}/api/previewusuarios`);
         setUsuarios(response.data); // Asigna los datos de clientes al estado
       } catch (err) {
         setError('Error fetching clients');

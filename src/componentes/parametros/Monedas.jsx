@@ -9,10 +9,10 @@ const Monedas = ({ isLoggedIn }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [monedas, setMonedas] = useState([]);
     const [error, setError] = useState('');
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     const handleEliminar = async (id) => {
         try {
-            await axios.delete(`http://localhost:3000/api/eliminarmoneda/${id}`);
+            await axios.delete(`${backURL}/api/eliminarmoneda/${id}`);
             fetchMonedas(); // Actualiza la lista de ciudads después de eliminar
         } catch (error) {
             console.error('Error al eliminar ciudad:', error);
@@ -22,7 +22,7 @@ const Monedas = ({ isLoggedIn }) => {
 
     const fetchMonedas = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/previewmonedas'); // Cambia este endpoint según tu backend
+            const response = await axios.get(`${backURL}/api/previewmonedas`); // Cambia este endpoint según tu backend
             setMonedas(response.data); // Asigna los datos de ciudads al estado
         } catch (err) {
             setError('Error fetching flights');
@@ -49,7 +49,7 @@ const Monedas = ({ isLoggedIn }) => {
     const handleAgregarMoneda = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/api/agregarMoneda', { moneda: moneda });
+            await axios.post(`${backURL}/api/agregarMoneda`, { moneda: moneda });
             setMoneda(''); // Resetea el input después de enviar el ciudad
             fetchMonedas(); // Actualiza la lista de ciudads
         } catch (error) {

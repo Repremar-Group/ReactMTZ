@@ -16,13 +16,13 @@ const ModalComprobanteGSM = ({ isOpen, onClose, datos }) => {
       const subtotal = datos.reduce((acc, concepto) => acc + parseFloat(concepto.importe || 0), 0);
       const iva = 0;
       const total = subtotal + iva;
-      const redondeo = Math.ceil(total) - total; // Redondeo
-      const totalACobrar = total + redondeo;
+      
+      const totalACobrar = total ;
 
       setEcsubtotal(subtotal.toFixed(2));
       setEcIva(iva.toFixed(2));
       setEcTotal(total.toFixed(2));
-      setEcRedondeo(redondeo.toFixed(2));
+
       setEcTotalACobrar(totalACobrar.toFixed(2));
     }
   }, [datos]);
@@ -65,10 +65,6 @@ const ModalComprobanteGSM = ({ isOpen, onClose, datos }) => {
             <div>
               <label htmlFor="ecivatotal">IVA:</label>
               <input type="text" id="ecivatotal" value={eciva} readOnly />
-            </div>
-            <div>
-              <label htmlFor="ecredondeo">Redondeo:</label>
-              <input type="text" id="ecredondeo" value={ecredondeo} readOnly />
             </div>
             <div>
               <label htmlFor="ectotal">Total:</label>

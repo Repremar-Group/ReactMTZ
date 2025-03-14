@@ -9,10 +9,10 @@ const CompaniaAerea = ({ isLoggedIn }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [companias, setCompanias] = useState([]);
     const [error, setError] = useState('');
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     const handleEliminar = async (id) => {
         try {
-            await axios.delete(`http://localhost:3000/api/eliminarcompania/${id}`);
+            await axios.delete(`${backURL}/api/eliminarcompania/${id}`);
             fetchCompanias(); // Actualiza la lista de companias después de eliminar
         } catch (error) {
             console.error('Error al eliminar compania:', error);
@@ -22,7 +22,7 @@ const CompaniaAerea = ({ isLoggedIn }) => {
 
     const fetchCompanias = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/previewcompanias'); // Cambia este endpoint según tu backend
+            const response = await axios.get(`${backURL}/api/previewcompanias`); // Cambia este endpoint según tu backend
             setCompanias(response.data); // Asigna los datos de ciudads al estado
         } catch (err) {
             setError('Error fetching flights');
@@ -49,7 +49,7 @@ const CompaniaAerea = ({ isLoggedIn }) => {
     const handleAgregarCompania = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/api/agregarCompania', { compania: compania });
+            await axios.post(`${backURL}/api/agregarCompania`, { compania: compania });
             setCompania(''); // Resetea el input después de enviar el ciudad
             fetchCompanias(); // Actualiza la lista de ciudads
         } catch (error) {

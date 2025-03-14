@@ -8,13 +8,13 @@ import { toast, ToastContainer } from 'react-toastify';
 const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, fechaActual, totalfacturas, clienteAsociado }) => {
     // Estado para los campos del formulario
     if (!isOpen) return null;
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     const [monedas, setMonedas] = useState([]);
     const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
     //Traigo las monedas desde la BD
     const fetchMonedas = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+            const response = await axios.get(`${backURL}/api/obtenermonedas`);
             setMonedas(response.data);
             setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
         } catch (error) {
@@ -98,7 +98,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
     const descargarPDF = async (datosRecibo) => {
         try {
-            const response = await fetch('http://localhost:3000/api/generarReciboPDF', {
+            const response = await fetch(`${backURL}/api/generarReciboPDF`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -136,7 +136,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 const idsFacturas = facturasAsociadas.map(factura => factura.erdocumentoasociado);
                 console.log("IDs de facturas a consultar:", idsFacturas);
 
-                const responsefacturas = await axios.post('http://localhost:3000/api/obtenerFacturasdesdeRecibo', { ids: idsFacturas });
+                const responsefacturas = await axios.post(`${backURL}/api/obtenerFacturasdesdeRecibo`, { ids: idsFacturas });
                 console.log("Facturas obtenidas:", responsefacturas.data);
                 datosRecibo.facturas = responsefacturas.data;
                 datosRecibo.listadepagos = iclistadecheques;
@@ -156,13 +156,13 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     direccion: datosRecibo.erdireccion
                 };
 
-                const response = await axios.post('http://localhost:3000/api/insertrecibo', nuevoRecibo);
+                const response = await axios.post(`${backURL}/api/insertrecibo`, nuevoRecibo);
                 const idrecibo = response.data.idrecibo;
 
                 if (facturasAsociadas.length > 0) {
                     await Promise.all(
                         facturasAsociadas.map(async (factura) => {
-                            await axios.put(`http://localhost:3000/api/actualizarFactura/${factura.erdocumentoasociado}`, {
+                            await axios.put(`${backURL}/api/actualizarFactura/${factura.erdocumentoasociado}`, {
                                 idrecibo: idrecibo
                             });
                         })
@@ -180,7 +180,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 };
 
                 // Enviar datos al backend para insertar en cuenta corriente
-                await axios.post('http://localhost:3000/api/insertarCuentaCorriente', movimientoCuentaCorriente);
+                await axios.post(`${backURL}/api/insertarCuentaCorriente`, movimientoCuentaCorriente);
 
 
                 await descargarPDF(datosRecibo);

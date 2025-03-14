@@ -9,6 +9,7 @@ import { toast, ToastContainer } from 'react-toastify';
 
 
 const AgregarCliente = ({ isLoggedIn }) => {
+    const backURL = import.meta.env.VITE_BACK_URL;
     // Estado para los campos del formulario
     const [nombre, setNombre] = useState('');
     const [razonSocial, setRazonSocial] = useState('');
@@ -34,7 +35,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
 
     const fetchMonedas = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+            const response = await axios.get(`${backURL}/api/obtenermonedas`);
             setMonedas(response.data);
             setIsFetched(true); // Indica que ya se obtuvieron los datos
         } catch (error) {
@@ -64,7 +65,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
             Saldo: saldo
         };
         // Realizar la solicitud POST usando axios
-        axios.post('http://localhost:3000/api/insertclientes', nuevoCliente)
+        axios.post(`${backURL}/api/insertclientes`, nuevoCliente)
             .then(response => {
                 setAlertasMessage('Cliente agregado exitosamente');
                 setAlertasVisible(true);

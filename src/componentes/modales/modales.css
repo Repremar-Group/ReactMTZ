@@ -50,11 +50,32 @@
   width: 35px; 
   height: 30px; 
 }
+
+
+.custom-success-button {
+  padding: 15px 30px; /* Aumenta el tamaño del padding */
+  margin: 5px;
+  background-color: #abd68e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px; /* Aumenta el tamaño del texto */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 200px; /* Igualar el tamaño de los botones */
+}
+
+.custom-success-button:hover {
+  background-color: #6ed12b;
+}
+.custom-success-button:focus {
+  outline: none;
+}
 /* Estilo personalizado para el botón de confirmación */
 .custom-confirm-button {
   padding: 15px 30px; /* Aumenta el tamaño del padding */
   margin: 5px;
-  background-color: #8B0000;
+  background-color: #e17980;
   color: white;
   border: none;
   border-radius: 4px;

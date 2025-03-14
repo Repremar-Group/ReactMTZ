@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 const Facturasmanuales = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
-
+  const backURL = import.meta.env.VITE_BACK_URL;
   const [fmid, setFmId] = useState('');
   const [fmnombre, setFmNombre] = useState('');
   const [fmtipocomprobante, setFmTipoComprobante] = useState('');
@@ -57,7 +57,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
   const fetchConceptoPorCodigo = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/buscarconcepto/${fmcodigoconcepto}`);
+      const response = await axios.get(`${backURL}/api/buscarconcepto/${fmcodigoconcepto}`);
       if (response.data) {
         setFmDescripcion(response.data.descripcion || '');
         setFmCodigoConcepto(response.data.codigo || '');
@@ -74,7 +74,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   };
   const fetchMonedas = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+      const response = await axios.get(`${backURL}/api/obtenermonedas`);
       setMonedas(response.data);
       setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
     } catch (error) {
@@ -124,7 +124,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
     // Llamar al endpoint para obtener el tipo de cambio
     const obtenerTipoCambio = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/obtenertipocambioparacomprobante");
+        const response = await axios.get(`${backURL}/api/obtenertipocambioparacomprobante`);
         if (response.data.tipo_cambio == undefined) {
           alert("No hay tipo de cambio para la fecha actual.");
           navigate("/tablas/cambio");
@@ -184,7 +184,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
     try {
       // Enviar los datos del formulario a tu servidor
       console.log('Datos del formulario a Backend: ', datosFormulario);
-      const response = await axios.post('http://localhost:3000/api/insertfacturamanual', datosFormulario);
+      const response = await axios.post(`${backURL}/api/insertfacturamanual`, datosFormulario);
 
       // Si la respuesta es exitosa, puedes manejar la respuesta aquí
       console.log('Factura Agregada:', response.data);
@@ -215,7 +215,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {

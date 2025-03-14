@@ -13,6 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 
 const PreviewGuias = () => {
+    const backURL = import.meta.env.VITE_BACK_URL;
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [guias, setGuias] = useState([]);
@@ -37,9 +38,9 @@ const PreviewGuias = () => {
             let response; // Declarar la variable antes del bloque if-else
     
             if (guiaAEliminar.tipo === 'IMPO') {
-                response = await axios.delete(`http://localhost:3000/api/eliminarGuia/${guiaAEliminar.idguia}`);
+                response = await axios.delete(`${backURL}/api/eliminarGuia/${guiaAEliminar.idguia}`);
             } else {
-                response = await axios.delete(`http://localhost:3000/api/eliminarGuiaExpo/${guiaAEliminar.idguiasexpo}`);
+                response = await axios.delete(`${backURL}/api/eliminarGuiaExpo/${guiaAEliminar.idguiasexpo}`);
             }
     
             if (response.status === 200) {
@@ -84,8 +85,8 @@ const PreviewGuias = () => {
 
             // Hacer solicitudes a ambos endpoints
             const [guiasImpoResponse, guiasExpoResponse] = await Promise.all([
-                axios.get('http://localhost:3000/api/previewguias'), // Endpoint para guías impo
-                axios.get('http://localhost:3000/api/previewguiasexpo') // Endpoint para guías expo
+                axios.get(`${backURL}/api/previewguias`), // Endpoint para guías impo
+                axios.get(`${backURL}/api/previewguiasexpo`) // Endpoint para guías expo
             ]);
 
             // Combinar los datos de ambas respuestas

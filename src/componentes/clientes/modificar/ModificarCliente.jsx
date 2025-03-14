@@ -6,7 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 
 const ModificarCliente = ({ closeModal, id }) => {
   if (!id) return null; // No muestra nada si no hay empresa seleccionada
-
+  const backURL = import.meta.env.VITE_BACK_URL;
   // Establece el estado local para los campos que se pueden modificar
   const [nombre, setNombre] = useState('');
   const [rut, setRut] = useState('');
@@ -28,7 +28,7 @@ const ModificarCliente = ({ closeModal, id }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`http://localhost:3000/api/actualizarcliente/${id}`, {
+      const response = await axios.put(`${backURL}/api/actualizarcliente/${id}`, {
         nombre,
         rut,
         pais,
@@ -56,7 +56,7 @@ const ModificarCliente = ({ closeModal, id }) => {
   //Obtengo los datos del cliente desde la base y los cargo en los campos.
   const fetchClienteData = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/obtenerclientes/${id}`);
+      const response = await axios.get(`${backURL}/api/obtenerclientes/${id}`);
       const clienteData = response.data;
 
       // Establecer los datos en el estado del componente

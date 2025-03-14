@@ -9,10 +9,10 @@ const Ciudades = ({ isLoggedIn }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [ciudades, setCiudades] = useState([]);
     const [error, setError] = useState('');
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     const handleEliminar = async (id) => {
         try {
-            await axios.delete(`http://localhost:3000/api/eliminarciudad/${id}`);
+            await axios.delete(`${backURL}/api/eliminarciudad/${id}`);
             fetchCiudades(); // Actualiza la lista de ciudads después de eliminar
         } catch (error) {
             console.error('Error al eliminar ciudad:', error);
@@ -22,7 +22,7 @@ const Ciudades = ({ isLoggedIn }) => {
 
     const fetchCiudades = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/previewciudades'); // Cambia este endpoint según tu backend
+            const response = await axios.get(`${backURL}/api/previewciudades`); // Cambia este endpoint según tu backend
             setCiudades(response.data); // Asigna los datos de ciudads al estado
         } catch (err) {
             setError('Error fetching flights');
@@ -49,7 +49,7 @@ const Ciudades = ({ isLoggedIn }) => {
     const handleAgregarCiudad = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/api/agregarCiudad', { ciudad: ciudad });
+            await axios.post(`${backURL}/api/agregarCiudad`, { ciudad: ciudad });
             setCiudad(''); // Resetea el input después de enviar el ciudad
             fetchCiudades(); // Actualiza la lista de ciudads
         } catch (error) {

@@ -10,7 +10,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
   const [hasta, setHasta] = useState('');
   const [numeroCliente, setNumeroCliente] = useState('');
   const [tipoPago, setTipoPago] = useState('');
-
+  const backURL = import.meta.env.VITE_BACK_URL;
   // Estado para la búsqueda de clientes
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredClientes, setFilteredClientes] = useState([]);
@@ -50,7 +50,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {

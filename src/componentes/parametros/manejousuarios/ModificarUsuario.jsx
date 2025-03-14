@@ -6,7 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 
 const ModificarUsuario = ({ closeModal, id }) => {
     if (!id) return null; // No muestra nada si no hay usuario seleccionado
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     // Estado para los campos de usuario
     const [usuario, setUsuario] = useState('');
     const [contraseña, setContraseña] = useState('');
@@ -15,7 +15,7 @@ const ModificarUsuario = ({ closeModal, id }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:3000/api/actualizarusuario/${id}`, {
+            const response = await axios.put(`${backURL}/api/actualizarusuario/${id}`, {
                 usuario,
                 contraseña,
                 rol
@@ -31,7 +31,7 @@ const ModificarUsuario = ({ closeModal, id }) => {
     // Obtiene los datos del usuario desde la base y los carga en los campos
     const fetchUsuarioData = async (id) => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/obtenerusuario/${id}`);
+            const response = await axios.get(`${backURL}/api/obtenerusuario/${id}`);
             const usuarioData = response.data;
 
             // Establece los datos en el estado del componente

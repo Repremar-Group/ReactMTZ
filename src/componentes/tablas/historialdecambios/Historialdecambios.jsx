@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 
 const Historialdecambios = ({ isLoggedIn }) => {
+  const backURL = import.meta.env.VITE_BACK_URL;
   // Estado para los campos del formulario
   const today = new Date();
   const todayFormatted = today.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -64,7 +65,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
   const FetchTiposDeCambio = async () => {
     try {
       // Realizamos la solicitud GET para obtener los tipos de cambio
-      const response = await axios.get('http://localhost:3000/api/obtenertipocambio');
+      const response = await axios.get(`${backURL}/api/obtenertipocambio`);
       console.log(response.data);
       // Actualizamos el estado con los datos recibidos
       setHcTablaCambio(response.data);
@@ -93,7 +94,7 @@ const Historialdecambios = ({ isLoggedIn }) => {
         const nuevocambio = { fecha: hcfecha, tipo_cambio: hccotizacion };
 
         // Realizar la solicitud POST al endpoint
-        const response = await axios.post('http://localhost:3000/api/agregartipocambio', nuevocambio);
+        const response = await axios.post(`${backURL}/api/agregartipocambio`, nuevocambio);
 
         // Si la respuesta es exitosa, actualizamos la tabla localmente
         if (response.status === 200) {

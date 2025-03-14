@@ -15,7 +15,7 @@ const Reportesimpo = ({ isLoggedIn }) => {
   const [filteredClientes, setFilteredClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const backURL = import.meta.env.VITE_BACK_URL;
   // Manejo del input de búsqueda
   const handleInputChange = (e) => setSearchTerm(e.target.value);
 
@@ -24,7 +24,7 @@ const Reportesimpo = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {

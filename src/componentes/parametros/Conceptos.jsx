@@ -14,14 +14,14 @@ const Conceptos = ({ isLoggedIn }) => {
     const [monedas, setMonedas] = useState([]);
     const [error, setError] = useState('');
     const [isChecked, setIsChecked] = useState(false);
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
     };
 
     const handleEliminar = async (id) => {
         try {
-            await axios.delete(`http://localhost:3000/api/eliminarconcepto/${id}`); // Endpoint de eliminación de concepto
+            await axios.delete(`${backURL}/api/eliminarconcepto/${id}`); // Endpoint de eliminación de concepto
             fetchConceptos(); // Actualiza la lista de conceptos después de eliminar
         } catch (error) {
             console.error('Error al eliminar concepto:', error);
@@ -31,7 +31,7 @@ const Conceptos = ({ isLoggedIn }) => {
 
     const fetchConceptos = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/previewconceptos'); // Cambia este endpoint según tu backend
+            const response = await axios.get(`${backURL}/api/previewconceptos`); // Cambia este endpoint según tu backend
             setConceptos(response.data); // Asigna los datos de conceptos al estado
             console.log('Conceptos desde la base:', response.data);
         } catch (err) {
@@ -65,7 +65,7 @@ const Conceptos = ({ isLoggedIn }) => {
         }
 
         try {
-            const response = await axios.post("http://localhost:3000/api/agregarconcepto", {
+            const response = await axios.post(`${backURL}/api/agregarconcepto`, {
                 codigo,
                 descripcion,
                 exento: isChecked, // Enviamos true o false

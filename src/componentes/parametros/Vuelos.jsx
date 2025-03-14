@@ -9,14 +9,14 @@ const Vuelos = ({ isLoggedIn }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [vuelos, setVuelos] = useState([]);
     const [error, setError] = useState('');
-
+    const backURL = import.meta.env.VITE_BACK_URL;
     const [companias, setCompanias] = useState([]);
     const [companiaSeleccionada, setCompaniaSeleccionada] = useState('');
     const [isFetchedCompanias, setIsFetchedCompanias] = useState(false); // Para evitar múltiples llamadas
 
     const fetchCompanias = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/obtenercompanias');
+            const response = await axios.get(`${backURL}/api/obtenercompanias`);
             setCompanias(response.data);
             setIsFetchedCompanias(true); // Indica que ya se obtuvieron los datos
         } catch (error) {
@@ -26,7 +26,7 @@ const Vuelos = ({ isLoggedIn }) => {
 
     const handleEliminar = async (id) => {
         try {
-            await axios.delete(`http://localhost:3000/api/eliminarvuelo/${id}`);
+            await axios.delete(`${backURL}/api/eliminarvuelo/${id}`);
             fetchVuelos(); // Actualiza la lista de vuelos después de eliminar
         } catch (error) {
             console.error('Error al eliminar vuelo:', error);
@@ -36,7 +36,7 @@ const Vuelos = ({ isLoggedIn }) => {
 
     const fetchVuelos = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/previewvuelos'); // Cambia este endpoint según tu backend
+            const response = await axios.get(`${backURL}/api/previewvuelos`); // Cambia este endpoint según tu backend
             setVuelos(response.data); // Asigna los datos de vuelos al estado
         } catch (err) {
             setError('Error fetching flights');
@@ -63,7 +63,7 @@ const Vuelos = ({ isLoggedIn }) => {
     const handleAgregarVuelo = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/api/agregarVuelo', { vuelo: vuelo, compania: companiaSeleccionada });
+            await axios.post(`${backURL}/api/agregarVuelo`, { vuelo: vuelo, compania: companiaSeleccionada });
             setVuelo(''); // Resetea el input después de enviar el vuelo
             fetchVuelos(); // Actualiza la lista de vuelos
         } catch (error) {

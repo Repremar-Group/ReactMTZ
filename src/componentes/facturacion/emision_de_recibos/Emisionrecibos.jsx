@@ -9,6 +9,7 @@ import { toast, ToastContainer } from 'react-toastify';
 
 const Emisionrecibos = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
+  const backURL = import.meta.env.VITE_BACK_URL;
   const [ernumrecibo, setErNumRecibo] = useState('');
   const [erfecharecibo, setErFechaRecibo] = useState('');
 
@@ -47,7 +48,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
       e.preventDefault();
       try {
-        const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${searchTerm}`);
+        const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {
@@ -67,7 +68,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   };
 
   const buscarFactura = (comprobante) => {
-    axios.get(`http://localhost:3000/api/buscarfacturaporcomprobante/${comprobante}`)
+    axios.get(`${backURL}/api/buscarfacturaporcomprobante/${comprobante}`)
       .then(response => {
         console.log("Factura encontrada:", response.data);
         setErDocumentoAsociado("");
@@ -115,8 +116,8 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     if (selectedCliente?.Id) {
       // Realiza ambas solicitudes en paralelo
       Promise.all([
-        axios.get(`http://localhost:3000/api/movimientos/${selectedCliente.Id}`),
-        axios.get(`http://localhost:3000/api/saldo/${selectedCliente.Id}`)
+        axios.get(`${backURL}/api/movimientos/${selectedCliente.Id}`),
+        axios.get(`${backURL}/api/saldo/${selectedCliente.Id}`)
       ])
         .then(([movimientosRes, saldoRes]) => {
           console.log('Movimientos recibidos:', movimientosRes.data);
@@ -138,7 +139,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   //Traigo las monedas desde la BD
   const fetchMonedas = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+      const response = await axios.get(`${backURL}/api/obtenermonedas`);
       setMonedas(response.data);
       setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
     } catch (error) {

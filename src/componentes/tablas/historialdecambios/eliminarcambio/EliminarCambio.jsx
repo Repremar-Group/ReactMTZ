@@ -8,14 +8,14 @@ const Eliminarcambio = ({ fecha, cotizacion, closeModal, id }) => {
   if (!fecha || !cotizacion) return null; // No muestra nada si no hay empresa seleccionada
 
   const [loading, setLoading] = useState(false); // Estado para controlar el loading
-
+  const backURL = import.meta.env.VITE_BACK_URL;
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Confirma la eliminación y realiza la solicitud DELETE
     try {
       setLoading(true); // Establece loading en true mientras se realiza la solicitud
-      const response = await axios.delete('http://localhost:3000/api/eliminartipocambio', {
+      const response = await axios.delete(`${backURL}/api/eliminartipocambio`, {
         data: { id, fecha }, // Asegúrate de que el id es numérico, no una fecha
       });
 

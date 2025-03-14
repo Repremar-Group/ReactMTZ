@@ -8,6 +8,7 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
+const { generarXml } = require('./ControladoresGFE/controladoresGfe')
 
 // Configura la conexión a tu servidor MySQL flexible de Azure
 const connection = mysql.createConnection({
@@ -37,6 +38,10 @@ app.use(cors());
 function generarMensaje(monto) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
   return `Son dólares americanos U$S ${montoEnLetras}`;
+}
+function generarAdenda(numerodoc,monto) {
+  const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
+  return `Doc:${numerodoc} ${montoEnLetras}`;
 }
 
 //Consulta para cargar la tabla de preview de clientes.
@@ -1694,8 +1699,89 @@ app.post('/api/insertfactura', (req, res) => {
                   res.status(500).json({ error: 'Error al hacer commit de la transacción' });
                 });
               }
+              const detallesFactura = DetalleFactura.flatMap((detalle) => {
+                return detalle.conceptos.map((concepto) => {
+                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+                  
+                  return {
+                    codItem: concepto.id_concepto.toString().padStart(3, '0'), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
+                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1", 
+                    nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
+                    cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
+                    unidadMedida: "UN", // Unidad de medida "UN"
+                    precioUnitario: concepto.importe.toFixed(2), // Precio unitario del concepto, formateado con 2 decimales
+                  };
+                });
+              });
+              let adenda = generarAdenda(facturaId,TotalCobrar)
+              const datos = {
+                facturaIdERP: facturaId,
+                serieCFE: "A",
+                fechaCFE: Fecha,
+                tipoDocRec: "2",
+                nroDocRec: '213287140010',
+                paisRec: Pais,
+                razonSocialRec: RazonSocial,
+                direccionRec: DireccionFiscal,
+                ciudadRec: Ciudad,
+                moneda: Moneda,
+                tipoCambio: TC,
+                totalNoGrabado: TotalCobrar,
+                totalACobrar: TotalCobrar,
+                cantidadLineasFactura:detallesFactura.length,
+                sucursal: "S01",
+                adenda: adenda,
+                serieDocumentoERP: "A",
+                rutCuentaAjena: RutCedula,
+                paisCuentaAjena: Pais,
+                razonSocialCuentaAjena: RazonSocial,
+                detalleFactura: detallesFactura
+              }
+              //detallesFactura.length
+              console.log('ESTOS SON LOS DATOS:',datos);
+              //Envio los datos a generarXml en controladoresGFE
+              const xml = generarXml(datos);
 
-              res.status(200).json({ message: 'Factura, detalles y cuenta corriente insertados exitosamente' });
+              const enviarFacturaSOAP = async (xml) => {
+                try {
+                    const response = await axios.post('http://localhost:3000/pruebaws', { xml });
+                    console.log('Respuesta del servidor SOAP:', response.data);
+                    if (response.data.success) {
+                      console.log('✅ Factura procesada en GFE correctamente');
+                    } else {
+                      console.log(`⚠️ Error: ${response.data.message}`);
+                    }
+        
+                } catch (error) {
+                    console.error('Error al enviar la solicitud:', error);
+            
+                    // Verifica si hay detalles del error HTTP
+                    if (error.response) {
+                        console.error('Error response data:', error.response.data);
+            
+                        // Aquí accedemos correctamente al mensaje de error para enviarlo al front
+                        console.log(`❌ Error: ${error.response.data.message}`);
+                        throw new Error(error.response.data.message);
+                    } else {
+                      console.log('❌ Error al enviar la factura a GFE');
+                      throw new Error('Error al enviar la factura a GFE, Chequear Conectividad');
+                    }
+                }
+              };
+              (async () => {
+                try {
+                  const xml = generarXml(datos);
+                  await enviarFacturaSOAP(xml); // Esperar que termine antes de continuar
+              
+                  res.status(200).json({
+                    message: 'Factura cargada exitosamente',
+                    facturaId: facturaId || null,
+                    facturaCuentaAjenaId: facturaCuentaAjenaId || null
+                  });
+                } catch (error) {
+                  res.status(422).json({ error: error.message });
+                }
+              })();
             });
           });
         })

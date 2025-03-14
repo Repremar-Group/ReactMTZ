@@ -6,12 +6,12 @@ import { toast, ToastContainer } from 'react-toastify';
 
 const EliminarUsuario = ({ empresa, rut, id, closeModal }) => {
   if (!empresa || !rut) return null; // No muestra nada si no hay empresa seleccionada
-
+  const backURL = import.meta.env.VITE_BACK_URL;
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('ID a eliminar:', id);
     try {
-      const response = await axios.delete('http://localhost:3000/api/deleteclientes', {
+      const response = await axios.delete(`${backURL}/api/deleteclientes`, {
         data: { Id: id } // Enviando el ID en el cuerpo de la solicitud
       });
       toast.success(response.data.message); // Mensaje de éxito

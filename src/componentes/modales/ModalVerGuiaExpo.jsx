@@ -5,6 +5,7 @@ import ModalBusquedaClientes from './ModalBusquedaClientes';
 import { convertirAComa, convertirADecimal } from '../funcionesgenerales';
 
 const ModalVerGuiaExpo = ({ isOpen, closeModal, guia }) => {
+    const backURL = import.meta.env.VITE_BACK_URL;
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -54,7 +55,7 @@ const ModalVerGuiaExpo = ({ isOpen, closeModal, guia }) => {
         const fetchGuiaData = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:3000/api/obtenerexpo/${guia}`);
+                const response = await axios.get(`${backURL}/api/obtenerexpo/${guia}`);
                 if (response.data) {
                     setDatosGuia({
                         ...response.data,
@@ -89,7 +90,7 @@ const ModalVerGuiaExpo = ({ isOpen, closeModal, guia }) => {
         if (e.key === 'Enter' && datosGuia.consignatario.trim()) {
             e.preventDefault();
             try {
-                const response = await axios.get(`http://localhost:3000/api/obtenernombrecliente?search=${datosGuia.consignatario}`);
+                const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${datosGuia.consignatario}`);
                 setFilteredClientesModificar(response.data);
                 setIsModalOpenModificar(true); // Abre el modal con los resultados
             } catch (error) {
@@ -128,7 +129,7 @@ const ModalVerGuiaExpo = ({ isOpen, closeModal, guia }) => {
 
     const fetchCiudadesModificar = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/obtenerciudades');
+            const response = await axios.get(`${backURL}/api/obtenerciudades`);
             setCiudadesModificar(response.data);
             setIsFetchedCiudadesModificar(true); // Indica que ya se obtuvieron los datos
         } catch (error) {
@@ -142,7 +143,7 @@ const ModalVerGuiaExpo = ({ isOpen, closeModal, guia }) => {
 
     const fetchMonedasModificar = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/obtenermonedas');
+            const response = await axios.get(`${backURL}/api/obtenermonedas`);
             setMonedasModificar(response.data);
             setIsFetchedModificar(true); // Indica que ya se obtuvieron los datos
         } catch (error) {
