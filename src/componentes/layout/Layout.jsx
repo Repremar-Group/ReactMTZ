@@ -9,6 +9,7 @@ import Comprobantes from '../facturacion/comprobantes/Comprobantes'
 import Emisionrecibos from '../facturacion/emision_de_recibos/Emisionrecibos';
 import Ingresodecheques from '../facturacion/emision_de_recibos/ingresocheques/Ingresodecheques';
 import Facturasmanuales from '../facturacion/facturas_manuales/Facturasmanuales';
+import BuscarFacturas from '../facturacion/buscarfacturas/BuscarFacturas';
 
 //Importo componentes de Reportes
 import Reportespendientesexpo from '../reportes/expo/Reportespendientesexpo';
@@ -109,6 +110,17 @@ function Layout({ isLoggedIn, handleLogin }) {
                     element={
                         isLoggedIn ? (
                             <Facturasmanuales isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                {/* Ruta Bsucar Facturas: Solo accesible si el usuario está logueado */}
+                <Route
+                    path="/facturacion/BuscarFacturas"
+                    element={
+                        isLoggedIn ? (
+                            <BuscarFacturas isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )

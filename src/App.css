@@ -90,6 +90,11 @@ body{
     text-align: center;
     color:#143361;
 }
+.titulo-estandar-grande{
+    text-align: center;
+    color:#143361;
+    font-size: 13px;
+}
 
 /* Nuevo contenedor para los botones de acción */
 .action-buttons {

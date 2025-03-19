@@ -2,7 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const { PDFDocument, rgb } = require('pdf-lib');
+const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const path = require('path');
 const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
@@ -39,7 +39,7 @@ function generarMensaje(monto) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
   return `Son dólares americanos U$S ${montoEnLetras}`;
 }
-function generarAdenda(numerodoc,monto) {
+function generarAdenda(numerodoc, monto) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
   return `Doc:${numerodoc} ${montoEnLetras}`;
 }
@@ -57,6 +57,30 @@ app.get('/api/previewclientes', (req, res) => {
 
     // Envía todos los resultados de la consulta al frontend
     res.status(200).json(result);
+  });
+});
+app.get('/api/previewfacturas', (req, res) => {
+  console.log('Received request for /api/previewfacturas');
+  const sql = 'SELECT * FROM facturas';
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error en el backend cargando facturas' });
+    }
+
+    // Formatear la fecha en cada resultado
+    const formattedResult = result.map((row) => {
+      const fecha = new Date(row.Fecha);
+      const formattedFecha = fecha.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
+      return { ...row, Fecha: formattedFecha };
+    });
+
+    res.status(200).json(formattedResult);
   });
 });
 
@@ -1702,10 +1726,10 @@ app.post('/api/insertfactura', (req, res) => {
               const detallesFactura = DetalleFactura.flatMap((detalle) => {
                 return detalle.conceptos.map((concepto) => {
                   const importeFormateado = parseFloat(concepto.importe.toFixed(2));
-                  
+
                   return {
                     codItem: concepto.id_concepto.toString().padStart(3, '0'), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
-                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1", 
+                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
                     nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
                     cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
                     unidadMedida: "UN", // Unidad de medida "UN"
@@ -1713,7 +1737,7 @@ app.post('/api/insertfactura', (req, res) => {
                   };
                 });
               });
-              let adenda = generarAdenda(facturaId,TotalCobrar)
+              let adenda = generarAdenda(facturaId, TotalCobrar)
               const datos = {
                 facturaIdERP: facturaId,
                 serieCFE: "A",
@@ -1728,7 +1752,7 @@ app.post('/api/insertfactura', (req, res) => {
                 tipoCambio: TC,
                 totalNoGrabado: TotalCobrar,
                 totalACobrar: TotalCobrar,
-                cantidadLineasFactura:detallesFactura.length,
+                cantidadLineasFactura: detallesFactura.length,
                 sucursal: "S01",
                 adenda: adenda,
                 serieDocumentoERP: "A",
@@ -1738,41 +1762,41 @@ app.post('/api/insertfactura', (req, res) => {
                 detalleFactura: detallesFactura
               }
               //detallesFactura.length
-              console.log('ESTOS SON LOS DATOS:',datos);
+              console.log('ESTOS SON LOS DATOS:', datos);
               //Envio los datos a generarXml en controladoresGFE
               const xml = generarXml(datos);
 
               const enviarFacturaSOAP = async (xml) => {
                 try {
-                    const response = await axios.post('http://localhost:3000/pruebaws', { xml });
-                    console.log('Respuesta del servidor SOAP:', response.data);
-                    if (response.data.success) {
-                      console.log('✅ Factura procesada en GFE correctamente');
-                    } else {
-                      console.log(`⚠️ Error: ${response.data.message}`);
-                    }
-        
+                  const response = await axios.post('http://localhost:3000/pruebaws', { xml });
+                  console.log('Respuesta del servidor SOAP:', response.data);
+                  if (response.data.success) {
+                    console.log('✅ Factura procesada en GFE correctamente');
+                  } else {
+                    console.log(`⚠️ Error: ${response.data.message}`);
+                  }
+
                 } catch (error) {
-                    console.error('Error al enviar la solicitud:', error);
-            
-                    // Verifica si hay detalles del error HTTP
-                    if (error.response) {
-                        console.error('Error response data:', error.response.data);
-            
-                        // Aquí accedemos correctamente al mensaje de error para enviarlo al front
-                        console.log(`❌ Error: ${error.response.data.message}`);
-                        throw new Error(error.response.data.message);
-                    } else {
-                      console.log('❌ Error al enviar la factura a GFE');
-                      throw new Error('Error al enviar la factura a GFE, Chequear Conectividad');
-                    }
+                  console.error('Error al enviar la solicitud:', error);
+
+                  // Verifica si hay detalles del error HTTP
+                  if (error.response) {
+                    console.error('Error response data:', error.response.data);
+
+                    // Aquí accedemos correctamente al mensaje de error para enviarlo al front
+                    console.log(`❌ Error: ${error.response.data.message}`);
+                    throw new Error(error.response.data.message);
+                  } else {
+                    console.log('❌ Error al enviar la factura a GFE');
+                    throw new Error('Error al enviar la factura a GFE, Chequear Conectividad');
+                  }
                 }
               };
               (async () => {
                 try {
                   const xml = generarXml(datos);
                   await enviarFacturaSOAP(xml); // Esperar que termine antes de continuar
-              
+
                   res.status(200).json({
                     message: 'Factura cargada exitosamente',
                     facturaId: facturaId || null,
@@ -2249,6 +2273,399 @@ app.post('/pruebaws', async (req, res) => {
   }
 });
 
+app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
+  const { desde, hasta, cliente, numeroCliente, moneda } = req.body;
+
+  const fechaDesde = new Date(`${desde}T00:00:00`);
+  const fechaHasta = new Date(`${hasta}T00:00:00`);
+
+  const sql = `
+    SELECT 
+    IdMovimiento, 
+    IdCliente, 
+    IdFactura, 
+    DATE_FORMAT(Fecha, '%d/%m/%Y') AS FechaFormateada, 
+    TipoDocumento, 
+    NumeroDocumento, 
+    NumeroRecibo, 
+    Moneda, 
+    Debe, 
+    Haber
+    FROM cuenta_corriente 
+    WHERE IdCliente = ? 
+      AND Fecha BETWEEN ? AND ?
+    ORDER BY Fecha DESC;
+  `;
+  // Consulta para obtener el saldo inicial
+  const sqlSaldoInicial = `
+    SELECT SUM(Debe) - SUM(Haber) AS Saldo
+    FROM cuenta_corriente 
+    WHERE IdCliente = ? 
+      AND Fecha <= ?
+  `;
+
+  // Consulta para obtener el saldo final
+  const sqlSaldoFinal = `
+    SELECT SUM(Debe) - SUM(Haber) AS Saldo
+    FROM cuenta_corriente 
+    WHERE IdCliente = ? 
+    AND Fecha <= ?
+  `;
+  try {
+    // Promesa para obtener los movimientos
+    const getMovimientos = () => {
+      return new Promise((resolve, reject) => {
+        connection.query(sql, [numeroCliente, fechaDesde, fechaHasta], (err, result) => {
+          if (err) reject(err);
+          resolve(result);
+        });
+      });
+    };
+
+    // Promesa para obtener el saldo inicial
+    const getSaldoInicial = () => {
+      return new Promise((resolve, reject) => {
+        connection.query(sqlSaldoInicial, [numeroCliente, fechaDesde], (err, result) => {
+          if (err) reject(err);
+          resolve(result);
+        });
+      });
+    };
+
+    // Promesa para obtener el saldo final
+    const getSaldoFinal = () => {
+      return new Promise((resolve, reject) => {
+        connection.query(sqlSaldoFinal, [numeroCliente, fechaHasta], (err, result) => {
+          if (err) reject(err);
+          resolve(result);
+        });
+      });
+    };
+
+    // Obtener los resultados usando async/await
+    const resultMovimientos = await getMovimientos();
+
+    const resultSaldoInicial = await getSaldoInicial();
+    const resultSaldoFinal = await getSaldoFinal();
+
+    // Obtener saldo inicial y final
+    const saldoInicial = resultSaldoInicial[0]?.Saldo || 0;
+    const saldoFinal = resultSaldoFinal[0]?.Saldo || 0;
+
+    // Lógica para generar el PDF con pdf-lib
+    const pdfDoc = await PDFDocument.create(); // Crear el documento PDF
+    let page = pdfDoc.addPage([600, 800]); // Tamaño de página
+
+    // Posiciones para los textos en la tabla
+    const xPos = 430;
+    let yPos = 765;
+    const rowHeight = 14;
+    const colWidth1 = 60; // ancho de la columna de etiquetas
+    const colWidth2 = 80; // ancho de la columna de valores
+    const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Dibujar las líneas verticales de la tabla
+    page.drawLine({ start: { x: xPos, y: yPos + 5 }, end: { x: xPos, y: yPos - (rowHeight * 4) + 5 }, thickness: 1 });
+    page.drawLine({ start: { x: xPos + colWidth1, y: yPos + 5 }, end: { x: xPos + colWidth1, y: yPos - (rowHeight * 4) + 5 }, thickness: 1 });
+    page.drawLine({ start: { x: xPos + colWidth1 + colWidth2, y: yPos + 5 }, end: { x: xPos + colWidth1 + colWidth2, y: yPos - (rowHeight * 4) + 5 }, thickness: 1 });
+
+    // Dibujar las líneas horizontales (superior, entre filas y base)
+    for (let i = 0; i <= 4; i++) {
+      page.drawLine({
+        start: { x: xPos, y: yPos - (rowHeight * i) + 5 },
+        end: { x: xPos + colWidth1 + colWidth2, y: yPos - (rowHeight * i) + 5 },
+        thickness: 1,
+      });
+    }
+
+    // Ahora dibujamos los textos dentro de la tabla
+    let textYPos = yPos - 6; // Centramos el texto verticalmente
+
+    page.drawText('Emisión:', { x: xPos + 5, y: textYPos, size: 10 });
+    page.drawText(new Date().toLocaleDateString(), { x: xPos + colWidth1 + 5, y: textYPos, size: 10 });
+
+    textYPos -= rowHeight;
+    page.drawText('Desde:', { x: xPos + 5, y: textYPos, size: 10 });
+    page.drawText(fechaDesde.toLocaleDateString(), { x: xPos + colWidth1 + 5, y: textYPos, size: 10 });
+
+    textYPos -= rowHeight;
+    page.drawText('Hasta:', { x: xPos + 5, y: textYPos, size: 10 });
+    page.drawText(fechaHasta.toLocaleDateString(), { x: xPos + colWidth1 + 5, y: textYPos, size: 10 });
+
+    textYPos -= rowHeight;
+    page.drawText('Moneda:', { x: xPos + 5, y: textYPos, size: 10 });
+    page.drawText(moneda, { x: xPos + colWidth1 + 5, y: textYPos, size: 10 });
+
+    // Titulo Cuenta Corriente
+    page.drawText('Cuenta Corriente Deudores', { x: 190, y: 720, size: 16, font: helveticaBoldFont });
+
+    // Información del cliente
+    const boxY = 650;
+    const boxHeight = 25;
+    const startX = 45;
+
+    // Definir anchos individuales
+    const boxWidth1 = 60;    // "Cliente" (solo etiqueta)
+    const boxWidth2 = 65;    // Número cliente (5 cifras)
+    const boxWidth3 = 200;   // Nombre largo
+    const boxWidth4 = 140;   // Saldo Inicial separado
+    const lightGray = rgb(0.9, 0.9, 0.9); // Gris claro
+
+    // Dibujar los primeros 3 recuadros seguidos
+    page.drawRectangle({
+      x: startX,
+      y: boxY,
+      width: boxWidth1,
+      height: boxHeight,
+      color: lightGray,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1,
+    });
+    page.drawRectangle({
+      x: startX + boxWidth1,
+      y: boxY,
+      width: boxWidth2,
+      height: boxHeight,
+      color: lightGray,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1,
+    });
+    page.drawRectangle({
+      x: startX + boxWidth1 + boxWidth2,
+      y: boxY,
+      width: boxWidth3,
+      height: boxHeight,
+      color: lightGray,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1,
+    });
+
+    // El cuarto recuadro separado hacia la derecha
+    const saldoBoxX = startX + boxWidth1 + boxWidth2 + boxWidth3 + 60; // separás 50px más
+    page.drawRectangle({
+      x: saldoBoxX,
+      y: boxY,
+      width: boxWidth4,
+      height: boxHeight,
+      color: lightGray,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1,
+    });
+
+    // Insertar textos
+    const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    // Primer recuadro
+    page.drawText('Cliente', { x: startX + 5, y: boxY + boxHeight - 15, size: 10, font: helveticaFont });
+
+    // Segundo recuadro (número cliente)
+    page.drawText(numeroCliente.toString(), { x: startX + boxWidth1 + 20, y: boxY + 10, size: 10, font: helveticaFont });
+
+    // Tercer recuadro (nombre largo)
+    page.drawText(cliente, { x: startX + boxWidth1 + boxWidth2 + 5, y: boxY + 10, size: 10, font: helveticaFont });
+
+    // Calcular las posiciones de cada texto en el eje X
+    const saldoLabel = 'Saldo Inicial:';
+    const saldoValue = saldoInicial.toFixed(2);
+
+    // Ajusta el espacio entre ambos textos en el eje X
+    const saldoLabelX = saldoBoxX + 5;  // Un pequeño margen a la izquierda
+    const saldoValueX = saldoLabelX + helveticaBoldFont.widthOfTextAtSize(saldoLabel, 9) + 10; // Añadir espacio entre el label y el valor
+
+    // Dibuja el texto "Saldo Inicial:"
+    page.drawText(saldoLabel, {
+      x: saldoLabelX,
+      y: boxY + boxHeight - 15,  // Ajuste vertical para que esté arriba en el recuadro
+      size: 9,
+      font: helveticaBoldFont
+    });
+
+    // Dibuja el valor "Saldo Inicial:"
+    page.drawText(saldoValue, {
+      x: saldoValueX,  // Estará al lado del texto "Saldo Inicial:"
+      y: boxY + boxHeight - 15,  // Alineado verticalmente
+      size: 10,
+      font: helveticaBoldFont
+    });
+
+
+    //Linea para separar headers 
+    // Definir la posición para la línea
+    const lineY = boxY - 10;  // Ajusta la posición para que esté justo debajo de los recuadros
+    const lineThickness = 2;  // Grosor de la línea
+    page.drawLine({
+      start: { x: startX, y: lineY },  // Comienza desde el inicio de los recuadros
+      end: { x: 570, y: lineY },  // Termina al final de la última caja
+      thickness: lineThickness,
+      color: rgb(0, 0, 0),  // Color negro
+    });
+
+    //Headers
+    // Definir las posiciones de los encabezados
+    const tableStartY = boxY - 40;  // Ajusta la posición vertical para que los encabezados estén debajo de los recuadros
+    const headerHeight = 20;  // Altura de los encabezados de la tabla
+    const headerFontSize = 9;  // Tamaño de la fuente para los encabezados
+
+    // Definir los títulos de los encabezados
+    const headers = ['Fecha', 'Tipo', 'Documento', 'Recibo', 'Moneda', 'Debe', 'Haber', 'Saldo'];
+
+    // Anchos de las columnas
+    const columnWidths = [60, 60, 80, 80, 45, 60, 60, 80];  // Ajusta el ancho de cada columna según tus necesidades
+
+    // Posición inicial de la tabla
+    let currentX = startX;  // Inicia en la misma X que los recuadros anteriores
+    let currentY = tableStartY - headerHeight - 10;
+
+    // Dibujar el fondo gris claro para los encabezados de la tabla
+    page.drawRectangle({
+      x: currentX,
+      y: tableStartY,
+      width: columnWidths.reduce((a, b) => a + b, 0),  // Sumar el ancho total de las columnas
+      height: headerHeight,
+      color: lightGray,  // Gris claro
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1,
+    });
+
+    // Dibujar los títulos de la tabla
+    headers.forEach((header, index) => {
+      page.drawText(header, {
+        x: currentX + 5,  // Un pequeño margen desde el borde izquierdo
+        y: tableStartY + 5,  // Alineado verticalmente en el centro del encabezado
+        size: headerFontSize,
+        font: helveticaFont,
+      });
+
+      // Ajustar la posición X para el siguiente encabezado
+      currentX += columnWidths[index];
+    });
+
+
+    function drawTable(resultMovimientos) {
+      let saldoAcumulado = parseFloat(resultSaldoInicial[0]?.Saldo);  // Inicializar el saldo acumulado
+      // Definir un umbral para cuando cambiar de página
+      const pageHeight = 800;  // Altura de la página
+      const rowHeight = 20;    // Altura de cada fila
+      const marginBottom = 50; // Espacio de margen en la parte inferior
+      let currentPage = page;
+
+      function drawHeaders(page) {
+        let currentX = startX;
+
+        // Dibujar el fondo gris claro para los encabezados de la tabla
+        page.drawRectangle({
+          x: currentX,
+          y: tableStartY + 170,
+          width: columnWidths.reduce((a, b) => a + b, 0),  // Sumar el ancho total de las columnas
+          height: headerHeight,
+          color: lightGray,  // Gris claro
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 1,
+        });
+
+        // Dibujar los títulos de la tabla
+        headers.forEach((header, index) => {
+          page.drawText(header, {
+            x: currentX + 5,  // Un pequeño margen desde el borde izquierdo
+            y: tableStartY + 175,  // Alineado verticalmente en el centro del encabezado
+            size: headerFontSize,
+            font: helveticaFont,
+          });
+          // Dibujar la línea de separación entre las columnas
+          if (index < headers.length - 1) {
+            page.drawLine({
+              start: { x: currentX + columnWidths[index], y: tableStartY + 170 },
+              end: { x: currentX + columnWidths[index], y: tableStartY + 170 + headerHeight },
+              color: rgb(0, 0, 0),
+              thickness: 1,
+            });
+          }
+
+          // Ajustar la posición X para el siguiente encabezado
+          currentX += columnWidths[index];
+        });
+      }
+      
+
+      // Dibujar cada fila de datos en la tabla
+      resultMovimientos.forEach((movimiento) => {
+
+        if (currentY < marginBottom) {
+          // Crear una nueva página
+          currentPage = pdfDoc.addPage();  // Suponiendo que `doc` es tu documento PDF
+          drawHeaders(currentPage);
+          currentY = pageHeight - marginBottom;  // Resetear la posición Y al inicio de la página
+        }
+        // Dibujar la fila de la tabla
+        currentPage.drawRectangle({
+          x: startX,
+          y: currentY,
+          width: columnWidths.reduce((a, b) => a + b, 0),  // Sumar los anchos de las columnas
+          height: 20,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 1,
+        });
+
+        // Insertar los valores en cada columna de la fila
+        currentPage.drawText(movimiento.FechaFormateada, { x: startX + 5, y: currentY + 5, size: 8, font: helveticaFont });
+        currentPage.drawText(movimiento.TipoDocumento, { x: startX + columnWidths[0] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+
+        // Comprobar si 'NumeroDocumento' no es null antes de dibujar
+        if (movimiento.NumeroDocumento) {
+          currentPage.drawText(movimiento.NumeroDocumento, { x: startX + columnWidths[0] + columnWidths[1] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+        } else {
+          currentPage.drawText('     -', { x: startX + columnWidths[0] + columnWidths[1] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+        }
+
+        // Comprobar si 'NumeroRecibo' no es null antes de dibujar
+        if (movimiento.NumeroRecibo) {
+          currentPage.drawText(movimiento.NumeroRecibo, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+        } else {
+          currentPage.drawText('     -', { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+        }
+
+        currentPage.drawText(movimiento.Moneda, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+
+        // Comprobar si 'Debe' y 'Haber' son números válidos antes de dibujar
+        const debeValue = (movimiento.Debe !== 0.00 && movimiento.Debe !== undefined) ? movimiento.Debe.toFixed(2) : '     -';
+        const haberValue = (movimiento.Haber !== null && movimiento.Haber !== undefined) ? movimiento.Haber.toFixed(2) : '     -';
+
+        // Dibujar los valores de "Debe" y "Haber"
+        currentPage.drawText(debeValue, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + columnWidths[4] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+        currentPage.drawText(haberValue, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + columnWidths[4] + columnWidths[5] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+
+        // Calcular saldo acumulado
+        saldoAcumulado += (movimiento.Debe || 0) - (movimiento.Haber || 0);  // Ajuste según la lógica de saldo
+
+        // Mostrar el saldo acumulado en la última columna
+        currentPage.drawText(saldoAcumulado.toFixed(2), { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + columnWidths[4] + columnWidths[5] + columnWidths[6] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+
+        // Ajustar la posición Y para la siguiente fila
+        currentY -= 20;  // Espacio para la siguiente fila
+      });
+    }
+
+    // Llamar a la función para dibujar la tabla con los datos
+    drawTable(resultMovimientos);
+
+
+
+
+    // Guardar el PDF
+    const pdfFinalBytes = await pdfDoc.save();
+
+    // Setear cabeceras para descarga del PDF
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="CuentaCorriente"', // Asegúrate de que el nombre esté entre comillas dobles
+    });
+
+    res.send(Buffer.from(pdfFinalBytes)); // Envía el PDF generado
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    return res.status(500).json({ message: 'An error occurred while processing the request.' });
+  }
+});
 
 
 const PORT = process.env.PORT || 3000;

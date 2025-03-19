@@ -180,7 +180,7 @@ const PreviewGuias = () => {
     return (
         <div className="Contenedor_Principal">
             <ToastContainer />
-            <div className='titulo-estandar'><h1>Buscar Guías</h1></div>
+            <div className='titulo-estandar-grande'><h1>Buscar Guías</h1></div>
             {loadingtabla ? (
                 <div className="loading-spinner">
                     {/* El spinner se muestra cuando loading es true */}

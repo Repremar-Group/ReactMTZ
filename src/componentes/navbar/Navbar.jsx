@@ -16,9 +16,10 @@ const NavBar = () => {
                 <div className="botonConSubmenu">
                     <button className="botonNavBar">Facturación</button>
                     <div className="submenu">
-                        <Link to="/facturacion/comprobantes" className="submenuItem">Comprobantes</Link>
+                        <Link to="/facturacion/comprobantes" className="submenuItem">Emision de Comprobantes</Link>
                         <Link to="/facturacion/recibos" className="submenuItem">Emisión de Recibos</Link>
                         <Link to="/facturacion/FacturasManuales" className="submenuItem">Facturas Manuales</Link>
+                        <Link to="/facturacion/BuscarFacturas" className="submenuItem">Buscar Facturas</Link>
                     </div>
                 </div>
 
