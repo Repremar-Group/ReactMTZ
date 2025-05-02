@@ -2585,7 +2585,7 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
           currentX += columnWidths[index];
         });
       }
-      
+
 
       // Dibujar cada fila de datos en la tabla
       resultMovimientos.forEach((movimiento) => {
@@ -2667,6 +2667,72 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
   }
 });
 
+
+app.get('/api/obtenerguiasimpopendientes', (req, res) => {
+  const { cliente, desde, hasta, tipoPago } = req.query;
+
+  let query = `
+    SELECT g.*, v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.consignatario = ? 
+AND g.emision >= ? 
+AND g.emision <= ? 
+AND g.facturada = 0
+  `;
+
+  const params = [cliente, desde, hasta];
+
+  // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
+  if (tipoPago && tipoPago !== 'Cualquiera') {
+    query += ` AND tipodepagoguia = ?`;
+    params.push(tipoPago);
+  }
+
+  query += ` ORDER BY emision ASC`;
+
+  connection.query(query, params, (error, results) => {
+    if (error) {
+      console.error('Error al obtener guías impo:', error);
+      res.status(500).json({ error: 'Error al obtener guías impo' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+app.get('/api/obtenerguiasexpopendientes', (req, res) => {
+  const { cliente, desde, hasta, tipoPago } = req.query;
+
+  let query = `
+    SELECT g.*, v.vuelo AS vuelo
+FROM guiasexpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.agente = ? 
+AND g.emision >= ? 
+AND g.emision <= ? 
+AND g.facturada = 0
+  `;
+
+  const params = [cliente, desde, hasta];
+
+  // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
+  if (tipoPago && tipoPago !== 'Cualquiera') {
+    query += ` AND tipodepago = ?`;
+    params.push(tipoPago);
+  }
+
+  query += ` ORDER BY emision ASC`;
+
+  connection.query(query, params, (error, results) => {
+    if (error) {
+      console.error('Error al obtener guías impo:', error);
+      res.status(500).json({ error: 'Error al obtener guías impo' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

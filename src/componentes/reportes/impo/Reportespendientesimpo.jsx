@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Reportespendientes.css'; // Importa el archivo CSS
 import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 import axios from 'axios';
@@ -18,13 +18,20 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
   const [pcs, setPcs] = useState('');
   const [peso, setPeso] = useState('');
   const [cobrar, setCobrar] = useState('');
-
+  const [guiaspendientes, setGuiaspendientes] = useState([]);
   // Estado para la búsqueda de clientes
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredClientes, setFilteredClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const backURL = import.meta.env.VITE_BACK_URL;
+
+  useEffect(() => {
+    // Función para obtener la fecha actual en formato YYYY-MM-DD
+    const fechaActual = new Date().toISOString().split("T")[0];
+    setHasta(fechaActual);
+  }, []);
+
   // Manejo del input de búsqueda
   const handleInputChange = (e) => setSearchTerm(e.target.value);
 
@@ -34,6 +41,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
       e.preventDefault();
       try {
         const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
+        console.log('Cliente: ', response.data);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {
@@ -46,6 +54,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
   const handleSelectCliente = (cliente) => {
     setSelectedCliente(cliente);
     setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setNumeroCliente(cliente.Id);
     setIsModalOpen(false); // Cierra el modal
   };
 
@@ -53,105 +62,197 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
   const closeModal = () => setIsModalOpen(false);
 
   // Envío del formulario
-  const handleSubmitReporteImpo = (e) => {
+  const handleSubmitReporteImpo = async (e) => {
     e.preventDefault();
-    console.log({
-      desde,
-      hasta,
-      cliente: selectedCliente ? selectedCliente.RazonSocial : '', // Muestra el cliente seleccionado
-      numeroCliente,
-      tipoPago,
-    });
+    try {
+      const response = await axios.get(`${backURL}/api/obtenerguiasimpopendientes`, {
+        params: {
+          cliente: searchTerm,
+          desde: desde,
+          hasta: hasta,
+          tipoPago: tipoPago
+        }
+      });
+
+      const data = response.data;
+      
+
+      // Transformar la data al formato deseado (si es necesario)
+      const guiasFormateadas = data.map((guia) => ({
+        awb: guia.guia,
+        agente: guia.consignatario,
+        pcs: guia.piezas,
+        peso: guia.peso,
+        vuelo: guia.vuelo,
+        emision: guia.emision ? new Date(guia.emision).toLocaleDateString() : "",
+        llegada: guia.fechavuelo ? new Date(guia.fechavuelo).toLocaleDateString() : "",
+        ori: guia.origenguia,
+        tipopago: guia.tipodepagoguia === 'P' ? 'PREPAID' : guia.tipodepagoguia === 'C' ? 'COLLECT' : guia.tipodepagoguia,
+        cnx: guia.conexionguia,
+        des: guia.destinoguia,
+        tarifado: guia.pesovolumetrico,
+        tarifa: guia.tarifa,
+        flete: guia.flete,
+        dc: guia.duecarrier ?? 0,
+        da: guia.dueagent ?? 0,
+        total: guia.totalguia,
+        cobrar: guia.total
+
+      }));
+
+      setGuiaspendientes(guiasFormateadas);
+      console.log(guiasFormateadas);
+    } catch (error) {
+      console.error("Error al obtener guías pendientes:", error);
+    }
   };
 
-  const guiaspendientes = [
-    { awb: "1", agente: "prueba1", pcs: "1", peso: "500", llegada: "10/10/24", ori: "EZE", cnx: "MVD", des: "MVD", tarifado: "si", tarifa: "x", flete: "x", com: "x", dc: "x", da: "x", over: "x", total: "x", cobrar: "x" },
-    { awb: "2", agente: "prueba2", pcs: "2", peso: "600", llegada: "11/10/24", ori: "JFK", cnx: "GRU", des: "MVD", tarifado: "no", tarifa: "y", flete: "y", com: "y", dc: "y", da: "y", over: "y", total: "y", cobrar: "y" },
-    { awb: "3", agente: "prueba3", pcs: "3", peso: "700", llegada: "12/10/24", ori: "LAX", cnx: "SCL", des: "MVD", tarifado: "si", tarifa: "z", flete: "z", com: "z", dc: "z", da: "z", over: "z", total: "z", cobrar: "z" },
-    { awb: "4", agente: "prueba4", pcs: "4", peso: "800", llegada: "13/10/24", ori: "EZE", cnx: "BOG", des: "MVD", tarifado: "no", tarifa: "a", flete: "a", com: "a", dc: "a", da: "a", over: "a", total: "a", cobrar: "a" },
-    { awb: "5", agente: "prueba5", pcs: "5", peso: "900", llegada: "14/10/24", ori: "MIA", cnx: "PTY", des: "MVD", tarifado: "si", tarifa: "b", flete: "b", com: "b", dc: "b", da: "b", over: "b", total: "b", cobrar: "b" },
-    { awb: "6", agente: "prueba6", pcs: "6", peso: "1000", llegada: "15/10/24", ori: "EZE", cnx: "MVD", des: "MVD", tarifado: "no", tarifa: "c", flete: "c", com: "c", dc: "c", da: "c", over: "c", total: "c", cobrar: "c" },
-    { awb: "7", agente: "prueba7", pcs: "7", peso: "1100", llegada: "16/10/24", ori: "JFK", cnx: "GRU", des: "MVD", tarifado: "si", tarifa: "d", flete: "d", com: "d", dc: "d", da: "d", over: "d", total: "d", cobrar: "d" },
-    { awb: "8", agente: "prueba8", pcs: "8", peso: "1200", llegada: "17/10/24", ori: "LAX", cnx: "SCL", des: "MVD", tarifado: "no", tarifa: "e", flete: "e", com: "e", dc: "e", da: "e", over: "e", total: "e", cobrar: "e" },
-    { awb: "9", agente: "prueba9", pcs: "9", peso: "1300", llegada: "18/10/24", ori: "EZE", cnx: "BOG", des: "MVD", tarifado: "si", tarifa: "f", flete: "f", com: "f", dc: "f", da: "f", over: "f", total: "f", cobrar: "f" },
-    { awb: "10", agente: "prueba10", pcs: "10", peso: "1400", llegada: "19/10/24", ori: "MIA", cnx: "PTY", des: "MVD", tarifado: "no", tarifa: "g", flete: "g", com: "g", dc: "g", da: "g", over: "g", total: "g", cobrar: "g" },
-    { awb: "11", agente: "prueba11", pcs: "11", peso: "1500", llegada: "20/10/24", ori: "EZE", cnx: "MVD", des: "MVD", tarifado: "si", tarifa: "h", flete: "h", com: "h", dc: "h", da: "h", over: "h", total: "h", cobrar: "h" },
-    { awb: "12", agente: "prueba12", pcs: "12", peso: "1600", llegada: "21/10/24", ori: "JFK", cnx: "GRU", des: "MVD", tarifado: "no", tarifa: "i", flete: "i", com: "i", dc: "i", da: "i", over: "i", total: "i", cobrar: "i" },
-    { awb: "13", agente: "prueba13", pcs: "13", peso: "1700", llegada: "22/10/24", ori: "LAX", cnx: "SCL", des: "MVD", tarifado: "si", tarifa: "j", flete: "j", com: "j", dc: "j", da: "j", over: "j", total: "j", cobrar: "j" },
-    { awb: "14", agente: "prueba14", pcs: "14", peso: "1800", llegada: "23/10/24", ori: "EZE", cnx: "BOG", des: "MVD", tarifado: "no", tarifa: "k", flete: "k", com: "k", dc: "k", da: "k", over: "k", total: "k", cobrar: "k" },
-    { awb: "15", agente: "prueba15", pcs: "15", peso: "1900", llegada: "24/10/24", ori: "MIA", cnx: "PTY", des: "MVD", tarifado: "si", tarifa: "l", flete: "l", com: "l", dc: "l", da: "l", over: "l", total: "l", cobrar: "l" },
-    { awb: "16", agente: "prueba16", pcs: "16", peso: "2000", llegada: "25/10/24", ori: "EZE", cnx: "MVD", des: "MVD", tarifado: "no", tarifa: "m", flete: "m", com: "m", dc: "m", da: "m", over: "m", total: "m", cobrar: "m" },
-    { awb: "17", agente: "prueba17", pcs: "17", peso: "2100", llegada: "26/10/24", ori: "JFK", cnx: "GRU", des: "MVD", tarifado: "si", tarifa: "n", flete: "n", com: "n", dc: "n", da: "n", over: "n", total: "n", cobrar: "n" },
-    { awb: "18", agente: "prueba18", pcs: "18", peso: "2200", llegada: "27/10/24", ori: "LAX", cnx: "SCL", des: "MVD", tarifado: "no", tarifa: "o", flete: "o", com: "o", dc: "o", da: "o", over: "o", total: "o", cobrar: "o" },
-    { awb: "19", agente: "prueba19", pcs: "19", peso: "2300", llegada: "28/10/24", ori: "EZE", cnx: "BOG", des: "MVD", tarifado: "si", tarifa: "p", flete: "p", com: "p", dc: "p", da: "p", over: "p", total: "p", cobrar: "p" },
-    { awb: "20", agente: "prueba20", pcs: "20", peso: "2400", llegada: "29/10/24", ori: "MIA", cnx: "PTY", des: "MVD", tarifado: "no", tarifa: "q", flete: "q", com: "q", dc: "q", da: "q", over: "q", total: "q", cobrar: "q" },
-    { awb: "21", agente: "prueba21", pcs: "21", peso: "2500", llegada: "30/10/24", ori: "EZE", cnx: "MVD", des: "MVD", tarifado: "si", tarifa: "r", flete: "r", com: "r", dc: "r", da: "r", over: "r", total: "r", cobrar: "r" },
-    { awb: "22", agente: "prueba22", pcs: "22", peso: "2600", llegada: "31/10/24", ori: "JFK", cnx: "GRU", des: "MVD", tarifado: "no", tarifa: "s", flete: "s", com: "s", dc: "s", da: "s", over: "s", total: "s", cobrar: "s" },
-    { awb: "23", agente: "prueba23", pcs: "23", peso: "2700", llegada: "01/11/24", ori: "LAX", cnx: "SCL", des: "MVD", tarifado: "si", tarifa: "t", flete: "t", com: "t", dc: "t", da: "t", over: "t", total: "t", cobrar: "t" },
-    { awb: "24", agente: "prueba24", pcs: "24", peso: "2800", llegada: "02/11/24", ori: "EZE", cnx: "BOG", des: "MVD", tarifado: "no", tarifa: "u", flete: "u", com: "u", dc: "u", da: "u", over: "u", total: "u", cobrar: "u" },
-    { awb: "25", agente: "prueba25", pcs: "25", peso: "2900", llegada: "03/11/24", ori: "MIA", cnx: "PTY", des: "MVD", tarifado: "si", tarifa: "v", flete: "v", com: "v", dc: "v", da: "v", over: "v", total: "v", cobrar: "v" },
-    { awb: "26", agente: "prueba26", pcs: "26", peso: "3000", llegada: "04/11/24", ori: "EZE", cnx: "MVD", des: "MVD", tarifado: "no", tarifa: "w", flete: "w", com: "w", dc: "w", da: "w", over: "w", total: "w", cobrar: "w" },
-    { awb: "27", agente: "prueba27", pcs: "27", peso: "3100", llegada: "05/11/24", ori: "JFK", cnx: "GRU", des: "MVD", tarifado: "si", tarifa: "x", flete: "x", com: "x", dc: "x", da: "x", over: "x", total: "x", cobrar: "x" },
-    { awb: "28", agente: "prueba28", pcs: "28", peso: "3200", llegada: "06/11/24", ori: "LAX", cnx: "SCL", des: "MVD", tarifado: "no", tarifa: "y", flete: "y", com: "y", dc: "y", da: "y", over: "y", total: "y", cobrar: "y" },
-    { awb: "29", agente: "prueba29", pcs: "29", peso: "3300", llegada: "07/11/24", ori: "EZE", cnx: "BOG", des: "MVD", tarifado: "si", tarifa: "z", flete: "z", com: "z", dc: "z", da: "z", over: "z", total: "z", cobrar: "z" },
-    { awb: "30", agente: "prueba30", pcs: "30", peso: "3400", llegada: "08/11/24", ori: "MIA", cnx: "PTY", des: "MVD", tarifado: "no", tarifa: "aa", flete: "aa", com: "aa", dc: "aa", da: "aa", over: "aa", total: "aa", cobrar: "aa" }
-  ];
 
   const exportaExcel = () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Guias Pendientes');
-
-    // Agregar encabezados
+    const worksheet = workbook.addWorksheet('Guias Pendientes Impo');
     worksheet.columns = [
-      { header: 'AWB', key: 'awb', width: 10 },
-      { header: 'Agente', key: 'agente', width: 15 },
-      { header: 'Pcs', key: 'pcs', width: 10 },
-      { header: 'Peso', key: 'peso', width: 10 },
-      { header: 'Llegada', key: 'llegada', width: 15 },
-      { header: 'ORI', key: 'ori', width: 10 },
-      { header: 'CNX', key: 'cnx', width: 10 },
-      { header: 'DES', key: 'des', width: 10 },
-      { header: 'Tarifado', key: 'tarifado', width: 10 },
-      { header: 'Tarifa', key: 'tarifa', width: 10 },
-      { header: 'Flete', key: 'flete', width: 10 },
-      { header: 'COM', key: 'com', width: 10 },
-      { header: 'DC', key: 'dc', width: 10 },
-      { header: 'DA', key: 'da', width: 10 },
-      { header: 'Over', key: 'over', width: 10 },
-      { header: 'Total', key: 'total', width: 10 },
-      { header: 'Cobrar', key: 'cobrar', width: 10 },
+      { width: 15 }, // A — AWB Número
+      { width: 12 }, // B — Emisión
+      { width: 10 }, // C — Vuelo Número
+      { width: 12 }, // D — Fecha
+      { width: 10 }, // E — Bruto
+      { width: 10 }, // F — Tarifado
+      { width: 10 }, // G — Origen
+      { width: 14 }, // H — Tipo de pago
+      { width: 14 }, // I — Flete
+      { width: 12 }, // J — Due Agent
+      { width: 10 }, // K — DC
+      { width: 15 }, // L — Total a pagar
     ];
 
-    // Establecer el color de fondo para las celdas de encabezado desde A1 hasta J1
-    for (let col = 1; col <= 17; col++) { // Desde la columna 1 (A) hasta la columna 17 (Q)
-      const cell = worksheet.getCell(1, col); // Obtener la celda en la fila 1
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: '143361' } // Color de fondo deseado
-      };
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } }; // Texto en negrita y color blanco
-      cell.alignment = { horizontal: 'center' }; // Centrar texto
+    // Cliente
+    worksheet.mergeCells('A1:C1');
+    worksheet.getCell('A1').value = `Cliente: ${searchTerm ?? 'Cliente no especificado'}`;
+    worksheet.getCell('A1').fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'D9D9D9' },
+    };
+    worksheet.getCell('A1').font = { bold: true };
+    worksheet.getCell('A1').alignment = { horizontal: 'left', vertical: 'middle' };
+
+    // Período
+    worksheet.mergeCells('A2:C2');
+    worksheet.getCell('A2').value = `Período: ${desde} a ${hasta}`;
+    worksheet.getCell('A2').fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'D9D9D9' },
+    };
+    worksheet.getCell('A2').font = { bold: true };
+    worksheet.getCell('A2').alignment = { horizontal: 'left', vertical: 'middle' };
+
+    // Base
+    worksheet.mergeCells('A3:C3');
+    worksheet.getCell('A3').value = 'Base: MVD';
+    worksheet.getCell('A3').fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'D9D9D9' },
+    };
+    worksheet.getCell('A3').font = { bold: true };
+    worksheet.getCell('A3').alignment = { horizontal: 'left', vertical: 'middle' };
+
+    // Fila 1 — Headers principales combinados
+    worksheet.mergeCells('A4:B4'); // AWB
+    worksheet.mergeCells('C4:D4'); // Vuelo
+    worksheet.mergeCells('E4:F4'); // Peso
+
+    worksheet.getCell('A4').value = 'AWB';
+    worksheet.getCell('C4').value = 'Vuelo';
+    worksheet.getCell('E4').value = 'Peso';
+
+    worksheet.getCell('A5').value = 'Número';
+    worksheet.getCell('B5').value = 'Emisión';
+    worksheet.getCell('C5').value = 'Número';
+    worksheet.getCell('D5').value = 'Fecha';
+    worksheet.getCell('E5').value = 'Bruto';
+    worksheet.getCell('F5').value = 'Tarifado';
+    worksheet.getCell('G5').value = 'Origen';
+    worksheet.getCell('H5').value = 'Tipo de Pago';
+    worksheet.getCell('I5').value = 'Flete AWB';
+    worksheet.getCell('J5').value = 'Due Agent';
+    worksheet.getCell('K5').value = 'DC';
+    worksheet.getCell('L5').value = 'Total a Pagar';
+    // 👉 Estilos de encabezado (ahora filas 4 y 5)
+    for (let row = 4; row <= 5; row++) {
+      for (let col = 1; col <= 12; col++) {
+        const cell = worksheet.getCell(row, col);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: '143361' },
+        };
+        cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        };
+      }
     }
-    // Agregar filas de datos
+
+    // 👉 Ahora los datos empiezan desde la fila 6
     guiaspendientes.forEach((guia) => {
-      worksheet.addRow(guia);
+      const row = worksheet.addRow([
+        guia.awb,
+        guia.emision ? new Date(guia.emision) : null,
+        guia.vuelo,
+        guia.llegada ? new Date(guia.llegada) : null,
+        guia.peso,
+        guia.tarifado,
+        guia.ori,
+        guia.tipopago,
+        guia.flete,
+        guia.da ?? 0,
+        guia.dc ?? 0,
+        guia.cobrar,
+      ]);
+      row.getCell(2).numFmt = 'dd/mm/yyyy';
+      row.getCell(4).numFmt = 'dd/mm/yyyy';
     });
 
     worksheet.autoFilter = {
-      from: 'A1',
-      to: 'O1',
-     }
+      from: 'A5',
+      to: 'L5',
+    };
 
-    // Generar archivo Excel y descargarlo
+    // 👉 Sumo todos los cobrar:
+    const totalCobrar = guiaspendientes.reduce((acc, guia) => acc + (guia.cobrar || 0), 0);
+
+    // 👉 Dejo una línea en blanco y agrego la fila resumen al final:
+    const lastRow = worksheet.lastRow.number + 2;
+    worksheet.mergeCells(`A${lastRow}:K${lastRow}`);
+    worksheet.getCell(`A${lastRow}`).value = 'TOTAL A COBRAR:';
+    worksheet.getCell(`A${lastRow}`).alignment = { horizontal: 'right' };
+    worksheet.getCell(`A${lastRow}`).font = { bold: true };
+
+    worksheet.getCell(`L${lastRow}`).value = totalCobrar;
+    worksheet.getCell(`L${lastRow}`).numFmt = '#,##0.00';
+    worksheet.getCell(`L${lastRow}`).font = { bold: true };
+    worksheet.getCell(`L${lastRow}`).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: '9ACD33' },
+    };
+
+
     workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, 'GuiasPendientesImpo.xlsx');
-    }).catch((error) => {
-      console.error("Error al escribir el buffer: ", error);
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      saveAs(blob, `GuiasPendientesImpo_${searchTerm}_${desde}_${hasta}.xlsx`);
     });
   };
-  
+
   const TablaPendientes = ({ guia }) => (
     <table className='tabla-pendientes' >
       <thead>
@@ -167,10 +268,8 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
           <th>Tarifado</th>
           <th>Tarifa</th>
           <th>Flete</th>
-          <th>Com.</th>
           <th>DC</th>
           <th>DA</th>
-          <th>Over</th>
           <th>Total</th>
           <th>Cobrar</th>
         </tr>
@@ -189,10 +288,8 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
             <td>{guia.tarifado}</td>
             <td>{guia.tarifa}</td>
             <td>{guia.flete}</td>
-            <td>{guia.com}</td>
             <td>{guia.dc}</td>
             <td>{guia.da}</td>
-            <td>{guia.over}</td>
             <td>{guia.total}</td>
             <td>{guia.cobrar}</td>
           </tr>
@@ -248,6 +345,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
               value={numeroCliente}
               onChange={(e) => setNumeroCliente(e.target.value)}
               required
+              readOnly
             />
           </div>
           <div>
@@ -259,9 +357,9 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
               required
             >
               <option value="">Selecciona un tipo de pago</option>
-              <option value="credito">Crédito</option>
-              <option value="contado">Contado</option>
-              <option value="transferencia">Transferencia</option>
+              <option value="P">Prepaid</option>
+              <option value="C">Collect</option>
+              <option value="Cualquiera">Cualquiera</option>
             </select>
           </div>
           <div>
@@ -273,48 +371,6 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
         </div>
         <div>
           <TablaPendientes guia={guiaspendientes} />
-        </div>
-        <div className='primerrenglon-estandar'>
-          <div >
-            <label htmlFor="embarques">Embarques:</label>
-            <input
-              type="text"
-              id="embarques"
-              value={embarques}
-              onChange={(e) => setEmbarques(e.target.value)}
-              required
-            />
-          </div>
-          <div >
-            <label htmlFor="pcs">Pcs:</label>
-            <input
-              type="text"
-              id="pcs"
-              value={pcs}
-              onChange={(e) => setPcs(e.target.value)}
-              required
-            />
-          </div>
-          <div >
-            <label htmlFor="peso">Peso:</label>
-            <input
-              type="text"
-              id="peso"
-              value={peso}
-              onChange={(e) => setPeso(e.target.value)}
-              required
-            />
-          </div>
-          <div >
-            <label htmlFor="cobrar">Cobrar:</label>
-            <input
-              type="text"
-              id="cobrar"
-              value={cobrar}
-              onChange={(e) => setCobrar(e.target.value)}
-              required
-            />
-          </div>
         </div>
 
         <div className='botones-reportes'>

@@ -25,6 +25,7 @@ const Reportesimpo = ({ isLoggedIn }) => {
       e.preventDefault();
       try {
         const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
+        console.log(response.data);
         setFilteredClientes(response.data);
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {
