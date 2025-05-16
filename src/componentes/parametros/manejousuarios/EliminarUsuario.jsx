@@ -4,20 +4,20 @@ import './eliminarusuario.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 
-const EliminarUsuario = ({ empresa, rut, id, closeModal }) => {
-  if (!empresa || !rut) return null; // No muestra nada si no hay empresa seleccionada
+const EliminarUsuario = ({ id, usr, closeModal }) => {
+  if (!id) return null;
   const backURL = import.meta.env.VITE_BACK_URL;
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('ID a eliminar:', id);
     try {
-      const response = await axios.delete(`${backURL}/api/deleteclientes`, {
+      const response = await axios.delete(`${backURL}/api/deleteusuario`, {
         data: { Id: id } // Enviando el ID en el cuerpo de la solicitud
       });
-      toast.success(response.data.message); // Mensaje de éxito
+      toast.success(response.data.mensaje); // Mensaje de éxito
       closeModal(); // Cierra el modal después de la eliminación
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Error desconocido'); // Mostrar el error al usuario
+      toast.error(error.response?.data?.mensaje || 'Error desconocido'); // Mostrar el error al usuario
     }
   };
 
@@ -25,7 +25,7 @@ const EliminarUsuario = ({ empresa, rut, id, closeModal }) => {
     <div>
       <ToastContainer />
       <form className='formularioschicos' onSubmit={handleSubmit}>
-        <p>¿Estás seguro de que deseas eliminar la empresa {empresa} con RUT {rut} y su cuenta corriente?</p>
+        <p>¿Estás seguro de que deseas eliminar el usuario {usr} con ID: {id}?</p>
         <div className="botones">
           <button className='btn-eliminar-estandar' type="submit" >Eliminar</button>
           <button className='btn-estandar' type="button" onClick={closeModal}>Volver</button>

@@ -10,6 +10,14 @@ const axios = require('axios');
 const xml2js = require('xml2js');
 const { generarXml } = require('./ControladoresGFE/controladoresGfe')
 
+function queryAsync(sql, params) {
+  return new Promise((resolve, reject) => {
+    connection.query(sql, params, (err, results) => {
+      if (err) reject(err);
+      else resolve(results);
+    });
+  });
+}
 // Configura la conexión a tu servidor MySQL flexible de Azure
 const connection = mysql.createConnection({
   host: 'cielosurinvoicedb.mysql.database.azure.com', // Tu servidor MySQL flexible de Azure
@@ -192,6 +200,81 @@ app.get('/api/obtenerclientes/:id', (req, res) => {
   });
 });
 
+app.post('/api/guardar-datos-empresa', async (req, res) => {
+  const { usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa } = req.body;
+
+  try {
+    const rows = await new Promise((resolve, reject) => {
+      connection.query('SELECT * FROM datos_empresa LIMIT 1', (error, results) => {
+        if (error) reject(error);
+        else resolve(results);
+      });
+    });
+
+    if (rows.length > 0) {
+      // Ya hay datos → Hacer UPDATE
+      await new Promise((resolve, reject) => {
+        connection.query(
+          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa],
+          (error) => {
+            if (error) reject(error);
+            else resolve();
+          }
+        );
+      });
+
+      res.send('Datos actualizados correctamente');
+    } else {
+      // No hay datos → Hacer INSERT
+      await new Promise((resolve, reject) => {
+        connection.query(
+          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa) VALUES (?, ?, ?, ?)`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa],
+          (error) => {
+            if (error) reject(error);
+            else resolve();
+          }
+        );
+      });
+
+      res.send('Datos insertados correctamente');
+    }
+  } catch (error) {
+    console.error('Error al guardar datos de empresa:', error);
+    res.status(500).send('Error al guardar datos');
+  }
+});
+
+app.get('/api/obtener-datos-empresa', async (req, res) => {
+  try {
+    const rows = await new Promise((resolve, reject) => {
+      connection.query('SELECT * FROM datos_empresa LIMIT 1', (error, results) => {
+        if (error) reject(error);
+        else resolve(results);
+      });
+    });
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res.status(404).json({ message: 'No se encontraron datos de empresa' });
+    }
+  } catch (error) {
+    console.error('Error al obtener datos de empresa:', error);
+    res.status(500).send('Error al obtener los datos');
+  }
+});
+
+app.get('/api/obtener-conceptos', (req, res) => {
+  connection.query('SELECT * FROM conceptos', (error, results) => {
+    if (error) {
+      console.error('Error al obtener conceptos:', error);
+      return res.status(500).json({ error: 'Error al obtener conceptos' });
+    }
+    res.json(results);
+  });
+});
+
 // Endpoint para actualizar un cliente
 app.put('/api/actualizarcliente/:id', (req, res) => {
   const id = req.params.id; // Obtener el ID del cliente de la URL
@@ -273,6 +356,37 @@ app.get('/api/obtenernombrecliente', (req, res) => {
     }
     res.json(results);
   });
+});
+
+app.post('/api/validarlogin', async (req, res) => {
+  const { usuario, contraseña } = req.body;
+
+  try {
+    const sql = 'SELECT * FROM usuarios WHERE usuario = ?';
+    connection.query(sql, [usuario], async (err, results) => {
+      if (err) {
+        console.error('Error al consultar usuario:', err);
+        return res.status(500).json({ mensaje: 'Error en el servidor' });
+      }
+
+      if (results.length === 0) {
+        return res.status(401).json({ mensaje: 'Usuario no encontrado' });
+      }
+
+      const usuarioDB = results[0];
+      const match = await bcrypt.compare(contraseña, usuarioDB.contraseña);
+
+      if (match) {
+        // Éxito
+        return res.status(200).json({ mensaje: 'Login exitoso', rol: usuarioDB.rol });
+      } else {
+        return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+      }
+    });
+  } catch (error) {
+    console.error('Error en el login:', error);
+    res.status(500).json({ mensaje: 'Error al procesar login' });
+  }
 });
 
 // Endpoint para insertar un usuario con contraseña hasheada
@@ -390,6 +504,40 @@ app.put('/api/actualizarusuario/:id', (req, res) => {
     res.status(200).json({ message: 'Cliente Modificado Correctamente' });
   });
 });
+app.delete('/api/deleteusuario', async (req, res) => {
+  const { Id } = req.body;
+
+  try {
+    // 1. Buscar el rol del usuario
+    const usuarioRows = await queryAsync('SELECT rol FROM usuarios WHERE id = ?', [Id]);
+
+    if (!usuarioRows || usuarioRows.length === 0) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+
+    const rolUsuario = usuarioRows[0].rol;
+
+    // 2. Verificar si es el último admin
+    if (rolUsuario === 'admin') {
+      const adminRows = await queryAsync('SELECT COUNT(*) AS total FROM usuarios WHERE rol = "admin"');
+      const totalAdmins = adminRows[0].total;
+
+      if (totalAdmins <= 1) {
+        return res.status(400).json({ mensaje: 'No se puede eliminar al último usuario administrador' });
+      }
+    }
+
+    // 3. Eliminar el usuario
+    await queryAsync('DELETE FROM usuarios WHERE id = ?', [Id]);
+
+    res.status(200).json({ mensaje: 'Usuario eliminado correctamente' });
+
+  } catch (error) {
+    console.error('Error al eliminar usuario:', error);
+    res.status(500).json({ mensaje: 'Error al eliminar usuario' });
+  }
+});
+
 // Agrega un vuelo a la base de datos
 app.post('/api/agregarVuelo', async (req, res) => {
   const { vuelo, compania } = req.body; // Extrae vuelo y compania del cuerpo de la solicitud

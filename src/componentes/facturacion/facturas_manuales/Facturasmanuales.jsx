@@ -7,6 +7,16 @@ import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 const Facturasmanuales = ({ isLoggedIn }) => {
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    const rol = localStorage.getItem('rol');
+
+    if (rol == '') {
+      navigate('/');
+    }
+  }, [navigate]);
+
   // Estado para los campos del formulario
   const backURL = import.meta.env.VITE_BACK_URL;
   const [fmid, setFmId] = useState('');
@@ -41,10 +51,10 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [monedas, setMonedas] = useState([]);
   const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
   const [conceptoactual, setConceptoActual] = useState([]);
-  const navigate = useNavigate();
+
   const hasFetched = useRef(false);
   const [botonActivo, setBotonActivo] = useState(false);
-  
+
 
   // Estado para la cheque seleccionado
   const [fmconceptoseleccionado, setFmConceptoSeleccionado] = useState(null);
@@ -53,8 +63,24 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const handleSeleccionarConceptoAsociado = (icindex) => {
     setFmConceptoSeleccionado(icindex);
   };
-  // Llamar al endpoint para obtener el tipo de cambio
 
+  const [conceptosEncontrados, setConceptosEncontrados] = useState([]);
+  const [mostrarModalBuscarConcepto, setMostrarModalBuscarConcepto] = useState(false);
+  const fetchTodosLosConceptos = async () => {
+    try {
+      const response = await axios.get(`${backURL}/api/obtener-conceptos`);
+      setConceptosEncontrados(response.data);
+    } catch (error) {
+      console.error('Error al obtener conceptos:', error);
+      toast.error('Error al obtener la lista de conceptos');
+    }
+  };
+
+  useEffect(() => {
+    if (mostrarModalBuscarConcepto == true) {
+      fetchTodosLosConceptos();
+    }
+  }, [mostrarModalBuscarConcepto]);
   const fetchConceptoPorCodigo = async () => {
     try {
       const response = await axios.get(`${backURL}/api/buscarconcepto/${fmcodigoconcepto}`);
@@ -166,7 +192,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       Electronico: fmelectronico,
       Moneda: fmmoneda,
       Fecha: fmfecha,
-      TipoIVA:fmtipoiva,
+      TipoIVA: fmtipoiva,
       CASS: fmcass,
       TipoEmbarque: fmtipodeembarque,
       TC: parseFloat(fmtc).toFixed(2),
@@ -176,7 +202,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       Total: parseFloat(fmtotal).toFixed(2),
       TotalCobrar: parseFloat(fmtotalacobrar).toFixed(2),
       DetalleFactura: fmlistadeconceptos,
-      
+
     };
     console.log('info al backend: ', datosFormulario);
 
@@ -195,7 +221,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       // Si ocurre un error, manejarlo aquí
       console.error('Error al agregar la factura:', error);
       toast.error('Hubo un error al facturar');
-    } finally{
+    } finally {
       window.location.reload();
     }
   };
@@ -254,27 +280,27 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   useEffect(() => {
     let nuevoSubtotal = 0;
     let nuevoIVA = 0;
-  
+
     // Recorrer la lista de conceptos y sumar los valores directamente
     fmlistadeconceptos.forEach((concepto) => {
       const importe = parseFloat(concepto.fmimporte) || 0;
       const iva = parseFloat(concepto.fmivaconcepto) || 0; // Se asume que ya viene calculado
-  
+
       nuevoSubtotal += importe;
       nuevoIVA += iva; // Sumar IVA directamente en lugar de calcularlo
     });
-  
+
     const nuevoTotal = nuevoSubtotal + nuevoIVA;
     const nuevoRedondeo = Math.ceil(nuevoTotal) - nuevoTotal; // Redondeo siempre hacia arriba
     const nuevoTotalACobrar = nuevoTotal + nuevoRedondeo;
-  
+
     // Actualizar estados
     setFmsubtotal(nuevoSubtotal.toFixed(2));
     setFmIva(nuevoIVA.toFixed(2)); // IVA ahora es la suma directa de los valores fmivaconcepto
     setFmTotal(nuevoTotal.toFixed(2));
     setFmRedondeo(nuevoRedondeo.toFixed(2));
     setFmTotalACobrar(nuevoTotalACobrar.toFixed(2));
-  
+
   }, [fmlistadeconceptos]); // Se ejecuta cada vez que cambia la lista de conceptos
 
 
@@ -500,10 +526,14 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      fetchConceptoPorCodigo();
+                      if (!fmcodigoconcepto.trim()) {
+                        setMostrarModalBuscarConcepto(true); // Mostrar modal si está vacío
+                      } else {
+                        fetchConceptoPorCodigo(); // Buscar si hay algo escrito
+                      }
                     }
                   }}
-                  
+
                 />
               </div>
               <div>
@@ -513,7 +543,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmdescripcion"
                   value={fmdescripcion}
                   onChange={(e) => setFmDescripcion(e.target.value)}
-                  
+
                 />
               </div>
               <div>
@@ -549,12 +579,12 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   id="fmimporte"
                   value={fmimporte}
                   onChange={(e) => setFmImporte(e.target.value)}
-                  
+
                 />
               </div>
 
               <div className='botonesfacturasasociadas'>
-                <button type="button"  disabled={!botonActivo} onClick={handleAgregarConceptoAsociado} className='btn-estandar'>Agregar</button>
+                <button type="button" disabled={!botonActivo} onClick={handleAgregarConceptoAsociado} className='btn-estandar'>Agregar</button>
               </div>
 
             </div>
@@ -671,6 +701,45 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
 
       </form>
+      {mostrarModalBuscarConcepto && (
+        <div className="modal" onClick={() => setMostrarModalBuscarConcepto(false)}>
+          <div className="modal-content">
+            <div className='titulo-estandar'>
+            <h2>Buscar concepto</h2>
+            </div>
+            
+            <p>Seleccioná un concepto de la lista:</p>
+            <table className="tabla-clientesbusqueda">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descripción</th>
+                  <th>Exento</th>
+                </tr>
+              </thead>
+              <tbody>
+                {conceptosEncontrados.map((concepto) => (
+                  <tr
+                    key={concepto.idconcepto}
+                    onClick={() => {
+                      setFmCodigoConcepto(concepto.codigo);
+                      setFmDescripcion(concepto.descripcion);
+                      setConceptoActual(concepto);
+                      setMostrarModalBuscarConcepto(false);
+                      setBotonActivo(true);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>{concepto.codigo}</td>
+                    <td>{concepto.descripcion}</td>
+                    <td>{concepto.exento ? 'Sí' : 'No'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
       {/* Modal de búsqueda de clientes */}
       <ModalBusquedaClientes
         isOpen={isModalOpen}

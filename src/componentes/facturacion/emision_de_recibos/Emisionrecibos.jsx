@@ -6,8 +6,17 @@ import axios from 'axios';
 import Ingresodecheques from './ingresocheques/Ingresodecheques';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Emisionrecibos = ({ isLoggedIn }) => {
+    const navigate = useNavigate();
+        useEffect(() => {
+            const rol = localStorage.getItem('rol');
+    
+            if (rol == '') {
+                navigate('/');
+            }
+        }, [navigate]);
   // Estado para los campos del formulario
   const backURL = import.meta.env.VITE_BACK_URL;
   const [ernumrecibo, setErNumRecibo] = useState('');

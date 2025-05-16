@@ -4,15 +4,26 @@ import ReactPaginate from 'react-paginate';
 import { Link } from "react-router-dom";
 import ModificarUsuario from './manejousuarios/ModificarUsuario';
 import EliminarUsuario from './manejousuarios/EliminarUsuario';
-
-
+import { useNavigate } from 'react-router-dom';
 
 const Usuarios = ({ isLoggedIn }) => {
+   const navigate = useNavigate();
+        
+    useEffect(() => {
+        const rol = localStorage.getItem('rol');
+        
+        if (rol !== 'admin') {
+            // Si no es admin, redirigir al home
+                navigate('/home');
+            }
+        }, [navigate]);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const backURL = import.meta.env.VITE_BACK_URL;
     //Variables de estado para eliminar usuario
     const [idAEliminar, setIdAEliminar] = useState(null);
+    const [usrAEliminar, setUsrAEliminar] = useState(null);
   
     //Variables de estado para modificar usuario
     const [idAModificar, setIDAModificar] = useState(null); // ID
@@ -52,8 +63,9 @@ const Usuarios = ({ isLoggedIn }) => {
       setCurrentPage(0); // Resetear la página actual al buscar
     };
   
-    const handleEliminar = (id) => {
+    const handleEliminar = (id, usuario) => {
       setIdAEliminar(id);
+      setUsrAEliminar(usuario);
     };
   
     const handleModificar = (id) => {
@@ -106,7 +118,7 @@ const Usuarios = ({ isLoggedIn }) => {
                   <td>
                     <div className="action-buttons">
                       <button className="action-button" onClick={() => handleModificar(row.id)}>✏️</button>
-                      <button className="action-button" onClick={() => handleEliminar(row.id)}>❌</button>
+                      <button className="action-button" onClick={() => handleEliminar(row.id, row.usuario)}>❌</button>
                     </div>
                   </td>
                 </tr>
@@ -133,7 +145,7 @@ const Usuarios = ({ isLoggedIn }) => {
           <>
             <div className="modal-overlay active" onClick={closeModalEliminar}></div>
             <div className="modal-container active">
-              <EliminarUsuario id={idAEliminar} closeModal={closeModalEliminar} />
+              <EliminarUsuario id={idAEliminar} usr={usrAEliminar} closeModal={closeModalEliminar} />
             </div>
           </>
         )}

@@ -4,6 +4,7 @@ import logo from './logo.png';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
+import axios from 'axios';
 
 
 
@@ -12,6 +13,7 @@ const LoginForm = ({ onLoginSuccess }) => {
     const [usuario, setUsuario] = useState("");
     const [contraseña, setContraseña] = useState("");
     const navigate = useNavigate();
+    const backURL = import.meta.env.VITE_BACK_URL;
 
     // Array de usuarios válidos
     const usuariosValidos = [
@@ -24,18 +26,28 @@ const LoginForm = ({ onLoginSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault(); // Evita la recarga de la página
 
-        // Verificar si el usuario existe en el array
-        const usuarioEncontrado = usuariosValidos.find(
-            (u) => u.usuario === usuario && u.contraseña === contraseña
-        );
+        try {
+            const response = await axios.post(`${backURL}/api/validarlogin`, {
+                usuario,
+                contraseña,
+            });
 
-        if (usuarioEncontrado) {
-            onLoginSuccess(); // Llama a la función de login exitoso pasada desde el componente principal
-            navigate('/home');
+            // Si la respuesta es correcta
+            if (response.status === 200) {
+                toast.success("Login exitoso");
+                const { rol } = response.data;
 
+                localStorage.setItem("usuario", usuario);
+                localStorage.setItem("rol", rol);
 
-        } else {
-            toast.error("Usuario o contraseña incorrectos");
+                onLoginSuccess(); 
+                navigate('/home');
+            }
+        } catch (error) {
+            
+            if (error) {
+                toast.error('Usuario inválido o no fue encontrado');
+            } 
         }
     };
 

@@ -2,8 +2,21 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactPaginate from 'react-paginate';
 import'./ciudades.css';
+import { useNavigate } from 'react-router-dom';
 
 const Ciudades = ({ isLoggedIn }) => {
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const rol = localStorage.getItem('rol');
+
+        if (rol !== 'admin') {
+            // Si no es admin, redirigir al home
+            navigate('/home');
+        }
+    }, [navigate]);
+    
     const [ciudad, setCiudad] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);

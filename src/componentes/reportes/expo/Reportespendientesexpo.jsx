@@ -208,7 +208,6 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
         }
       }
   
-      // 👉 Ahora los datos empiezan desde la fila 6
       guiaspendientes.forEach((guia) => {
         const row = worksheet.addRow([
           guia.awb,

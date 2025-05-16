@@ -10,9 +10,18 @@ import ModalVerGuiaExpo from '../../modales/ModalVerGuiaExpo';
 import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { useNavigate } from 'react-router-dom';
 
 const BuscarFacturas = () => {
+    const navigate = useNavigate();
+    useEffect(() => {
+        const rol = localStorage.getItem('rol');
+
+        if (rol == '') {
+            navigate('/');
+        }
+    }, [navigate]);
+
     const backURL = import.meta.env.VITE_BACK_URL;
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);

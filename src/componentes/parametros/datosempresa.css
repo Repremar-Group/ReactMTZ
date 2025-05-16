@@ -1,0 +1,59 @@
+.div-datosempresa input,
+.div-datosempresa select {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    color: gray;
+    
+}
+
+.btn-guardar {
+    padding: 10px;
+    background-color: #143361;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 87%;
+    margin: 20px;
+}
+
+.btn-guardar:hover {
+    background-color: #007bff;
+}
+.btn-guardar:disabled {
+    background-color: #d3d3d3; /* Color gris claro */
+    color: #a9a9a9; /* Texto gris claro */
+    cursor: not-allowed; /* Cursor indicando que está deshabilitado */
+    opacity: 0.7; /* Hacer que parezca más tenue */
+}
+
+  
+  .modal-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .btn-confirmarGFE {
+    background-color: #28a745;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .btn-cancelarGFE{
+    background-color: #dc3545;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }

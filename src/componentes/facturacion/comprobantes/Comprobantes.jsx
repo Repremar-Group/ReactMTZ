@@ -11,6 +11,14 @@ import { toast, ToastContainer } from 'react-toastify';
 import ModalAlertaGFE from '../../modales/AlertasGFE';
 
 const Comprobantes = ({ isLoggedIn }) => {
+  const navigate = useNavigate();
+      useEffect(() => {
+          const rol = localStorage.getItem('rol');
+  
+          if (rol == '') {
+              navigate('/');
+          }
+      }, [navigate]);
   // Estado para los campos del formulario
   const backURL = import.meta.env.VITE_BACK_URL;
   const [ecid, setEcId] = useState('');
@@ -43,7 +51,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [ecredondeo, setEcRedondeo] = useState(0);
   const [ectotal, setEcTotal] = useState('');
   const [eclistadeguiasasociadas, setEcListaDeGuiasAsociadas] = useState([]);
-  const navigate = useNavigate();
+
   const hasFetched = useRef(false);
   const [monedas, setMonedas] = useState([]);
   const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
