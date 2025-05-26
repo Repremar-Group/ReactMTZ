@@ -14,12 +14,12 @@ function Unidades(num) {
 }
 
 function Decenas(num) {
-    decena = Math.floor(num / 10);
-    unidad = num - (decena * 10);
+    let decena = Math.floor(num / 10);
+    let unidad = num % 10;
 
-    switch(decena) {
+    switch (decena) {
         case 1:
-            switch(unidad) {
+            switch (unidad) {
                 case 0: return "DIEZ";
                 case 1: return "ONCE";
                 case 2: return "DOCE";
@@ -29,7 +29,7 @@ function Decenas(num) {
                 default: return "DIECI" + Unidades(unidad);
             }
         case 2:
-            switch(unidad) {
+            switch (unidad) {
                 case 0: return "VEINTE";
                 default: return "VEINTI" + Unidades(unidad);
             }
@@ -41,6 +41,7 @@ function Decenas(num) {
         case 8: return DecenasY("OCHENTA", unidad);
         case 9: return DecenasY("NOVENTA", unidad);
         case 0: return Unidades(unidad);
+        default: return "";
     }
 }
 
@@ -119,7 +120,7 @@ function NumeroALetras(num) {
     var data = {
         numero: num,
         enteros: Math.floor(num),
-        centavos: (((Math.round(num * 100)) - (Math.floor(num) * 100))),
+        centavos: parseInt((num % 1).toFixed(2).substring(2), 10),
         letrasCentavos: "",
         letrasMonedaPlural: '',  // Puedes cambiar la moneda aquí.
         letrasMonedaSingular: '', // Y también aquí
@@ -130,17 +131,17 @@ function NumeroALetras(num) {
     if (data.centavos > 0) {
         data.letrasCentavos = "CON " + (function () {
             if (data.centavos == 1)
-                return Millones(data.centavos) + " " + data.letrasMonedaCentavoSingular;
+                return Centenas(data.centavos) + " " + data.letrasMonedaCentavoSingular;
             else
-                return Millones(data.centavos) + " " + data.letrasMonedaCentavoPlural;
+                return Centenas(data.centavos) + " " + data.letrasMonedaCentavoPlural;
         })();
     }
 
     if (data.enteros == 0)
-        return "CERO " + data.letrasMonedaPlural + " " + data.letrasCentavos;
+        return ("CERO " + data.letrasMonedaPlural + " " + data.letrasCentavos).toLowerCase();
     if (data.enteros == 1)
-        return Millones(data.enteros) + " " + data.letrasMonedaSingular + " " + data.letrasCentavos;
+        return (Millones(data.enteros) + " " + data.letrasMonedaSingular + " " + data.letrasCentavos).toLowerCase();
     else
-        return Millones(data.enteros) + " " + data.letrasMonedaPlural + " " + data.letrasCentavos;
+        return (Millones(data.enteros) + " " + data.letrasMonedaPlural + " " + data.letrasCentavos).toLowerCase();
 }
 module.exports.NumeroALetras = NumeroALetras;

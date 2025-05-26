@@ -15,6 +15,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
     const [razonSocial, setRazonSocial] = useState('');
     const [rut, setRut] = useState('');
     const [iata, setIata] = useState(''); //*
+    const [codigoGia, setCodigoGia] = useState('');
     const [direccion, setDireccion] = useState('');//*
     const [zona, setZona] = useState('');//*
     const [ciudad, setCiudad] = useState('');//*
@@ -49,6 +50,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
         const nuevoCliente = {
             Nombre: nombre,
             RazonSocial: razonSocial,
+            CodigoGIA: codigoGia,
             Direccion: direccion,
             Zona: zona,
             Ciudad: ciudad,
@@ -111,6 +113,16 @@ const AgregarCliente = ({ isLoggedIn }) => {
                 </div>
 
                 <div className='div_segundorenglon-agregarusuario'>
+                    <div>
+                        <label htmlFor="razonsocial">Código GIA:</label>
+                        <input
+                            type="text"
+                            id="razonsocial"
+                            value={codigoGia}
+                            onChange={(e) => setCodigoGia(e.target.value)}
+                            required
+                        />
+                    </div>
                     <div>
                         <label htmlFor="direccion">Direccion:</label>
                         <input

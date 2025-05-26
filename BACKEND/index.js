@@ -8,7 +8,8 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXml } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp } = require('./ControladoresGFE/controladoresGfe')
+const cron = require('node-cron')
 
 function queryAsync(sql, params) {
   return new Promise((resolve, reject) => {
@@ -41,6 +42,61 @@ const app = express();
 app.use(express.json());
 
 app.use(cors());
+cron.schedule('25 17 * * *', () => {
+  console.log('⏰ Ejecutando cierre diario...');
+
+  // Consulta para contar guías sin facturar
+  const queryGuias = `
+    SELECT COUNT(*) AS guias FROM (
+      SELECT guia FROM guiasimpo WHERE facturada = 0
+      UNION ALL
+      SELECT guia FROM guiasexpo WHERE facturada = 0
+    ) AS total_guias;
+  `;
+
+  // Consulta para contar facturas sin cobrar
+  const queryFacturas = `
+    SELECT COUNT(*) AS facturas FROM facturas WHERE idrecibo IS NULL;
+  `;
+
+  connection.query(queryGuias, (err, resultGuias) => {
+    if (err) return console.error('Error al contar guías:', err);
+
+    const guias = resultGuias[0].guias;
+
+    connection.query(queryFacturas, (err, resultFacturas) => {
+      if (err) return console.error('Error al contar facturas:', err);
+
+      const facturas = resultFacturas[0].facturas;
+
+      const insertQuery = `
+        INSERT INTO cierre_diario (fecha, guias_sin_facturar, facturas_sin_cobrar)
+        VALUES (CURDATE(), ?, ?)
+        ON DUPLICATE KEY UPDATE 
+          guias_sin_facturar = VALUES(guias_sin_facturar),
+          facturas_sin_cobrar = VALUES(facturas_sin_cobrar)
+      `;
+
+      connection.query(insertQuery, [guias, facturas], (err, resultInsert) => {
+        if (err) return console.error('Error al guardar cierre diario:', err);
+        console.log('✅ Cierre diario guardado:', new Date().toLocaleString());
+      });
+    });
+  });
+});
+
+app.get('/api/cierre_diario', (req, res) => {
+  const query = `
+    SELECT fecha, guias_sin_facturar, facturas_sin_cobrar
+    FROM cierre_diario
+    WHERE fecha >= CURDATE() - INTERVAL 6 DAY
+    ORDER BY fecha ASC
+  `;
+  connection.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
 
 // Función para generar el mensaje en el backend
 function generarMensaje(monto) {
@@ -49,7 +105,7 @@ function generarMensaje(monto) {
 }
 function generarAdenda(numerodoc, monto) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
-  return `Doc:${numerodoc} ${montoEnLetras}`;
+  return `Doc:${numerodoc} - Son dólares americanos U$S ${montoEnLetras}`;
 }
 
 //Consulta para cargar la tabla de preview de clientes.
@@ -69,7 +125,7 @@ app.get('/api/previewclientes', (req, res) => {
 });
 app.get('/api/previewfacturas', (req, res) => {
   console.log('Received request for /api/previewfacturas');
-  const sql = 'SELECT * FROM facturas';
+  const sql = 'SELECT * FROM facturas ORDER BY Fecha DESC';
 
   connection.query(sql, (err, result) => {
     if (err) {
@@ -102,6 +158,7 @@ app.post('/api/insertclientes', (req, res) => {
     Nombre,
     RazonSocial,
     Direccion,
+    CodigoGIA,
     Zona,
     Ciudad,
     CodigoPostal,
@@ -119,12 +176,12 @@ app.post('/api/insertclientes', (req, res) => {
 
   // Consulta para insertar el cliente
   const insertClienteQuery = `
-    INSERT INTO clientes (Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO clientes (Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo, CodigoGIA)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   // Ejecutar la inserción del cliente
-  connection.query(insertClienteQuery, [Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo], (err, results) => {
+  connection.query(insertClienteQuery, [Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo, CodigoGIA], (err, results) => {
     if (err) {
       console.error('Error al insertar el cliente:', err);
       return res.status(500).json({ error: 'Error al insertar el cliente' });
@@ -1665,6 +1722,7 @@ app.post('/api/insertfactura', (req, res) => {
     Nombre,
     RazonSocial,
     DireccionFiscal,
+    CodigoGIA,
     Ciudad,
     Pais,
     RutCedula,
@@ -1702,14 +1760,14 @@ app.post('/api/insertfactura', (req, res) => {
     const insertFacturaQuery = `
       INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                             ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     connection.query(insertFacturaQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, ComprobanteElectronico,
       Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
-      Redondeo, Total, TotalCobrar
+      Redondeo, Total, TotalCobrar, CodigoGIA
     ], (err, result) => {
       if (err) {
         return connection.rollback(() => {
@@ -1719,6 +1777,7 @@ app.post('/api/insertfactura', (req, res) => {
       }
 
       const facturaId = result.insertId; // Obtener el ID de la factura insertada
+      let adenda = generarAdenda(facturaId, TotalCobrar)
       const detalleFacturaPromises = [];
       DetalleFactura.forEach((detalle) => {
         // Insertar los detalles de la factura
@@ -1764,6 +1823,7 @@ app.post('/api/insertfactura', (req, res) => {
           }
 
           facturaCuentaAjenaId = result.insertId; // ID de la factura de cuenta ajena
+
           // Insertar en cuenta corriente
           const insertCuentaCorrienteQuery = `
           INSERT INTO cuenta_corriente (IdCliente, IdFactura, TipoDocumento, NumeroDocumento, Moneda, Debe, Fecha)
@@ -1876,7 +1936,7 @@ app.post('/api/insertfactura', (req, res) => {
                   const importeFormateado = parseFloat(concepto.importe.toFixed(2));
 
                   return {
-                    codItem: concepto.id_concepto.toString().padStart(3, '0'), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
+                    codItem: concepto.id_concepto.toString(), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
                     indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
                     nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
                     cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
@@ -1885,73 +1945,107 @@ app.post('/api/insertfactura', (req, res) => {
                   };
                 });
               });
-              let adenda = generarAdenda(facturaId, TotalCobrar)
+              const detallesCuentaAjena = DetalleFactura.flatMap((detalle) => {
+                return detalle.conceptos_cuentaajena.map((concepto) => {
+                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+
+                  return {
+                    codItem: concepto.id_concepto.toString(), // Código del ítem
+                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1", // "5" si el importe es 0, si no "1"
+                    nombreItem: concepto.descripcion, // Descripción del concepto
+                    cantidad: "1", // Siempre "1"
+                    unidadMedida: "UN", // Unidad de medida
+                    precioUnitario: concepto.importe.toFixed(2), // Importe con 2 decimales como string
+                  };
+                });
+              });
+              let adendaCUENTAAJENA = generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena);
               const datos = {
-                facturaIdERP: facturaId,
-                serieCFE: "A",
                 fechaCFE: Fecha,
-                tipoDocRec: "2",
-                nroDocRec: '213287140010',
-                paisRec: Pais,
-                razonSocialRec: RazonSocial,
-                direccionRec: DireccionFiscal,
-                ciudadRec: Ciudad,
-                moneda: Moneda,
-                tipoCambio: TC,
-                totalNoGrabado: TotalCobrar,
-                totalACobrar: TotalCobrar,
-                cantidadLineasFactura: detallesFactura.length,
-                sucursal: "S01",
-                adenda: adenda,
-                serieDocumentoERP: "A",
-                rutCuentaAjena: RutCedula,
-                paisCuentaAjena: Pais,
-                razonSocialCuentaAjena: RazonSocial,
-                detalleFactura: detallesFactura
+                detalleFactura: detallesFactura,
+                adendadoc: adenda,
+              }
+              const datosEfacCuentaAjena = {
+                fechaCFE: Fecha,
+                detalleFacturaCuentaAjena: detallesCuentaAjena,
+                adendadoc: adendaCUENTAAJENA,
               }
               //detallesFactura.length
               console.log('ESTOS SON LOS DATOS:', datos);
-              //Envio los datos a generarXml en controladoresGFE
-              const xml = generarXml(datos);
+              const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
+                return new Promise((resolve, reject) => {
+                  axios.post('http://localhost:3000/pruebaws', { xml, xmlCuentaAjena })
+                    .then(response => {
+                      const updateQuery = `
+          UPDATE facturas SET 
+            FechaCFE = ?, 
+            TipoDocCFE = ?, 
+            SerieCFE = ?, 
+            NumeroCFE = ?, 
+            PdfBase64 = ?
+          WHERE Id = ?
+        `;
 
-              const enviarFacturaSOAP = async (xml) => {
-                try {
-                  const response = await axios.post('http://localhost:3000/pruebaws', { xml });
-                  console.log('Respuesta del servidor SOAP:', response.data);
-                  if (response.data.success) {
-                    console.log('✅ Factura procesada en GFE correctamente');
-                  } else {
-                    console.log(`⚠️ Error: ${response.data.message}`);
-                  }
+                      const doc1 = response.data.resultados[0];
+                      const doc2 = response.data.resultados[1];
 
-                } catch (error) {
-                  console.error('Error al enviar la solicitud:', error);
+                      connection.query(updateQuery, [
+                        doc1.fechadocumento,
+                        doc1.tipodocumento,
+                        doc1.seriedocumento,
+                        doc1.numerodocumento,
+                        doc1.pdfBase64,
+                        facturaId
+                      ], (err) => {
+                        if (err) {
+                          console.error('Error al actualizar la primera factura:', err);
+                          return reject(new Error('Error al actualizar la primera factura'));
+                        }
 
-                  // Verifica si hay detalles del error HTTP
-                  if (error.response) {
-                    console.error('Error response data:', error.response.data);
+                        connection.query(updateQuery, [
+                          doc2.fechadocumento,
+                          doc2.tipodocumento,
+                          doc2.seriedocumento,
+                          doc2.numerodocumento,
+                          doc2.pdfBase64,
+                          facturaCuentaAjenaId
+                        ], (err2) => {
+                          if (err2) {
+                            console.error('Error al actualizar la segunda factura:', err2);
+                            return reject(new Error('Error al actualizar la segunda factura'));
+                          }
 
-                    // Aquí accedemos correctamente al mensaje de error para enviarlo al front
-                    console.log(`❌ Error: ${error.response.data.message}`);
-                    throw new Error(error.response.data.message);
-                  } else {
-                    console.log('❌ Error al enviar la factura a GFE');
-                    throw new Error('Error al enviar la factura a GFE, Chequear Conectividad');
-                  }
-                }
+                          resolve(response.data);
+                        });
+                      });
+                    })
+                    .catch(error => {
+                      console.error('Error en enviarFacturaSOAP:', error.response?.data || error.message || error);
+                      if (error.response && error.response.data) {
+                        reject(error.response.data);
+                      } else {
+                        reject(new Error('Error en SOAP'));
+                      }
+                    });
+                });
               };
+
+              // En tu código principal:
               (async () => {
                 try {
-                  const xml = generarXml(datos);
-                  await enviarFacturaSOAP(xml); // Esperar que termine antes de continuar
+                  const xml = generarXmlefacimpopp(datos);
+                  const xmlCuentaAjena = generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjena);
 
-                  res.status(200).json({
-                    message: 'Factura cargada exitosamente',
-                    facturaId: facturaId || null,
-                    facturaCuentaAjenaId: facturaCuentaAjenaId || null
-                  });
+                  const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
+
+                  res.status(200).json(resultadoSOAP);
+
                 } catch (error) {
-                  res.status(422).json({ error: error.message });
+                  if (typeof error === 'object' && error !== null) {
+                    res.status(422).json(error);
+                  } else {
+                    res.status(422).json({ error: error.toString() });
+                  }
                 }
               })();
             });
@@ -2359,67 +2453,171 @@ app.post('/api/generarReciboPDF', async (req, res) => {
   }
 });
 
-// Ruta de proxy para enviar la solicitud SOAP
+
 app.post('/pruebaws', async (req, res) => {
-  const xml = req.body.xml; // Se espera que el XML venga en el cuerpo de la solicitud
+  const { xml, xmlCuentaAjena } = req.body;
   const xmlBuffer = Buffer.from(xml, 'utf-8');
+  const xmlBufferca = Buffer.from(xmlCuentaAjena, 'utf-8');
+
+  const headersAgregar = {
+    'Content-Type': 'text/xml;charset=utf-8',
+    'SOAPAction': '"agregarDocumentoFacturacion"',
+    'Accept-Encoding': 'gzip,deflate',
+    'Host': 'srvgfe.grep.local:8082',
+    'Connection': 'Keep-Alive',
+    'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+  };
+
+  const headersObtenerPdf = {
+    ...headersAgregar,
+    SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+  };
+
+  const parseSOAP = async (xmlData) => {
+    const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+    return await parser.parseStringPromise(xmlData);
+  };
+
+  const parseInnerXML = async (escapedXml) => {
+    const rawXml = escapedXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const innerParser = new xml2js.Parser({ explicitArray: false });
+    return await innerParser.parseStringPromise(rawXml);
+  };
+
+  // Función que arma el XML para obtener el PDF base64 dado un documento
+  const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+      <soapenv:Header/>
+      <soapenv:Body>
+        <soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+          <xmlParametros><![CDATA[
+            <obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+              <usuario>DATALOG</usuario>
+              <usuarioPassword>DATALOG01</usuarioPassword>
+              <empresa>REP</empresa>
+              <documento>
+                <fechaDocumento>${fechaDocumento}</fechaDocumento>
+                <tipoDocumento>${tipoDocumento}</tipoDocumento>
+                <serieDocumento>${serieDocumento}</serieDocumento>
+                <numeroDocumento>${numeroDocumento}</numeroDocumento>
+              </documento>
+            </obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+          ]]></xmlParametros>
+        </soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
   try {
-    const response = await axios.post('http://srvgfe.grep.local:8082/gfeclient/servlet/awsexterno', xmlBuffer, {
-      headers: {
-        'Content-Type': 'text/xml;charset=UTF-8',
-        'SOAPAction': '"GFE_Clientaction/AWSEXTERNO.GRABAR"',
-        'Accept-Encoding': 'gzip,deflate',
-        'Host': 'srvgfe.grep.local:8082',
-        'Connection': 'Keep-Alive',
-        'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+    // 1) Enviar ambas solicitudes agregarDocumentoFacturacion en paralelo
+    const [response1, response2] = await Promise.all([
+      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlBuffer, { headers: headersAgregar }),
+      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlBufferca, { headers: headersAgregar }),
+    ]);
 
-      },
+    // 2) Parsear respuestas SOAP originales
+    const result1 = await parseSOAP(response1.data);
+    const result2 = await parseSOAP(response2.data);
+
+    const inner1 = await parseInnerXML(result1.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+    const inner2 = await parseInnerXML(result2.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+
+    const res1 = inner1.agregarDocumentoFacturacionResultado;
+    const res2 = inner2.agregarDocumentoFacturacionResultado;
+
+    // ✅ Verificamos si alguno falló
+    if (res1.resultado !== "1" || res2.resultado !== "1") {
+      console.log('res1:', res1);
+      console.log('res2:', res2);
+      console.log('Enviando error 422 con este objeto:', {
+        success: false,
+        mensaje: 'Uno o ambos documentos no fueron aceptados por GFE',
+        errores: [
+          { descripcion: res1.descripcion, resultado: res1.resultado },
+          { descripcion: res2.descripcion, resultado: res2.resultado },
+        ],
+      });
+      return res.status(422).json({
+        success: false,
+        mensaje: 'Uno o ambos documentos no fueron aceptados por GFE',
+        errores: [
+          { descripcion: res1.descripcion, resultado: res1.resultado },
+          { descripcion: res2.descripcion, resultado: res2.resultado },
+        ],
+      });
+    }
+
+    // 3) Construir XMLs para pedir PDF base64 usando los datos de cada documento
+    const xmlPdf1 = construirXmlObtenerPdf({
+      fechaDocumento: res1.datos.documento.fechaDocumento,
+      tipoDocumento: res1.datos.documento.tipoDocumento,
+      serieDocumento: res1.datos.documento.serieDocumento,
+      numeroDocumento: res1.datos.documento.numeroDocumento,
     });
-    // Imprimir la respuesta del servidor en su formato original (XML)
-    console.log('Respuesta directa del servidor (XML):', response.data);
-    // Procesar la respuesta XML usando xml2js
-    const parser = new xml2js.Parser({
-      explicitArray: false, // Para evitar arrays innecesarios
-      tagNameProcessors: [xml2js.processors.stripPrefix] // Remueve prefijos como "SOAP-ENV:"
+
+    const xmlPdf2 = construirXmlObtenerPdf({
+      fechaDocumento: res2.datos.documento.fechaDocumento,
+      tipoDocumento: res2.datos.documento.tipoDocumento,
+      serieDocumento: res2.datos.documento.serieDocumento,
+      numeroDocumento: res2.datos.documento.numeroDocumento,
     });
 
-    parser.parseString(response.data, (err, result) => {
-      if (err) {
-        console.error('Error al parsear el XML:', err);
-        return res.status(500).send('Error al procesar la respuesta SOAP');
-      }
+    // 4) Pedir los PDFs base64 en paralelo
+    const [pdfResponse1, pdfResponse2] = await Promise.all([
+      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlPdf1, { headers: headersObtenerPdf }),
+      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlPdf2, { headers: headersObtenerPdf }),
+    ]);
 
-      // Imprimir la estructura del XML recibido para depuración
-      console.log('Estructura del XML recibido:', result);
+    // 5) Parsear las respuestas con los PDFs
+    const parsedPdf1 = await parseSOAP(pdfResponse1.data);
+    const parsedPdf2 = await parseSOAP(pdfResponse2.data);
 
-      try {
-        const body = result.Envelope.Body;
-        const response = body['WSExterno.GRABARResponse'];
-        const xmlRetorno = response.Xmlretorno;
-        console.log('Tipo de xmlRetorno:', typeof xmlRetorno);
-        console.log('Contenido de xmlRetorno:', xmlRetorno);
-        // Extraemos la descripción directamente del XML como se había hecho antes
-        const descripcion = xmlRetorno._.match(/<Descripcion>(.*?)<\/Descripcion>/)[1];
+    // 6) Extraer el XML interno con el base64 del PDF
+    const innerPdf1XmlEscaped = parsedPdf1.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+    const innerPdf2XmlEscaped = parsedPdf2.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
 
-        // Si la descripción es 'Ok', respondemos con éxito
-        if (descripcion === 'Ok') {
-          res.status(200).json({ success: true, message: 'Factura procesada correctamente' });
-        } else {
-          // Si no es 'Ok', respondemos con error concatenando la descripción
-          res.status(400).json({ success: false, message: `Error: ${descripcion}` });
-        }
+    const innerPdf1Xml = innerPdf1XmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const innerPdf2Xml = innerPdf2XmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 
-        console.log('Respuesta procesada:', xmlRetorno);
-      } catch (error) {
-        console.error('Error accediendo a los elementos del XML:', error);
-      }
+    const innerPdf1 = await parseInnerXML(innerPdf1Xml);
+    const innerPdf2 = await parseInnerXML(innerPdf2Xml);
+    console.log('dos innerpdf', innerPdf1, innerPdf2);
+
+    // 7) Extraer base64 
+    const pdfBase641 = innerPdf1.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
+    const pdfBase642 = innerPdf2.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
+
+    // 8) Retornar la respuesta con datos y PDFs base64
+    return res.status(200).json({
+      success: true,
+      resultados: [
+        {
+          resultado: res1.resultado,
+          descripcion: res1.descripcion,
+          fechadocumento: res1.datos.documento.fechaDocumento || null,
+          tipodocumento: res1.datos.documento.tipoDocumento || null,
+          seriedocumento: res1.datos.documento.serieDocumento || null,
+          numerodocumento: res1.datos.documento.numeroDocumento || null,
+          pdfBase64: pdfBase641,
+        },
+        {
+          resultado: res2.resultado,
+          descripcion: res2.descripcion,
+          fechadocumento: res2.datos.documento.fechaDocumento || null,
+          tipodocumento: res2.datos.documento.tipoDocumento || null,
+          seriedocumento: res2.datos.documento.serieDocumento || null,
+          numerodocumento: res2.datos.documento.numeroDocumento || null,
+          pdfBase64: pdfBase642,
+        },
+      ],
     });
 
   } catch (error) {
-    console.error('Error al enviar la factura:', error);
-    res.status(500).send('Error al enviar la factura');
+    console.error('Error procesando solicitudes SOAP:', error);
+    return res.status(500).send('Error al enviar las facturas');
   }
 });
+
 
 app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
   const { desde, hasta, cliente, numeroCliente, moneda } = req.body;
@@ -2879,6 +3077,67 @@ AND g.facturada = 0
     } else {
       res.status(200).json(results);
     }
+  });
+});
+
+app.get('/api/facturas-sin-cobrar', (req, res) => {
+  console.log('Received request for /api/facturas-sin-cobrar');
+
+  const sql = `
+    SELECT 
+      Id, 
+      Comprobante AS numero, 
+      RazonSocial AS cliente, 
+      DATE_FORMAT(Fecha, '%d/%m/%Y') AS fecha, 
+      TotalCobrar AS monto
+    FROM facturas
+    WHERE idrecibo IS NULL
+    ORDER BY Fecha DESC
+  `;
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error al obtener facturas sin cobrar:', err);
+      return res.status(500).json({ message: 'Ocurrió un error al obtener las facturas sin cobrar.' });
+    }
+
+    res.status(200).json(result);
+  });
+});
+
+
+app.get('/api/guias-sin-facturar', (req, res) => {
+  console.log('Received request for /api/guias-sin-facturar');
+
+  const sql = `
+    SELECT 
+      guia AS numero, 
+      consignatario AS cliente, 
+      DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
+      'Impo' AS tipo
+    FROM guiasimpo
+    WHERE facturada = 0
+
+    UNION ALL
+
+    SELECT 
+      guia AS numero, 
+      agente AS cliente, 
+      DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
+      'Expo' AS tipo
+    FROM guiasexpo
+    WHERE facturada = 0
+
+    ORDER BY fecha DESC
+  `;
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error al obtener guías sin facturar:', err);
+      return res.status(500).json({ message: 'Error al obtener las guías sin facturar.' });
+    }
+
+    res.status(200).json(result);
   });
 });
 

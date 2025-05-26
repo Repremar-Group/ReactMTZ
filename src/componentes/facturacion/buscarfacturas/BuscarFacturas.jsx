@@ -11,6 +11,7 @@ import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { descargarPDFBase64 } from '../../../ConexionGFE/Funciones';
 
 const BuscarFacturas = () => {
     const navigate = useNavigate();
@@ -22,6 +23,11 @@ const BuscarFacturas = () => {
         }
     }, [navigate]);
 
+    const [submenuVisibleId, setSubmenuVisibleId] = useState(null);
+
+    const toggleSubmenu = (id) => {
+        setSubmenuVisibleId((prevId) => (prevId === id ? null : id));
+    };
     const backURL = import.meta.env.VITE_BACK_URL;
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
@@ -40,7 +46,7 @@ const BuscarFacturas = () => {
         setSearchField(e.target.value);
     };
 
-    
+
 
     // Función para obtener las Guias
     const fetchFacturas = async () => {
@@ -67,7 +73,7 @@ const BuscarFacturas = () => {
     useEffect(() => {
         fetchFacturas();
     }, []);
-    
+
 
 
 
@@ -75,10 +81,10 @@ const BuscarFacturas = () => {
         setSearchTerm(event.target.value);
     };
     const facturasFiltradas = (!searchField || searchTerm.trim() === '')
-    ? facturas
-    : facturas.filter((row) =>
-        row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        ? facturas
+        : facturas.filter((row) =>
+            row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
     return (
         <div className="Contenedor_Principal">
@@ -104,14 +110,14 @@ const BuscarFacturas = () => {
                                 <label>
                                     <input
                                         type="radio"
-                                        value="nroCFE"
-                                        checked={searchField === 'nroCFE'}
+                                        value="NumeroCFE"
+                                        checked={searchField === 'NumeroCFE'}
                                         onChange={handleCheckboxChange}
                                     />
                                     Nro. CFE
                                 </label>
                                 <label>
-                                <input
+                                    <input
                                         type="radio"
                                         value="idrecibo"
                                         checked={searchField === 'idrecibo'}
@@ -150,49 +156,72 @@ const BuscarFacturas = () => {
                         </div>
                     </div>
                     {error && <div className="error">{error}</div>}
-                    <table className='tabla-facturas'>
-                        <thead>
-                            <tr>
-                                <th>Nro. Interno</th>
-                                <th>Nro. GFE</th>
-                                <th>Tipo</th>
-                                <th>Recibo</th>
-                                <th>Cliente</th>
-                                <th>RUT</th>
-                                <th>Fecha</th>
-                                <th>Monto</th>
-                                <th>Estado GFE</th>
-                                <th>PDF</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {facturasFiltradas.map((row) => (
-                                <tr key={row.Id}>
-                                    <td>{row.Id}</td>
-                                    <td>{ }</td>
-                                    <td>
-                                        {row.ComprobanteElectronico === 'efactura'
-                                            ? 'E-Factura'
-                                            : row.ComprobanteElectronico === 'efacturaca'
-                                                ? 'E-Factura Cuenta Ajena'
-                                                : row.ComprobanteElectronico}
-                                    </td>
-                                    <td>{row.idrecibo === null
-                                        ? '❌' : row.idrecibo}</td>
-                                    <td>{row.RazonSocial}</td>
-                                    <td>{row.RutCedula}</td>
-                                    <td>{row.Fecha}</td>
-                                    <td>{[row.Total, row.Moneda].join(' ')}</td>
-                                    <td>{ }</td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            <button type="button" className="action-button" >📄</button>
-                                        </div>
-                                    </td>
+                    <div className='contenedor-tabla-buscarfacturas'>
+                        <table className='tabla-facturas'>
+                            <thead>
+                                <tr>
+                                    <th>Nro. CFE</th>
+                                    <th>Tipo</th>
+                                    <th>Recibo</th>
+                                    <th>Cliente</th>
+                                    <th>RUT</th>
+                                    <th>Fecha</th>
+                                    <th>Monto</th>
+                                    <th>Estado GFE</th>
+                                    <th>Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {facturasFiltradas.map((row) => (
+                                    <tr key={row.Id}>
+                                        <td>{row.NumeroCFE === null
+                                            ? '-' : row.NumeroCFE}</td>
+                                        <td>
+                                            {row.ComprobanteElectronico === 'efactura'
+                                                ? 'E-Factura'
+                                                : row.ComprobanteElectronico === 'efacturaca'
+                                                    ? 'E-Factura Cuenta Ajena'
+                                                    : row.ComprobanteElectronico}
+                                        </td>
+                                        <td>{row.idrecibo === null
+                                            ? '-' : row.idrecibo}</td>
+                                        <td>{row.RazonSocial}</td>
+                                        <td>{row.RutCedula}</td>
+                                        <td>{row.Fecha}</td>
+                                        <td>{[row.Total, row.Moneda].join(' ')}</td>
+                                        <td>{row.NumeroCFE ? '✔️' : '❌'}</td>
+                                        <td className="td-con-submenu">
+                                            <div className="buscarfacturas-submenu-container">
+                                                <button disabled className="buscarfacturas-submenu-toggle">☰</button>
+                                                <div className="buscarfacturas-submenu">
+                                                    {row.NumeroCFE && (
+                                                        <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdfBase64, row.NumeroCFE)}>Descargar PDF</button>
+                                                    )}
+                                                    
+                                                    {!row.NumeroCFE && (
+                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                            Enviar a GFE
+                                                        </button>
+                                                    )}
+                                                    {!row.NumeroCFE && (
+                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                            Modificar
+                                                        </button>
+                                                    )}
+                                                    {!row.NumeroCFE && (
+                                                        <button  className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                            Eliminar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
 
                 </div>
             )}
