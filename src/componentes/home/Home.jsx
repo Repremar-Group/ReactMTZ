@@ -25,6 +25,7 @@ const Home = ({ isLoggedIn }) => {
     }, [navigate]);
 
     useEffect(() => {
+        toast.success('Bienvenido')
         const actualizarFechaHora = () => {
             const ahora = new Date();
             const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -43,7 +44,30 @@ const Home = ({ isLoggedIn }) => {
         return () => clearInterval(intervalo);
     }, []);
 
+    const traerCotizacion = async () => {
+        try {
+            const response = await axios.post(`${backURL}/cotizaciones-bcu`);
+            const cotizacion = response.data.cotizacionMoneda2;
 
+            if (cotizacion) {
+                setTipoCambio(cotizacion);
+
+                // Llamamos automáticamente a la función para guardar en la base
+                const nuevocambio = { fecha: fechaActual, tipo_cambio: cotizacion };
+
+                const guardarResponse = await axios.post(`${backURL}/api/agregartipocambio`, nuevocambio);
+                if (guardarResponse.status === 200) {
+                    toast.success('Se importó el tipo de cambio.');
+                    setTipoCambioCargado(true);
+                }
+            } else {
+                toast.error('No se encontró cotización para la moneda seleccionada.');
+            }
+        } catch (error) {
+            console.error('Error al obtener o guardar cotización:', error);
+            toast.error('Error al obtener o guardar cotización.');
+        }
+    };
 
 
     useEffect(() => {
@@ -63,9 +87,7 @@ const Home = ({ isLoggedIn }) => {
                     setTipoCambio(tipoCambioHoy.tipo_cambio); // Mostrar el valor
                     setTipoCambioCargado(true); // Marcar como cargado
                 } else {
-                    setTipoCambio(''); // Asegura campo vacío si no hay valor
-                    setTipoCambioCargado(false);
-                    toast.error("No se ha cargado el tipo de cambio.");
+                    traerCotizacion();
                 }
             } catch (error) {
                 console.error('Error al cargar los tipos de cambio:', error);
@@ -119,30 +141,7 @@ const Home = ({ isLoggedIn }) => {
         obtenerDatos();
     }, []);
 
-    const traerCotizacion = async () => {
-        try {
-            const response = await axios.post(`${backURL}/cotizaciones-bcu`);
-            const cotizacion = response.data.cotizacionMoneda2;
 
-            if (cotizacion) {
-                setTipoCambio(cotizacion);
-
-                // Llamamos automáticamente a la función para guardar en la base
-                const nuevocambio = { fecha: fechaActual, tipo_cambio: cotizacion };
-
-                const guardarResponse = await axios.post(`${backURL}/api/agregartipocambio`, nuevocambio);
-                if (guardarResponse.status === 200) {
-                    toast.success('Tipo de cambio guardado correctamente.');
-                    setTipoCambioCargado(true);
-                }
-            } else {
-                toast.error('No se encontró cotización para la moneda seleccionada.');
-            }
-        } catch (error) {
-            console.error('Error al obtener o guardar cotización:', error);
-            toast.error('Error al obtener o guardar cotización.');
-        }
-    };
 
     return (
         <div className="Contenedor_Principal">
@@ -151,9 +150,6 @@ const Home = ({ isLoggedIn }) => {
             <div className="navbarsuperior">
                 <div className="navbar-left">
                     <span>Tipo de Cambio: {tipoCambio ? tipoCambio : '-'}</span>
-                    {!tipoCambioCargado && (
-                        <button onClick={traerCotizacion}>Buscar Cotización</button>
-                    )}
                 </div>
                 <div className="navbar-right">
                     <span>{fechaHoraActual}</span>
