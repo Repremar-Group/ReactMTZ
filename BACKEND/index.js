@@ -8,7 +8,7 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlCotizaciones } = require('./ControladoresGFE/controladoresGfe')
 const cron = require('node-cron')
 
 function queryAsync(sql, params) {
@@ -2452,8 +2452,123 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     res.status(500).json({ error: 'Error al generar el PDF' });
   }
 });
+app.post('/cotizaciones-bcu', async (req, res) => {
+  const fechaActual = new Date().toISOString().split('T')[0];
 
+  const headersCotizacion = {
+    'Content-Type': 'text/xml;charset=utf-8',
+    'SOAPAction': '"procesoCargarCotizacionesBcu"',
+    'Accept-Encoding': 'gzip,deflate',
+    'Host': 'srvgfe.grep.local:8082',
+    'Connection': 'Keep-Alive',
+    'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+  };
 
+  const headersObtener = {
+    ...headersCotizacion,
+    'SOAPAction': '"obtenerCotizacion"',
+  };
+
+  const xmlCotizaciones = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+      <soapenv:Header/>
+      <soapenv:Body>
+        <soap:procesoCargarCotizacionesBcu>
+          <xmlParametros>
+          <![CDATA[
+            <procesoCargarCotizacionesBcuParametros>
+              <usuario>DATALOG</usuario>
+              <usuarioPassword>DATALOG01</usuarioPassword>
+              <empresa>REP</empresa>
+              <parametros>
+                <fecha>${fechaActual}</fecha>
+              </parametros>
+            </procesoCargarCotizacionesBcuParametros>
+          ]]>
+          </xmlParametros>
+        </soap:procesoCargarCotizacionesBcu>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
+  const xmlObtenerCotizacion = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+      <soapenv:Header/>
+      <soapenv:Body>
+        <soap:obtenerCotizacion>
+          <xmlParametros><![CDATA[
+            <obtenerCotizacionParametros>
+              <usuario>DATALOG</usuario>
+              <usuarioPassword>DATALOG01</usuarioPassword>
+              <empresa>REP</empresa>
+              <parametros>
+                <fecha>${fechaActual}</fecha>
+                <moneda>2</moneda>
+                <compraVenta>1</compraVenta>
+              </parametros>
+            </obtenerCotizacionParametros>
+          ]]></xmlParametros>
+        </soap:obtenerCotizacion>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
+  const parseSOAP = async (xmlData) => {
+    const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+    return await parser.parseStringPromise(xmlData);
+  };
+
+  const parseInnerXML = async (escapedXml) => {
+    const rawXml = escapedXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const innerParser = new xml2js.Parser({ explicitArray: false });
+    return await innerParser.parseStringPromise(rawXml);
+  };
+
+  try {
+    // ✅ Primera llamada: procesoCargarCotizacionesBcu
+    const cotizacionesResponse = await axios.post(
+      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      xmlCotizaciones,
+      { headers: headersCotizacion }
+    );
+
+    const parsedSOAP1 = await parseSOAP(cotizacionesResponse.data);
+    const innerXml1 = parsedSOAP1.Envelope.Body.procesoCargarCotizacionesBcuResponse.xmlResultado;
+    const innerResult1 = await parseInnerXML(innerXml1);
+
+    console.log('✔ Cotizaciones generales:', JSON.stringify(innerResult1, null, 2));
+
+    // ✅ Segunda llamada: obtenerCotizacion para moneda 2
+    const obtenerCotizacionResponse = await axios.post(
+      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      xmlObtenerCotizacion,
+      { headers: headersObtener }
+    );
+
+    const parsedSOAP2 = await parseSOAP(obtenerCotizacionResponse.data);
+    const innerXml2 = parsedSOAP2.Envelope.Body.obtenerCotizacionResponse.xmlResultado;
+    const innerResult2 = await parseInnerXML(innerXml2);
+
+    console.log('💲 Cotización moneda 2:', JSON.stringify(innerResult2, null, 2));
+
+    const cotizacionMoneda2 = innerResult2.obtenerCotizacionResultado.datos.cotizacion;
+
+    return res.status(200).json({
+      success: true,
+      fecha: fechaActual,
+      cotizacionesGenerales: innerResult1.procesoCargarCotizacionesBcuResultado || innerResult1,
+      cotizacionMoneda2: cotizacionMoneda2,
+    });
+
+  } catch (error) {
+    console.error('❌ Error en el proceso de cotizaciones:', error);
+    return res.status(500).json({
+      success: false,
+      mensaje: 'Error al enviar la solicitud de cotizaciones',
+      error: error.message,
+    });
+  }
+});
 app.post('/pruebaws', async (req, res) => {
   const { xml, xmlCuentaAjena } = req.body;
   const xmlBuffer = Buffer.from(xml, 'utf-8');

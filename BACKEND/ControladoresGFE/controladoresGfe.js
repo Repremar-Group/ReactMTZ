@@ -202,6 +202,35 @@ function generarXmlefacCuentaAjenaimpopp(datosCA) {
 
     return xmlBase;
 }
+
+function generarXmlCotizaciones(fecha) {
+    console.log('GENERANDO XML COTIZACIONES para:', fecha);
+
+    let xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:procesoCargarCotizacionesBcu>
+         <!--Optional:-->
+         <xmlParametros>
+         <![CDATA[
+<procesoCargarCotizacionesBcuParametros>
+    <usuario>DATALOG</usuario>
+    <usuarioPassword>DATALOG01</usuarioPassword>
+    <empresa>REP</empresa>
+    <parametros>
+        <fecha>${fecha}</fecha>
+    </parametros>
+</procesoCargarCotizacionesBcuParametros>
+         ]]>
+</xmlParametros>
+      </soap:procesoCargarCotizacionesBcu>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+
+    console.log('XML Generado COTIZACIONES:', xml);
+    return xml;
+}
+
 generarXmlefacCuentaAjenaimpopp(datosCA);
 generarXmlefacimpopp(datos);
-module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp};
+module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlCotizaciones};
