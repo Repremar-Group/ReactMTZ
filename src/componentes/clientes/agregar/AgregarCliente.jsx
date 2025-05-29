@@ -19,30 +19,21 @@ const AgregarCliente = ({ isLoggedIn }) => {
     const [direccion, setDireccion] = useState('');//*
     const [zona, setZona] = useState('');//*
     const [ciudad, setCiudad] = useState('');//*
-    const [codigopostal, setCodigoPostal] = useState('');//*
+
     const [cass, setCass] = useState('');//*
-    const [tipoComprobante, setTipoComprobante] = useState(false);//*
+    const [tipoComprobante, setTipoComprobante] = useState('2');//*
     const [tipoMoneda, setTipoMoneda] = useState(false);//*
     const [monedas, setMonedas] = useState([]);
     const [tipoIVA, setTipoIVA] = useState(false);//*
     const [pais, setPais] = useState('');
     const [email, setEmail] = useState('');
     const [tel, setTel] = useState('');
-    const [saldo, setSaldo] = useState('');
+    const [saldo, setSaldo] = useState(0);
     const [alertasVisible, setAlertasVisible] = useState(false);
     const [alertasMessage, setAlertasMessage] = useState('');
     const navigate = useNavigate();
     const [isFetched, setIsFetched] = useState(false);
 
-    const fetchMonedas = async () => {
-        try {
-            const response = await axios.get(`${backURL}/api/obtenermonedas`);
-            setMonedas(response.data);
-            setIsFetched(true); // Indica que ya se obtuvieron los datos
-        } catch (error) {
-            console.error('Error al obtener monedas:', error);
-        }
-    }
 
     // Función para manejar el envío del formulario
     const handleSubmitAgregarUsuario = (e) => {
@@ -50,36 +41,46 @@ const AgregarCliente = ({ isLoggedIn }) => {
         const nuevoCliente = {
             Nombre: nombre,
             RazonSocial: razonSocial,
-            CodigoGIA: codigoGia,
             Direccion: direccion,
             Zona: zona,
             Ciudad: ciudad,
-            CodigoPostal: codigopostal,
             Rut: rut,
             IATA: iata,
             Cass: cass,
             Pais: pais,
             Email: email,
             Tel: tel,
-            Tcomprobante: tipoComprobante,
-            Tiva: tipoIVA,
-            Moneda: tipoMoneda,
+            TDOCDGI: tipoComprobante,
             Saldo: saldo
         };
         // Realizar la solicitud POST usando axios
         axios.post(`${backURL}/api/insertclientes`, nuevoCliente)
             .then(response => {
-                setAlertasMessage('Cliente agregado exitosamente');
-                setAlertasVisible(true);
-                setTimeout(() => {
-                    setAlertasVisible(false);
-                    navigate('/clientes');
-                }, 2000); // Esperar 2 segundos antes de navegar
+                if (response.data?.message === 'Cliente insertado correctamente') {
+                    toast.success('Cliente agregado exitosamente');
+                    setTimeout(() => {
+                        navigate('/clientes');
+                    }, 2000);
+                } else if (response.data?.error === 'Ya existe un cliente con esa razón social') {
+                    toast.warning('Ya existe un cliente con esa razón social');
+                } else {
+                    toast.error('Ocurrió un problema inesperado');
+                    console.error('Respuesta desconocida del servidor:', response.data);
+                }
             })
             .catch(error => {
-                // Mostrar una alerta de error si la solicitud falla
-                toast.error('Error al agregar el cliente');
-                console.error(error);
+                if (error.response) {
+                    // El servidor respondió con un código de estado diferente a 2xx
+                    const mensaje = error.response.data?.error || 'Error al procesar la solicitud';
+                    toast.error(mensaje);
+                } else if (error.request) {
+                    // No hubo respuesta del servidor
+                    toast.error('No se pudo contactar con el servidor');
+                } else {
+                    // Otro tipo de error
+                    toast.error('Error inesperado al enviar la solicitud');
+                }
+                console.error('Detalles del error:', error);
             });
     };
 
@@ -110,19 +111,20 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             required
                         />
                     </div>
-                </div>
-
-                <div className='div_segundorenglon-agregarusuario'>
                     <div>
-                        <label htmlFor="razonsocial">Código GIA:</label>
+                        <label htmlFor="rut">Rut / CI:</label>
                         <input
-                            type="text"
-                            id="razonsocial"
-                            value={codigoGia}
-                            onChange={(e) => setCodigoGia(e.target.value)}
+                            type="number"
+                            id="rut"
+                            value={rut}
+                            onChange={(e) => setRut(e.target.value)}
                             required
                         />
                     </div>
+                </div>
+
+                <div className='div_segundorenglon-agregarusuario'>
+
                     <div>
                         <label htmlFor="direccion">Direccion:</label>
                         <input
@@ -130,6 +132,16 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             id="direccion"
                             value={direccion}
                             onChange={(e) => setDireccion(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="Ciudad">Ciudad:</label>
+                        <input
+                            type="text"
+                            id="ciudad"
+                            value={ciudad}
+                            onChange={(e) => setCiudad(e.target.value)}
                             required
                         />
                     </div>
@@ -145,44 +157,60 @@ const AgregarCliente = ({ isLoggedIn }) => {
                     </div>
                 </div>
 
-                <div className='div_tercerrenglon-agregarusuario'>
+                <div className='div_segundorenglon-agregarusuario'>
                     <div>
-                        <label htmlFor="Ciudad">Ciudad:</label>
+                        <label htmlFor="pais">País:</label>
                         <input
                             type="text"
-                            id="ciudad"
-                            value={ciudad}
-                            onChange={(e) => setCiudad(e.target.value)}
+                            id="pais"
+                            value={pais}
+                            onChange={(e) => setPais(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="email">Email:</label>
+                        <input
+                            type="mail"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
 
-
-
-                    <div>
-                        <label htmlFor="codigo-postal">Codigo Postal:</label>
-                        <input
-                            type="text"
-                            id="codigo-postal"
-                            value={codigopostal}
-                            onChange={(e) => setCodigoPostal(e.target.value)}
-                        />
-                    </div>
                 </div>
 
 
-
-                <div className='div_cuartorenglon-agregarusuario'>
+                <div className='div_segundorenglon-agregarusuario'>
                     <div>
-                        <label htmlFor="rut">Rut:</label>
+                        <label htmlFor="tel">Tel:</label>
                         <input
-                            type="number"
-                            id="rut"
-                            value={rut}
-                            onChange={(e) => setRut(e.target.value)}
+                            type="text"
+                            id="tel"
+                            value={tel}
+                            onChange={(e) => setTel(e.target.value)}
                             required
                         />
                     </div>
+
+
+                    <div>
+                        <label htmlFor="saldo">Saldo:</label>
+                        <input
+                            type="number"
+                            id="saldo"
+                            value={saldo}
+                            onChange={(e) => setSaldo(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                </div>
+
+
+                <div className='div_segundorenglon-agregarusuario'>
+
                     <div>
                         <label htmlFor="iata">IATA:</label>
                         <input
@@ -204,105 +232,24 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             <option value="false">No</option>
                             <option value="true">Si</option>
                         </select>
-                    </div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-                </div>
-
-
-                <div className='div_quintorenglon-agregarusuario'>
-                    <div>
-                        <label htmlFor="pais">País:</label>
-                        <input
-                            type="text"
-                            id="pais"
-                            value={pais}
-                            onChange={(e) => setPais(e.target.value)}
-                            required
-                        />
                     </div>
                     <div>
-                        <label htmlFor="email">Email:</label>
-                        <input
-                            type="mail"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="tel">Tel:</label>
-                        <input
-                            type="text"
-                            id="tel"
-                            value={tel}
-                            onChange={(e) => setTel(e.target.value)}
-                            required
-                        />
-                    </div>
-                </div>
-
-
-                <div className='div_septimorenglon-agregarusuario'>
-                    <div>
-                        <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
+                        <label htmlFor="tipoComprobante">Tipo de DOC. DGI:</label>
                         <select
                             id="tipoComprobante"
                             value={tipoComprobante}
                             onChange={(e) => setTipoComprobante(e.target.value)}
                             required
                         >
-                            <option value="">Selecciona un tipo de Comprobante</option>
-                            <option value="efactura">E-Factura</option>
-                            <option value="eticket">E-Ticket</option>
-                            <option value="efacturaca">E-Factura Cuenta Ajena</option>
-                            <option value="eticketca">E-Ticket Cuenta Ajena</option>
+                            <option value="2">RUT</option>
+                            <option value="3">CI</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label htmlFor="tipoMoneda">Moneda:</label>
-                        <select
-                            id="moneda"
-                            required
-                            value={tipoMoneda}
-                            onChange={(e) => setTipoMoneda(e.target.value)}
-                            onClick={() => {
-                                if (!isFetched) fetchMonedas(); // Solo llama a fetchMonedas una vez
-                            }}
-                        >
-                            <option value="">Seleccione una moneda</option>
-                            {monedas.map((moneda, index) => (
-                                <option key={index} value={moneda.moneda}>
-                                    {moneda.moneda}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label htmlFor="tipoIVA">Tipo de IVA:</label>
-                        <select
-                            id="tipoIVA"
-                            value={tipoIVA}
-                            onChange={(e) => setTipoIVA(e.target.value)}
-                            required
-                        >
-                            <option value="">Seleccione un tipo de IVA</option>
-                            <option value="iva22">IVA 22%</option>
-                            <option value="excento">Exento</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label htmlFor="saldo">Saldo:</label>
-                        <input
-                            type="number"
-                            id="saldo"
-                            value={saldo}
-                            onChange={(e) => setSaldo(e.target.value)}
-                            required
-                        />
-                    </div>
                 </div>
+
+
+
                 <div className='botonesagregarusuario'>
                     <button type="submit" className='btn-agregar-cliente'>Agregar Cliente</button>
 

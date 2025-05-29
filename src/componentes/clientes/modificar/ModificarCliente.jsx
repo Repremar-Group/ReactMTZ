@@ -23,6 +23,7 @@ const ModificarCliente = ({ closeModal, id }) => {
   const [tipoComprobante, setTipoComprobante] = useState(false);//*
   const [tipoMoneda, setTipoMoneda] = useState(false);//*
   const [tipoIVA, setTipoIVA] = useState(false);//*
+  const [codigoGIA, setCodigoGIA] = useState('');//*
 
 
   const handleSubmit = async (e) => {
@@ -39,11 +40,9 @@ const ModificarCliente = ({ closeModal, id }) => {
         direccion,
         zona,
         ciudad,
-        codigopostal,
         cass,
         tipoComprobante,
-        tipoMoneda,
-        tipoIVA
+        codigoGIA
       });
       toast.success(response.data.message); // Mensaje de éxito
       closeModal(); // Cerrar el modal después de modificar
@@ -65,16 +64,14 @@ const ModificarCliente = ({ closeModal, id }) => {
       setDireccion(clienteData.Direccion);
       setZona(clienteData.Zona);
       setCiudad(clienteData.Ciudad);
-      setCodigoPostal(clienteData.CodigoPostal);
       setRut(clienteData.Rut);
       setIata(clienteData.IATA);
       setCass(clienteData.Cass);
       setPais(clienteData.Pais);
       setEmail(clienteData.Email);
       setTel(clienteData.Tel);
-      setTipoComprobante(clienteData.Tcomprobante);
-      setTipoIVA(clienteData.Tiva);
-      setTipoMoneda(clienteData.Moneda)
+      setTipoComprobante(clienteData.TDOCDGI);
+      setCodigoGIA(clienteData.CodigoGIA);
     } catch (error) {
       console.error('Error fetching client data:', error);
       toast.error('Error al obtener los datos del cliente');
@@ -117,6 +114,16 @@ const ModificarCliente = ({ closeModal, id }) => {
                 required
               />
             </div>
+            <div>
+              <label htmlFor="rut">RUT / CI:</label>
+              <input
+                type="number"
+                id="rut"
+                value={rut}
+                onChange={(e) => setRut(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className='div_segundorenglon-modificarusuario'>
@@ -139,11 +146,7 @@ const ModificarCliente = ({ closeModal, id }) => {
                 onChange={(e) => setZona(e.target.value)}
 
               />
-
             </div>
-          </div>
-
-          <div className='div_tercerrenglon-modificarusuario'>
             <div>
               <label htmlFor="Ciudad">Ciudad:</label>
               <input
@@ -154,13 +157,38 @@ const ModificarCliente = ({ closeModal, id }) => {
                 required
               />
             </div>
+          </div>
+
+          <div className='div_tercerrenglon-modificarusuario'>
+
             <div>
-              <label htmlFor="codigo-postal">Codigo Postal:</label>
+              <label htmlFor="pais">País:</label>
               <input
                 type="text"
-                id="codigo-postal"
-                value={codigopostal}
-                onChange={(e) => setCodigoPostal(e.target.value)}
+                id="pais"
+                value={pais}
+                onChange={(e) => setPais(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="email">Email:</label>
+              <input
+                type="mail"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+
+              />
+            </div>
+            <div>
+              <label htmlFor="codigoGia">Código GIA:</label>
+              <input
+                type="text"
+                id="codigoGia"
+                value={codigoGIA}
+                disabled
+                onChange={(e) => setCodigoGIA(e.target.value)}
 
               />
             </div>
@@ -168,17 +196,36 @@ const ModificarCliente = ({ closeModal, id }) => {
 
 
 
-          <div className='div_cuartorenglon-modificarusuario'>
+          <div className='div_tercerrenglon-modificarusuario'>
             <div>
-              <label htmlFor="rut">Rut:</label>
+              <label htmlFor="tel">Tel:</label>
               <input
-                type="number"
-                id="rut"
-                value={rut}
-                onChange={(e) => setRut(e.target.value)}
-                required
+                type="text"
+                id="tel"
+                value={tel}
+                onChange={(e) => setTel(e.target.value)}
+
               />
             </div>
+            <div>
+              <label htmlFor="tipoComprobante">Tipo de DOC. DGI:</label>
+                        <select
+                            id="tipoComprobante"
+                            value={tipoComprobante}
+                            onChange={(e) => setTipoComprobante(e.target.value)}
+                            required
+                        >
+                            <option value="2">RUT</option>
+                            <option value="3">CI</option>
+                        </select>
+            </div>
+
+          </div>
+
+
+
+          <div className='div_tercerrenglon-modificarusuario'>
+
             <div>
               <label htmlFor="iata">IATA:</label>
               <input
@@ -202,90 +249,10 @@ const ModificarCliente = ({ closeModal, id }) => {
                 <option value="false">No</option>
                 <option value="true">Si</option>
               </select>
-            </div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-          </div>
-
-
-
-          <div className='div_quintorenglon-modificarusuario'>
-            <div>
-              <label htmlFor="pais">País:</label>
-              <input
-                type="text"
-                id="pais"
-                value={pais}
-                onChange={(e) => setPais(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="email">Email:</label>
-              <input
-                type="mail"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-
-              />
-            </div>
-            <div>
-              <label htmlFor="tel">Tel:</label>
-              <input
-                type="text"
-                id="tel"
-                value={tel}
-                onChange={(e) => setTel(e.target.value)}
-
-              />
-            </div>
-          </div>
-
-
-          <div className='div_quintorenglon-modificarusuario'>
-            <div>
-              <label htmlFor="tipoComprobante">Tipo de Comprobante:</label>
-              <select
-                id="tipoComprobante"
-                value={tipoComprobante}
-                onChange={(e) => setTipoComprobante(e.target.value)}
-                required
-              >
-                <option value="">Selecciona un tipo de Comprobante</option>
-                <option value="efactura">E-Factura</option>
-                <option value="eticket">E-Ticket</option>
-                <option value="efacturaca">E-Factura Cuenta Ajena</option>
-                <option value="eticketca">E-Ticket Cuenta Ajena</option>
-              </select>
             </div>
 
-            <div>
-              <label htmlFor="tipoMoneda">Moneda:</label>
-              <select
-                id="tipoMoneda"
-                value={tipoMoneda}
-                onChange={(e) => setTipoMoneda(e.target.value)}
-                required
-              >
-                <option value="">Selecciona una Moneda</option>
-                <option value="dolares">Dolares</option>
-                <option value="pesos">Pesos</option>
-                <option value="euros">Euros</option>
-              </select>
-            </div>
 
-            <div>
-              <label htmlFor="tipoIVA">Tipo de IVA:</label>
-              <select
-                id="tipoIVA"
-                value={tipoIVA}
-                onChange={(e) => setTipoIVA(e.target.value)}
-                required
-              >
-                <option value="">Seleccione un tipo de IVA</option>
-                <option value="iva22">IVA 22%</option>
-                <option value="excento">Exento</option>
-              </select>
-            </div>
+
           </div>
 
 

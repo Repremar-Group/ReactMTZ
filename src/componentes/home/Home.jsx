@@ -12,11 +12,20 @@ const Home = ({ isLoggedIn }) => {
     const [tipoCambioCargado, setTipoCambioCargado] = useState(false);
     const [fechaHoraActual, setFechaHoraActual] = useState('');
     const [fechaActual, setFechaActual] = useState('');
+    const [totalSinFacturar, setTotalSinFacturar] = useState('');
+    const [totalSinCobrar, setTotalSinCobrar] = useState('');
     const [guiasSinFacturar, setGuiasSinFacturar] = useState([]);
     const [facturasSinCobrar, setFacturasSinCobrar] = useState([]);
     const backURL = import.meta.env.VITE_BACK_URL;
     const navigate = useNavigate();
     const [data, setData] = useState([]);
+    const usuarioLogueado = localStorage.getItem('usuario');
+
+    const [fechaInicioGuias, setFechaInicioGuias] = useState('');
+    const [fechaFinGuias, setFechaFinGuias] = useState('');
+    const [fechaInicioFacturas, setFechaInicioFacturas] = useState('');
+    const [fechaFinFacturas, setFechaFinFacturas] = useState('');
+
     useEffect(() => {
         const rol = localStorage.getItem('rol');
         if (rol === '') {
@@ -25,7 +34,6 @@ const Home = ({ isLoggedIn }) => {
     }, [navigate]);
 
     useEffect(() => {
-        toast.success('Bienvenido')
         const actualizarFechaHora = () => {
             const ahora = new Date();
             const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -108,11 +116,13 @@ const Home = ({ isLoggedIn }) => {
                 ]);
 
                 const guiasData = guiasRes.data;
-                const facturasData = facturasRes.data;
+                const facturasData = facturasRes.data.facturas;
                 const cierreData = cierreRes.data;
 
-                setGuiasSinFacturar(guiasData);
+                setGuiasSinFacturar(guiasData.guias);
                 setFacturasSinCobrar(facturasData);
+                setTotalSinFacturar(guiasData.total_sin_facturar);
+                setTotalSinCobrar(facturasRes.data.totalSinCobrar);
 
                 const formateado = cierreData.map(item => ({
                     fecha: new Date(item.fecha).toLocaleDateString('es-UY', { day: '2-digit', month: '2-digit' }),
@@ -151,6 +161,9 @@ const Home = ({ isLoggedIn }) => {
                 <div className="navbar-left">
                     <span>Tipo de Cambio: {tipoCambio ? tipoCambio : '-'}</span>
                 </div>
+                <div className="navbar-center">
+                    <span>Bienvenido {usuarioLogueado}</span>
+                </div>
                 <div className="navbar-right">
                     <span>{fechaHoraActual}</span>
                 </div>
@@ -160,7 +173,7 @@ const Home = ({ isLoggedIn }) => {
             <div className="top-sections">
                 {/* Guías sin facturar */}
                 <div className="section-box">
-                    <h3 className="section-title">Guías sin Facturar</h3>
+                    <h3 className="section-title">Guías sin Facturar - Queda por Facturar: {totalSinFacturar} USD</h3>
                     <div className="table-containerSinCobrar">
                         <table className='tabla-guiassinfacturar'>
                             <thead>
@@ -193,7 +206,7 @@ const Home = ({ isLoggedIn }) => {
 
                 {/* Facturas sin cobrar */}
                 <div className="section-box">
-                    <h3 className="section-title">Facturas sin Cobrar</h3>
+                    <h3 className="section-title">Facturas sin Cobrar - Queda por Cobrar: {totalSinCobrar} USD</h3>
                     <div className="table-containerSinCobrar">
                         <table>
                             <thead>
@@ -239,6 +252,7 @@ const Home = ({ isLoggedIn }) => {
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
+                    
                 </div>
 
                 <div className="graph-box" style={{ width: '100%', maxWidth: '775px', height: 370 }}>

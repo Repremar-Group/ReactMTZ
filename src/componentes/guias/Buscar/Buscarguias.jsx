@@ -36,13 +36,13 @@ const PreviewGuias = () => {
     const handleConfirmDelete = async () => {
         try {
             let response; // Declarar la variable antes del bloque if-else
-    
+
             if (guiaAEliminar.tipo === 'IMPO') {
                 response = await axios.delete(`${backURL}/api/eliminarGuia/${guiaAEliminar.idguia}`);
             } else {
                 response = await axios.delete(`${backURL}/api/eliminarGuiaExpo/${guiaAEliminar.idguiasexpo}`);
             }
-    
+
             if (response.status === 200) {
                 console.log('Guía eliminada:', guiaAEliminar);
                 toast.success('Guía eliminada exitosamente');
@@ -209,39 +209,44 @@ const PreviewGuias = () => {
                         </div>
                     </div>
                     {error && <div className="error">{error}</div>}
-                    <table className='tabla-guias'>
-                        <thead>
-                            <tr>
-                                <th>Guía</th>
-                                <th>Vuelo</th>
-                                <th>Cliente / Agente</th>
-                                <th>Destino</th>
-                                <th>Tipo</th>
-                                <th>Monto</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredGuias.map((row) => (
-                                <tr key={row.idguia}>
-                                    <td>{row.guia}</td>
-                                    <td>{row.nombreVuelo + ' Fecha: ' + row.fechavuelo_formateada}</td>
-                                    <td>{row.consignatario || row.agente}</td>
-                                    <td>{row.destinoguia || '-'}</td>
-                                    <td>{row.tipo || '-'}</td>
-                                    <td>{(row.moneda ? row.total + " " + row.moneda : row.total)}</td>
-
-                                    <td>
-                                        <div className="action-buttons">
-                                            <button type="button" className="action-button" onClick={() => row.tipo === "IMPO" ? openModalVer(row.guia) : openModalVerExpo(row.guia)}  >🔍</button>
-                                            <button type="button" className="action-button" onClick={() => row.tipo === "IMPO" ? openModalModificar(row.guia) : openModalModificarExpo(row.guia)}>✏️</button>
-                                            <button className="action-button" onClick={() =>  openModalConfirmDelete(row)}>❌</button>
-                                        </div>
-                                    </td>
+                    <div className='contenedor-tabla-buscarfacturas'>
+                        <table className='tabla-facturas'>
+                            <thead>
+                                <tr>
+                                    <th>Guía</th>
+                                    <th>Vuelo</th>
+                                    <th>Cliente / Agente</th>
+                                    <th>Destino</th>
+                                    <th>Tipo</th>
+                                    <th>Monto</th>
+                                    <th>Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredGuias.map((row) => (
+                                    <tr key={row.idguia}>
+                                        <td>{row.guia}</td>
+                                        <td>{row.nombreVuelo + ' Fecha: ' + row.fechavuelo_formateada}</td>
+                                        <td>{row.consignatario || row.agente}</td>
+                                        <td>{row.destinoguia || '-'}</td>
+                                        <td>{row.tipo || '-'}</td>
+                                        <td>{(row.moneda ? row.total + " " + row.moneda : row.total)}</td>
+                                        <td className="td-con-submenu">
+                                            <div className="buscarfacturas-submenu-container">
+                                                <button disabled className="buscarfacturas-submenu-toggle">☰</button>
+                                                <div className="buscarfacturas-submenu">
+                                                    <button className='botonsubmenubuscarfactura' onClick={() => row.tipo === "IMPO" ? openModalVer(row.guia) : openModalVerExpo(row.guia)}  >Visualizar Guía</button>
+                                                    <button className='botonsubmenubuscarfactura' onClick={() => row.tipo === "IMPO" ? openModalModificar(row.guia) : openModalModificarExpo(row.guia)}>Modificar Guía</button>
+                                                    <button className='botonsubmenubuscarfactura' onClick={() => openModalConfirmDelete(row)}>Eliminar Guía</button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
 
                 </div>
             )}

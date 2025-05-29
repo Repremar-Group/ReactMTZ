@@ -321,3 +321,4 @@ input[type="checkbox"]:checked::after {
       transform: rotate(360deg);
     }
   }
+  

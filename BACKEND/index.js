@@ -9,7 +9,8 @@ const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
 const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlCotizaciones } = require('./ControladoresGFE/controladoresGfe')
-const cron = require('node-cron')
+const cron = require('node-cron');
+const { Console } = require('console');
 
 function queryAsync(sql, params) {
   return new Promise((resolve, reject) => {
@@ -89,7 +90,7 @@ app.get('/api/cierre_diario', (req, res) => {
   const query = `
     SELECT fecha, guias_sin_facturar, facturas_sin_cobrar
     FROM cierre_diario
-    WHERE fecha >= CURDATE() - INTERVAL 6 DAY
+    WHERE fecha >= CURDATE() - INTERVAL 15 DAY
     ORDER BY fecha ASC
   `;
   connection.query(query, (err, results) => {
@@ -112,7 +113,7 @@ function generarAdenda(numerodoc, monto) {
 
 app.get('/api/previewclientes', (req, res) => {
   console.log('Received request for /api/previewclientes'); // Agrega esta línea
-  const sql = 'SELECT * FROM clientes';
+  const sql = 'SELECT * FROM clientes ORDER BY Id DESC';
 
   connection.query(sql, (err, result) => {
     if (err) {
@@ -152,81 +153,390 @@ app.get('/api/previewfacturas', (req, res) => {
 //Armado de la consulta Insert Cliente
 
 // Ruta para insertar un cliente y su cuenta corriente
-app.post('/api/insertclientes', (req, res) => {
+app.post('/api/insertclientes', async (req, res) => {
   console.log('Received request for /api/insertclientes');
   const {
     Nombre,
     RazonSocial,
     Direccion,
-    CodigoGIA,
     Zona,
     Ciudad,
-    CodigoPostal,
     Rut,
     IATA,
     Cass,
     Pais,
     Email,
     Tel,
-    Tcomprobante,
-    Tiva,
-    Moneda,
+    TDOCDGI,
     Saldo
-  } = req.body; // Los datos del cliente enviados desde el front
+  } = req.body;
 
-  // Consulta para insertar el cliente
-  const insertClienteQuery = `
-    INSERT INTO clientes (Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo, CodigoGIA)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  // Ejecutar la inserción del cliente
-  connection.query(insertClienteQuery, [Nombre, RazonSocial, Direccion, Zona, Ciudad, CodigoPostal, Rut, IATA, Cass, Pais, Email, Tel, Tcomprobante, Tiva, Moneda, Saldo, CodigoGIA], (err, results) => {
-    if (err) {
-      console.error('Error al insertar el cliente:', err);
-      return res.status(500).json({ error: 'Error al insertar el cliente' });
+  // Validar si ya existe la razón social
+  const verificarRazonSocialQuery = 'SELECT * FROM clientes WHERE RazonSocial = ?';
+  connection.query(verificarRazonSocialQuery, [RazonSocial], async (error, results) => {
+    if (error) {
+      console.error('Error al verificar la razón social:', error);
+      return res.status(500).json({ error: 'Error al verificar la razón social' });
     }
-    // Respuesta exitosa
-    res.status(200).json({ message: 'Cliente y cuenta corriente insertados exitosamente' });
+
+    if (results.length > 0) {
+      return res.status(400).json({ error: 'Ya existe un cliente con esa razón social' });
+    }
+
+    // Si no existe, continuar con el proceso SOAP
+    const construirXmlAgregarElemento = () => {
+      const esTipo3 = TDOCDGI === '3';
+      return `
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+          <soapenv:Header/>
+          <soapenv:Body>
+            <soap:agregarElemento>
+              <xmlParametros><![CDATA[
+                <agregarElementoParametros>
+                  <usuario>DATALOG</usuario>
+                  <usuarioPassword>DATALOG01</usuarioPassword>
+                  <empresa>REP</empresa>
+                  <elemento>
+                    <nombre>${Nombre}</nombre>
+                    <habilitado>S</habilitado>
+                    <conjuntos>
+                      <conjunto>CLI</conjunto>
+                    </conjuntos>
+                    <atributos>
+                      <atributo><campo>DIR</campo><valor>${Direccion}</valor></atributo>
+                      <atributo><campo>TDOCDGI</campo><valor>${TDOCDGI}</valor></atributo>
+                      ${esTipo3
+          ? `<atributo><campo>CI</campo><valor>${Rut}</valor></atributo>`
+          : `<atributo><campo>RUC</campo><valor>${Rut}</valor></atributo>`
+        }
+                      <atributo><campo>PAIS</campo><valor>${Pais}</valor></atributo>
+                      <atributo><campo>TEL</campo><valor>${Tel}</valor></atributo>
+                      <atributo><campo>RAZON</campo><valor>${RazonSocial}</valor></atributo>
+                      <atributo><campo>EMAIL</campo><valor>${Email}</valor></atributo>
+                      <atributo><campo>LOC</campo><valor>${Zona}</valor></atributo>
+                      <atributo><campo>CIUDAD</campo><valor>${Ciudad}</valor></atributo>
+                    </atributos>
+                  </elemento>
+                </agregarElementoParametros>
+              ]]></xmlParametros>
+            </soap:agregarElemento>
+          </soapenv:Body>
+        </soapenv:Envelope>
+      `;
+    };
+
+    const xml = construirXmlAgregarElemento();
+    const xmlBuffer = Buffer.from(xml, 'utf-8');
+
+    const headers = {
+      'Content-Type': 'text/xml;charset=utf-8',
+      'SOAPAction': '"agregarElemento"',
+      'Accept-Encoding': 'gzip,deflate',
+      'Host': 'srvgfe.grep.local:8082',
+      'Connection': 'Keep-Alive',
+      'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+    };
+
+    try {
+      const response = await axios.post(
+        'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+        xmlBuffer,
+        { headers }
+      );
+
+      const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+      const parsed = await parser.parseStringPromise(response.data);
+      const innerXml = parsed?.Envelope?.Body?.agregarElementoResponse?.xmlResultado;
+
+      if (innerXml) {
+        const rawXml = innerXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+        const innerParsed = await xml2js.parseStringPromise(rawXml, { explicitArray: false });
+
+        const CodigoGIA = innerParsed?.agregarElementoResultado?.datos?.elemento?.codigo;
+
+        if (!CodigoGIA) {
+          return res.status(500).json({ error: 'No se pudo obtener el código del cliente desde la respuesta del WS' });
+        }
+
+        const insertClienteQuery = `
+          INSERT INTO clientes 
+            (Nombre, RazonSocial, Direccion, Zona, Ciudad, Rut, IATA, Cass, Pais, Email, Tel, TDOCDGI, Saldo, CodigoGIA)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        connection.query(insertClienteQuery, [
+          Nombre,
+          RazonSocial,
+          Direccion,
+          Zona,
+          Ciudad,
+          Rut,
+          IATA,
+          Cass,
+          Pais,
+          Email,
+          Tel,
+          TDOCDGI,
+          Saldo,
+          CodigoGIA
+        ], (err, results) => {
+          if (err) {
+            console.error('Error al insertar el cliente:', err);
+            return res.status(500).json({ error: 'Error al insertar el cliente' });
+          }
+
+          return res.status(200).json({
+            message: 'Cliente insertado correctamente',
+            codigoGia: CodigoGIA
+          });
+        });
+      } else {
+        return res.status(500).json({ error: 'Respuesta del WS inválida: no se encontró xmlResultado' });
+      }
+    } catch (error) {
+      console.error('Error al enviar solicitud SOAP:', error.message);
+      return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
+    }
   });
-}
-);
+});
+
+// Endpoint para actualizar un cliente
+app.put('/api/actualizarcliente/:id', async (req, res) => {
+  const id = req.params.id; // Obtener el ID del cliente de la URL
+  const {
+    nombre,
+    rut,
+    pais,
+    email,
+    tel,
+    razonSocial,
+    iata,
+    direccion,
+    zona,
+    ciudad,
+    cass,
+    tipoComprobante,
+    codigoGIA
+  } = req.body; // Obtener los datos del cliente del cuerpo de la solicitud
+
+
+  const construirXmlModificarElemento = () => {
+    const esTipo3 = tipoComprobante === '3';
+    return `
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <soap:modificarElemento>
+      <xmlParametros>
+        <![CDATA[
+<modificarElementoParametros>
+  <usuario>DATALOG</usuario>
+  <usuarioPassword>DATALOG01</usuarioPassword>
+  <empresa>REP</empresa>
+  <elemento>
+    <codigo>${codigoGIA}</codigo>
+    <nombre>${nombre}</nombre>
+    <habilitado>S</habilitado>
+    <conjuntos>
+      <conjunto>CLI</conjunto>
+    </conjuntos>
+    <atributos>
+      <atributo><campo>DIR</campo><valor>${direccion}</valor></atributo>
+      <atributo><campo>TDOCDGI</campo><valor>${tipoComprobante}</valor></atributo>
+      ${esTipo3
+        ? `<atributo><campo>CI</campo><valor>${rut}</valor></atributo> <atributo><campo>RUC</campo><valor></valor></atributo>`
+        : `<atributo><campo>RUC</campo><valor>${rut}</valor></atributo> <atributo><campo>CI</campo><valor></valor></atributo>`
+      }
+      <atributo><campo>PAIS</campo><valor>${pais}</valor></atributo>
+      <atributo><campo>TEL</campo><valor>${tel}</valor></atributo>
+      <atributo><campo>RAZON</campo><valor>${razonSocial}</valor></atributo>
+      <atributo><campo>EMAIL</campo><valor>${email}</valor></atributo>
+      <atributo><campo>LOC</campo><valor>${zona}</valor></atributo>
+      <atributo><campo>CIUDAD</campo><valor>${ciudad}</valor></atributo>
+    </atributos>
+  </elemento>
+</modificarElementoParametros>
+        ]]>
+      </xmlParametros>
+    </soap:modificarElemento>
+  </soapenv:Body>
+</soapenv:Envelope>`;
+  };
+
+  const xml = construirXmlModificarElemento();
+  const xmlBuffer = Buffer.from(xml, 'utf-8');
+
+  const headers = {
+    'Content-Type': 'text/xml;charset=utf-8',
+    'SOAPAction': '"modificarElemento"',
+    'Accept-Encoding': 'gzip,deflate',
+    'Host': 'srvgfe.grep.local:8082',
+    'Connection': 'Keep-Alive',
+    'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+  };
+
+  try {
+    console.log('XML MODIFICAR A SOAP', xml);
+    const response = await axios.post(
+      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      xmlBuffer,
+      { headers }
+    );
+    const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+    const parsed = await parser.parseStringPromise(response.data);
+
+    const innerXml = parsed?.Envelope?.Body?.modificarElementoResponse?.xmlResultado;
+    console.log('Respuesta cruda SOAP', innerXml);
+    if (!innerXml) {
+      return res.status(500).json({ error: 'No se encontró xmlResultado en la respuesta SOAP' });
+    }
+
+    const rawXml = innerXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const innerParsed = await xml2js.parseStringPromise(rawXml, { explicitArray: false });
+
+    const resultado = innerParsed?.modificarElementoResultado?.resultado;
+    const descripcion = innerParsed?.modificarElementoResultado?.descripcion;
+
+    if (resultado !== '1') {
+      return res.status(500).json({ error: 'Error en WS', descripcion });
+    }
+
+    // Ahora actualizar en la base de datos
+    const sql = `UPDATE clientes SET 
+        Nombre = ?, RazonSocial = ?, Direccion = ?, Zona = ?, Ciudad = ?,
+        Rut = ?, IATA = ?, Cass = ?, Pais = ?, Email = ?, Tel = ?, TDOCDGI= ?
+        WHERE id = ?`;
+
+    const values = [
+      nombre,
+      razonSocial,
+      direccion,
+      zona,
+      ciudad,
+      rut,
+      iata,
+      cass,
+      pais,
+      email,
+      tel,
+      tipoComprobante,
+      id
+    ];
+
+    connection.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error actualizando cliente:', err);
+        return res.status(500).json({ message: 'Error actualizando cliente' });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: 'Cliente No encontrado' });
+      }
+
+      res.status(200).json({ message: 'Cliente modificado correctamente en WS y BD' });
+    });
+  } catch (error) {
+    console.error('Error al enviar solicitud SOAP:', error.message);
+    return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
+  }
+});
 
 
 //Armando Endpoint para eliminar Cliente
 
-app.delete('/api/deleteclientes', (req, res) => {
+app.delete('/api/deleteclientes', async (req, res) => {
   console.log('Received request for /api/deleteclientes');
-  const { Id } = req.body; // Obtener el Id del cliente a eliminar
+  const { Id, CodigoGIA } = req.body; // Se requiere el código GIA además del Id
 
-  // Consulta para eliminar la cuenta corriente del cliente
-  const deleteCuentaCorrienteQuery = `
-    DELETE FROM CuentaCorriente
-    WHERE Id_Cliente = ?
-  `;
+  if (!CodigoGIA || !Id) {
+    return res.status(400).json({ error: 'Se requiere Id y CodigoGIA del cliente' });
+  }
 
-  connection.query(deleteCuentaCorrienteQuery, [Id], (err, results) => {
-    if (err) {
-      console.error('Error al eliminar la cuenta corriente:', err);
-      return res.status(500).json({ error: 'Error al eliminar la cuenta corriente' });
+  const construirXmlEliminarElemento = () => {
+    return `
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <soap:eliminarElemento>
+      <xmlParametros>
+        <![CDATA[
+<eliminarElementoParametros>
+  <usuario>DATALOG</usuario>
+  <usuarioPassword>DATALOG01</usuarioPassword>
+  <empresa>REP</empresa>
+  <elemento>
+    <codigo>${CodigoGIA}</codigo>
+    <conjunto>CLI</conjunto>
+  </elemento>
+</eliminarElementoParametros>
+        ]]>
+      </xmlParametros>
+    </soap:eliminarElemento>
+  </soapenv:Body>
+</soapenv:Envelope>`;
+  };
+
+  const xml = construirXmlEliminarElemento();
+  const xmlBuffer = Buffer.from(xml, 'utf-8');
+
+  const headers = {
+    'Content-Type': 'text/xml;charset=utf-8',
+    'SOAPAction': '"eliminarElemento"',
+    'Accept-Encoding': 'gzip,deflate',
+    'Host': 'srvgfe.grep.local:8082',
+    'Connection': 'Keep-Alive',
+    'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+  };
+
+  try {
+    const response = await axios.post(
+      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      xmlBuffer,
+      { headers }
+    );
+
+    const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+    const parsed = await parser.parseStringPromise(response.data);
+    const innerXml = parsed?.Envelope?.Body?.eliminarElementoResponse?.xmlResultado;
+
+    if (!innerXml) {
+      return res.status(500).json({ error: 'No se encontró xmlResultado en la respuesta SOAP' });
     }
-    console.log('Cuenta corriente eliminada:', results.affectedRows);
-    const deleteClienteQuery = `
-      DELETE FROM clientes
-      WHERE Id = ?
-    `;
+
+    const rawXml = innerXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const innerParsed = await xml2js.parseStringPromise(rawXml, { explicitArray: false });
+
+    const resultado = innerParsed?.eliminarElementoResultado?.resultado;
+    const descripcion = innerParsed?.eliminarElementoResultado?.descripcion;
+
+    if (resultado !== '1') {
+      return res.status(500).json({ error: 'Error en WS', descripcion });
+    }
+
+    // Si la respuesta fue correcta, eliminar en la BD
+    const deleteClienteQuery = `DELETE FROM clientes WHERE Id = ?`;
 
     connection.query(deleteClienteQuery, [Id], (err, results) => {
       if (err) {
-        console.error('Error al eliminar el cliente:', err);
-        return res.status(500).json({ error: 'Error al eliminar el cliente' });
+        console.error('Error al eliminar el cliente en la base de datos:', err);
+        return res.status(500).json({ error: 'Error al eliminar el cliente en la base de datos' });
       }
+
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Cliente no encontrado en la base de datos' });
+      }
+
       console.log('Cliente eliminado:', results.affectedRows);
-      // Respuesta exitosa
-      res.status(200).json({ message: 'Cliente y cuenta corriente eliminados exitosamente' });
+      res.status(200).json({
+        message: 'Cliente eliminado correctamente en WS y base de datos',
+        descripcionWS: descripcion
+      });
     });
-  });
+  } catch (error) {
+    console.error('Error al enviar solicitud SOAP:', error.message);
+    return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
+  }
 });
+
 
 //Obtener datos para modificar cliente.
 app.get('/api/obtenerclientes/:id', (req, res) => {
@@ -332,76 +642,7 @@ app.get('/api/obtener-conceptos', (req, res) => {
   });
 });
 
-// Endpoint para actualizar un cliente
-app.put('/api/actualizarcliente/:id', (req, res) => {
-  const id = req.params.id; // Obtener el ID del cliente de la URL
-  const {
-    nombre,
-    rut,
-    pais,
-    email,
-    tel,
-    razonSocial,
-    iata,
-    direccion,
-    zona,
-    ciudad,
-    codigopostal,
-    cass,
-    tipoComprobante,
-    tipoMoneda,
-    tipoIVA
-  } = req.body; // Obtener los datos del cliente del cuerpo de la solicitud
 
-  // Consulta SQL para actualizar los datos del cliente
-  const sql = `UPDATE clientes SET 
-    Nombre = ?,
-    RazonSocial = ?,
-    Direccion = ?,
-    Zona = ?,
-    Ciudad = ?,
-    CodigoPostal = ?,
-    Rut = ?,
-    IATA = ?,
-    Cass = ?,
-    Pais = ?,
-    Email = ?,
-    Tel = ?,
-    Tcomprobante = ?,
-    Moneda = ?,
-    Tiva = ?
-    WHERE id = ?`;
-
-  const values = [
-    nombre,
-    razonSocial,
-    direccion,
-    zona,
-    ciudad,
-    codigopostal,
-    rut,
-    iata,
-    cass,
-    pais,
-    email,
-    tel,
-    tipoComprobante,
-    tipoMoneda,
-    tipoIVA,
-    id
-  ];
-
-  connection.query(sql, values, (err, result) => {
-    if (err) {
-      console.error('Error actualizando cliente:', err);
-      return res.status(500).json({ message: 'Error actualizando cliente' });
-    }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Cliente No encontrado' });
-    }
-    res.status(200).json({ message: 'Cliente Modificado Correctamente' });
-  });
-});
 
 // Endpoint para buscar clientes
 app.get('/api/obtenernombrecliente', (req, res) => {
@@ -3198,7 +3439,7 @@ AND g.facturada = 0
 app.get('/api/facturas-sin-cobrar', (req, res) => {
   console.log('Received request for /api/facturas-sin-cobrar');
 
-  const sql = `
+  const sqlList = `
     SELECT 
       Id, 
       Comprobante AS numero, 
@@ -3210,13 +3451,28 @@ app.get('/api/facturas-sin-cobrar', (req, res) => {
     ORDER BY Fecha DESC
   `;
 
-  connection.query(sql, (err, result) => {
+  const sqlTotal = `
+    SELECT SUM(TotalCobrar) AS totalSinCobrar
+    FROM facturas
+    WHERE idrecibo IS NULL
+  `;
+
+  connection.query(sqlList, (err, facturas) => {
     if (err) {
       console.error('Error al obtener facturas sin cobrar:', err);
       return res.status(500).json({ message: 'Ocurrió un error al obtener las facturas sin cobrar.' });
     }
 
-    res.status(200).json(result);
+    connection.query(sqlTotal, (err2, totalResult) => {
+      if (err2) {
+        console.error('Error al calcular total sin cobrar:', err2);
+        return res.status(500).json({ message: 'Ocurrió un error al calcular el total sin cobrar.' });
+      }
+
+      const totalSinCobrar = totalResult[0].totalSinCobrar || 0;
+
+      res.status(200).json({ facturas, totalSinCobrar });
+    });
   });
 });
 
@@ -3229,7 +3485,8 @@ app.get('/api/guias-sin-facturar', (req, res) => {
       guia AS numero, 
       consignatario AS cliente, 
       DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
-      'Impo' AS tipo
+      'Impo' AS tipo,
+      total
     FROM guiasimpo
     WHERE facturada = 0
 
@@ -3239,20 +3496,38 @@ app.get('/api/guias-sin-facturar', (req, res) => {
       guia AS numero, 
       agente AS cliente, 
       DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
-      'Expo' AS tipo
+      'Expo' AS tipo,
+      total
     FROM guiasexpo
     WHERE facturada = 0
 
     ORDER BY fecha DESC
   `;
 
-  connection.query(sql, (err, result) => {
+  const totalSql = `
+    SELECT 
+      (SELECT IFNULL(SUM(total), 0) FROM guiasimpo WHERE facturada = 0) +
+      (SELECT IFNULL(SUM(total), 0) FROM guiasexpo WHERE facturada = 0) AS total_sin_facturar
+  `;
+
+  // Ejecutar ambas consultas en paralelo
+  connection.query(sql, (err, guias) => {
     if (err) {
       console.error('Error al obtener guías sin facturar:', err);
       return res.status(500).json({ message: 'Error al obtener las guías sin facturar.' });
     }
 
-    res.status(200).json(result);
+    connection.query(totalSql, (err2, totalResult) => {
+      if (err2) {
+        console.error('Error al calcular total sin facturar:', err2);
+        return res.status(500).json({ message: 'Error al calcular el total sin facturar.' });
+      }
+
+      res.status(200).json({
+        guias,
+        total_sin_facturar: totalResult[0].total_sin_facturar
+      });
+    });
   });
 });
 
