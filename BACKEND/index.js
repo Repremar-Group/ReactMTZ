@@ -8,7 +8,8 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlCotizaciones } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp } = require('./ControladoresGFE/controladoresGfe')
+const { obtenerDatosEmpresa } = require('./ControladoresGFE/datosdelaempresaGFE')
 const cron = require('node-cron');
 const { Console } = require('console');
 
@@ -155,6 +156,8 @@ app.get('/api/previewfacturas', (req, res) => {
 // Ruta para insertar un cliente y su cuenta corriente
 app.post('/api/insertclientes', async (req, res) => {
   console.log('Received request for /api/insertclientes');
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  console.log('Datos de la empresa desde el back', datosEmpresa);
   const {
     Nombre,
     RazonSocial,
@@ -193,14 +196,14 @@ app.post('/api/insertclientes', async (req, res) => {
             <soap:agregarElemento>
               <xmlParametros><![CDATA[
                 <agregarElementoParametros>
-                  <usuario>DATALOG</usuario>
-                  <usuarioPassword>DATALOG01</usuarioPassword>
-                  <empresa>REP</empresa>
+                  <usuario>${datosEmpresa.usuarioGfe}</usuario>
+                  <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+                  <empresa>${datosEmpresa.codigoEmpresa}</empresa>
                   <elemento>
                     <nombre>${Nombre}</nombre>
                     <habilitado>S</habilitado>
                     <conjuntos>
-                      <conjunto>CLI</conjunto>
+                      <conjunto>${datosEmpresa.conjuntoClientes}</conjunto>
                     </conjuntos>
                     <atributos>
                       <atributo><campo>DIR</campo><valor>${Direccion}</valor></atributo>
@@ -232,14 +235,14 @@ app.post('/api/insertclientes', async (req, res) => {
       'Content-Type': 'text/xml;charset=utf-8',
       'SOAPAction': '"agregarElemento"',
       'Accept-Encoding': 'gzip,deflate',
-      'Host': 'srvgfe.grep.local:8082',
+      'Host': `${datosEmpresa.serverFacturacion}`,
       'Connection': 'Keep-Alive',
       'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
     };
 
     try {
       const response = await axios.post(
-        'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xmlBuffer,
         { headers }
       );
@@ -303,6 +306,7 @@ app.post('/api/insertclientes', async (req, res) => {
 // Endpoint para actualizar un cliente
 app.put('/api/actualizarcliente/:id', async (req, res) => {
   const id = req.params.id; // Obtener el ID del cliente de la URL
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
   const {
     nombre,
     rut,
@@ -330,15 +334,15 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
       <xmlParametros>
         <![CDATA[
 <modificarElementoParametros>
-  <usuario>DATALOG</usuario>
-  <usuarioPassword>DATALOG01</usuarioPassword>
-  <empresa>REP</empresa>
+  <usuario>${datosEmpresa.usuarioGfe}</usuario>
+  <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+  <empresa>${datosEmpresa.codigoEmpresa}</empresa>
   <elemento>
     <codigo>${codigoGIA}</codigo>
     <nombre>${nombre}</nombre>
     <habilitado>S</habilitado>
     <conjuntos>
-      <conjunto>CLI</conjunto>
+      <conjunto>${datosEmpresa.conjuntoClientes}</conjunto>
     </conjuntos>
     <atributos>
       <atributo><campo>DIR</campo><valor>${direccion}</valor></atributo>
@@ -370,7 +374,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"modificarElemento"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': 'srvgfe.grep.local:8082',
+    'Host': `${datosEmpresa.serverFacturacion}`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -378,7 +382,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
   try {
     console.log('XML MODIFICAR A SOAP', xml);
     const response = await axios.post(
-      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlBuffer,
       { headers }
     );
@@ -446,7 +450,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
 app.delete('/api/deleteclientes', async (req, res) => {
   console.log('Received request for /api/deleteclientes');
   const { Id, CodigoGIA } = req.body; // Se requiere el código GIA además del Id
-
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
   if (!CodigoGIA || !Id) {
     return res.status(400).json({ error: 'Se requiere Id y CodigoGIA del cliente' });
   }
@@ -460,12 +464,12 @@ app.delete('/api/deleteclientes', async (req, res) => {
       <xmlParametros>
         <![CDATA[
 <eliminarElementoParametros>
-  <usuario>DATALOG</usuario>
-  <usuarioPassword>DATALOG01</usuarioPassword>
-  <empresa>REP</empresa>
+  <usuario>${datosEmpresa.usuarioGfe}</usuario>
+  <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+  <empresa>${datosEmpresa.codigoEmpresa}</empresa>
   <elemento>
     <codigo>${CodigoGIA}</codigo>
-    <conjunto>CLI</conjunto>
+    <conjunto>${datosEmpresa.conjuntoClientes}</conjunto>
   </elemento>
 </eliminarElementoParametros>
         ]]>
@@ -482,14 +486,14 @@ app.delete('/api/deleteclientes', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"eliminarElemento"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': 'srvgfe.grep.local:8082',
+    'Host': `${datosEmpresa.conjuntoClientes}`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
 
   try {
     const response = await axios.post(
-      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlBuffer,
       { headers }
     );
@@ -568,7 +572,7 @@ app.get('/api/obtenerclientes/:id', (req, res) => {
 });
 
 app.post('/api/guardar-datos-empresa', async (req, res) => {
-  const { usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa } = req.body;
+  const { usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion } = req.body;
 
   try {
     const rows = await new Promise((resolve, reject) => {
@@ -582,8 +586,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
       // Ya hay datos → Hacer UPDATE
       await new Promise((resolve, reject) => {
         connection.query(
-          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa],
+          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion],
           (error) => {
             if (error) reject(error);
             else resolve();
@@ -596,8 +600,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
       // No hay datos → Hacer INSERT
       await new Promise((resolve, reject) => {
         connection.query(
-          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa) VALUES (?, ?, ?, ?)`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa],
+          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion) VALUES (?, ?, ?, ?, ?, ?)`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion],
           (error) => {
             if (error) reject(error);
             else resolve();
@@ -1877,15 +1881,16 @@ app.get('/api/obtenerembarques', (req, res) => {
 app.post('/api/agregarconcepto', (req, res) => {
   console.log('Received request for /api/agregarconcepto');
 
-  const { codigo, descripcion, exento } = req.body;
+  const { codigo, codigoGIA, descripcion, selectedIva } = req.body;
+  console.log(codigo, codigoGIA, descripcion, selectedIva)
 
-  if (!codigo || !descripcion || exento === undefined) {
+  if (!codigo || !descripcion || !codigoGIA || !selectedIva === undefined) {
     console.log('Faltan datos obligatorios');
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
 
-  const query = 'INSERT INTO conceptos (codigo, descripcion, exento) VALUES (UPPER(?), ?, ?)';
-  const values = [codigo, descripcion, exento ? 1 : 0];
+  const query = 'INSERT INTO conceptos (codigo, codigoGIA, descripcion, impuesto) VALUES (UPPER(?), ?, ?, ?)';
+  const values = [codigo, codigoGIA, descripcion, selectedIva];
 
   connection.query(query, values, (err, result) => {
     if (err) {
@@ -1955,9 +1960,10 @@ app.get('/api/buscarconcepto/:codigo', (req, res) => {
   });
 });
 
-app.post('/api/insertfactura', (req, res) => {
+app.post('/api/insertfactura', async (req, res) => {
   console.log('Received request for /api/insertfactura');
   let facturaCuentaAjenaId;
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
   const {
     IdCliente,
     Nombre,
@@ -2201,15 +2207,20 @@ app.post('/api/insertfactura', (req, res) => {
                 });
               });
               let adendaCUENTAAJENA = generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena);
+              
               const datos = {
                 fechaCFE: Fecha,
                 detalleFactura: detallesFactura,
                 adendadoc: adenda,
+                datosEmpresa: datosEmpresa,
+                codigoClienteGIA: CodigoGIA
               }
               const datosEfacCuentaAjena = {
                 fechaCFE: Fecha,
                 detalleFacturaCuentaAjena: detallesCuentaAjena,
                 adendadoc: adendaCUENTAAJENA,
+                datosEmpresa: datosEmpresa,
+                codigoClienteGIA: CodigoGIA
               }
               //detallesFactura.length
               console.log('ESTOS SON LOS DATOS:', datos);
@@ -2694,13 +2705,14 @@ app.post('/api/generarReciboPDF', async (req, res) => {
   }
 });
 app.post('/cotizaciones-bcu', async (req, res) => {
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
   const fechaActual = new Date().toISOString().split('T')[0];
 
   const headersCotizacion = {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"procesoCargarCotizacionesBcu"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': 'srvgfe.grep.local:8082',
+    'Host': `${datosEmpresa.serverFacturacion}`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -2718,9 +2730,9 @@ app.post('/cotizaciones-bcu', async (req, res) => {
           <xmlParametros>
           <![CDATA[
             <procesoCargarCotizacionesBcuParametros>
-              <usuario>DATALOG</usuario>
-              <usuarioPassword>DATALOG01</usuarioPassword>
-              <empresa>REP</empresa>
+              <usuario>${datosEmpresa.usuarioGfe}</usuario>
+              <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+              <empresa>${datosEmpresa.codigoEmpresa}</empresa>
               <parametros>
                 <fecha>${fechaActual}</fecha>
               </parametros>
@@ -2739,9 +2751,9 @@ app.post('/cotizaciones-bcu', async (req, res) => {
         <soap:obtenerCotizacion>
           <xmlParametros><![CDATA[
             <obtenerCotizacionParametros>
-              <usuario>DATALOG</usuario>
-              <usuarioPassword>DATALOG01</usuarioPassword>
-              <empresa>REP</empresa>
+              <usuario>${datosEmpresa.usuarioGfe}</usuario>
+              <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+              <empresa>${datosEmpresa.codigoEmpresa}</empresa>
               <parametros>
                 <fecha>${fechaActual}</fecha>
                 <moneda>2</moneda>
@@ -2768,7 +2780,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
   try {
     // ✅ Primera llamada: procesoCargarCotizacionesBcu
     const cotizacionesResponse = await axios.post(
-      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      `http://${datosEmpresa.codigoEmpresa}/giaweb/soap/giawsserver`,
       xmlCotizaciones,
       { headers: headersCotizacion }
     );
@@ -2781,7 +2793,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
 
     // ✅ Segunda llamada: obtenerCotizacion para moneda 2
     const obtenerCotizacionResponse = await axios.post(
-      'http://srvgfe.grep.local:8082/giaweb/soap/giawsserver',
+      `http://${datosEmpresa.codigoEmpresa}/giaweb/soap/giawsserver`,
       xmlObtenerCotizacion,
       { headers: headersObtener }
     );
@@ -2814,12 +2826,12 @@ app.post('/pruebaws', async (req, res) => {
   const { xml, xmlCuentaAjena } = req.body;
   const xmlBuffer = Buffer.from(xml, 'utf-8');
   const xmlBufferca = Buffer.from(xmlCuentaAjena, 'utf-8');
-
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
   const headersAgregar = {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"agregarDocumentoFacturacion"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': 'srvgfe.grep.local:8082',
+    'Host': `${datosEmpresa.serverFacturacion}`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -2848,9 +2860,9 @@ app.post('/pruebaws', async (req, res) => {
         <soap:obtenerRepresentacionImpresaDocumentoFacturacion>
           <xmlParametros><![CDATA[
             <obtenerRepresentacionImpresaDocumentoFacturacionParametros>
-              <usuario>DATALOG</usuario>
-              <usuarioPassword>DATALOG01</usuarioPassword>
-              <empresa>REP</empresa>
+              <usuario>${datosEmpresa.usuarioGfe}</usuario>
+              <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+              <empresa>${datosEmpresa.codigoEmpresa}</empresa>
               <documento>
                 <fechaDocumento>${fechaDocumento}</fechaDocumento>
                 <tipoDocumento>${tipoDocumento}</tipoDocumento>
@@ -2867,8 +2879,8 @@ app.post('/pruebaws', async (req, res) => {
   try {
     // 1) Enviar ambas solicitudes agregarDocumentoFacturacion en paralelo
     const [response1, response2] = await Promise.all([
-      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlBuffer, { headers: headersAgregar }),
-      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlBufferca, { headers: headersAgregar }),
+      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlBuffer, { headers: headersAgregar }),
+      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlBufferca, { headers: headersAgregar }),
     ]);
 
     // 2) Parsear respuestas SOAP originales
@@ -2920,8 +2932,8 @@ app.post('/pruebaws', async (req, res) => {
 
     // 4) Pedir los PDFs base64 en paralelo
     const [pdfResponse1, pdfResponse2] = await Promise.all([
-      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlPdf1, { headers: headersObtenerPdf }),
-      axios.post('http://srvgfe.grep.local:8082/giaweb/soap/giawsserver', xmlPdf2, { headers: headersObtenerPdf }),
+      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf1, { headers: headersObtenerPdf }),
+      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf2, { headers: headersObtenerPdf }),
     ]);
 
     // 5) Parsear las respuestas con los PDFs

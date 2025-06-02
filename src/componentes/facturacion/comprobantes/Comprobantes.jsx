@@ -31,7 +31,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [ecpais, setEcPais] = useState('');
   const [ecrazonsocial, setEcRazonSocial] = useState('');
   const [ectipoiva, setEcTipoIva] = useState('');
-  const [ecmoneda, setEcMoneda] = useState('');
+  const [ecmoneda, setEcMoneda] = useState('USD');
   const [ecfecha, setEcFecha] = useState('');
   const [eccomprobante, setEcComprobante] = useState('');
   const [ecelectronico, setEcElectronico] = useState('');
@@ -508,15 +508,6 @@ const Comprobantes = ({ isLoggedIn }) => {
       }
     };
 
-    const fetchMonedas = async () => {
-      try {
-        const response = await axios.get(`${backURL}/api/obtenermonedas`);
-        setMonedas(response.data);
-        setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
-      } catch (error) {
-        console.error('Error al obtener monedas:', error);
-      }
-    }
 
     const fetchCompanias = async () => {
       try {
@@ -528,7 +519,6 @@ const Comprobantes = ({ isLoggedIn }) => {
       }
     }
     fetchCompanias();
-    fetchMonedas();
     obtenerTipoCambio();
 
   }, []);
@@ -835,17 +825,7 @@ const Comprobantes = ({ isLoggedIn }) => {
                   readOnly
                 />
               </div>
-              <div>
-                <label htmlFor="ecpais">Pais:</label>
-                <input
-                  type="text"
-                  id="ecpais"
-                  value={ecpais}
-                  onChange={(e) => setEcPais(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
+
 
             </div>
 
@@ -863,19 +843,6 @@ const Comprobantes = ({ isLoggedIn }) => {
                 />
               </div>
               <div>
-                <label htmlFor="ectipoiva">Tipo de IVA:</label>
-                <select
-                  id="tipoIVA"
-                  value={ectipoiva}
-                  onChange={(e) => setEcTipoIva(e.target.value)}
-                  required
-                >
-                  <option value="">Seleccione un tipo de IVA</option>
-                  <option value="iva22">IVA 22%</option>
-                  <option value="excento">Exento</option>
-                </select>
-              </div>
-              <div>
                 <label htmlFor="ecmoneda">Moneda:</label>
                 <select
                   id="ecmoneda"
@@ -883,12 +850,8 @@ const Comprobantes = ({ isLoggedIn }) => {
                   onChange={(e) => setEcMoneda(e.target.value)}
                   required
                 >
-                  <option value="">Selecciona una Moneda</option>
-                  {monedas.map((moneda, index) => (
-                    <option key={index} value={moneda.moneda}>
-                      {moneda.moneda}
-                    </option>
-                  ))}
+                  <option value="USD">USD</option>
+                  <option value="UYU">UYU</option>
                 </select>
               </div>
               <div className="fecha-emision-comprobante">
@@ -902,28 +865,16 @@ const Comprobantes = ({ isLoggedIn }) => {
                 />
               </div>
               <div>
-                <label htmlFor="eccomprobante">Comprobante:</label>
+                <label htmlFor="ecpais">Pais:</label>
                 <input
                   type="text"
-                  id="eccomprobante"
-                  value={eccomprobante}
-                  onChange={(e) => setEcComprobante(e.target.value)}
+                  id="ecpais"
+                  value={ecpais}
+                  onChange={(e) => setEcPais(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
-              <div>
-                <label htmlFor="ecelectronico">Electronico:</label>
-                <input
-                  type="text"
-                  id="ecelectronico"
-                  value={ecelectronico}
-                  onChange={(e) => setEcElectronico(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className='div-primerrenglon-datos-comprobante'>
               <div>
                 <label htmlFor="ecdireccionfiscal">Dirección Fiscal:</label>
                 <input
@@ -935,13 +886,18 @@ const Comprobantes = ({ isLoggedIn }) => {
                   readOnly
                 />
               </div>
+            </div>
+
+            <div className='div-primerrenglon-datos-comprobante'>
+
               <div>
-                <label htmlFor="eccompania">Compania:</label>
+                <label htmlFor="eccompania">Compañia Aerea:</label>
                 <select
                   id="eccompania"
                   value={eccompania}
                   onChange={(e) => setEcCompania(e.target.value)}
                   required
+                  disabled
                 >
                   <option value="">Seleccione una compañía</option>
                   {companias.map((compania, index) => (

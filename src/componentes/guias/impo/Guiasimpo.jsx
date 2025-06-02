@@ -53,6 +53,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
   const [gireciboguia, setGiReciboGuia] = useState('');
   const [ginrovueloembarques, setGiNroVueloEmbarques] = useState('');
   const [gifechaembarques, setGiFechaEmbarques] = useState('');
+  const [gimonedaSeleccionada, setGiMonedaSeleccionada] = useState('USD');
 
   //Estados para controlar si esta abierto el modal de modificar
   const [isModalOpenModificar, setIsModalOpenModificar] = useState(false);
@@ -243,6 +244,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
   useEffect(() => {
     const icfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
     setGiFechaEmisionGuia(icfechaactual);
+    fetchMonedas();
   }, []); // Se ejecuta solo una vez al montar el componente
 
   // useEffect para actualizar Flete Original cuando Peso/Vol o Tarifa cambian
@@ -438,6 +440,11 @@ const Guiasimpo = ({ isLoggedIn }) => {
     vueloSeleccionado,
     givuelofecha
   ]);
+  useEffect(() => {
+  if (gimonedaSeleccionada === 'USD') {
+    setGiArbitrajeGuia('1');
+  }
+}, [gimonedaSeleccionada]);
 
   const [loading, setLoading] = useState(false);
   // Función para manejar el envío del formulario
@@ -769,6 +776,8 @@ const Guiasimpo = ({ isLoggedIn }) => {
                     <select
                       id="moneda"
                       required
+                      value={gimonedaSeleccionada}
+                      onChange={(e) => setGiMonedaSeleccionada(e.target.value)}
                       onClick={() => {
                         if (!isFetched) fetchMonedas(); // Solo llama a fetchMonedas una vez
                       }}

@@ -1,0 +1,10 @@
+   
+   .selectIvaconcepto {
+    width: 200px;
+    padding: 11px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    color: gray;
+   }

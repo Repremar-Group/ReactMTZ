@@ -16,6 +16,8 @@ const DatosEmpresa = ({ isLoggedIn }) => {
         setPassword(data.passwordGfe || '');
         setCodigoEmpresa(data.codigoEmpresa || '');
         setContraseñaEmpresa(data.contraseñaEmpresa || '');
+        setConjuntoClientesGIA(data.conjuntoClientes || '');
+        setServerFacturacion(data.serverFacturacion || '');
       } catch (error) {
         console.error('Error al obtener datos de empresa:', error);
       }
@@ -38,14 +40,18 @@ const DatosEmpresa = ({ isLoggedIn }) => {
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
   const [codigoEmpresa, setCodigoEmpresa] = useState('');
+  const [conjuntoClientesGIA, setConjuntoClientesGIA] = useState('');
   const [contraseñaEmpresa, setContraseñaEmpresa] = useState('');
+  const [serverFacturacion, setServerFacturacion] = useState('');
   const [showModal, setShowModal] = useState(false);
   
   const datos = {
     usuarioGfe: usuario,
     passwordGfe: password,
     codigoEmpresa: codigoEmpresa,
-    contraseñaEmpresa: contraseñaEmpresa
+    contraseñaEmpresa: contraseñaEmpresa,
+    conjuntoClientes: conjuntoClientesGIA,
+    serverFacturacion: serverFacturacion
   };
 
   const handleConfirmarGuardar = async () => {
@@ -74,8 +80,17 @@ const DatosEmpresa = ({ isLoggedIn }) => {
 
       <div className='div-datos-comprobante'>
         <form onSubmit={handleSubmit}>
+           <div className="div-datosempresa">
+            <label>Server de Facturación</label>
+            <input
+              type="text"
+              value={serverFacturacion}
+              onChange={(e) => setServerFacturacion(e.target.value)}
+              required
+            />
+          </div>
           <div className="div-datosempresa">
-            <label>Usuario GfE</label>
+            <label>Usuario GIA</label>
             <input
               type="text"
               value={usuario}
@@ -85,7 +100,7 @@ const DatosEmpresa = ({ isLoggedIn }) => {
           </div>
 
           <div className="div-datosempresa">
-            <label>Contraseña Usuario GFE</label>
+            <label>Contraseña Usuario GIA</label>
             <input
               type="password"
               value={password}
@@ -95,7 +110,7 @@ const DatosEmpresa = ({ isLoggedIn }) => {
           </div>
 
           <div className="div-datosempresa">
-            <label>Código de Empresa GFE</label>
+            <label>Código de Empresa GIA</label>
             <input
               type="text"
               value={codigoEmpresa}
@@ -105,11 +120,20 @@ const DatosEmpresa = ({ isLoggedIn }) => {
           </div>
 
           <div className="div-datosempresa">
-            <label>Constraseña de Empresa GFE</label>
+            <label>Constraseña de Empresa GIA</label>
             <input
               type="password"
               value={contraseñaEmpresa}
               onChange={(e) => setContraseñaEmpresa(e.target.value)}
+              required
+            />
+          </div>
+          <div className="div-datosempresa">
+            <label>Conjunto de Clientes GIA</label>
+            <input
+              type="text"
+              value={conjuntoClientesGIA}
+              onChange={(e) => setConjuntoClientesGIA(e.target.value)}
               required
             />
           </div>

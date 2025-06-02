@@ -5,21 +5,23 @@ import './monedas.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import './conceptos.css';
 
 const Conceptos = ({ isLoggedIn }) => {
 
     const navigate = useNavigate();
-        
+
     useEffect(() => {
         const rol = localStorage.getItem('rol');
-        
+
         if (rol !== 'admin') {
             // Si no es admin, redirigir al home
-                navigate('/home');
-            }
-        }, [navigate]);
-        
+            navigate('/home');
+        }
+    }, [navigate]);
+
     const [codigo, setCodigo] = useState('');
+    const [codigoGIA, setCodigoGIA] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [conceptos, setConceptos] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -30,6 +32,12 @@ const Conceptos = ({ isLoggedIn }) => {
     const backURL = import.meta.env.VITE_BACK_URL;
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
+    };
+
+    const [selectedIva, setSelectedIva] = useState("iva_basica");
+
+    const handleIvaChange = (e) => {
+        setSelectedIva(e.target.value);
     };
 
     const handleEliminar = async (id) => {
@@ -80,14 +88,16 @@ const Conceptos = ({ isLoggedIn }) => {
         try {
             const response = await axios.post(`${backURL}/api/agregarconcepto`, {
                 codigo,
+                codigoGIA,
                 descripcion,
-                exento: isChecked, // Enviamos true o false
+                selectedIva
             });
 
             toast.success("Concepto agregado con éxito!");
             setCodigo("");
+            setCodigoGIA("");
             setDescripcion("");
-            setIsChecked(false);
+            setSelectedIva("iva_basica");
             fetchConceptos();
         } catch (error) {
             console.error("Error al agregar el concepto:", error);
@@ -96,7 +106,7 @@ const Conceptos = ({ isLoggedIn }) => {
     };
 
     return (
-        <div className="formulariosmedianos">
+        <div className="formulariosgrandes">
             <ToastContainer />
             <div className='titulo-estandar'><h1>Conceptos</h1></div>
 
@@ -104,81 +114,79 @@ const Conceptos = ({ isLoggedIn }) => {
                 <form onSubmit={handleAgregarConcepto} >
                     <div className='div-primerrenglon-datos-comprobante'>
                         <div>
-                            <input className='input_buscar'
+                            <input className='selectIvaconcepto'
                                 type="text"
-                                placeholder="Código del Concepto"
+                                placeholder="Código interno"
                                 value={codigo}
                                 onChange={(e) => setCodigo(e.target.value)}
                             />
                         </div>
                         <div>
-                            <input className='input_buscar'
+                            <input className='selectIvaconcepto'
+                                type="text"
+                                placeholder="Código GIA"
+                                value={codigoGIA}
+                                onChange={(e) => setCodigoGIA(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <input className='selectIvaconcepto'
                                 type="text"
                                 placeholder="Descripción"
                                 value={descripcion}
                                 onChange={(e) => setDescripcion(e.target.value)}
                             />
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <label htmlFor="Checkboxexento" style={{ display: "flex", alignItems: "center" }}>
-                                Exento
-                            </label>
-                            <input
-                                type="checkbox"
-                                id="Checkboxexento"
-                                checked={isChecked}
-                                onChange={handleCheckboxChange}
-                                style={{ transform: "scale(1.2)", verticalAlign: "middle" }} // Ajusta el tamaño y alineación
-                            />
+                        <div >
+                            <select
+                                id="selectIva"
+                                value={selectedIva}
+                                onChange={handleIvaChange}
+                                className='selectIvaconcepto'
+                            >
+                                <option value="iva_basica">IVA Básica 22%</option>
+                                <option value="iva_minimo">IVA Mínimo 10%</option>
+                                <option value="exento">Exento</option>
+                            </select>
                         </div>
                         <button type='submit' className="btn-estandar">Agregar</button>
 
                     </div>
-                    <div className='div-moneda'>
-
-
-                    </div>
 
                 </form>
-
-                <table className='tabla-monedas'>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Descripción</th>
-                            <th>Exento</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayedItems.map((row) => (
-                            <tr key={row.idconcepto}>
-                                <td>{row.codigo}</td>
-                                <td>{row.descripcion}</td>
-                                <td>
-                                    <input
-                                        type="checkbox"
-                                        checked={row.exento === 1} // Marca el checkbox si 'exento' es 1
-                                        disabled // Hace que el checkbox sea solo de lectura (no editable)
-                                    />
-                                </td>
-                                <td>
-                                    <button className="action-button" onClick={() => handleEliminar(row.idconcepto)}>❌</button>
-                                </td>
+                <div className="table-containerSinCobrar">
+                    <table className='tabla-guiassinfacturar'>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Código GIA</th>
+                                <th>Descripción</th>
+                                <th>Impuesto</th>
+                                <th>Acción</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {displayedItems.map((row) => (
+                                <tr key={row.idconcepto}>
+                                    <td>{row.codigo}</td>
+                                    <td>{row.codigoGIA}</td>
+                                    <td>{row.descripcion}</td>
+                                    <td>
+                                        {{
+                                            iva_basica: "IVA Básica 22%",
+                                            iva_minimo: "IVA Mínimo 10%",
+                                            exento: "Exento"
+                                        }[row.impuesto] || "Sin definir"}
+                                    </td>
+                                    <td>
+                                        <button className="action-button" onClick={() => handleEliminar(row.idconcepto)}>❌</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
-                <ReactPaginate
-                    previousLabel={"Anterior"}
-                    nextLabel={"Siguiente"}
-                    breakLabel={"..."}
-                    pageCount={pageCount}
-                    onPageChange={handlePageClick}
-                    containerClassName={"pagination"}
-                    activeClassName={"active"}
-                />
             </div>
         </div>
     );
