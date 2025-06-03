@@ -572,7 +572,9 @@ app.get('/api/obtenerclientes/:id', (req, res) => {
 });
 
 app.post('/api/guardar-datos-empresa', async (req, res) => {
-  const { usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion } = req.body;
+  const { usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas,
+    rubCompras,
+    rubCostos } = req.body;
 
   try {
     const rows = await new Promise((resolve, reject) => {
@@ -586,8 +588,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
       // Ya hay datos → Hacer UPDATE
       await new Promise((resolve, reject) => {
         connection.query(
-          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion],
+          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos],
           (error) => {
             if (error) reject(error);
             else resolve();
@@ -600,8 +602,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
       // No hay datos → Hacer INSERT
       await new Promise((resolve, reject) => {
         connection.query(
-          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion) VALUES (?, ?, ?, ?, ?, ?)`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion],
+          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos],
           (error) => {
             if (error) reject(error);
             else resolve();
@@ -1878,29 +1880,124 @@ app.get('/api/obtenerembarques', (req, res) => {
   });
 });
 
-app.post('/api/agregarconcepto', (req, res) => {
+app.post('/api/agregarconcepto', async (req, res) => {
   console.log('Received request for /api/agregarconcepto');
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
 
-  const { codigo, codigoGIA, descripcion, selectedIva } = req.body;
-  console.log(codigo, codigoGIA, descripcion, selectedIva)
+  const { codigo, codigoGIA, descripcion, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria } = req.body;
+  console.log(codigo, codigoGIA, descripcion, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria)
 
-  if (!codigo || !descripcion || !codigoGIA || !selectedIva === undefined) {
+  if (!codigo || !descripcion || !codigoGIA || !selectedIva || !unidadPrincipal || !selectedClasificacion || !selectedCategoria === undefined) {
     console.log('Faltan datos obligatorios');
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
+  const traducirIva = (valor) => {
+    if (valor === 'iva_basica') return 'IVABAS';
+    if (valor === 'iva_minimo') return 'IVAMIN';
+    if (valor === 'exento') return 'IVAEXE';
+    return valor;
+  };
+  const ivaWs = traducirIva(selectedIva);
+  const construirXmlAgregarProducto = () => {
+    return `
+      <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+        <soapenv:Header/>
+        <soapenv:Body>
+          <soap:agregarProducto>
+            <xmlParametros><![CDATA[
+              <agregarProductoParametros>
+                <usuario>${datosEmpresa.usuarioGfe}</usuario>
+                <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+                <empresa>${datosEmpresa.codigoEmpresa}</empresa>
+                <producto>
+                  <codigo>${codigoGIA}</codigo>
+                  <nombre>${descripcion}</nombre>
+                  <descripcion>${descripcion}</descripcion>
+                  <habilitado>S</habilitado>
+                  <unidadPrincipal>${unidadPrincipal}</unidadPrincipal>
+                  <clasificacion>${selectedClasificacion}</clasificacion>
+                  <categoria>${selectedCategoria}</categoria>
+                  <rubroVenta>${datosEmpresa.rubVentas}</rubroVenta>
+                  <rubroCompra>${datosEmpresa.rubCompras}</rubroCompra>
+                  <rubroCosto>${datosEmpresa.rubCostos}</rubroCosto>
+                  <impuestos>
+                    <impuesto>
+                      <impuesto>${ivaWs}</impuesto>
+                    </impuesto>
+                  </impuestos>
+                </producto>
+              </agregarProductoParametros>
+            ]]></xmlParametros>
+          </soap:agregarProducto>
+        </soapenv:Body>
+      </soapenv:Envelope>
+    `;
+  };
 
-  const query = 'INSERT INTO conceptos (codigo, codigoGIA, descripcion, impuesto) VALUES (UPPER(?), ?, ?, ?)';
-  const values = [codigo, codigoGIA, descripcion, selectedIva];
+  const xml = construirXmlAgregarProducto();
+  const xmlBuffer = Buffer.from(xml, 'utf-8');
 
-  connection.query(query, values, (err, result) => {
-    if (err) {
-      console.log('Error en la inserción:', err);
-      return res.status(500).json({ error: 'Error al agregar el concepto' });
+  const headers = {
+    'Content-Type': 'text/xml;charset=utf-8',
+    'SOAPAction': '"agregarProducto"',
+    'Accept-Encoding': 'gzip,deflate',
+    'Host': datosEmpresa.serverFacturacion,
+    'Connection': 'Keep-Alive',
+    'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+  };
+
+  try {
+    const response = await axios.post(
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      xmlBuffer,
+      { headers }
+    );
+
+    const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+    const parsed = await parser.parseStringPromise(response.data);
+    const innerXml = parsed?.Envelope?.Body?.agregarProductoResponse?.xmlResultado;
+
+    if (!innerXml) {
+      return res.status(500).json({ error: 'Respuesta del WS inválida: no se encontró xmlResultado' });
     }
 
-    console.log('Concepto agregado con ID:', result.insertId);
-    res.json({ message: 'Concepto agregado con éxito', id: result.insertId });
-  });
+    const rawXml = innerXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const innerParsed = await xml2js.parseStringPromise(rawXml, { explicitArray: false });
+
+    // Asegurate de que los campos existan
+    const resultado = innerParsed?.agregarProductoResultado?.resultado;
+    const descripcion = innerParsed?.agregarProductoResultado?.descripcion;
+
+    if (resultado === '2') {
+      // El WS respondió con error lógico
+      return res.status(400).json({ error: descripcion || 'Error en el WebService' });
+    }
+
+    if (resultado !== '1') {
+      // Resultado desconocido
+      return res.status(500).json({ error: 'Respuesta inesperada del WebService' });
+    }
+
+    const query = `
+      INSERT INTO conceptos (codigo, codigoGIA, descripcion, impuesto, unidadPrincipal, clasificacion, categoria)
+      VALUES (UPPER(?), ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [codigo, codigoGIA, descripcion, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria];
+
+    connection.query(query, values, (err, result) => {
+      if (err) {
+        console.log('Error en la inserción:', err);
+        return res.status(500).json({ error: 'Error al agregar el concepto a la base de datos' });
+      }
+
+      console.log('Concepto agregado con ID:', result.insertId);
+      res.json({ message: 'Concepto agregado con éxito', id: result.insertId, codigoGia: codigoGIA });
+    });
+
+  } catch (error) {
+    console.error('Error al enviar solicitud SOAP:', error.message);
+    return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
+  }
 });
 app.get('/api/previewconceptos', (req, res) => {
   console.log('Received request for /api/previewconceptos');
@@ -2207,7 +2304,7 @@ app.post('/api/insertfactura', async (req, res) => {
                 });
               });
               let adendaCUENTAAJENA = generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena);
-              
+
               const datos = {
                 fechaCFE: Fecha,
                 detalleFactura: detallesFactura,
@@ -2780,7 +2877,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
   try {
     // ✅ Primera llamada: procesoCargarCotizacionesBcu
     const cotizacionesResponse = await axios.post(
-      `http://${datosEmpresa.codigoEmpresa}/giaweb/soap/giawsserver`,
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlCotizaciones,
       { headers: headersCotizacion }
     );
@@ -2793,7 +2890,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
 
     // ✅ Segunda llamada: obtenerCotizacion para moneda 2
     const obtenerCotizacionResponse = await axios.post(
-      `http://${datosEmpresa.codigoEmpresa}/giaweb/soap/giawsserver`,
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlObtenerCotizacion,
       { headers: headersObtener }
     );

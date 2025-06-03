@@ -23,6 +23,7 @@ const Conceptos = ({ isLoggedIn }) => {
     const [codigo, setCodigo] = useState('');
     const [codigoGIA, setCodigoGIA] = useState('');
     const [descripcion, setDescripcion] = useState('');
+    const [unidadPrincipal, setUnidadPrincipal] = useState('');
     const [conceptos, setConceptos] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
@@ -38,6 +39,16 @@ const Conceptos = ({ isLoggedIn }) => {
 
     const handleIvaChange = (e) => {
         setSelectedIva(e.target.value);
+    };
+    const [selectedClasificacion, setSelectedClasificacion] = useState("");
+
+    const handleClasificacionChange = (e) => {
+        setSelectedClasificacion(e.target.value);
+    };
+    const [selectedCategoria, setSelectedCategoria] = useState("");
+
+    const handleCategoriaChange = (e) => {
+        setSelectedCategoria(e.target.value);
     };
 
     const handleEliminar = async (id) => {
@@ -90,7 +101,10 @@ const Conceptos = ({ isLoggedIn }) => {
                 codigo,
                 codigoGIA,
                 descripcion,
-                selectedIva
+                selectedIva,
+                unidadPrincipal,
+                selectedClasificacion,
+                selectedCategoria
             });
 
             toast.success("Concepto agregado con éxito!");
@@ -110,7 +124,7 @@ const Conceptos = ({ isLoggedIn }) => {
             <ToastContainer />
             <div className='titulo-estandar'><h1>Conceptos</h1></div>
 
-            <div className='table-container'>
+            <div className='table-container4'>
                 <form onSubmit={handleAgregarConcepto} >
                     <div className='div-primerrenglon-datos-comprobante'>
                         <div>
@@ -136,6 +150,41 @@ const Conceptos = ({ isLoggedIn }) => {
                                 value={descripcion}
                                 onChange={(e) => setDescripcion(e.target.value)}
                             />
+                        </div>
+                        <div>
+                            <input className='selectIvaconcepto'
+                                type="text"
+                                placeholder="Unidad Principal"
+                                value={unidadPrincipal}
+                                onChange={(e) => setUnidadPrincipal(e.target.value)}
+                            />
+                        </div>
+                        <div >
+                            <select
+                                id="selectIva"
+                                value={selectedClasificacion}
+                                onChange={handleClasificacionChange}
+                                className='selectIvaconcepto'
+
+                            >
+                                <option value="">Clasificación</option>
+                                <option value="0">Bien</option>
+                                <option value="1">Servicio</option>
+                            </select>
+                        </div>
+                        <div >
+                            <select
+                                id="selectIva"
+                                value={selectedCategoria}
+                                onChange={handleCategoriaChange}
+                                className='selectIvaconcepto'
+
+                            >
+                                <option value="">Categoría</option>
+                                <option value="0">Ambos</option>
+                                <option value="1">Ventas</option>
+                                <option value="2">Compras</option>
+                            </select>
                         </div>
                         <div >
                             <select

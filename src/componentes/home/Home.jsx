@@ -118,6 +118,7 @@ const Home = ({ isLoggedIn }) => {
                 const guiasData = guiasRes.data;
                 const facturasData = facturasRes.data.facturas;
                 const cierreData = cierreRes.data;
+                console.log('Datos del backend: Guias: ', guiasData.guias.length, 'Facturas: ',facturasData.length );
 
                 setGuiasSinFacturar(guiasData.guias);
                 setFacturasSinCobrar(facturasData);
@@ -137,11 +138,11 @@ const Home = ({ isLoggedIn }) => {
                 if (!yaExiste) {
                     formateado.push({
                         fecha: hoy,
-                        guias: guiasData.length,
+                        guias: guiasData.guias.length,
                         facturas: facturasData.length
                     });
                 }
-
+                console.log('Datos para Graficas', formateado);
                 setData(formateado);
             } catch (err) {
                 console.error('Error al obtener datos:', err);

@@ -30,8 +30,8 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 1000px;
-    height: 600px;
+    width: 1600px;
+    height: 500px;
 }
 
 .btn-estandar {
