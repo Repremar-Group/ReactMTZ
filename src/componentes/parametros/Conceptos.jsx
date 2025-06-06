@@ -6,6 +6,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import './conceptos.css';
+import ModalAlertaGFE from '../modales/AlertasGFE';
+
 
 const Conceptos = ({ isLoggedIn }) => {
 
@@ -31,8 +33,16 @@ const Conceptos = ({ isLoggedIn }) => {
     const [error, setError] = useState('');
     const [isChecked, setIsChecked] = useState(false);
     const backURL = import.meta.env.VITE_BACK_URL;
+    const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
+    const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
+    const [mensajeAlertaGFE, setmensajeAlertaGFE] = useState('');
+    const [iconoAlertaGFE, setIconoAlertaGFE] = useState('');
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
+    };
+    const handleConfirmAlertaGFE = () => {
+        setIsModalOpenAlertaGFE(false);
+        fetchConceptos();
     };
 
     const [selectedIva, setSelectedIva] = useState("iva_basica");
@@ -81,12 +91,6 @@ const Conceptos = ({ isLoggedIn }) => {
         row.codigo.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const pageCount = Math.ceil(filteredData.length / itemsPerPage);
-    const displayedItems = filteredData.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
-
-    const handlePageClick = (event) => {
-        setCurrentPage(event.selected);
-    };
 
     const handleAgregarConcepto = async (e) => {
         e.preventDefault();
@@ -100,7 +104,7 @@ const Conceptos = ({ isLoggedIn }) => {
             const response = await axios.post(`${backURL}/api/agregarconcepto`, {
                 codigo,
                 codigoGIA,
-                descripcion,
+                descripcionDesdeFront: descripcion,
                 selectedIva,
                 unidadPrincipal,
                 selectedClasificacion,
@@ -115,7 +119,14 @@ const Conceptos = ({ isLoggedIn }) => {
             fetchConceptos();
         } catch (error) {
             console.error("Error al agregar el concepto:", error);
-            toast.error("Error al agregar el concepto.");
+            if (error.response && error.response.data && error.response.data.error) {
+                setTituloAlertaGfe('Error al Impactar en GIA');
+                setmensajeAlertaGFE(error.response.data.error);
+                setIconoAlertaGFE('error');
+                setIsModalOpenAlertaGFE(true);
+            } else {
+                toast.error("Error al agregar el concepto.");
+            }
         }
     };
 
@@ -215,7 +226,7 @@ const Conceptos = ({ isLoggedIn }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {displayedItems.map((row) => (
+                            {conceptos.map((row) => (
                                 <tr key={row.idconcepto}>
                                     <td>{row.codigo}</td>
                                     <td>{row.codigoGIA}</td>
@@ -235,7 +246,13 @@ const Conceptos = ({ isLoggedIn }) => {
                         </tbody>
                     </table>
                 </div>
-
+                <ModalAlertaGFE
+                    isOpen={isModalOpenAlertaGFE}
+                    title={tituloAlertaGfe}
+                    message={mensajeAlertaGFE}
+                    onConfirm={handleConfirmAlertaGFE}
+                    iconType={iconoAlertaGFE}
+                />
             </div>
         </div>
     );

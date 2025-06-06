@@ -8,7 +8,7 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento } = require('./ControladoresGFE/controladoresGfe')
 const { obtenerDatosEmpresa } = require('./ControladoresGFE/datosdelaempresaGFE')
 const cron = require('node-cron');
 const { Console } = require('console');
@@ -574,8 +574,13 @@ app.get('/api/obtenerclientes/:id', (req, res) => {
 app.post('/api/guardar-datos-empresa', async (req, res) => {
   const { usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas,
     rubCompras,
-    rubCostos } = req.body;
-
+    rubCostos,
+    codEfac,
+    codEfacCA,
+    codETick,
+    codETickCA,
+    usuModifica } = req.body;
+  const fechaModificacion = new Date().toISOString().slice(0, 19).replace('T', ' ');
   try {
     const rows = await new Promise((resolve, reject) => {
       connection.query('SELECT * FROM datos_empresa LIMIT 1', (error, results) => {
@@ -588,8 +593,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
       // Ya hay datos → Hacer UPDATE
       await new Promise((resolve, reject) => {
         connection.query(
-          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos],
+          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?, codEfac = ?, codEfacCA = ?, codETick = ?, codETickCA = ?, usuarioModifica = ?, fechaModifica = ?`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
           (error) => {
             if (error) reject(error);
             else resolve();
@@ -602,8 +607,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
       // No hay datos → Hacer INSERT
       await new Promise((resolve, reject) => {
         connection.query(
-          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos],
+          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuarioModifica, fechaModifica) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
           (error) => {
             if (error) reject(error);
             else resolve();
@@ -1884,10 +1889,10 @@ app.post('/api/agregarconcepto', async (req, res) => {
   console.log('Received request for /api/agregarconcepto');
   const datosEmpresa = await obtenerDatosEmpresa(connection);
 
-  const { codigo, codigoGIA, descripcion, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria } = req.body;
-  console.log(codigo, codigoGIA, descripcion, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria)
+  const { codigo, codigoGIA, descripcionDesdeFront, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria } = req.body;
+  console.log(codigo, codigoGIA, descripcionDesdeFront, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria)
 
-  if (!codigo || !descripcion || !codigoGIA || !selectedIva || !unidadPrincipal || !selectedClasificacion || !selectedCategoria === undefined) {
+  if (!codigo || !descripcionDesdeFront || !codigoGIA || !selectedIva || !unidadPrincipal || !selectedClasificacion || !selectedCategoria === undefined) {
     console.log('Faltan datos obligatorios');
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
@@ -1911,8 +1916,8 @@ app.post('/api/agregarconcepto', async (req, res) => {
                 <empresa>${datosEmpresa.codigoEmpresa}</empresa>
                 <producto>
                   <codigo>${codigoGIA}</codigo>
-                  <nombre>${descripcion}</nombre>
-                  <descripcion>${descripcion}</descripcion>
+                  <nombre>${descripcionDesdeFront}</nombre>
+                  <descripcion>${descripcionDesdeFront}</descripcion>
                   <habilitado>S</habilitado>
                   <unidadPrincipal>${unidadPrincipal}</unidadPrincipal>
                   <clasificacion>${selectedClasificacion}</clasificacion>
@@ -1982,7 +1987,7 @@ app.post('/api/agregarconcepto', async (req, res) => {
       INSERT INTO conceptos (codigo, codigoGIA, descripcion, impuesto, unidadPrincipal, clasificacion, categoria)
       VALUES (UPPER(?), ?, ?, ?, ?, ?, ?)
     `;
-    const values = [codigo, codigoGIA, descripcion, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria];
+    const values = [codigo, codigoGIA, descripcionDesdeFront, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria];
 
     connection.query(query, values, (err, result) => {
       if (err) {
@@ -2093,6 +2098,25 @@ app.post('/api/insertfactura', async (req, res) => {
     TotalCobrarCuentaAjena,
     EmbarquesSeleccionados
   } = req.body; // Los datos de la factura enviados desde el frontend
+  let comprobanteElectronicoFinal;
+
+  switch (ComprobanteElectronico.toLowerCase()) {
+    case 'efactura':
+      comprobanteElectronicoFinal = datosEmpresa.codEfac;
+      break;
+    case 'efacturaca':
+      comprobanteElectronicoFinal = datosEmpresa.codEfacCA;
+      break;
+    case 'eticket':
+      comprobanteElectronicoFinal = datosEmpresa.codETick;
+      break;
+    case 'eticketca':
+      comprobanteElectronicoFinal = datosEmpresa.codETickCA;
+      break;
+    default:
+      comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
+      break;
+  }
   // Iniciar la transacción
   connection.beginTransaction((err) => {
     if (err) {
@@ -2109,14 +2133,14 @@ app.post('/api/insertfactura', async (req, res) => {
     `;
 
     connection.query(insertFacturaQuery, [
-      IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, ComprobanteElectronico,
+      IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, comprobanteElectronicoFinal,
       Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
       Redondeo, Total, TotalCobrar, CodigoGIA
     ], (err, result) => {
       if (err) {
         return connection.rollback(() => {
           console.error('Error al insertar la factura:', err);
-          res.status(500).json({ error: 'Error al insertar la factura' });
+          res.status(501).json({ error: 'Error al insertar la factura principal en la Base de datos' });
         });
       }
 
@@ -2129,12 +2153,12 @@ app.post('/api/insertfactura', async (req, res) => {
           detalleFacturaPromises.push(
             new Promise((resolve, reject) => {
               const insertDetalleQuery = `
-              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe)
-              VALUES (?, ?, ?, ?, ?, ?)
+              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
 
               connection.query(insertDetalleQuery, [
-                facturaId, concepto.tipo, concepto.guia, concepto.descripcion, concepto.moneda, concepto.importe
+                facturaId, concepto.tipo, concepto.guia, concepto.descripcion, concepto.moneda, concepto.importe, concepto.id_concepto
               ], (err, result) => {
                 if (err) {
                   return reject(err);
@@ -2180,7 +2204,7 @@ app.post('/api/insertfactura', async (req, res) => {
             if (err) {
               return connection.rollback(() => {
                 console.error('Error al insertar en cuenta corriente:', err);
-                res.status(500).json({ error: 'Error al insertar en cuenta corriente' });
+                res.status(502).json({ error: 'Error al insertar en cuenta corriente' });
               });
             }
 
@@ -2194,13 +2218,13 @@ app.post('/api/insertfactura', async (req, res) => {
                 detalleFacturaPromises.push(
                   new Promise((resolve, reject) => {
                     const insertDetalleQuery = `
-              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe)
-              VALUES (?, ?, ?, ?, ?, ?)
+              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
 
                     connection.query(insertDetalleQuery, [
                       facturaCuentaAjenaId, conceptoCuentaAjena.tipo, conceptoCuentaAjena.guia,
-                      conceptoCuentaAjena.descripcion, conceptoCuentaAjena.moneda, conceptoCuentaAjena.importe
+                      conceptoCuentaAjena.descripcion, conceptoCuentaAjena.moneda, conceptoCuentaAjena.importe, conceptoCuentaAjena.id_concepto
                     ], (err, result) => {
                       if (err) {
                         return reject(err);
@@ -2242,7 +2266,7 @@ app.post('/api/insertfactura', async (req, res) => {
           if (err) {
             return connection.rollback(() => {
               console.error('Error al actualizar la guía:', err);
-              res.status(500).json({ error: 'Error al actualizar la guía' });
+              res.status(503).json({ error: 'No se pudo actualizar la guia a facturar' });
             });
           }
         });
@@ -2263,7 +2287,7 @@ app.post('/api/insertfactura', async (req, res) => {
             if (err) {
               return connection.rollback(() => {
                 console.error('Error al insertar la cuenta corriente:', err);
-                res.status(500).json({ error: 'Error al insertar la cuenta corriente' });
+                res.status(502).json({ error: 'Error al insertar la cuenta corriente' });
               });
             }
 
@@ -2272,7 +2296,7 @@ app.post('/api/insertfactura', async (req, res) => {
               if (err) {
                 return connection.rollback(() => {
                   console.error('Error al hacer commit de la transacción:', err);
-                  res.status(500).json({ error: 'Error al hacer commit de la transacción' });
+                  res.status(504).json({ error: 'Error al enviar la información a la bd' });
                 });
               }
               const detallesFactura = DetalleFactura.flatMap((detalle) => {
@@ -2379,7 +2403,7 @@ app.post('/api/insertfactura', async (req, res) => {
                 });
               };
 
-              // En tu código principal:
+
               (async () => {
                 try {
                   const xml = generarXmlefacimpopp(datos);
@@ -3640,6 +3664,212 @@ app.get('/api/guias-sin-facturar', (req, res) => {
   });
 });
 
+app.post('/api/impactardocumento', async (req, res) => {
+  const factura = req.body;
+  const idFactura = factura.factura.Id;
+
+  try {
+    const datosEmpresa = await obtenerDatosEmpresa(connection);
+
+    // Obtener detalles de la factura
+    const sql = `
+      SELECT *
+      FROM detalle_facturas
+      WHERE IdFactura = ?
+    `;
+
+    connection.query(sql, [idFactura], async (err, resultados) => {
+      if (err) {
+        console.error('❌ Error al obtener detalles de la factura:', err);
+        return res.status(500).json({ message: 'Error al obtener los detalles de la factura.' });
+      }
+
+      let adenda = generarAdenda(factura.factura.Id, factura.factura.Total);
+      
+      // Preparar detalles de la factura
+      const detallesFactura = resultados.map((concepto) => {
+        const importeFormateado = parseFloat(concepto.Importe.toFixed(2));
+        return {
+          codItem: concepto.Id_concepto.toString(),
+          indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
+          nombreItem: concepto.Descripcion,
+          cantidad: "1",
+          unidadMedida: "UN",
+          precioUnitario: importeFormateado.toFixed(2),
+        };
+      });
+
+      // Convertir fecha DD/MM/YYYY a YYYY-MM-DD
+      function convertirFechaAISO(fechaStr) {
+        const [dia, mes, anio] = fechaStr.split('/');
+        return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+      }
+
+      const datos = {
+        fechaCFE: convertirFechaAISO(factura.factura.Fecha),
+        detalleFactura: detallesFactura,
+        adendadoc: adenda,
+        datosEmpresa: datosEmpresa,
+        codigoClienteGIA: factura.factura.CodigoClienteGia,
+        tipoComprobante: factura.factura.ComprobanteElectronico
+      };
+
+      const xml = generarXmlimpactarDocumento(datos);
+      const xmlBuffer = Buffer.from(xml, 'utf-8');
+
+      // Headers SOAP
+      const headers = {
+        'Content-Type': 'text/xml;charset=utf-8',
+        'SOAPAction': '"agregarDocumentoFacturacion"',
+        'Accept-Encoding': 'gzip,deflate',
+        'Host': datosEmpresa.serverFacturacion,
+        'Connection': 'Keep-Alive',
+        'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+      };
+
+      const headersObtenerPdf = {
+        ...headers,
+        SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+      };
+
+      // Helpers para parsear XML SOAP
+      const parseSOAP = async (xmlData) => {
+        const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+        return await parser.parseStringPromise(xmlData);
+      };
+
+      const parseInnerXML = async (escapedXml) => {
+        const rawXml = escapedXml
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&');
+        const innerParser = new xml2js.Parser({ explicitArray: false });
+        return await innerParser.parseStringPromise(rawXml);
+      };
+
+      // Construir XML para obtener PDF
+      const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+          <soapenv:Header/>
+          <soapenv:Body>
+            <soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+              <xmlParametros><![CDATA[
+                <obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+                  <usuario>${datosEmpresa.usuarioGfe}</usuario>
+                  <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+                  <empresa>${datosEmpresa.codigoEmpresa}</empresa>
+                  <documento>
+                    <fechaDocumento>${fechaDocumento}</fechaDocumento>
+                    <tipoDocumento>${tipoDocumento}</tipoDocumento>
+                    <serieDocumento>${serieDocumento}</serieDocumento>
+                    <numeroDocumento>${numeroDocumento}</numeroDocumento>
+                  </documento>
+                </obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+              ]]></xmlParametros>
+            </soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+          </soapenv:Body>
+        </soapenv:Envelope>
+      `;
+
+      try {
+        // Paso 1: Impactar documento
+        const response = await axios.post(
+          `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+          xmlBuffer,
+          { headers }
+        );
+
+        const parsed = await parseSOAP(response.data);
+        const innerXml = parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado;
+        const result = await parseInnerXML(innerXml);
+        const resultado = result.agregarDocumentoFacturacionResultado;
+
+        if (resultado.resultado !== "1") {
+          return res.status(422).json({
+            success: false,
+            message: 'Error al impactar el documento',
+            descripcion: resultado.descripcion,
+          });
+        }
+
+        const datosDoc = resultado.datos.documento;
+
+        // Paso 2: Obtener PDF
+        const xmlPdf = construirXmlObtenerPdf({
+          fechaDocumento: datosDoc.fechaDocumento,
+          tipoDocumento: datosDoc.tipoDocumento,
+          serieDocumento: datosDoc.serieDocumento,
+          numeroDocumento: datosDoc.numeroDocumento,
+        });
+
+        const pdfResponse = await axios.post(
+          `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+          xmlPdf,
+          { headers: headersObtenerPdf }
+        );
+
+        const parsedPdf = await parseSOAP(pdfResponse.data);
+        const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+        const innerPdf = await parseInnerXML(innerPdfXmlEscaped);
+
+        const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
+
+        const updateQuery = `
+  UPDATE facturas SET 
+    FechaCFE = ?, 
+    TipoDocCFE = ?, 
+    SerieCFE = ?, 
+    NumeroCFE = ?, 
+    PdfBase64 = ?
+  WHERE Id = ?
+`;
+
+        connection.query(updateQuery, [
+          datosDoc.fechaDocumento,
+          datosDoc.tipoDocumento,
+          datosDoc.serieDocumento,
+          datosDoc.numeroDocumento,
+          pdfBase64,
+          idFactura
+        ], (err) => {
+          if (err) {
+            console.error('Error al actualizar la factura:', err);
+            return res.status(500).json({
+              success: false,
+              message: 'Error al actualizar la factura en la base de datos'
+            });
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: `Factura ${idFactura} impactada y guardada correctamente`,
+            documento: {
+              fecha: datosDoc.fechaDocumento,
+              tipo: datosDoc.tipoDocumento,
+              serie: datosDoc.serieDocumento,
+              numero: datosDoc.numeroDocumento,
+              pdfBase64: pdfBase64
+            }
+          });
+        });
+
+      } catch (error) {
+        console.error('❌ Error al impactar el documento o recuperar el PDF:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error interno al impactar documento o al recuperar el PDF',
+        });
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al obtener datos de la empresa:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno al obtener datos de la empresa',
+    });
+  }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

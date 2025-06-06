@@ -9,9 +9,10 @@ import ModalModificarGuiaImpo from '../../modales/ModalModificarGuiaImpo';
 import ModalVerGuiaExpo from '../../modales/ModalVerGuiaExpo';
 import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
+import ModalAlertaGFE from '../../modales/AlertasGFE';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { descargarPDFBase64 } from '../../../ConexionGFE/Funciones';
+import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funciones';
 
 const BuscarFacturas = () => {
     const navigate = useNavigate();
@@ -29,11 +30,21 @@ const BuscarFacturas = () => {
         setSubmenuVisibleId((prevId) => (prevId === id ? null : id));
     };
     const backURL = import.meta.env.VITE_BACK_URL;
+    const [loadingEnvioGFE, setLoadingEnvioGFE] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [facturas, setFacturas] = useState([]);
     const [error, setError] = useState('');
     const [loadingtabla, setLoadingTabla] = useState(true);
+    //Estados para Modal Alerta GFE
+    const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
+    const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
+    const [mensajeAlertaGFE, setmensajeAlertaGFE] = useState('');
+    const [iconoAlertaGFE, setIconoAlertaGFE] = useState('');
+    const handleConfirmAlertaGFE = () => {
+        setIsModalOpenAlertaGFE(false);
+        fetchFacturas();
+    };
     //Estados para las alertas
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
@@ -88,6 +99,11 @@ const BuscarFacturas = () => {
 
     return (
         <div className="Contenedor_Principal">
+            {loadingEnvioGFE && (
+                <div className="overlaybuscarfactura">
+                    <div className="loading-spinner"></div>
+                </div>
+            )}
             <ToastContainer />
             <div className='titulo-estandar'><h1>Buscar Facturas</h1></div>
             {loadingtabla ? (
@@ -177,9 +193,9 @@ const BuscarFacturas = () => {
                                         <td>{row.NumeroCFE === null
                                             ? '-' : row.NumeroCFE}</td>
                                         <td>
-                                            {row.ComprobanteElectronico === 'efactura'
+                                            {row.ComprobanteElectronico === 'FCD'
                                                 ? 'E-Factura'
-                                                : row.ComprobanteElectronico === 'efacturaca'
+                                                : row.ComprobanteElectronico === 'FCA'
                                                     ? 'E-Factura Cuenta Ajena'
                                                     : row.ComprobanteElectronico}
                                         </td>
@@ -197,9 +213,50 @@ const BuscarFacturas = () => {
                                                     {row.NumeroCFE && (
                                                         <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdfBase64, row.NumeroCFE)}>Descargar PDF</button>
                                                     )}
-                                                    
+
                                                     {!row.NumeroCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                        <button
+                                                            className='botonsubmenubuscarfactura'
+                                                            onClick={async () => {
+                                                                try {
+                                                                    setLoadingEnvioGFE(true);
+                                                                    const response = await impactarEnGIA(row, backURL);
+                                                                    if (response.success) {
+                                                                        const doc = response.documento;
+                                                                        const nombreArchivo = `${doc.tipo}_${doc.serie}_${doc.numero}.pdf`;
+
+                                                                        // Descargar PDF
+                                                                        descargarPDFBase64(doc.pdfBase64, nombreArchivo); // asegurate que esta func esté importada
+
+                                                                        // Mostrar alerta
+                                                                        setTituloAlertaGfe('Factura Ingresada Correctamente');
+                                                                        setmensajeAlertaGFE('');
+                                                                        setIconoAlertaGFE('success');
+                                                                        setIsModalOpenAlertaGFE(true);
+                                                                    } else {
+                                                                        // Mostrar error
+                                                                        setTituloAlertaGfe('Error al impactar la factura');
+                                                                        setmensajeAlertaGFE(response.descripcion || 'Intente nuevamente.');
+                                                                        setIconoAlertaGFE('error');
+                                                                        setIsModalOpenAlertaGFE(true);
+                                                                    }
+                                                                } catch (error) {
+                                                                    console.error('Error inesperado:', error);
+
+                                                                    const descripcion =
+                                                                        error?.response?.data?.descripcion ||
+                                                                        error?.response?.data?.message ||
+                                                                        'Ocurrió un error al comunicarse con el servidor.';
+
+                                                                    setTituloAlertaGfe('Error inesperado');
+                                                                    setmensajeAlertaGFE(descripcion);
+                                                                    setIconoAlertaGFE('error');
+                                                                    setIsModalOpenAlertaGFE(true);
+                                                                } finally {
+                                                                    setLoadingEnvioGFE(false); // Ocultar overlay
+                                                                }
+                                                            }}
+                                                        >
                                                             Enviar a GFE
                                                         </button>
                                                     )}
@@ -209,7 +266,7 @@ const BuscarFacturas = () => {
                                                         </button>
                                                     )}
                                                     {!row.NumeroCFE && (
-                                                        <button  className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
                                                             Eliminar
                                                         </button>
                                                     )}
@@ -221,7 +278,13 @@ const BuscarFacturas = () => {
                             </tbody>
                         </table>
                     </div>
-
+                    <ModalAlertaGFE
+                        isOpen={isModalOpenAlertaGFE}
+                        title={tituloAlertaGfe}
+                        message={mensajeAlertaGFE}
+                        onConfirm={handleConfirmAlertaGFE}
+                        iconType={iconoAlertaGFE}
+                    />
 
                 </div>
             )}
