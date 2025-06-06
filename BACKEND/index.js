@@ -127,7 +127,7 @@ app.get('/api/previewclientes', (req, res) => {
 });
 app.get('/api/previewfacturas', (req, res) => {
   console.log('Received request for /api/previewfacturas');
-  const sql = 'SELECT * FROM facturas ORDER BY Fecha DESC';
+  const sql = 'SELECT * FROM facturas ORDER BY Id DESC';
 
   connection.query(sql, (err, result) => {
     if (err) {
@@ -2098,6 +2098,7 @@ app.post('/api/insertfactura', async (req, res) => {
     TotalCobrarCuentaAjena,
     EmbarquesSeleccionados
   } = req.body; // Los datos de la factura enviados desde el frontend
+ 
   let comprobanteElectronicoFinal;
 
   switch (ComprobanteElectronico.toLowerCase()) {
@@ -2117,6 +2118,8 @@ app.post('/api/insertfactura', async (req, res) => {
       comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
       break;
   }
+
+   console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
   // Iniciar la transacción
   connection.beginTransaction((err) => {
     if (err) {
@@ -2179,7 +2182,7 @@ app.post('/api/insertfactura', async (req, res) => {
   `;
 
         connection.query(insertFacturaCuentaAjenaQuery, [
-          IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 'efacturaca', // ComprobanteElectronico como 'efacturaca'
+          IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codEfacCA, // ComprobanteElectronico como 'efacturaca'
           Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
           RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena
         ], (err, result) => {
@@ -2433,7 +2436,382 @@ app.post('/api/insertfactura', async (req, res) => {
     });
   });
 });
+app.post('/api/insertticket', async (req, res) => {
+  console.log('Received request for /api/insertticket');
+  let TicketCuentaAjenaId;
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  const {
+    IdCliente,
+    Nombre,
+    RazonSocial,
+    DireccionFiscal,
+    CodigoGIA,
+    Ciudad,
+    Pais,
+    RutCedula,
+    ComprobanteElectronico,
+    Comprobante,
+    Compania,
+    Electronico,
+    Moneda,
+    Fecha,
+    TipoIVA,
+    CASS,
+    TipoEmbarque,
+    TC,
+    Subtotal,
+    IVA,
+    Redondeo,
+    Total,
+    TotalCobrar,
+    DetalleFactura, // Lista de detalles para insertar
+    SubtotalCuentaAjena,
+    IVACuentaAjena,
+    TotalCuentaAjena,
+    RedondeoCuentaAjena,
+    TotalCobrarCuentaAjena,
+    EmbarquesSeleccionados
+  } = req.body; // Los datos de la factura enviados desde el frontend
+ 
+  let comprobanteElectronicoFinal;
 
+  switch (ComprobanteElectronico.toLowerCase()) {
+    case 'efactura':
+      comprobanteElectronicoFinal = datosEmpresa.codEfac;
+      break;
+    case 'efacturaca':
+      comprobanteElectronicoFinal = datosEmpresa.codEfacCA;
+      break;
+    case 'eticket':
+      comprobanteElectronicoFinal = datosEmpresa.codETick;
+      break;
+    case 'eticketca':
+      comprobanteElectronicoFinal = datosEmpresa.codETickCA;
+      break;
+    default:
+      comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
+      break;
+  }
+
+   console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
+  // Iniciar la transacción
+  connection.beginTransaction((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error al iniciar la transacción' });
+    }
+
+    console.log("Datos recibidos en el backend:", JSON.stringify(req.body, null, 2));
+    // Consulta para insertar la factura
+    const insertFacturaQuery = `
+      INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
+                            ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
+                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    connection.query(insertFacturaQuery, [
+      IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, comprobanteElectronicoFinal,
+      Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
+      Redondeo, Total, TotalCobrar, CodigoGIA
+    ], (err, result) => {
+      if (err) {
+        return connection.rollback(() => {
+          console.error('Error al insertar la factura:', err);
+          res.status(501).json({ error: 'Error al insertar la factura principal en la Base de datos' });
+        });
+      }
+
+      const facturaId = result.insertId; // Obtener el ID de la factura insertada
+      let adenda = generarAdenda(facturaId, TotalCobrar)
+      const detalleFacturaPromises = [];
+      DetalleFactura.forEach((detalle) => {
+        // Insertar los detalles de la factura
+        detalle.conceptos.forEach((concepto) => {
+          detalleFacturaPromises.push(
+            new Promise((resolve, reject) => {
+              const insertDetalleQuery = `
+              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `;
+
+              connection.query(insertDetalleQuery, [
+                facturaId, concepto.tipo, concepto.guia, concepto.descripcion, concepto.moneda, concepto.importe, concepto.id_concepto
+              ], (err, result) => {
+                if (err) {
+                  return reject(err);
+                }
+                resolve(result);
+              });
+            })
+          );
+        });
+      });
+      // Si existen conceptos en 'conceptos_cuentaajena', crear una segunda factura
+      if (DetalleFactura.some(detalle => detalle.conceptos_cuentaajena && detalle.conceptos_cuentaajena.length > 0)) {
+        const insertFacturaCuentaAjenaQuery = `
+    INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
+                          ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
+                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+        connection.query(insertFacturaCuentaAjenaQuery, [
+          IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codETickCA, 
+          Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
+          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena
+        ], (err, result) => {
+          if (err) {
+            return connection.rollback(() => {
+              console.error('Error al insertar la factura de cuenta ajena:', err);
+              res.status(500).json({ error: 'Error al insertar la factura de cuenta ajena' });
+            });
+          }
+
+          TicketCuentaAjenaId = result.insertId; // ID de la factura de cuenta ajena
+
+          // Insertar en cuenta corriente
+          const insertCuentaCorrienteQuery = `
+          INSERT INTO cuenta_corriente (IdCliente, IdFactura, TipoDocumento, NumeroDocumento, Moneda, Debe, Fecha)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          `;
+
+          connection.query(insertCuentaCorrienteQuery, [
+            IdCliente, TicketCuentaAjenaId, 'Eticket Cuenta Ajena', TicketCuentaAjenaId, Moneda, TotalCobrarCuentaAjena, Fecha
+          ], (err, result) => {
+            if (err) {
+              return connection.rollback(() => {
+                console.error('Error al insertar en cuenta corriente:', err);
+                res.status(502).json({ error: 'Error al insertar en cuenta corriente' });
+              });
+            }
+
+            console.log('Factura de cuenta ajena registrada en cuenta corriente con éxito.');
+          });
+
+          // Insertar detalles de la factura de cuenta ajena
+          DetalleFactura.forEach((detalle) => {
+            if (detalle.conceptos_cuentaajena && detalle.conceptos_cuentaajena.length > 0) {
+              detalle.conceptos_cuentaajena.forEach((conceptoCuentaAjena) => {
+                detalleFacturaPromises.push(
+                  new Promise((resolve, reject) => {
+                    const insertDetalleQuery = `
+              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `;
+
+                    connection.query(insertDetalleQuery, [
+                      TicketCuentaAjenaId, conceptoCuentaAjena.tipo, conceptoCuentaAjena.guia,
+                      conceptoCuentaAjena.descripcion, conceptoCuentaAjena.moneda, conceptoCuentaAjena.importe, conceptoCuentaAjena.id_concepto
+                    ], (err, result) => {
+                      if (err) {
+                        return reject(err);
+                      }
+                      resolve(result);
+                    });
+                  })
+                );
+              });
+            }
+          });
+          console.log('EmbarquesSeleccionados:', EmbarquesSeleccionados);
+
+        })
+      }
+      EmbarquesSeleccionados.forEach((embarque) => {
+        console.log('EmbarquesSeleccionados:', EmbarquesSeleccionados);
+        let updateGuiaQuery = '';
+        let queryParams = [];
+        console.log('Embarque:', embarque);
+
+        // Verificar tipo de embarque
+        if (embarque.Tipo === 'IMPO') {
+          console.log(embarque.Tipo);
+          // Lógica para guiasimpo
+          updateGuiaQuery = `UPDATE guiasimpo SET idfactura = ?, idfacturacuentaajena = ?, facturada = 1 WHERE idguia = ?`;
+          queryParams = [facturaId, TicketCuentaAjenaId, embarque.idguia];
+          console.log('IMPO: Consulta y parámetros:', updateGuiaQuery, queryParams);
+        } else {
+          console.log('EXPO');
+          // Lógica para guiasexpo
+          updateGuiaQuery = `UPDATE guiasexpo SET idfactura = ?, facturada = 1 WHERE idguiasexpo = ?`;
+          queryParams = [facturaId, embarque.idguiasexpo];
+          console.log('EXPO: Consulta y parámetros:', updateGuiaQuery, queryParams);
+        }
+
+        // Ejecutar consulta
+        connection.query(updateGuiaQuery, queryParams, (err, result) => {
+          if (err) {
+            return connection.rollback(() => {
+              console.error('Error al actualizar la guía:', err);
+              res.status(503).json({ error: 'No se pudo actualizar la guia a facturar' });
+            });
+          }
+        });
+      });
+      Promise.all(detalleFacturaPromises)
+        .then(() => {
+          // Insertar la cuenta corriente
+          const insertCuentaCorrienteQuery = `
+            INSERT INTO cuenta_corriente (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, 
+                                          Moneda, Debe)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+          `;
+
+          // Se envía TotalCobrar en "Debe" y NaN en "Haber"
+          connection.query(insertCuentaCorrienteQuery, [
+            IdCliente, facturaId, Fecha, 'Eticket', facturaId, Moneda, TotalCobrar
+          ], (err, result) => {
+            if (err) {
+              return connection.rollback(() => {
+                console.error('Error al insertar la cuenta corriente:', err);
+                res.status(502).json({ error: 'Error al insertar la cuenta corriente' });
+              });
+            }
+
+            // Commit de la transacción
+            connection.commit((err) => {
+              if (err) {
+                return connection.rollback(() => {
+                  console.error('Error al hacer commit de la transacción:', err);
+                  res.status(504).json({ error: 'Error al enviar la información a la bd' });
+                });
+              }
+              const detallesFactura = DetalleFactura.flatMap((detalle) => {
+                return detalle.conceptos.map((concepto) => {
+                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+
+                  return {
+                    codItem: concepto.id_concepto.toString(), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
+                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
+                    nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
+                    cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
+                    unidadMedida: "UN", // Unidad de medida "UN"
+                    precioUnitario: concepto.importe.toFixed(2), // Precio unitario del concepto, formateado con 2 decimales
+                  };
+                });
+              });
+              const detallesCuentaAjena = DetalleFactura.flatMap((detalle) => {
+                return detalle.conceptos_cuentaajena.map((concepto) => {
+                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+
+                  return {
+                    codItem: concepto.id_concepto.toString(), // Código del ítem
+                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1", // "5" si el importe es 0, si no "1"
+                    nombreItem: concepto.descripcion, // Descripción del concepto
+                    cantidad: "1", // Siempre "1"
+                    unidadMedida: "UN", // Unidad de medida
+                    precioUnitario: concepto.importe.toFixed(2), // Importe con 2 decimales como string
+                  };
+                });
+              });
+              let adendaCUENTAAJENA = generarAdenda(TicketCuentaAjenaId, TotalCuentaAjena);
+
+              const datos = {
+                fechaCFE: Fecha,
+                detalleFactura: detallesFactura,
+                adendadoc: adenda,
+                datosEmpresa: datosEmpresa,
+                codigoClienteGIA: CodigoGIA,
+                tipoComprobante: datosEmpresa.codETick
+              }
+              const datosEfacCuentaAjena = {
+                fechaCFE: Fecha,
+                detalleFactura: detallesCuentaAjena,
+                adendadoc: adendaCUENTAAJENA,
+                datosEmpresa: datosEmpresa,
+                codigoClienteGIA: CodigoGIA,
+                tipoComprobante: datosEmpresa.codETickCA
+              }
+              //detallesFactura.length
+              console.log('ESTOS SON LOS DATOS:', datos);
+              const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
+                return new Promise((resolve, reject) => {
+                  axios.post('http://localhost:3000/pruebaws', { xml, xmlCuentaAjena })
+                    .then(response => {
+                      const updateQuery = `
+          UPDATE facturas SET 
+            FechaCFE = ?, 
+            TipoDocCFE = ?, 
+            SerieCFE = ?, 
+            NumeroCFE = ?, 
+            PdfBase64 = ?
+          WHERE Id = ?
+        `;
+
+                      const doc1 = response.data.resultados[0];
+                      const doc2 = response.data.resultados[1];
+
+                      connection.query(updateQuery, [
+                        doc1.fechadocumento,
+                        doc1.tipodocumento,
+                        doc1.seriedocumento,
+                        doc1.numerodocumento,
+                        doc1.pdfBase64,
+                        facturaId
+                      ], (err) => {
+                        if (err) {
+                          console.error('Error al actualizar la primera factura:', err);
+                          return reject(new Error('Error al actualizar la primera factura'));
+                        }
+
+                        connection.query(updateQuery, [
+                          doc2.fechadocumento,
+                          doc2.tipodocumento,
+                          doc2.seriedocumento,
+                          doc2.numerodocumento,
+                          doc2.pdfBase64,
+                          TicketCuentaAjenaId
+                        ], (err2) => {
+                          if (err2) {
+                            console.error('Error al actualizar la segunda factura:', err2);
+                            return reject(new Error('Error al actualizar la segunda factura'));
+                          }
+
+                          resolve(response.data);
+                        });
+                      });
+                    })
+                    .catch(error => {
+                      console.error('Error en enviarFacturaSOAP:', error.response?.data || error.message || error);
+                      if (error.response && error.response.data) {
+                        reject(error.response.data);
+                      } else {
+                        reject(new Error('Error en SOAP'));
+                      }
+                    });
+                });
+              };
+
+
+              (async () => {
+                try {
+                  const xml = generarXmlimpactarDocumento(datos);
+                  const xmlCuentaAjena = generarXmlimpactarDocumento(datosEfacCuentaAjena);
+                  console.log('XML TICKET GENERADO: ',xml, ' XML TICKETCA GENERADO: ', xmlCuentaAjena);
+                  const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
+
+                  res.status(200).json(resultadoSOAP);
+
+                } catch (error) {
+                  if (typeof error === 'object' && error !== null) {
+                    res.status(422).json(error);
+                  } else {
+                    res.status(422).json({ error: error.toString() });
+                  }
+                }
+              })();
+            });
+          });
+        })
+        .catch((err) => {
+          return connection.rollback(() => {
+            console.error('Error al insertar los detalles de la factura:', err);
+            res.status(500).json({ error: 'Error al insertar los detalles de la factura' });
+          });
+        });
+    });
+  });
+});
 
 app.post('/api/insertfacturamanual', (req, res) => {
   console.log('Received request for /api/insertfactura');

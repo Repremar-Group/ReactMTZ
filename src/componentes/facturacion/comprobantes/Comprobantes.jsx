@@ -657,39 +657,46 @@ const Comprobantes = ({ isLoggedIn }) => {
     }
 
     try {
-      // Enviar los datos del formulario a tu servidor
       console.log('Datos del formulario a Backend: ', datosFormulario);
-      const response = await axios.post(`${backURL}/api/insertfactura`, datosFormulario);
-      // Extraer los IDs de la respuesta
-      const { facturaId, facturaCuentaAjenaId, error } = response.data;
-      // Si la respuesta es exitosa, puedes manejar la respuesta aquí
-      console.log('Factura Agregada:', response.data);
 
-      // Verificar el código de estado o el campo de error en la respuesta
+      let response;
+
+      if (datosFormulario.ComprobanteElectronico === "efactura") {
+        // Caso EFECTURA
+        response = await axios.post(`${backURL}/api/insertfactura`, datosFormulario);
+        console.log('Factura Agregada (eFactura):', response.data);
+
+      } else if (datosFormulario.ComprobanteElectronico === "eticket") {
+        // Caso ETICKET (puede ser el mismo endpoint o uno diferente si aplica)
+        response = await axios.post(`${backURL}/api/insertticket`, datosFormulario); // puedes usar otro endpoint si es necesario
+        console.log('Factura Agregada (eTicket):', response.data);
+
+      } else {
+        throw new Error("Tipo de ComprobanteElectronico no reconocido.");
+      }
+
+      const { facturaId, facturaCuentaAjenaId, error } = response.data;
+
       if (response.data.success === true) {
         const resultados = response.data.resultados;
 
-        // Ejemplo: mostrar descripciones por consola
         resultados.forEach((item, index) => {
           console.log(`Descripción ${index + 1}:`, item.descripcion);
-
-          // Si querés descargar los PDFs inmediatamente:
           const nombreArchivo = `${item.tipodocumento}_${item.seriedocumento}_${item.numerodocumento}.pdf`;
-          descargarPDFBase64(item.pdfBase64, nombreArchivo); // asegúrate de tener importada esta función
+          descargarPDFBase64(item.pdfBase64, nombreArchivo);
         });
 
-        // Alertas
         setTituloAlertaGfe('Factura Ingresada Correctamente');
         setmensajeAlertaGFE('');
         setIconoAlertaGFE('success');
         setIsModalOpenAlertaGFE(true);
 
       } else if (response.status === 500) {
-        // Si el código de estado es 500 (error del servidor)
         setTituloAlertaGfe('Error al Cargar la Factura');
         setmensajeAlertaGFE('');
         setIconoAlertaGFE('error');
         setIsModalOpenAlertaGFE(true);
+
       } else {
         setTituloAlertaGfe('Error Desconocido');
         setmensajeAlertaGFE('Error desconocido en el ERP');
@@ -701,15 +708,10 @@ const Comprobantes = ({ isLoggedIn }) => {
       console.log('Error completo:', error);
       console.log('Error response:', error.response);
       console.log('Error response data:', error.response?.data);
-      // Aquí manejas errores relacionados con la red, como problemas de conexión o timeouts
       console.error('Error en la solicitud:', error);
 
-      // Si el error fue debido a una respuesta HTTP 422, puedes intentar manejarlo
       if (error.response && error.response.status === 422) {
-        const { errores, mensaje } = error.response.data; // ✅ Usamos error.response
-
-        console.log('Errores desde el back:', error.response.data);
-
+        const { errores, mensaje } = error.response.data;
         let mensajeError = mensaje || 'Error al procesar los documentos.';
 
         if (Array.isArray(errores) && errores.length > 0) {
@@ -724,20 +726,20 @@ const Comprobantes = ({ isLoggedIn }) => {
         setmensajeAlertaGFE(mensajeError);
         setIconoAlertaGFE('error');
         setIsModalOpenAlertaGFE(true);
-      }
-      else if (error.response && error.response.status === 500) {
-        // Si el código de estado es 500 (error del servidor)
+
+      } else if (error.response && error.response.status === 500) {
         setTituloAlertaGfe('Error al Cargar la Factura');
         setmensajeAlertaGFE('');
         setIconoAlertaGFE('error');
         setIsModalOpenAlertaGFE(true);
+
       } else {
-        // Si el error es de otro tipo (por ejemplo, de red)
         setTituloAlertaGfe('Error Desconocido');
         setmensajeAlertaGFE('Error Desconocido en el ERP');
         setIconoAlertaGFE('error');
         setIsModalOpenAlertaGFE(true);
       }
+
     } finally {
       setLoading(false);
     }
@@ -809,8 +811,6 @@ const Comprobantes = ({ isLoggedIn }) => {
                   <option value="">Comprobante Electronico</option>
                   <option value="efactura">E-Factura</option>
                   <option value="eticket">E-Ticket</option>
-                  <option value="efacturaca">E-Factura Cuenta Ajena</option>
-                  <option value="eticketca">E-Ticket Cuenta Ajena</option>
                 </select>
 
               </div>

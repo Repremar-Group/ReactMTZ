@@ -193,11 +193,17 @@ const BuscarFacturas = () => {
                                         <td>{row.NumeroCFE === null
                                             ? '-' : row.NumeroCFE}</td>
                                         <td>
-                                            {row.ComprobanteElectronico === 'FCD'
-                                                ? 'E-Factura'
-                                                : row.ComprobanteElectronico === 'FCA'
-                                                    ? 'E-Factura Cuenta Ajena'
-                                                    : row.ComprobanteElectronico}
+                                            {row.ComprobanteElectronico === 'FCD' ? (
+                                                'E-Factura'
+                                            ) : (row.ComprobanteElectronico === 'FCA' || row.ComprobanteElectronico === 'efacturaca') ? (
+                                                'E-Factura Cuenta Ajena'
+                                            ) : (row.ComprobanteElectronico === 'TCD') ? (
+                                                'E-Ticket'
+                                            ) : row.ComprobanteElectronico === 'TCA' ? (
+                                                'E-Ticket Cuenta Ajena'
+                                            ) : (
+                                                row.ComprobanteElectronico
+                                            )}
                                         </td>
                                         <td>{row.idrecibo === null
                                             ? '-' : row.idrecibo}</td>
