@@ -1,4 +1,10 @@
 function generarXmlefacimpopp(datos) {
+    let moneda;
+    if(datos.Moneda === 'UYU'){
+        moneda = 1;
+    } else {
+        moneda = 2
+    }
     console.log('GENERANDO XML EFACTURA:',datos);
     // XML base como texto
     let xmlBase = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
@@ -17,7 +23,7 @@ function generarXmlefacimpopp(datos) {
                 <tipoDocumento>${datos.datosEmpresa.codEfac}</tipoDocumento>
 
                 <cliente>${datos.codigoClienteGIA}</cliente>
-                <moneda>2</moneda>
+                <moneda>${moneda}</moneda>
                 <fechaVencimiento>{{fechaCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
                 <autonumerar>S</autonumerar>
@@ -63,6 +69,12 @@ function generarXmlefacimpopp(datos) {
 function generarXmlimpactarDocumento(datos) {
     console.log('GENERANDO XML EFACTURA:',datos);
     // XML base como texto
+        let moneda;
+     if(datos.Moneda === 'UYU'){
+        moneda = 1;
+    } else {
+        moneda = 2
+    }
     let xmlBase = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
    <soapenv:Header/>
    <soapenv:Body>
@@ -79,7 +91,7 @@ function generarXmlimpactarDocumento(datos) {
                 <tipoDocumento>${datos.tipoComprobante}</tipoDocumento>
 
                 <cliente>${datos.codigoClienteGIA}</cliente>
-                <moneda>2</moneda>
+                <moneda>${moneda}</moneda>
                 <fechaVencimiento>{{fechaCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
                 <autonumerar>S</autonumerar>
@@ -123,6 +135,12 @@ function generarXmlimpactarDocumento(datos) {
 }
 function generarXmlefacCuentaAjenaimpopp(datosCA) {
     console.log('GENERANDO XML EFACTURA CUENTA AJENA:',datosCA);
+    let moneda;
+     if(datosCA.Moneda === 'UYU'){
+        moneda = 1;
+    } else {
+        moneda = 2
+    }
     // XML base como texto
     let xmlBase = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
    <soapenv:Header/>
@@ -140,7 +158,7 @@ function generarXmlefacCuentaAjenaimpopp(datosCA) {
                 <tipoDocumento>FCA</tipoDocumento>
 
                 <cliente>${datosCA.codigoClienteGIA}</cliente>
-                <moneda>2</moneda>
+                <moneda>${moneda}</moneda>
                 <fechaVencimiento>{{fechaCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
                 <autonumerar>S</autonumerar>

@@ -579,7 +579,6 @@ const Comprobantes = ({ isLoggedIn }) => {
       setEcPais(selectedCliente.Pais);
       setEcRazonSocial(selectedCliente.RazonSocial);
       setEcTipoIva(selectedCliente.Tiva);
-      setEcMoneda(selectedCliente.Moneda);
       setEcDireccionFiscal(selectedCliente.Direccion);
       setEcCass(selectedCliente.Cass);
       setEcrutcedula(selectedCliente.Rut);
@@ -660,7 +659,7 @@ const Comprobantes = ({ isLoggedIn }) => {
       console.log('Datos del formulario a Backend: ', datosFormulario);
 
       let response;
-
+      console.log("Final payload a enviar:", JSON.stringify(datosFormulario, null, 2));
       if (datosFormulario.ComprobanteElectronico === "efactura") {
         // Caso EFECTURA
         response = await axios.post(`${backURL}/api/insertfactura`, datosFormulario);

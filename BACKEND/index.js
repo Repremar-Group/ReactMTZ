@@ -105,9 +105,15 @@ function generarMensaje(monto) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
   return `Son dólares americanos U$S ${montoEnLetras}`;
 }
-function generarAdenda(numerodoc, monto) {
+function generarAdenda(numerodoc, monto, moneda) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
-  return `Doc:${numerodoc} - Son dólares americanos U$S ${montoEnLetras}`;
+  console.log('Moneda de la adenda: ', moneda);
+  if (moneda === 'USD') {
+    return `Doc:${numerodoc} - Son dólares americanos U$S ${montoEnLetras}`;
+  } else {
+    return `Doc:${numerodoc} - Son pesos uruguayos $ ${montoEnLetras}`;
+  }
+
 }
 
 //Consulta para cargar la tabla de preview de clientes.
@@ -2098,7 +2104,25 @@ app.post('/api/insertfactura', async (req, res) => {
     TotalCobrarCuentaAjena,
     EmbarquesSeleccionados
   } = req.body; // Los datos de la factura enviados desde el frontend
- 
+  console.log('Moneda en el back: ', Moneda);
+  if (Moneda === 'UYU') {
+    DetalleFactura.forEach(detalle => {
+      if (detalle.conceptos && Array.isArray(detalle.conceptos)) {
+        detalle.conceptos = detalle.conceptos.map(concepto => ({
+          ...concepto,
+          importe: parseFloat((concepto.importe * TC).toFixed(2))
+        }));
+      }
+
+      if (detalle.conceptos_cuentaajena && Array.isArray(detalle.conceptos_cuentaajena)) {
+        detalle.conceptos_cuentaajena = detalle.conceptos_cuentaajena.map(concepto => ({
+          ...concepto,
+          importe: parseFloat((concepto.importe * TC).toFixed(2))
+        }));
+      }
+    });
+  }
+
   let comprobanteElectronicoFinal;
 
   switch (ComprobanteElectronico.toLowerCase()) {
@@ -2119,7 +2143,7 @@ app.post('/api/insertfactura', async (req, res) => {
       break;
   }
 
-   console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
+  console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
   // Iniciar la transacción
   connection.beginTransaction((err) => {
     if (err) {
@@ -2148,7 +2172,8 @@ app.post('/api/insertfactura', async (req, res) => {
       }
 
       const facturaId = result.insertId; // Obtener el ID de la factura insertada
-      let adenda = generarAdenda(facturaId, TotalCobrar)
+      console.log('Moneda antes de adenda: ', Moneda);
+      let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
       const detalleFacturaPromises = [];
       DetalleFactura.forEach((detalle) => {
         // Insertar los detalles de la factura
@@ -2330,10 +2355,11 @@ app.post('/api/insertfactura', async (req, res) => {
                   };
                 });
               });
-              let adendaCUENTAAJENA = generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena);
+              let adendaCUENTAAJENA = generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena, Moneda);
 
               const datos = {
                 fechaCFE: Fecha,
+                Moneda: Moneda,
                 detalleFactura: detallesFactura,
                 adendadoc: adenda,
                 datosEmpresa: datosEmpresa,
@@ -2341,6 +2367,7 @@ app.post('/api/insertfactura', async (req, res) => {
               }
               const datosEfacCuentaAjena = {
                 fechaCFE: Fecha,
+                Moneda: Moneda,
                 detalleFacturaCuentaAjena: detallesCuentaAjena,
                 adendadoc: adendaCUENTAAJENA,
                 datosEmpresa: datosEmpresa,
@@ -2355,11 +2382,19 @@ app.post('/api/insertfactura', async (req, res) => {
                       const updateQuery = `
           UPDATE facturas SET 
             FechaCFE = ?, 
+            ComprobanteElectronico= ?,
             TipoDocCFE = ?, 
             SerieCFE = ?, 
             NumeroCFE = ?, 
             PdfBase64 = ?
           WHERE Id = ?
+        `;
+                      const updateCuentaCorrienteQuery = `
+          UPDATE cuenta_corriente SET 
+            TipoDocumento = ?,
+            NumeroDocumento = ?,
+            Fecha = ?
+          WHERE IdFactura = ?
         `;
 
                       const doc1 = response.data.resultados[0];
@@ -2367,6 +2402,7 @@ app.post('/api/insertfactura', async (req, res) => {
 
                       connection.query(updateQuery, [
                         doc1.fechadocumento,
+                        doc1.tipodocumento,
                         doc1.tipodocumento,
                         doc1.seriedocumento,
                         doc1.numerodocumento,
@@ -2381,6 +2417,7 @@ app.post('/api/insertfactura', async (req, res) => {
                         connection.query(updateQuery, [
                           doc2.fechadocumento,
                           doc2.tipodocumento,
+                          doc2.tipodocumento,
                           doc2.seriedocumento,
                           doc2.numerodocumento,
                           doc2.pdfBase64,
@@ -2390,8 +2427,32 @@ app.post('/api/insertfactura', async (req, res) => {
                             console.error('Error al actualizar la segunda factura:', err2);
                             return reject(new Error('Error al actualizar la segunda factura'));
                           }
+                          connection.query(updateCuentaCorrienteQuery, [
+                            doc1.tipodocumento,
+                            doc1.numerodocumento,
+                            doc1.fechadocumento,
+                            facturaId
+                          ], (err3) => {
+                            if (err3) {
+                              console.error('Error al actualizar cuenta_corriente (doc1):', err3);
+                              return reject(new Error('Error al actualizar cuenta_corriente doc1'));
+                            }
 
-                          resolve(response.data);
+                            // Update cuenta_corriente para doc2
+                            connection.query(updateCuentaCorrienteQuery, [
+                              doc2.tipodocumento,
+                              doc2.numerodocumento,
+                              doc2.fechadocumento,
+                              facturaCuentaAjenaId
+                            ], (err4) => {
+                              if (err4) {
+                                console.error('Error al actualizar cuenta_corriente (doc2):', err4);
+                                return reject(new Error('Error al actualizar cuenta_corriente doc2'));
+                              }
+
+                              resolve(response.data);
+                            });
+                          });
                         });
                       });
                     })
@@ -2472,7 +2533,7 @@ app.post('/api/insertticket', async (req, res) => {
     TotalCobrarCuentaAjena,
     EmbarquesSeleccionados
   } = req.body; // Los datos de la factura enviados desde el frontend
- 
+
   let comprobanteElectronicoFinal;
 
   switch (ComprobanteElectronico.toLowerCase()) {
@@ -2493,7 +2554,7 @@ app.post('/api/insertticket', async (req, res) => {
       break;
   }
 
-   console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
+  console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
   // Iniciar la transacción
   connection.beginTransaction((err) => {
     if (err) {
@@ -2522,7 +2583,7 @@ app.post('/api/insertticket', async (req, res) => {
       }
 
       const facturaId = result.insertId; // Obtener el ID de la factura insertada
-      let adenda = generarAdenda(facturaId, TotalCobrar)
+      let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
       const detalleFacturaPromises = [];
       DetalleFactura.forEach((detalle) => {
         // Insertar los detalles de la factura
@@ -2556,7 +2617,7 @@ app.post('/api/insertticket', async (req, res) => {
   `;
 
         connection.query(insertFacturaCuentaAjenaQuery, [
-          IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codETickCA, 
+          IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codETickCA,
           Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
           RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena
         ], (err, result) => {
@@ -2704,10 +2765,11 @@ app.post('/api/insertticket', async (req, res) => {
                   };
                 });
               });
-              let adendaCUENTAAJENA = generarAdenda(TicketCuentaAjenaId, TotalCuentaAjena);
+              let adendaCUENTAAJENA = generarAdenda(TicketCuentaAjenaId, TotalCuentaAjena, Moneda);
 
               const datos = {
                 fechaCFE: Fecha,
+                Moneda: Moneda,
                 detalleFactura: detallesFactura,
                 adendadoc: adenda,
                 datosEmpresa: datosEmpresa,
@@ -2716,6 +2778,7 @@ app.post('/api/insertticket', async (req, res) => {
               }
               const datosEfacCuentaAjena = {
                 fechaCFE: Fecha,
+                Moneda: Moneda,
                 detalleFactura: detallesCuentaAjena,
                 adendadoc: adendaCUENTAAJENA,
                 datosEmpresa: datosEmpresa,
@@ -2787,7 +2850,7 @@ app.post('/api/insertticket', async (req, res) => {
                 try {
                   const xml = generarXmlimpactarDocumento(datos);
                   const xmlCuentaAjena = generarXmlimpactarDocumento(datosEfacCuentaAjena);
-                  console.log('XML TICKET GENERADO: ',xml, ' XML TICKETCA GENERADO: ', xmlCuentaAjena);
+                  console.log('XML TICKET GENERADO: ', xml, ' XML TICKETCA GENERADO: ', xmlCuentaAjena);
                   const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
 
                   res.status(200).json(resultadoSOAP);
@@ -4062,8 +4125,8 @@ app.post('/api/impactardocumento', async (req, res) => {
         return res.status(500).json({ message: 'Error al obtener los detalles de la factura.' });
       }
 
-      let adenda = generarAdenda(factura.factura.Id, factura.factura.Total);
-      
+      let adenda = generarAdenda(factura.factura.Id, factura.factura.Total, factura.factura.Moneda);
+
       // Preparar detalles de la factura
       const detallesFactura = resultados.map((concepto) => {
         const importeFormateado = parseFloat(concepto.Importe.toFixed(2));
@@ -4085,6 +4148,7 @@ app.post('/api/impactardocumento', async (req, res) => {
 
       const datos = {
         fechaCFE: convertirFechaAISO(factura.factura.Fecha),
+        Moneda: factura.factura.Moneda,
         detalleFactura: detallesFactura,
         adendadoc: adenda,
         datosEmpresa: datosEmpresa,

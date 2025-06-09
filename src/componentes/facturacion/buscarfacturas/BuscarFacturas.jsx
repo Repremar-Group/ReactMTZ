@@ -177,7 +177,7 @@ const BuscarFacturas = () => {
                             <thead>
                                 <tr>
                                     <th>Nro. CFE</th>
-                                    <th>Tipo</th>
+                                    <th>Tipo Comprobante CFE</th>
                                     <th>Recibo</th>
                                     <th>Cliente</th>
                                     <th>RUT</th>
@@ -193,16 +193,16 @@ const BuscarFacturas = () => {
                                         <td>{row.NumeroCFE === null
                                             ? '-' : row.NumeroCFE}</td>
                                         <td>
-                                            {row.ComprobanteElectronico === 'FCD' ? (
+                                            {row.TipoDocCFE === 'FCD' ? (
                                                 'E-Factura'
-                                            ) : (row.ComprobanteElectronico === 'FCA' || row.ComprobanteElectronico === 'efacturaca') ? (
+                                            ) : (row.TipoDocCFE === 'FCA' || row.TipoDocCFE === 'efacturaca') ? (
                                                 'E-Factura Cuenta Ajena'
-                                            ) : (row.ComprobanteElectronico === 'TCD') ? (
+                                            ) : (row.TipoDocCFE === 'TCD') ? (
                                                 'E-Ticket'
-                                            ) : row.ComprobanteElectronico === 'TCA' ? (
+                                            ) : row.TipoDocCFE === 'TCA' ? (
                                                 'E-Ticket Cuenta Ajena'
                                             ) : (
-                                                row.ComprobanteElectronico
+                                                '-'
                                             )}
                                         </td>
                                         <td>{row.idrecibo === null
