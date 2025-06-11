@@ -53,6 +53,7 @@
 .input_buscar {
   padding: 8px 12px;
   border: 1.5px solid #ccc;
+  background-color: #fff;
   border-radius: 6px;
   font-size: 16px;
   outline-color: #3366ff;
@@ -384,4 +385,54 @@ th {
     align-items: center;
     justify-content: center;
     z-index: 9999;
+}
+.fecha-rango {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  color: #0b2e59; /* Azul oscuro */
+}
+
+.fecha-rango label {
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.fecha-rango input[type="date"] {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 1rem;
+  color: #0b2e59;
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fecha-rango input[type="date"]:hover {
+  border-color: #0b2e59;
+}
+
+.fecha-rango input[type="date"]:focus {
+  outline: none;
+  border-color: #0b2e59;
+  box-shadow: 0 0 0 2px rgba(11, 46, 89, 0.2);
+}
+.boton-descargar-todas {
+  background: none;
+  border: none;
+  color: #0b2e59; /* Azul oscuro */
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 16px;
+  transition: transform 0.2s ease;
+  outline: none; /* Elimina borde al hacer click */
+}
+
+.boton-descargar-todas:hover {
+  transform: scale(1.1);
+}
+.boton-descargar-todas:focus {
+  outline: none;
 }

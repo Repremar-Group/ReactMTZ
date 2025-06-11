@@ -6,7 +6,7 @@ import './modales.css'
 import { convertirAComa, convertirADecimal } from '../funcionesgenerales';
 import { ToastContainer, toast } from 'react-toastify';
 
-const ModalModificarGuiaExpo = ({ isOpen, closeModal, guia }) => {
+const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia }) => {
     const backURL = import.meta.env.VITE_BACK_URL;
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -374,7 +374,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, guia }) => {
 
     if (!isOpen) return null;
     return (
-        <div className="modal" onClick={closeModal}>
+        <div className="modal" onClick={closeModalSinrecarga}>
             <div className="modal-content-grande" onClick={(e) => e.stopPropagation()}>
                 <h2 className='titulo-estandar'>Modificar Guía: {guia}</h2>
                 {loading ? (

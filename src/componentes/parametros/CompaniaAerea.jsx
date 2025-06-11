@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactPaginate from 'react-paginate';
-import'./monedas.css';
+import './monedas.css';
 import { useNavigate } from 'react-router-dom';
 
 const CompaniaAerea = ({ isLoggedIn }) => {
     const navigate = useNavigate();
-    
-        useEffect(() => {
-            const rol = localStorage.getItem('rol');
-    
-            if (rol !== 'admin') {
-                // Si no es admin, redirigir al home
-                navigate('/home');
-            }
-        }, [navigate]);
 
-        
+    useEffect(() => {
+        const rol = localStorage.getItem('rol');
+
+        if (rol !== 'admin') {
+            // Si no es admin, redirigir al home
+            navigate('/home');
+        }
+    }, [navigate]);
+
+
     const [compania, setCompania] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
@@ -72,7 +72,7 @@ const CompaniaAerea = ({ isLoggedIn }) => {
     };
 
     return (
-        <div className="formularioschicos">
+        <div className="formularioschicosMoneda">
             <div className='titulo-estandar'><h1>Compañias Aereas</h1></div>
 
             <div className='table-container'>
@@ -86,36 +86,29 @@ const CompaniaAerea = ({ isLoggedIn }) => {
                         />
                         <button type='submit' className="add-button">➕</button>
                     </div>
+                    <br />
+                    
                 </form>
-
-                <table className='tabla-monedas'>
-                    <thead>
-                        <tr>
-                            <th>Compañias</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayedItems.map((row) => (
-                            <tr key={row.idcompanias}>
-                                <td>{row.compania}</td>
-                                <td>
-                                    <button className="action-button" onClick={() => handleEliminar(row.idcompanias)}>❌</button>
-                                </td>
+                <div className="table-containerSinCobrar">
+                    <table className='tabla-guiassinfacturar'>
+                        <thead>
+                            <tr>
+                                <th>Compañias</th>
+                                <th>Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                <ReactPaginate
-                    previousLabel={"Anterior"}
-                    nextLabel={"Siguiente"}
-                    breakLabel={"..."}
-                    pageCount={pageCount}
-                    onPageChange={handlePageClick}
-                    containerClassName={"pagination"}
-                    activeClassName={"active"}
-                />
+                        </thead>
+                        <tbody>
+                            {displayedItems.map((row) => (
+                                <tr key={row.idcompanias}>
+                                    <td>{row.compania}</td>
+                                    <td>
+                                        <button className="action-button" onClick={() => handleEliminar(row.idcompanias)}>❌</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

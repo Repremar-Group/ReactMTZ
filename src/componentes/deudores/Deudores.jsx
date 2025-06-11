@@ -10,14 +10,45 @@ const Deudores = ({ isLoggedIn }) => {
   const [hasta, setHasta] = useState('');
   const [cliente, setCliente] = useState('');
   const [numeroCliente, setNumeroCliente] = useState('');
-  const [moneda, setMoneda] = useState('');
+  const [moneda, setMoneda] = useState('USD');
 
   const [monedas, setMonedas] = useState([]);
   const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
   const hasFetched = useRef(false);
+
+  const handleExportarExcelCuentaCorriente = async () => {
+    try {
+      const response = await axios.post(
+        `${backURL}/api/generar-excel-cuentacorriente`,
+        {
+          desde,
+          hasta,
+          cliente,
+          numeroCliente,
+          moneda,
+        },
+        {
+          responseType: 'blob',
+        }
+      );
+
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cuenta_corriente.xlsx';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error al exportar Excel:', error);
+      alert('Hubo un problema al generar el Excel.');
+    }
+  };
   const handleSubmitEmitirCuentaCorriente = async (e) => {
     e.preventDefault();
-    
+
     try {
       const response = await axios.post(
         `${backURL}/api/generar-pdf-cuentacorriente`,
@@ -29,7 +60,7 @@ const Deudores = ({ isLoggedIn }) => {
           moneda,
         },
         {
-          responseType: 'blob', // Esto es clave
+          responseType: 'blob',
         }
       );
 
@@ -60,6 +91,7 @@ const Deudores = ({ isLoggedIn }) => {
     setSelectedCliente(cliente);
     console.log('Cliente Seleccionado:', cliente)
     setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setCliente(cliente.RazonSocial);
     setIsSelectEnabled(true);
     setIsModalOpen(false); // Cierra el modal
   };
@@ -86,7 +118,7 @@ const Deudores = ({ isLoggedIn }) => {
   useEffect(() => {
     if (selectedCliente) {
       setNumeroCliente(selectedCliente.Id);
-      setMoneda(selectedCliente.Moneda);
+
     }
   }, [selectedCliente]);
 
@@ -174,19 +206,18 @@ const Deudores = ({ isLoggedIn }) => {
               value={moneda}
               onChange={(e) => setMoneda(e.target.value)}
               required
-              disabled
             >
               <option value="">Selecciona una Moneda</option>
-              {monedas.map((moneda, index) => (
-                <option key={index} value={moneda.moneda}>
-                  {moneda.moneda}
-                </option>
-              ))}
+              <option value="USD">USD</option>
+              <option value="UYU">UYU</option>
+
             </select>
           </div>
         </div>
-
-        <button type="submit">Generar Reporte</button>
+        <button type = "button" onClick={handleExportarExcelCuentaCorriente}>
+          Generar Excel
+        </button>
+        <button type="submit">Generar PDF</button>
       </form>
       <ModalBusquedaClientes
         isOpen={isModalOpen}

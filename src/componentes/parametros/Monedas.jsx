@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactPaginate from 'react-paginate';
-import'./monedas.css';
+import './monedas.css';
 import { useNavigate } from 'react-router-dom';
 
 const Monedas = ({ isLoggedIn }) => {
     const navigate = useNavigate();
-        
+
     useEffect(() => {
         const rol = localStorage.getItem('rol');
-        
+
         if (rol !== 'admin') {
             // Si no es admin, redirigir al home
-                navigate('/home');
-            }
-        }, [navigate]);
+            navigate('/home');
+        }
+    }, [navigate]);
     const [moneda, setMoneda] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
@@ -70,7 +70,7 @@ const Monedas = ({ isLoggedIn }) => {
     };
 
     return (
-        <div className="formularioschicos">
+        <div className="formularioschicosMoneda">
             <div className='titulo-estandar'><h1>Monedas</h1></div>
 
             <div className='table-container'>
@@ -84,36 +84,29 @@ const Monedas = ({ isLoggedIn }) => {
                         />
                         <button type='submit' className="add-button">➕</button>
                     </div>
+                    <br />
                 </form>
-
-                <table className='tabla-monedas'>
-                    <thead>
-                        <tr>
-                            <th>Moneda</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayedItems.map((row) => (
-                            <tr key={row.idmonedas}>
-                                <td>{row.moneda}</td>
-                                <td>
-                                    <button className="action-button" onClick={() => handleEliminar(row.idmonedas)}>❌</button>
-                                </td>
+                <div className="table-containerSinCobrar">
+                    <table className='tabla-guiassinfacturar'>
+                        <thead>
+                            <tr>
+                                <th>Moneda</th>
+                                <th>Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                <ReactPaginate
-                    previousLabel={"Anterior"}
-                    nextLabel={"Siguiente"}
-                    breakLabel={"..."}
-                    pageCount={pageCount}
-                    onPageChange={handlePageClick}
-                    containerClassName={"pagination"}
-                    activeClassName={"active"}
-                />
+                        </thead>
+                        <tbody>
+                            {displayedItems.map((row) => (
+                                <tr key={row.idmonedas}>
+                                    <td>{row.moneda}</td>
+                                    <td>
+                                        <button className="action-button" onClick={() => handleEliminar(row.idmonedas)}>❌</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                
             </div>
         </div>
     );

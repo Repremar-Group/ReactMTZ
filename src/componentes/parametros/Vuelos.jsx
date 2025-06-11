@@ -6,14 +6,14 @@ import { useNavigate } from 'react-router-dom';
 
 const Vuelos = ({ isLoggedIn }) => {
     const navigate = useNavigate();
-        
+
     useEffect(() => {
         const rol = localStorage.getItem('rol');
-        
+
         if (rol !== 'admin') {
             // Si no es admin, redirigir al home
-                navigate('/home');
-            }
+            navigate('/home');
+        }
     }, [navigate]);
 
     const [vuelo, setVuelo] = useState('');
@@ -85,7 +85,7 @@ const Vuelos = ({ isLoggedIn }) => {
     };
 
     return (
-        <div className="formularioschicos">
+        <div className="formularioschicosMoneda">
             <div className='titulo-estandar'><h1>Vuelos</h1></div>
 
             <div className='table-container'>
@@ -120,39 +120,31 @@ const Vuelos = ({ isLoggedIn }) => {
                             ))}
                         </select>
                     </div>
-
+                    <br />
                 </form>
-
-                <table className='tabla-vuelos'>
-                    <thead>
-                        <tr>
-                            <th>Vuelo</th>
-                            <th>Compañia</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayedItems.map((row) => (
-                            <tr key={row.idVuelos}>
-                                <td>{row.vuelo}</td>
-                                <td>{row.compania}</td>
-                                <td>
-                                    <button className="action-button" onClick={() => handleEliminar(row.idVuelos)}>❌</button>
-                                </td>
+                <div className="table-containerSinCobrar">
+                    <table className='tabla-guiassinfacturar'>
+                        <thead>
+                            <tr>
+                                <th>Vuelo</th>
+                                <th>Compañia</th>
+                                <th>Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {displayedItems.map((row) => (
+                                <tr key={row.idVuelos}>
+                                    <td>{row.vuelo}</td>
+                                    <td>{row.compania}</td>
+                                    <td>
+                                        <button className="action-button" onClick={() => handleEliminar(row.idVuelos)}>❌</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
-                <ReactPaginate
-                    previousLabel={"Anterior"}
-                    nextLabel={"Siguiente"}
-                    breakLabel={"..."}
-                    pageCount={pageCount}
-                    onPageChange={handlePageClick}
-                    containerClassName={"pagination"}
-                    activeClassName={"active"}
-                />
             </div>
         </div>
     );

@@ -125,6 +125,12 @@ const PreviewGuias = () => {
         setGuiaSeleccionada(null);
         fetchGuias();
     };
+      const closeModalModificarSinRecarga = () => {
+        setIsModalOpenModificar(false);
+        setGuiaSeleccionada(null);
+        
+    };
+
 
     const [isModalOpenModificarExpo, setIsModalOpenModificarExpo] = useState(false);
 
@@ -136,6 +142,11 @@ const PreviewGuias = () => {
         setIsModalOpenModificarExpo(false);
         setGuiaSeleccionada(null);
         fetchGuias();
+    };
+    const closeModalModificarExposinrecarga = () => {
+        setIsModalOpenModificarExpo(false);
+        setGuiaSeleccionada(null);
+        
     };
     //Estados para el modal de ver 
     const [isModalOpenVer, setIsModalOpenVer] = useState(false);
@@ -255,6 +266,7 @@ const PreviewGuias = () => {
             <ModalModificarGuiaImpo
                 isOpen={isModalOpenModificar}
                 closeModal={closeModalModificar}
+                closeModalSinrecarga= {closeModalModificarSinRecarga}
                 guia={guiaSeleccionada}
             />
             <ModalVerGuiaImpo
@@ -278,6 +290,7 @@ const PreviewGuias = () => {
             <ModalModificarGuiaExpo
                 isOpen={isModalOpenModificarExpo}
                 closeModal={closeModalModificarExpo}
+                closeModalSinrecarga= {closeModalModificarExposinrecarga}
                 guia={guiaSeleccionada}
             />
 

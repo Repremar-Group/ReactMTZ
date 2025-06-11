@@ -67,6 +67,10 @@ const Guiasimpo = ({ isLoggedIn }) => {
     setGuiaSeleccionada(null);
     fetchGuias();
   };
+   const closeModalModificarSinRECARGA = () => {
+    setIsModalOpenModificar(false);
+    setGuiaSeleccionada(null);
+  };
   //Estados para el modal de ver 
   const [isModalOpenVer, setIsModalOpenVer] = useState(false);
   const openModalVer = (guia) => {
@@ -1018,6 +1022,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
       <ModalModificarGuiaImpo
         isOpen={isModalOpenModificar}
         closeModal={closeModalModificar}
+        closeModalSinrecarga={closeModalModificarSinRECARGA}
         guia={guiaSeleccionada}
       />
       <ModalVerGuiaImpo

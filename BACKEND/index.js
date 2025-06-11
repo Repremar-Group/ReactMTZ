@@ -12,6 +12,7 @@ const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpacta
 const { obtenerDatosEmpresa } = require('./ControladoresGFE/datosdelaempresaGFE')
 const cron = require('node-cron');
 const { Console } = require('console');
+const ExcelJS = require('exceljs');
 
 function queryAsync(sql, params) {
   return new Promise((resolve, reject) => {
@@ -3548,10 +3549,192 @@ app.post('/pruebaws', async (req, res) => {
   }
 });
 
+app.post('/api/generar-excel-cuentacorriente', async (req, res) => {
+  const { desde, hasta, cliente, numeroCliente, moneda } = req.body;
+  const fechaDesde = new Date(`${desde}T00:00:00`);
+  const fechaHasta = new Date(`${hasta}T00:00:00`);
+
+  try {
+    const getMovimientos = () => {
+      return new Promise((resolve, reject) => {
+        connection.query(
+          `SELECT 
+            DATE_FORMAT(Fecha, '%d/%m/%Y') AS Fecha,
+            TipoDocumento, NumeroDocumento, NumeroRecibo, Moneda, Debe, Haber
+           FROM cuenta_corriente 
+           WHERE IdCliente = ? AND Fecha BETWEEN ? AND ? AND Moneda = ?
+           ORDER BY Fecha ASC`,
+          [numeroCliente, fechaDesde, fechaHasta, moneda],
+          (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          }
+        );
+      });
+    };
+
+    const getSaldoInicial = () => {
+      return new Promise((resolve, reject) => {
+        connection.query(
+          `SELECT IFNULL(SUM(Debe) - SUM(Haber), 0) AS Saldo
+           FROM cuenta_corriente 
+           WHERE IdCliente = ? AND Fecha <= ? AND Moneda = ?`,
+          [numeroCliente, fechaDesde, moneda],
+          (err, result) => {
+            if (err) reject(err);
+            else resolve(result[0]?.Saldo || 0);
+          }
+        );
+      });
+    };
+
+    const movimientos = await getMovimientos();
+    const saldoInicial = await getSaldoInicial();
+    let saldoAcumulado = parseFloat(saldoInicial || 0);
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Cuenta Corriente');
+
+    // Título con fondo y estilo
+    const titleRow = sheet.addRow(['Cuenta Corriente Deudores']);
+    sheet.mergeCells(`A${titleRow.number}:H${titleRow.number}`);
+    titleRow.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+    titleRow.alignment = { vertical: 'middle', horizontal: 'center' };
+    titleRow.getCell(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF0B2E59' }
+    };
+    titleRow.getCell(1).border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+
+    sheet.addRow([]);
+
+    // Recuadro informativo general (con borde externo)
+    const info = [
+      [`Cliente: ${cliente}`],
+      [`Desde: ${desde}`],
+      [`Hasta: ${hasta}`],
+      [`Moneda: ${moneda}`],
+      [`Saldo Inicial: ${saldoInicial.toFixed(2)}`]
+    ];
+
+    const infoStartRow = sheet.lastRow.number + 1;
+
+    info.forEach(item => {
+      const row = sheet.addRow(item);
+      sheet.mergeCells(`A${row.number}:H${row.number}`);
+      row.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+    });
+
+    const infoEndRow = sheet.lastRow.number;
+
+    // Borde externo al bloque completo
+    sheet.getCell(`A${infoStartRow}`).border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' }
+    };
+    sheet.getCell(`H${infoStartRow}`).border = {
+      top: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+    sheet.getCell(`A${infoEndRow}`).border = {
+      bottom: { style: 'thin' },
+      left: { style: 'thin' }
+    };
+    sheet.getCell(`H${infoEndRow}`).border = {
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+
+    // Bordes laterales intermedios
+    for (let i = infoStartRow + 1; i < infoEndRow; i++) {
+      sheet.getCell(`A${i}`).border = { left: { style: 'thin' } };
+      sheet.getCell(`H${i}`).border = { right: { style: 'thin' } };
+    }
+
+    sheet.addRow([]);
+
+    const headerRow = sheet.addRow([
+      'Fecha', 'Tipo Documento', 'Número Doc.', 'Número Rec.',
+      'Moneda', 'Debe', 'Haber', 'Saldo'
+    ]);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.alignment = { horizontal: 'center' };
+    headerRow.eachCell(cell => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0B2E59' }
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+
+    // Movimientos
+    movimientos.forEach(mov => {
+      sheet.addRow([
+        mov.Fecha,
+        mov.TipoDocumento === 'TCD'
+          ? 'Eticket'
+          : mov.TipoDocumento === 'TCA'
+            ? 'Eticket Cuenta Ajena'
+            : (mov.TipoDocumento || '-'),
+        !isNaN(parseFloat(mov.NumeroDocumento)) ? parseFloat(mov.NumeroDocumento) : '-',
+        mov.NumeroRecibo,
+        mov.Moneda,
+        parseFloat(mov.Debe || 0),
+        parseFloat(mov.Haber || 0),
+        saldoAcumulado += parseFloat(mov.Debe || 0) - parseFloat(mov.Haber || 0)
+      ]);
+      const currentRow = sheet.lastRow;
+      currentRow.getCell(3).alignment = { horizontal: 'center' }
+      currentRow.getCell(5).alignment = { horizontal: 'center' }
+      currentRow.getCell(6).alignment = { horizontal: 'center' }
+      currentRow.getCell(7).alignment = { horizontal: 'center' }
+    });
+
+    // Ancho de columnas
+    sheet.columns = [
+      { width: 12 }, // Fecha
+      { width: 20 }, // Tipo Documento
+      { width: 12 }, // Número Documento
+      { width: 12 }, // Número Recibo
+      { width: 12 }, // Moneda
+      { width: 12 }, // Debe
+      { width: 12 }, // Haber
+      { width: 12 }, // Saldo
+    ];
+
+    // Descargar
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=cuenta_corriente.xlsx'
+    );
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Error al generar Excel:', error);
+    res.status(500).send('Error al generar Excel');
+  }
+});
 
 app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
   const { desde, hasta, cliente, numeroCliente, moneda } = req.body;
-
+  console.log('Datos recibidos del frontend - Cuenta Corriente:', req.body);
   const fechaDesde = new Date(`${desde}T00:00:00`);
   const fechaHasta = new Date(`${hasta}T00:00:00`);
 
@@ -3569,15 +3752,15 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
     Haber
     FROM cuenta_corriente 
     WHERE IdCliente = ? 
-      AND Fecha BETWEEN ? AND ?
+      AND Fecha BETWEEN ? AND ? AND Moneda = ?
     ORDER BY Fecha DESC;
   `;
   // Consulta para obtener el saldo inicial
   const sqlSaldoInicial = `
-    SELECT SUM(Debe) - SUM(Haber) AS Saldo
-    FROM cuenta_corriente 
-    WHERE IdCliente = ? 
-      AND Fecha <= ?
+    SELECT IFNULL(SUM(Debe) - SUM(Haber), 0) AS Saldo
+FROM cuenta_corriente 
+WHERE IdCliente = ? 
+  AND Fecha <= ? AND Moneda = ?
   `;
 
   // Consulta para obtener el saldo final
@@ -3585,13 +3768,13 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
     SELECT SUM(Debe) - SUM(Haber) AS Saldo
     FROM cuenta_corriente 
     WHERE IdCliente = ? 
-    AND Fecha <= ?
+    AND Fecha <= ? AND Moneda = ?
   `;
   try {
     // Promesa para obtener los movimientos
     const getMovimientos = () => {
       return new Promise((resolve, reject) => {
-        connection.query(sql, [numeroCliente, fechaDesde, fechaHasta], (err, result) => {
+        connection.query(sql, [numeroCliente, fechaDesde, fechaHasta, moneda], (err, result) => {
           if (err) reject(err);
           resolve(result);
         });
@@ -3601,7 +3784,7 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
     // Promesa para obtener el saldo inicial
     const getSaldoInicial = () => {
       return new Promise((resolve, reject) => {
-        connection.query(sqlSaldoInicial, [numeroCliente, fechaDesde], (err, result) => {
+        connection.query(sqlSaldoInicial, [numeroCliente, fechaDesde, moneda], (err, result) => {
           if (err) reject(err);
           resolve(result);
         });
@@ -3611,7 +3794,7 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
     // Promesa para obtener el saldo final
     const getSaldoFinal = () => {
       return new Promise((resolve, reject) => {
-        connection.query(sqlSaldoFinal, [numeroCliente, fechaHasta], (err, result) => {
+        connection.query(sqlSaldoFinal, [numeroCliente, fechaHasta, moneda], (err, result) => {
           if (err) reject(err);
           resolve(result);
         });
@@ -3620,12 +3803,14 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
 
     // Obtener los resultados usando async/await
     const resultMovimientos = await getMovimientos();
+    console.log('Resultado de movimientos', resultMovimientos);
 
     const resultSaldoInicial = await getSaldoInicial();
     const resultSaldoFinal = await getSaldoFinal();
 
     // Obtener saldo inicial y final
     const saldoInicial = resultSaldoInicial[0]?.Saldo || 0;
+    console.log('Saldo inicial', resultSaldoInicial);
     const saldoFinal = resultSaldoFinal[0]?.Saldo || 0;
 
     // Lógica para generar el PDF con pdf-lib
@@ -3786,7 +3971,7 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
     const headers = ['Fecha', 'Tipo', 'Documento', 'Recibo', 'Moneda', 'Debe', 'Haber', 'Saldo'];
 
     // Anchos de las columnas
-    const columnWidths = [60, 60, 80, 80, 45, 60, 60, 80];  // Ajusta el ancho de cada columna según tus necesidades
+    const columnWidths = [60, 80, 60, 80, 45, 60, 60, 80];  // Ajusta el ancho de cada columna según tus necesidades
 
     // Posición inicial de la tabla
     let currentX = startX;  // Inicia en la misma X que los recuadros anteriores
@@ -3884,27 +4069,31 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
 
         // Insertar los valores en cada columna de la fila
         currentPage.drawText(movimiento.FechaFormateada, { x: startX + 5, y: currentY + 5, size: 8, font: helveticaFont });
-        currentPage.drawText(movimiento.TipoDocumento, { x: startX + columnWidths[0] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+        currentPage.drawText(movimiento.TipoDocumento === 'TCD'
+          ? 'Eticket'
+          : movimiento.TipoDocumento === 'TCA'
+            ? 'Eticket Cuenta Ajena'
+            : (movimiento.TipoDocumento || '-'), { x: startX + columnWidths[0] + 5, y: currentY + 5, size: 8, font: helveticaFont });
 
         // Comprobar si 'NumeroDocumento' no es null antes de dibujar
         if (movimiento.NumeroDocumento) {
           currentPage.drawText(movimiento.NumeroDocumento, { x: startX + columnWidths[0] + columnWidths[1] + 5, y: currentY + 5, size: 8, font: helveticaFont });
         } else {
-          currentPage.drawText('     -', { x: startX + columnWidths[0] + columnWidths[1] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+          currentPage.drawText('      -', { x: startX + columnWidths[0] + columnWidths[1] + 2, y: currentY + 5, size: 8, font: helveticaFont });
         }
 
         // Comprobar si 'NumeroRecibo' no es null antes de dibujar
         if (movimiento.NumeroRecibo) {
           currentPage.drawText(movimiento.NumeroRecibo, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + 5, y: currentY + 5, size: 8, font: helveticaFont });
         } else {
-          currentPage.drawText('     -', { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + 5, y: currentY + 5, size: 8, font: helveticaFont });
+          currentPage.drawText('-', { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + 5, y: currentY + 5, size: 8, font: helveticaFont });
         }
 
         currentPage.drawText(movimiento.Moneda, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + 5, y: currentY + 5, size: 8, font: helveticaFont });
 
         // Comprobar si 'Debe' y 'Haber' son números válidos antes de dibujar
-        const debeValue = (movimiento.Debe !== 0.00 && movimiento.Debe !== undefined) ? movimiento.Debe.toFixed(2) : '     -';
-        const haberValue = (movimiento.Haber !== null && movimiento.Haber !== undefined) ? movimiento.Haber.toFixed(2) : '     -';
+        const debeValue = (movimiento.Debe !== 0.00 && movimiento.Debe !== undefined) ? movimiento.Debe.toFixed(2) : '0.00';
+        const haberValue = (movimiento.Haber !== null && movimiento.Haber !== undefined) ? movimiento.Haber.toFixed(2) : '0.00';
 
         // Dibujar los valores de "Debe" y "Haber"
         currentPage.drawText(debeValue, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + columnWidths[4] + 5, y: currentY + 5, size: 8, font: helveticaFont });

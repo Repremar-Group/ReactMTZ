@@ -147,6 +147,10 @@ const Guiasexpo = ({ isLoggedIn }) => {
     setGuiaSeleccionada(null);
     fetchGuias();
   };
+   const closeModalModificarSinRecarga = () => {
+    setIsModalOpenModificar(false);
+    setGuiaSeleccionada(null);
+  };
   //Estados para el modal de ver 
   const [isModalOpenVer, setIsModalOpenVer] = useState(false);
   const openModalVer = (guia) => {
@@ -1059,6 +1063,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
       <ModalModificarGuiaExpo
         isOpen={isModalOpenModificar}
         closeModal={closeModalModificar}
+        closeModalSinrecarga={closeModalModificarSinRecarga}
         guia={guiaSeleccionada}
       />
       <ToastContainer />

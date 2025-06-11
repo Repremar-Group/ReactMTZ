@@ -53,9 +53,10 @@
     border: 1px solid #143361;
     border-radius: 5px;
     box-sizing: border-box;
-    background-color: #f0f0f0;
+     background-color: #fff;
     /* color de fondo claro */
     color: #143361;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .input_buscar[type="text"]:focus {
     outline: none; /* Elimina el borde azul predeterminado del navegador */

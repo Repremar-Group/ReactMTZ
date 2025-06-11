@@ -13,6 +13,8 @@ import ModalAlertaGFE from '../../modales/AlertasGFE';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funciones';
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 const BuscarFacturas = () => {
     const navigate = useNavigate();
@@ -36,6 +38,7 @@ const BuscarFacturas = () => {
     const [facturas, setFacturas] = useState([]);
     const [error, setError] = useState('');
     const [loadingtabla, setLoadingTabla] = useState(true);
+    const [busquedaRealizada, setBusquedaRealizada] = useState(false);
     //Estados para Modal Alerta GFE
     const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
     const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
@@ -52,12 +55,57 @@ const BuscarFacturas = () => {
     const [guiaAEliminar, setGuiaAEliminar] = useState([]);
     //Estados para los filtros
     const [searchField, setSearchField] = useState('');
+    const [fechaDesde, setFechaDesde] = useState('');
+    const [fechaHasta, setFechaHasta] = useState('');
+
+    const handleFechaDesdeChange = (e) => {
+        setFechaDesde(e.target.value);
+    };
+
+    const handleFechaHastaChange = (e) => {
+        setFechaHasta(e.target.value);
+        setBusquedaRealizada(true);
+    };
 
     const handleCheckboxChange = (e) => {
         setSearchField(e.target.value);
+        setBusquedaRealizada(true);
     };
 
 
+    
+const descargarFacturasEnZip = async (facturas) => {
+    const zip = new JSZip();
+    let descargadas = 0;
+    let omitidas = 0;
+
+    facturas.forEach((factura, index) => {
+        if (factura.PdfBase64 && factura.NumeroCFE) {
+            // Limpiar el base64 (eliminar encabezado si lo tiene)
+            const base64Data = factura.PdfBase64.includes(',') 
+                ? factura.PdfBase64.split(',')[1] 
+                : factura.PdfBase64;
+
+            const nombreArchivo = `${factura.NumeroCFE}_${index + 1}.pdf`;
+
+            // Convertir correctamente base64 a binario
+            zip.file(nombreArchivo, base64Data, { base64: true });
+
+            descargadas++;
+        } else {
+            omitidas++;
+        }
+    });
+
+    if (descargadas > 0) {
+        const blob = await zip.generateAsync({ type: 'blob' });
+        saveAs(blob, 'facturas.zip');
+    }
+
+    if (descargadas > 0 || omitidas > 0) {
+        toast.info(`Se descargaron ${descargadas} factura(s). ${omitidas > 0 ? omitidas + ' omitida(s) por falta de PDF.' : ''}`);
+    }
+};
 
     // Función para obtener las Guias
     const fetchFacturas = async () => {
@@ -90,12 +138,36 @@ const BuscarFacturas = () => {
 
     const handleSearch = (event) => {
         setSearchTerm(event.target.value);
+        setBusquedaRealizada(true);
     };
-    const facturasFiltradas = (!searchField || searchTerm.trim() === '')
-        ? facturas
-        : facturas.filter((row) =>
-            row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        );
+    const facturasFiltradas = facturas.filter((row) => {
+        const cumpleBusqueda = !searchField || searchTerm.trim() === ''
+            || row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase());
+
+        const parseFecha = (str) => {
+            const [dia, mes, anio] = str.split('/');
+            return new Date(`${anio}-${mes}-${dia}`);
+        };
+
+        const fechaFactura = parseFecha(row.Fecha);
+        const desde = fechaDesde ? new Date(fechaDesde) : null;
+        const hasta = fechaHasta ? new Date(fechaHasta) : null;
+
+        const cumpleFecha =
+            (!desde || fechaFactura >= desde) &&
+            (!hasta || fechaFactura <= hasta);
+
+        return cumpleBusqueda && cumpleFecha;
+    });
+    useEffect(() => {
+        const filtrosVacios =
+            searchTerm.trim() === '' &&
+            !fechaDesde &&
+            !fechaHasta &&
+            searchField === '';
+
+        setBusquedaRealizada(!filtrosVacios);
+    }, [searchTerm, fechaDesde, fechaHasta, searchField]);
 
     return (
         <div className="Contenedor_Principal">
@@ -159,15 +231,20 @@ const BuscarFacturas = () => {
                                     />
                                     RUT
                                 </label>
-                                <label>
-                                    <input
-                                        type="radio"
-                                        value="Fecha"
-                                        checked={searchField === 'Fecha'}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                    Fecha
-                                </label>
+                                <div className="fecha-rango">
+                                    <label>Desde:</label>
+                                    <input type="date" value={fechaDesde} onChange={handleFechaDesdeChange} />
+                                    <label>Hasta:</label>
+                                    <input type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
+                                </div>
+                                {busquedaRealizada && facturasFiltradas.length > 0 && (
+                                    <button
+                                        className="boton-descargar-todas"
+                                        onClick={() => descargarFacturasEnZip(facturasFiltradas)}
+                                    >
+                                        Descargar facturas
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
