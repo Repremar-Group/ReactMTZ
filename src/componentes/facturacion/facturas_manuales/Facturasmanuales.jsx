@@ -6,6 +6,8 @@ import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
+import ModalAlertaGFE from '../../modales/AlertasGFE';
+import { descargarPDFBase64 } from '../../../ConexionGFE/Funciones';
 const Facturasmanuales = ({ isLoggedIn }) => {
 
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [fmpais, setFmPais] = useState('');
   const [fmrazonsocial, setFmRazonSocial] = useState('');
   const [fmtipoiva, setFmTipoIva] = useState('');
-  const [fmmoneda, setFmMoneda] = useState('');
+  const [fmmoneda, setFmMoneda] = useState('USD');
   const [fmfecha, setFmFecha] = useState('');
   const [fmcomprobante, setFmComprobante] = useState('');
   const [fmelectronico, setFmElectronico] = useState('');
@@ -39,7 +41,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [fmguia, setFmGuia] = useState('');
   const [fmcodigoconcepto, setFmCodigoConcepto] = useState('');
   const [fmdescripcion, setFmDescripcion] = useState('');
-  const [fmmonedaconcepto, setFmMonedaConcepto] = useState('');
+  const [fmmonedaconcepto, setFmMonedaConcepto] = useState('USD');
   const [fmimporte, setFmImporte] = useState('');
   const [fmtotalacobrar, setFmTotalACobrar] = useState('');
   const [fmsubtotal, setFmsubtotal] = useState('');
@@ -51,6 +53,18 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [monedas, setMonedas] = useState([]);
   const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
   const [conceptoactual, setConceptoActual] = useState([]);
+  const [codigoClienteGIA, setCodigoClienteGIA] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
+  const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
+  const [mensajeAlertaGFE, setmensajeAlertaGFE] = useState('');
+  const [iconoAlertaGFE, setIconoAlertaGFE] = useState('');
+  const handleConfirmAlertaGFE = () => {
+    setIsModalOpenAlertaGFE(false);
+    window.location.reload();
+  };
+
 
   const hasFetched = useRef(false);
   const [botonActivo, setBotonActivo] = useState(false);
@@ -112,9 +126,14 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   }, [fmmoneda]);
 
   useEffect(() => {
-    if (conceptoactual?.exento === 0 && fmimporte) {
+    console.log('Concepto actual', conceptoactual)
+    if (conceptoactual?.impuesto === 'iva_basica' && fmimporte) {
       const ivaCalculado = (parseFloat(fmimporte) * 0.22).toFixed(2); // 22% de IVA
       setFmIvaConcepto(ivaCalculado);
+    } else if (conceptoactual?.impuesto === 'iva_minimo' && fmimporte) {
+      const ivaCalculado = (parseFloat(fmimporte) * 0.10).toFixed(2); // 10% de IVA
+      setFmIvaConcepto(ivaCalculado);
+
     } else {
       setFmIvaConcepto('0'); // Si es exento, el IVA es 0
     }
@@ -131,13 +150,23 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   };
   // Función para agregar una factura asociada a la tabla
   const handleAgregarConceptoAsociado = () => {
-    if (fmcodigoconcepto && fmdescripcion && fmmonedaconcepto && fmivaconcepto && fmimporte) {
-      const nuevoconceptoasociado = { fmcodigoconcepto, fmdescripcion, fmmonedaconcepto, fmivaconcepto, fmimporte };
+    if (fmcodigoconcepto && fmdescripcion && fmmonedaconcepto && fmivaconcepto && fmimporte && conceptoactual) {
+      const nuevoconceptoasociado = {
+        ...conceptoactual, // todos los datos que vienen de la base
+        ivaCalculado: fmivaconcepto,
+        importe: fmimporte,
+        moneda: fmmonedaconcepto,
+      };
       setFmListaDeConceptos([...fmlistadeconceptos, nuevoconceptoasociado]);
+
+      console.log('Conceptos Actuales:', [...fmlistadeconceptos, nuevoconceptoasociado]);
+
+      // Reset inputs
       setFmCodigoConcepto('');
       setFmDescripcion('');
       setFmIvaConcepto('');
       setFmImporte('');
+      setConceptoActual(null);
       setBotonActivo(false);
     }
   };
@@ -182,6 +211,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
     const datosFormulario = {
       IdCliente: fmid,
       Nombre: searchTerm,
+      codigoClienteGIA: codigoClienteGIA,
       RazonSocial: fmrazonsocial,
       DireccionFiscal: fmdireccionfiscal,
       Ciudad: fmciudad,
@@ -211,18 +241,93 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       // Enviar los datos del formulario a tu servidor
       console.log('Datos del formulario a Backend: ', datosFormulario);
       const response = await axios.post(`${backURL}/api/insertfacturamanual`, datosFormulario);
+      console.log('Respuesta HTTP recibida:', response.status, response.data);
 
-      // Si la respuesta es exitosa, puedes manejar la respuesta aquí
-      console.log('Factura Agregada:', response.data);
 
-      // Opcionalmente, puedes redirigir o actualizar el estado
-      toast.success('Factura agregado exitosamente');
+      if (response.status >= 200 && response.status < 300) {
+        if (response.data?.success) {
+          const documento = response.data.documento;
+
+          if (documento) {
+            console.log('Documento generado:', documento);
+
+            const nombreArchivo = `${documento.tipo}_${documento.serie}_${documento.numero}.pdf`;
+            descargarPDFBase64(documento.pdfBase64, nombreArchivo);
+          }
+          let mensajeExito= `Documento ${documento.tipo}_${documento.serie}_${documento.numero} guardado correctamente.`;
+          setTituloAlertaGfe('Factura Ingresada Correctamente');
+          setmensajeAlertaGFE(mensajeExito || '');
+          setIconoAlertaGFE('success');
+          setIsModalOpenAlertaGFE(true);
+        } else {
+          const descripcion = response.data?.descripcion;
+          const mensajeError = descripcion || response.data?.message || 'Error desconocido al ingresar la factura';
+
+          setTituloAlertaGfe('Error al Impactar en GFE');
+          setmensajeAlertaGFE(mensajeError);
+          setIconoAlertaGFE('error');
+          setIsModalOpenAlertaGFE(true);
+        }
+      } else {
+        // Status no 2xx
+        console.warn('Respuesta HTTP inesperada:', response.status);
+        setTituloAlertaGfe('Error Desconocido');
+        setmensajeAlertaGFE(`Error HTTP ${response.status}`);
+        setIconoAlertaGFE('error');
+        setIsModalOpenAlertaGFE(true);
+      }
     } catch (error) {
-      // Si ocurre un error, manejarlo aquí
-      console.error('Error al agregar la factura:', error);
-      toast.error('Hubo un error al facturar');
+      console.error('Error atrapado:', error);
+
+      if (error.response) {
+        console.log('Error response:', error.response);
+        console.log('Error response data:', error.response.data);
+
+        if (error.response.status === 422) {
+          const { errores, mensaje, message } = error.response.data;
+          let mensajeError = error.response.data?.descripcion || mensaje || message || 'Error al procesar los documentos.';
+
+          if (Array.isArray(errores) && errores.length > 0) {
+            const detalles = errores
+              .map((err, i) => `Documento ${i + 1}: ${err.descripcion || 'Error desconocido'}`)
+              .join('\n');
+
+            mensajeError += '\n\n' + detalles;
+          }
+
+          setTituloAlertaGfe('Error al Impactar en GFE');
+          setmensajeAlertaGFE(mensajeError);
+          setIconoAlertaGFE('error');
+          setIsModalOpenAlertaGFE(true);
+        } else if (error.response.status === 500) {
+          const mensaje = error.response.data?.message || 'Error interno en el servidor';
+
+          setTituloAlertaGfe('Error al Cargar la Factura');
+          setmensajeAlertaGFE(mensaje);
+          setIconoAlertaGFE('error');
+          setIsModalOpenAlertaGFE(true);
+        } else {
+          setTituloAlertaGfe('Error Desconocido');
+          setmensajeAlertaGFE(`Error HTTP ${error.response.status}`);
+          setIconoAlertaGFE('error');
+          setIsModalOpenAlertaGFE(true);
+        }
+      } else if (error.request) {
+        // No se recibió respuesta
+        console.error('No se recibió respuesta del servidor', error.request);
+        setTituloAlertaGfe('Error de Conexión');
+        setmensajeAlertaGFE('No se pudo conectar con el servidor.');
+        setIconoAlertaGFE('error');
+        setIsModalOpenAlertaGFE(true);
+      } else {
+        // Otro error al configurar la solicitud
+        setTituloAlertaGfe('Error Desconocido');
+        setmensajeAlertaGFE(error.message || 'Error desconocido en el ERP');
+        setIconoAlertaGFE('error');
+        setIsModalOpenAlertaGFE(true);
+      }
     } finally {
-      window.location.reload();
+      setLoading(false);
     }
   };
 
@@ -261,16 +366,19 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   // Actualizar el estado del formulario luego se seleccionar un cliente 
   useEffect(() => {
     if (selectedCliente) {
-      setFmComprobanteElectronico(selectedCliente.Tcomprobante);
       setFmId(selectedCliente.Id);
       setFmCiudad(selectedCliente.Ciudad);
       setFmPais(selectedCliente.Pais);
       setFmRazonSocial(selectedCliente.RazonSocial);
       setFmTipoIva(selectedCliente.Tiva);
-      setFmMoneda(selectedCliente.Moneda);
       setFmDireccionFiscal(selectedCliente.Direccion);
       setFmCass(selectedCliente.Cass);
       setFmRutCedula(selectedCliente.Rut);
+      setCodigoClienteGIA(selectedCliente.CodigoGIA);
+
+
+      // 🔁 Limpiar campos de conceptos al cambiar de cliente
+
     }
   }, [selectedCliente]);
 
@@ -283,8 +391,8 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
     // Recorrer la lista de conceptos y sumar los valores directamente
     fmlistadeconceptos.forEach((concepto) => {
-      const importe = parseFloat(concepto.fmimporte) || 0;
-      const iva = parseFloat(concepto.fmivaconcepto) || 0; // Se asume que ya viene calculado
+      const importe = parseFloat(concepto.importe) || 0;
+      const iva = parseFloat(concepto.ivaCalculado) || 0; // Se asume que ya viene calculado
 
       nuevoSubtotal += importe;
       nuevoIVA += iva; // Sumar IVA directamente en lugar de calcularlo
@@ -307,6 +415,12 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   return (
     <div className="EmitirFacturaManual-container">
       <ToastContainer />
+      {loading && (
+        <div className="loading-overlay">
+          {/* El spinner se muestra cuando loading es true */}
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       <h2 className='titulo-estandar'>Emisión de Factura Manual</h2>
       <form onSubmit={handleSubmitAgregarFm} className='formulario-estandar'>
 
@@ -316,7 +430,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
             <div className='div-renglon-datos-facturasmanuales'>
               <div>
-                <label htmlFor="ecID">ID:</label>
+                <label htmlFor="ecID">ID de Cliente:</label>
                 <input
                   type="text"
                   id="ecID"
@@ -338,7 +452,16 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-
+              <div>
+                <label htmlFor="ecID">Código GIA:</label>
+                <input
+                  type="text"
+                  id="ecID"
+                  value={codigoClienteGIA}
+                  onChange={(e) => setCodigoClienteGIA(e.target.value)}
+                  required
+                />
+              </div>
               <div>
                 <label htmlFor="eccomprobanteelectronico">Comprobante Electronico:</label>
                 <select
@@ -365,17 +488,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-              <div>
-                <label htmlFor="fmpais">Pais:</label>
-                <input
-                  type="text"
-                  id="fmpais"
-                  value={fmpais}
-                  onChange={(e) => setFmPais(e.target.value)}
-                  required
-                />
-              </div>
-              <div></div>
+
             </div>
 
 
@@ -391,19 +504,6 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                 />
               </div>
               <div>
-                <label htmlFor="fmtipoiva">Tipo de IVA:</label>
-                <select
-                  id="fmtipoiva"
-                  value={fmtipoiva}
-                  onChange={(e) => setFmTipoIva(e.target.value)}
-                  required
-                >
-                  <option value="">Seleccione un tipo de IVA</option>
-                  <option value="iva22">IVA 22%</option>
-                  <option value="excento">Exento</option>
-                </select>
-              </div>
-              <div>
                 <label htmlFor="fmmoneda">Moneda:</label>
                 <select
                   id="ecmoneda"
@@ -411,14 +511,12 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   onChange={(e) => setFmMoneda(e.target.value)}
                   required
                 >
-                  <option value="">Selecciona una Moneda</option>
-                  {monedas.map((moneda, index) => (
-                    <option key={index} value={moneda.moneda}>
-                      {moneda.moneda}
-                    </option>
-                  ))}
+                  <option value="USD">USD</option>
+                  <option value="UYU">UYU</option>
                 </select>
               </div>
+
+
               <div className="fecha-emision-comprobante">
                 <label htmlFor="fmfecha">Fecha:</label>
                 <input
@@ -430,24 +528,27 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                 />
               </div>
               <div>
-                <label htmlFor="fmcomprobante">Comprobante:</label>
+                <label htmlFor="fmpais">Pais:</label>
                 <input
                   type="text"
-                  id="fmcomprobante"
-                  value={fmcomprobante}
-                  onChange={(e) => setFmComprobante(e.target.value)}
+                  id="fmpais"
+                  value={fmpais}
+                  onChange={(e) => setFmPais(e.target.value)}
                   required
                 />
               </div>
               <div>
-                <label htmlFor="fmelectronico">Electronico:</label>
-                <input
-                  type="text"
-                  id="fmelectronico"
-                  value={fmelectronico}
-                  onChange={(e) => setFmElectronico(e.target.value)}
+                <label htmlFor="fmtipoiva">Tipo de IVA:</label>
+                <select
+                  id="fmtipoiva"
+                  value={fmtipoiva}
+                  onChange={(e) => setFmTipoIva(e.target.value)}
                   required
-                />
+                >
+                  <option value="">Seleccione un tipo de IVA</option>
+                  <option value="iva22">IVA 22%</option>
+                  <option value="excento">Exento</option>
+                </select>
               </div>
             </div>
 
@@ -509,7 +610,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   required
                 />
               </div>
-              <div></div>
+
             </div>
           </div>
 
@@ -521,6 +622,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                 <input
                   type="text"
                   id="fmguia"
+                  autoComplete="off"
                   value={fmcodigoconcepto}
                   onChange={(e) => setFmCodigoConcepto(e.target.value)}
                   onKeyDown={(e) => {
@@ -554,12 +656,8 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   onChange={(e) => setFmMonedaConcepto(e.target.value)}
                   disabled
                 >
-                  <option value="">Selecciona una Moneda</option>
-                  {monedas.map((moneda, index) => (
-                    <option key={index} value={moneda.moneda}>
-                      {moneda.moneda}
-                    </option>
-                  ))}
+                  <option value="USD">USD</option>
+                  <option value="UYU">UYU</option>
                 </select>
               </div>
               <div>
@@ -615,11 +713,11 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                         cursor: 'pointer' // Indica que la fila es clickeable
                       }}
                     >
-                      <td>{concepto.fmcodigoconcepto}</td>
-                      <td>{concepto.fmdescripcion}</td>
-                      <td>{concepto.fmmonedaconcepto}</td>
-                      <td>{concepto.fmivaconcepto}</td>
-                      <td>{concepto.fmimporte}</td>
+                      <td>{concepto.codigo}</td>
+                      <td>{concepto.descripcion}</td>
+                      <td>{concepto.moneda}</td>
+                      <td>{concepto.ivaCalculado}</td>
+                      <td>{concepto.importe}</td>
                       <td><button type="button" className="action-button" onClick={handleEliminarConceptoAsociado} disabled={fmconceptoseleccionado !== indexec}>❌</button></td>
                     </tr>
                   ))}
@@ -703,40 +801,47 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       </form>
       {mostrarModalBuscarConcepto && (
         <div className="modal" onClick={() => setMostrarModalBuscarConcepto(false)}>
-          <div className="modal-content">
+          <div className="modal-content-conceptos">
             <div className='titulo-estandar'>
-            <h2>Buscar concepto</h2>
+              <h2>Buscar concepto</h2>
             </div>
-            
+
             <p>Seleccioná un concepto de la lista:</p>
-            <table className="tabla-clientesbusqueda">
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Descripción</th>
-                  <th>Exento</th>
-                </tr>
-              </thead>
-              <tbody>
-                {conceptosEncontrados.map((concepto) => (
-                  <tr
-                    key={concepto.idconcepto}
-                    onClick={() => {
-                      setFmCodigoConcepto(concepto.codigo);
-                      setFmDescripcion(concepto.descripcion);
-                      setConceptoActual(concepto);
-                      setMostrarModalBuscarConcepto(false);
-                      setBotonActivo(true);
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <td>{concepto.codigo}</td>
-                    <td>{concepto.descripcion}</td>
-                    <td>{concepto.exento ? 'Sí' : 'No'}</td>
+            <div className="table-containerSinCobrar">
+              <table className="tabla-guiassinfacturar">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Impuesto</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {conceptosEncontrados.map((concepto) => (
+                    <tr
+                      key={concepto.idconcepto}
+                      onClick={() => {
+                        setFmCodigoConcepto(concepto.codigo);
+                        setFmDescripcion(concepto.descripcion);
+                        setConceptoActual(concepto);
+                        setMostrarModalBuscarConcepto(false);
+                        setBotonActivo(true);
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td>{concepto.codigo}</td>
+                      <td>{concepto.descripcion}</td>
+                      <td>{concepto.impuesto === 'iva_basica'
+                        ? '22%'
+                        : concepto.impuesto === 'iva_minimo'
+                          ? '10%'
+                          : concepto.impuesto === 'exento'
+                            ? 'Exento' : concepto.impuesto}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -746,6 +851,13 @@ const Facturasmanuales = ({ isLoggedIn }) => {
         closeModal={closeModal}
         filteredClientes={filteredClientes}
         handleSelectCliente={handleSelectCliente}
+      />
+      <ModalAlertaGFE
+        isOpen={isModalOpenAlertaGFE}
+        title={tituloAlertaGfe}
+        message={mensajeAlertaGFE}
+        onConfirm={handleConfirmAlertaGFE}
+        iconType={iconoAlertaGFE}
       />
     </div>
   );

@@ -2877,11 +2877,12 @@ app.post('/api/insertticket', async (req, res) => {
   });
 });
 
-app.post('/api/insertfacturamanual', (req, res) => {
+app.post('/api/insertfacturamanual', async (req, res) => {
   console.log('Received request for /api/insertfactura');
   const {
     IdCliente,
     Nombre,
+    codigoClienteGIA,
     RazonSocial,
     DireccionFiscal,
     Ciudad,
@@ -2903,6 +2904,25 @@ app.post('/api/insertfacturamanual', (req, res) => {
     TotalCobrar,
     DetalleFactura
   } = req.body; // Los datos de la factura enviados desde el frontend
+  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  let tipoComprobante;
+
+  switch (ComprobanteElectronico) {
+    case 'efactura':
+      tipoComprobante = datosEmpresa.codEfac;
+      break;
+    case 'eticket':
+      tipoComprobante = datosEmpresa.codETick;
+      break;
+    case 'efacturaca':
+      tipoComprobante = datosEmpresa.codEfacCA;
+      break;
+    case 'eticketca':
+      tipoComprobante = datosEmpresa.codETickCA;
+      break;
+    default:
+      return res.status(400).json({ error: 'Tipo de comprobante electrónico no reconocido' });
+  }
   // Iniciar la transacción
   connection.beginTransaction((err) => {
     if (err) {
@@ -2919,7 +2939,7 @@ app.post('/api/insertfacturamanual', (req, res) => {
     `;
 
     connection.query(insertFacturaQuery, [
-      IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, ComprobanteElectronico,
+      IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, tipoComprobante,
       Comprobante, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
       Redondeo, Total, TotalCobrar
     ], (err, result) => {
@@ -2937,11 +2957,11 @@ app.post('/api/insertfacturamanual', (req, res) => {
           detalleFacturaPromises.push(
             new Promise((resolve, reject) => {
               const insertDetalleQuery = `
-                  INSERT INTO detalle_facturas_manuales (IdFactura, Codigo, Descripcion, Moneda, IVA, Importe)
-                  VALUES (?, ?, ?, ?, ?, ?)
+                  INSERT INTO detalle_facturas_manuales (IdFactura, Codigo, Descripcion, Moneda, IVA, Importe, impuesto, codigoGIA)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 `;
               connection.query(insertDetalleQuery, [
-                facturaId, concepto.fmcodigoconcepto, concepto.fmdescripcion, concepto.fmmonedaconcepto, concepto.fmivaconcepto, concepto.fmimporte
+                facturaId, concepto.codigo, concepto.descripcion, concepto.moneda, concepto.ivaCalculado, concepto.importe, concepto.impuesto, concepto.codigoGIA
               ], (err, result) => {
                 if (err) {
                   return reject(err);
@@ -2983,9 +3003,175 @@ app.post('/api/insertfacturamanual', (req, res) => {
                   res.status(500).json({ error: 'Error al hacer commit de la transacción' });
                 });
               }
-
-              res.status(200).json({ message: 'Factura, detalles y cuenta corriente insertados exitosamente' });
             });
+            let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
+            const datosParaXML = {
+              datosEmpresa: {
+                usuarioGfe: datosEmpresa.usuarioGfe, // Reemplazalo con tus valores reales
+                passwordGfe: datosEmpresa.passwordGfe,
+                codigoEmpresa: datosEmpresa.codigoEmpresa
+              },
+              tipoComprobante: tipoComprobante, // O usa un código como "101" si lo tenés mapeado
+              codigoClienteGIA: codigoClienteGIA || '', // Lo tenés que traer del cliente, si no venía del frontend
+              Moneda: Moneda,
+              fechaCFE: Fecha,
+              adendadoc: adenda, // o cualquier observación que uses
+              detalleFactura: DetalleFactura.map((item) => ({
+                codItem: item.codigoGIA,
+                nombreItem: item.descripcion,
+                cantidad: 1, // Podés cambiarlo si manejás cantidades reales
+                precioUnitario: parseFloat(item.importe) || 0.00
+              }))
+            };
+
+            const xmlGenerado = generarXmlimpactarDocumento(datosParaXML);
+            console.log('XML generado para envío:', xmlGenerado);
+            const xmlBuffer = Buffer.from(xmlGenerado, 'utf-8');
+
+            // Headers SOAP
+            const headers = {
+              'Content-Type': 'text/xml;charset=utf-8',
+              'SOAPAction': '"agregarDocumentoFacturacion"',
+              'Accept-Encoding': 'gzip,deflate',
+              'Host': datosEmpresa.serverFacturacion,
+              'Connection': 'Keep-Alive',
+              'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+            };
+
+            const headersObtenerPdf = {
+              ...headers,
+              SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+            };
+
+            // Helpers para parsear XML SOAP
+            const parseSOAP = async (xmlData) => {
+              const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+              return await parser.parseStringPromise(xmlData);
+            };
+
+            const parseInnerXML = async (escapedXml) => {
+              const rawXml = escapedXml
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&');
+              const innerParser = new xml2js.Parser({ explicitArray: false });
+              return await innerParser.parseStringPromise(rawXml);
+            };
+
+            const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+            <usuario>${datosEmpresa.usuarioGfe}</usuario>
+            <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+            <empresa>${datosEmpresa.codigoEmpresa}</empresa>
+            <documento>
+              <fechaDocumento>${fechaDocumento}</fechaDocumento>
+              <tipoDocumento>${tipoDocumento}</tipoDocumento>
+              <serieDocumento>${serieDocumento}</serieDocumento>
+              <numeroDocumento>${numeroDocumento}</numeroDocumento>
+            </documento>
+          </obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+`;
+
+            (async () => {
+              try {
+                // Paso 2: Impactar documento
+                const response = await axios.post(
+                  `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+                  xmlBuffer,
+                  { headers }
+                );
+
+                const parsed = await parseSOAP(response.data);
+                const innerXml = parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado;
+                const result = await parseInnerXML(innerXml);
+                const resultado = result.agregarDocumentoFacturacionResultado;
+
+                if (resultado.resultado !== "1") {
+                  return res.status(422).json({
+                    success: false,
+                    message: 'Error al impactar el documento',
+                    descripcion: resultado.descripcion,
+                  });
+                }
+
+                // Paso 3: Obtener PDF
+                const datosDoc = resultado.datos.documento;
+
+                const xmlPdf = construirXmlObtenerPdf({
+                  fechaDocumento: datosDoc.fechaDocumento,
+                  tipoDocumento: datosDoc.tipoDocumento,
+                  serieDocumento: datosDoc.serieDocumento,
+                  numeroDocumento: datosDoc.numeroDocumento,
+                });
+
+                const pdfResponse = await axios.post(
+                  `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+                  xmlPdf,
+                  { headers: headersObtenerPdf }
+                );
+
+                const parsedPdf = await parseSOAP(pdfResponse.data);
+                const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+                const innerPdf = await parseInnerXML(innerPdfXmlEscaped);
+
+                const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
+
+                // Paso 4: Actualizar la factura con los datos del CFE
+                const updateQuery = `
+      UPDATE facturas SET 
+        FechaCFE = ?, 
+        TipoDocCFE = ?, 
+        SerieCFE = ?, 
+        NumeroCFE = ?, 
+        PdfBase64 = ?
+      WHERE Id = ?
+    `;
+
+                connection.query(updateQuery, [
+                  datosDoc.fechaDocumento,
+                  datosDoc.tipoDocumento,
+                  datosDoc.serieDocumento,
+                  datosDoc.numeroDocumento,
+                  pdfBase64,
+                  facturaId // << Asegurate que este valor esté bien definido
+                ], (err) => {
+                  if (err) {
+                    console.error('Error al actualizar la factura:', err);
+                    return res.status(500).json({
+                      success: false,
+                      message: 'Error al actualizar la factura en la base de datos'
+                    });
+                  }
+
+                  return res.status(200).json({
+                    success: true,
+                    message: `Factura ${facturaId} impactada y guardada correctamente`,
+                    documento: {
+                      fecha: datosDoc.fechaDocumento,
+                      tipo: datosDoc.tipoDocumento,
+                      serie: datosDoc.serieDocumento,
+                      numero: datosDoc.numeroDocumento,
+                      pdfBase64: pdfBase64
+                    }
+                  });
+                });
+              } catch (error) {
+                console.error('❌ Error al impactar el documento o recuperar el PDF:', error);
+                return res.status(500).json({
+                  success: false,
+                  message: 'Error interno al impactar documento o al recuperar el PDF',
+                });
+              }
+            })();
           });
         })
         .catch((err) => {
