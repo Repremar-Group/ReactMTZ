@@ -1,4 +1,4 @@
-body{
+body {
     display: flex;
 }
 
@@ -12,7 +12,8 @@ body{
     align-items: center;
     width: 300px;
 }
-.formularioschicosMoneda{
+
+.formularioschicosMoneda {
     background-color: white;
     padding: 30px;
     border-radius: 10px;
@@ -23,6 +24,7 @@ body{
     width: 300px;
     height: 500px;
 }
+
 .formulariosmedianos {
     background-color: white;
     padding: 30px;
@@ -33,6 +35,7 @@ body{
     align-items: center;
     width: 650px;
 }
+
 .formulariosgrandes {
     background-color: white;
     padding: 30px;
@@ -61,15 +64,22 @@ body{
 .btn-estandar:hover {
     background-color: #007bff;
 }
+
 .btn-estandar:disabled {
-    background-color: #d3d3d3; /* Color gris claro */
-    color: #a9a9a9; /* Texto gris claro */
-    cursor: not-allowed; /* Cursor indicando que está deshabilitado */
-    opacity: 0.7; /* Hacer que parezca más tenue */
+    background-color: #d3d3d3;
+    /* Color gris claro */
+    color: #a9a9a9;
+    /* Texto gris claro */
+    cursor: not-allowed;
+    /* Cursor indicando que está deshabilitado */
+    opacity: 0.7;
+    /* Hacer que parezca más tenue */
 }
+
 .btn-facturar {
     padding: 10px;
-    background-color: #218838; /* Verde formal */
+    background-color: #218838;
+    /* Verde formal */
     color: white;
     border: none;
     border-radius: 4px;
@@ -81,18 +91,23 @@ body{
 }
 
 .btn-facturar:hover {
-    background-color: #28a745; /* Verde más oscuro */
+    background-color: #28a745;
+    /* Verde más oscuro */
 }
 
 .btn-facturar:active {
-    background-color: #1e7e34; /* Verde aún más oscuro */
-    transform: scale(0.98); /* Efecto de clic */
+    background-color: #1e7e34;
+    /* Verde aún más oscuro */
+    transform: scale(0.98);
+    /* Efecto de clic */
 }
 
 .btn-facturar:disabled {
-    background-color: #94d3a2; /* Verde pálido para botones deshabilitados */
+    background-color: #94d3a2;
+    /* Verde pálido para botones deshabilitados */
     cursor: not-allowed;
 }
+
 .btn-estandartablas {
     background-color: #143361;
     color: white;
@@ -108,51 +123,71 @@ body{
 }
 
 
-.titulo-estandar{
+.titulo-estandar {
     text-align: center;
-    color:#143361;
+    color: #143361;
 }
-.titulo-estandar-grande{
+
+.titulo-estandar-grande {
     text-align: center;
-    color:#143361;
+    color: #143361;
     font-size: 13px;
 }
 
 /* Nuevo contenedor para los botones de acción */
 .action-buttons {
-    display: flex; /* Hace que los botones se alineen en fila */
-    gap: 2px; /* Espacio entre los botones */
+    display: flex;
+    /* Hace que los botones se alineen en fila */
+    gap: 2px;
+    /* Espacio entre los botones */
 }
 
 .action-button {
-    background: none; /* Sin fondo */
-    border: none; /* Sin borde */
-    cursor: pointer; /* Cambia el cursor al pasar por encima */
-    font-size: 18px; /* Tamaño de la fuente */
-    display: inline-block; /* Ajusta el tamaño del botón al contenido */
-    padding: 2px; /* Padding mínimo para un tamaño reducido */
-    margin: 2px; /* Margen mínimo para evitar espacio adicional */
-    line-height: 1; /* Asegura que el botón no tenga altura extra */
-    height: auto; /* Permitir que el botón ajuste su altura al contenido */
-    width: fit-content; /* Ajusta el ancho al contenido */
-    min-width: 0; /* Permite que el ancho sea tan pequeño como sea necesario */
-    max-width: none; /* Sin límite superior al ancho */
-    transition: transform 0.2s ease; /* Transición suave para el hover */
+    background: none;
+    /* Sin fondo */
+    border: none;
+    /* Sin borde */
+    cursor: pointer;
+    /* Cambia el cursor al pasar por encima */
+    font-size: 18px;
+    /* Tamaño de la fuente */
+    display: inline-block;
+    /* Ajusta el tamaño del botón al contenido */
+    padding: 2px;
+    /* Padding mínimo para un tamaño reducido */
+    margin: 2px;
+    /* Margen mínimo para evitar espacio adicional */
+    line-height: 1;
+    /* Asegura que el botón no tenga altura extra */
+    height: auto;
+    /* Permitir que el botón ajuste su altura al contenido */
+    width: fit-content;
+    /* Ajusta el ancho al contenido */
+    min-width: 0;
+    /* Permite que el ancho sea tan pequeño como sea necesario */
+    max-width: none;
+    /* Sin límite superior al ancho */
+    transition: transform 0.2s ease;
+    /* Transición suave para el hover */
 }
 
 .action-button:hover {
     background-color: #143361;
-    transform: scale(1.1); /* Aumenta el tamaño al 110% */
-    background: none; /* Sin fondo */
+    transform: scale(1.1);
+    /* Aumenta el tamaño al 110% */
+    background: none;
+    /* Sin fondo */
 }
 
 .action-button:focus {
-outline: none; /* Elimina el borde azul predeterminado del navegador */
+    outline: none;
+    /* Elimina el borde azul predeterminado del navegador */
 }
 
 .btn-eliminar-estandar {
     padding: 10px;
-    background-color: #c82333; /* Rojo formal */
+    background-color: #c82333;
+    /* Rojo formal */
     color: white;
     border: none;
     border-radius: 4px;
@@ -164,16 +199,20 @@ outline: none; /* Elimina el borde azul predeterminado del navegador */
 }
 
 .btn-eliminar-estandar:hover {
-    background-color: #dc3545; /* Rojo más oscuro */
+    background-color: #dc3545;
+    /* Rojo más oscuro */
 }
 
 .btn-eliminar-estandar:active {
-    background-color: #bd2130; /* Rojo aún más oscuro */
-    transform: scale(0.98); /* Efecto de clic */
+    background-color: #bd2130;
+    /* Rojo aún más oscuro */
+    transform: scale(0.98);
+    /* Efecto de clic */
 }
 
 .btn-eliminar-estandar:disabled {
-    background-color: #f5b3b8; /* Rojo pálido para botones deshabilitados */
+    background-color: #f5b3b8;
+    /* Rojo pálido para botones deshabilitados */
     cursor: not-allowed;
 }
 
@@ -182,29 +221,44 @@ outline: none; /* Elimina el borde azul predeterminado del navegador */
 .formulario-estandar select {
     width: 100%;
     padding: 5px;
-    border: 1px solid #ccc;
+
     border-radius: 5px;
     box-sizing: border-box;
-    background-color: #f0f0f0;
+
     color: gray;
+    border: 1.5px solid #ccc;
+    background-color: #fff;
+
     
+    outline-color: #3366ff;
+    transition: border-color 0.3s ease;
+    width: 100%;
+
 }
+
 .formulario-estandar input:focus {
-    outline: none; /* Elimina el borde azul predeterminado del navegador */
-    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5); /* Sombra sutil */
-    border-color: #1a4a8e; /* Opcional: cambia ligeramente el borde */
+    outline: none;
+    /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5);
+    /* Sombra sutil */
+    border-color: #1a4a8e;
+    /* Opcional: cambia ligeramente el borde */
 }
+
 .formulario-estandar select:focus {
-    outline: none; /* Elimina el borde azul predeterminado del navegador */
-    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5); /* Sombra sutil */
-    border-color: #1a4a8e; /* Opcional: cambia ligeramente el borde */
+    outline: none;
+    /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5);
+    /* Sombra sutil */
+    border-color: #1a4a8e;
+    /* Opcional: cambia ligeramente el borde */
 }
 
-.subtitulo-estandar{
-    color:#143361;
+.subtitulo-estandar {
+    color: #143361;
 }
 
-.estandar-container{
+.estandar-container {
     max-width: 1600px;
     /* Limita el ancho máximo del formulario */
     max-height: 900px;
@@ -249,43 +303,51 @@ outline: none; /* Elimina el borde azul predeterminado del navegador */
     width: 15px;
     height: 15px;
     cursor: pointer;
-    accent-color: #143361; /* Cambia el color del checkbox en navegadores compatibles */
+    accent-color: #143361;
+    /* Cambia el color del checkbox en navegadores compatibles */
 }
 
 /* Efecto hover en el checkbox */
 .checkbox-estandar input[type="checkbox"]:hover {
     box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
 }
+
 .loading-spinner {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 50%; /* Altura completa de la pantalla */
+    height: 50%;
+    /* Altura completa de la pantalla */
     font-size: 1.5rem;
-  }
-  .loading-overlay {
+}
+
+.loading-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.7); /* Fondo semitransparente */
+    background: rgba(255, 255, 255, 0.7);
+    /* Fondo semitransparente */
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1; /* Se asegura que la capa esté encima del formulario */
-  }
-  
-  .loading-spinner::after {
+    z-index: 1;
+    /* Se asegura que la capa esté encima del formulario */
+}
+
+.loading-spinner::after {
     content: "";
     width: 50px;
     height: 50px;
     border: 5px solid transparent;
-    border-top: 5px solid #143361; /* Color del spinner */
+    border-top: 5px solid #143361;
+    /* Color del spinner */
     border-radius: 50%;
     animation: spin 1s linear infinite;
-  }
-  input[type="checkbox"] {
+}
+
+input[type="checkbox"] {
     /* Ocultar el estilo nativo */
     appearance: none;
     -webkit-appearance: none;
@@ -296,25 +358,38 @@ outline: none; /* Elimina el borde azul predeterminado del navegador */
     height: 17px;
 
     /* Estilo básico */
-    border: 2px solid #143361; /* Borde con el color deseado */
-    border-radius: 4px; /* Esquinas ligeramente redondeadas */
-    background-color: #fff; /* Fondo blanco */
-    cursor: pointer; /* Cambiar el cursor al pasar por encima */
-    display: inline-block; /* Asegura el control de alineación */
-    transition: all 0.3s ease; /* Animación suave */
-    position: relative; /* Posicionamiento relativo para el check */
+    border: 2px solid #143361;
+    /* Borde con el color deseado */
+    border-radius: 4px;
+    /* Esquinas ligeramente redondeadas */
+    background-color: #fff;
+    /* Fondo blanco */
+    cursor: pointer;
+    /* Cambiar el cursor al pasar por encima */
+    display: inline-block;
+    /* Asegura el control de alineación */
+    transition: all 0.3s ease;
+    /* Animación suave */
+    position: relative;
+    /* Posicionamiento relativo para el check */
 }
 
 input[type="checkbox"]::after {
     /* Icono de check oculto por defecto */
     content: '';
     display: block;
-    width: 100%; /* Asegura que coincida con el tamaño del checkbox */
-    height: 100%; /* Mantén el tamaño */
-    background-color: transparent; /* Fondo transparente */
-    color: transparent; /* Color invisible */
-    font-size: 14px; /* Tamaño del texto */
-    position: absolute; /* Asegura que se coloque dentro del checkbox */
+    width: 100%;
+    /* Asegura que coincida con el tamaño del checkbox */
+    height: 100%;
+    /* Mantén el tamaño */
+    background-color: transparent;
+    /* Fondo transparente */
+    color: transparent;
+    /* Color invisible */
+    font-size: 14px;
+    /* Tamaño del texto */
+    position: absolute;
+    /* Asegura que se coloque dentro del checkbox */
     top: 0;
     left: 0;
     display: flex;
@@ -325,22 +400,28 @@ input[type="checkbox"]::after {
 
 input[type="checkbox"]:checked {
     /* Estilo cuando está marcado */
-    background-color: #143361; /* Fondo con el color deseado */
-    border-color: #143361; /* Mantén el borde del mismo color */
+    background-color: #143361;
+    /* Fondo con el color deseado */
+    border-color: #143361;
+    /* Mantén el borde del mismo color */
 }
 
 input[type="checkbox"]:checked::after {
     /* Icono de check */
-    content: '✔'; /* Carácter de check */
-    color: white; /* Color del check */
-    background-color: transparent; /* Mantén el fondo transparente */
+    content: '✔';
+    /* Carácter de check */
+    color: white;
+    /* Color del check */
+    background-color: transparent;
+    /* Mantén el fondo transparente */
 }
-  @keyframes spin {
+
+@keyframes spin {
     from {
-      transform: rotate(0deg);
+        transform: rotate(0deg);
     }
+
     to {
-      transform: rotate(360deg);
+        transform: rotate(360deg);
     }
-  }
-  
+}

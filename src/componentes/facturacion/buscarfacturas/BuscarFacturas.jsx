@@ -73,39 +73,39 @@ const BuscarFacturas = () => {
     };
 
 
-    
-const descargarFacturasEnZip = async (facturas) => {
-    const zip = new JSZip();
-    let descargadas = 0;
-    let omitidas = 0;
 
-    facturas.forEach((factura, index) => {
-        if (factura.PdfBase64 && factura.NumeroCFE) {
-            // Limpiar el base64 (eliminar encabezado si lo tiene)
-            const base64Data = factura.PdfBase64.includes(',') 
-                ? factura.PdfBase64.split(',')[1] 
-                : factura.PdfBase64;
+    const descargarFacturasEnZip = async (facturas) => {
+        const zip = new JSZip();
+        let descargadas = 0;
+        let omitidas = 0;
 
-            const nombreArchivo = `${factura.NumeroCFE}_${index + 1}.pdf`;
+        facturas.forEach((factura, index) => {
+            if (factura.PdfBase64 && factura.NumeroCFE) {
+                // Limpiar el base64 (eliminar encabezado si lo tiene)
+                const base64Data = factura.PdfBase64.includes(',')
+                    ? factura.PdfBase64.split(',')[1]
+                    : factura.PdfBase64;
 
-            // Convertir correctamente base64 a binario
-            zip.file(nombreArchivo, base64Data, { base64: true });
+                const nombreArchivo = `${factura.NumeroCFE}_${index + 1}.pdf`;
 
-            descargadas++;
-        } else {
-            omitidas++;
+                // Convertir correctamente base64 a binario
+                zip.file(nombreArchivo, base64Data, { base64: true });
+
+                descargadas++;
+            } else {
+                omitidas++;
+            }
+        });
+
+        if (descargadas > 0) {
+            const blob = await zip.generateAsync({ type: 'blob' });
+            saveAs(blob, 'facturas.zip');
         }
-    });
 
-    if (descargadas > 0) {
-        const blob = await zip.generateAsync({ type: 'blob' });
-        saveAs(blob, 'facturas.zip');
-    }
-
-    if (descargadas > 0 || omitidas > 0) {
-        toast.info(`Se descargaron ${descargadas} factura(s). ${omitidas > 0 ? omitidas + ' omitida(s) por falta de PDF.' : ''}`);
-    }
-};
+        if (descargadas > 0 || omitidas > 0) {
+            toast.info(`Se descargaron ${descargadas} factura(s). ${omitidas > 0 ? omitidas + ' omitida(s) por falta de PDF.' : ''}`);
+        }
+    };
 
     // Función para obtener las Guias
     const fetchFacturas = async () => {
@@ -343,8 +343,11 @@ const descargarFacturasEnZip = async (facturas) => {
                                                             Enviar a GFE
                                                         </button>
                                                     )}
-                                                    {!row.NumeroCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                    {!row.NumeroCFE && row.esManual === 1 && (
+                                                        <button
+                                                            className='botonsubmenubuscarfactura'
+                                                            onClick={() => alert(`Enviar PDF de ${row.Id}`)}
+                                                        >
                                                             Modificar
                                                         </button>
                                                     )}

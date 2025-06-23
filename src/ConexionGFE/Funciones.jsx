@@ -11,6 +11,7 @@ export const descargarPDFBase64 = (base64, nombreArchivo) => {
 
 export const impactarEnGIA = async (factura, backURLFUNC) => {
   try {
+    console.log('Info a impactar en GIA, Factura: ',factura, ' urlBack: ', backURLFUNC);
     const response = await axios.post(`${backURLFUNC}/api/impactardocumento`, {
       factura: factura
     });

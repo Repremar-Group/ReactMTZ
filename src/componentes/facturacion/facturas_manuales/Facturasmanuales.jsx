@@ -422,7 +422,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
         </div>
       )}
       <h2 className='titulo-estandar'>Emisión de Factura Manual</h2>
-      <form onSubmit={handleSubmitAgregarFm} className='formulario-estandar'>
+      <form className='formulario-estandar'>
 
         <div className='primerafilaemisiondecomprobantes'>
           <div className='div-datos-comprobante'>
@@ -792,9 +792,9 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
 
         <div className='botonesemitircomprobante'>
-          <button type="submit" className='btn-estandar'>Confirmar</button>
+          <button type="button" className='btn-facturar' onClick={handleSubmitAgregarFm}>Facturar</button>
 
-          <Link to="/home"><button className="btn-estandar">Volver</button></Link>
+          <Link to="/home"><button type="button" className="btn-estandar">Volver</button></Link>
         </div>
 
 

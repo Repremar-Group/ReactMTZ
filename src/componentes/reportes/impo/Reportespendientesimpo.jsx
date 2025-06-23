@@ -75,7 +75,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
       });
 
       const data = response.data;
-      
+
 
       // Transformar la data al formato deseado (si es necesario)
       const guiasFormateadas = data.map((guia) => ({
@@ -254,48 +254,51 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
   };
 
   const TablaPendientes = ({ guia }) => (
-    <table className='tabla-pendientes' >
-      <thead>
-        <tr>
-          <th>AWB</th>
-          <th>Agente</th>
-          <th>Pcs</th>
-          <th>Peso</th>
-          <th>Llegada</th>
-          <th>Ori</th>
-          <th>CNX</th>
-          <th>Des</th>
-          <th>Tarifado</th>
-          <th>Tarifa</th>
-          <th>Flete</th>
-          <th>DC</th>
-          <th>DA</th>
-          <th>Total</th>
-          <th>Cobrar</th>
-        </tr>
-      </thead>
-      <tbody>
-        {guia.map((guia, index) => (
-          <tr key={index}>
-            <td>{guia.awb}</td>
-            <td>{guia.agente}</td>
-            <td>{guia.pcs}</td>
-            <td>{guia.peso}</td>
-            <td>{guia.llegada}</td>
-            <td>{guia.ori}</td>
-            <td>{guia.cnx}</td>
-            <td>{guia.des}</td>
-            <td>{guia.tarifado}</td>
-            <td>{guia.tarifa}</td>
-            <td>{guia.flete}</td>
-            <td>{guia.dc}</td>
-            <td>{guia.da}</td>
-            <td>{guia.total}</td>
-            <td>{guia.cobrar}</td>
+    <div className='contenedor-tabla-buscarfacturas'>
+      <table className='tabla-facturas' >
+        <thead>
+          <tr>
+            <th>AWB</th>
+            <th>Agente</th>
+            <th>Pcs</th>
+            <th>Peso</th>
+            <th>Llegada</th>
+            <th>Ori</th>
+            <th>CNX</th>
+            <th>Des</th>
+            <th>Tarifado</th>
+            <th>Tarifa</th>
+            <th>Flete</th>
+            <th>DC</th>
+            <th>DA</th>
+            <th>Total</th>
+            <th>Cobrar</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {guia.map((guia, index) => (
+            <tr key={index}>
+              <td>{guia.awb}</td>
+              <td>{guia.agente}</td>
+              <td>{guia.pcs}</td>
+              <td>{guia.peso}</td>
+              <td>{guia.llegada}</td>
+              <td>{guia.ori}</td>
+              <td>{guia.cnx}</td>
+              <td>{guia.des}</td>
+              <td>{guia.tarifado}</td>
+              <td>{guia.tarifa}</td>
+              <td>{guia.flete}</td>
+              <td>{guia.dc}</td>
+              <td>{guia.da}</td>
+              <td>{guia.total}</td>
+              <td>{guia.cobrar}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
   );
 
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './LoginForm.css';
-import logo from './logo.png';
+import logo from './LogoCieloSur.png';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
@@ -15,11 +15,7 @@ const LoginForm = ({ onLoginSuccess }) => {
     const navigate = useNavigate();
     const backURL = import.meta.env.VITE_BACK_URL;
 
-    // Array de usuarios válidos
-    const usuariosValidos = [
-        { usuario: "admin", contraseña: "admin" },
-        { usuario: "it", contraseña: "sistemas" }
-    ];
+ 
     
 
     // Manejar el evento de submit

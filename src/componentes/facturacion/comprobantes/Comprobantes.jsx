@@ -660,12 +660,12 @@ const Comprobantes = ({ isLoggedIn }) => {
 
       let response;
       console.log("Final payload a enviar:", JSON.stringify(datosFormulario, null, 2));
-      if (datosFormulario.ComprobanteElectronico === "efactura") {
+      if (datosFormulario.ComprobanteElectronico === "efactura" || datosFormulario.ComprobanteElectronico === "efacturaca") {
         // Caso EFECTURA
         response = await axios.post(`${backURL}/api/insertfactura`, datosFormulario);
         console.log('Factura Agregada (eFactura):', response.data);
 
-      } else if (datosFormulario.ComprobanteElectronico === "eticket") {
+      } else if (datosFormulario.ComprobanteElectronico === "eticket" || datosFormulario.ComprobanteElectronico === "eticketca") {
         // Caso ETICKET (puede ser el mismo endpoint o uno diferente si aplica)
         response = await axios.post(`${backURL}/api/insertticket`, datosFormulario); // puedes usar otro endpoint si es necesario
         console.log('Factura Agregada (eTicket):', response.data);
@@ -756,7 +756,7 @@ const Comprobantes = ({ isLoggedIn }) => {
         </div>
       )}
       <h2 className='titulo-estandar'>Emisión de Comprobantes</h2>
-      <form onSubmit={handleSubmitFacturar} className='formulario-estandar'>
+      <form className='formulario-estandar'>
         <ToastContainer />
         <div className='primerafilaemisiondecomprobantes'>
           <div className='div-datos-comprobante'>
@@ -809,7 +809,9 @@ const Comprobantes = ({ isLoggedIn }) => {
                 >
                   <option value="">Comprobante Electronico</option>
                   <option value="efactura">E-Factura</option>
+                  <option value="efacturaca">E-Factura Cuenta Ajena</option>
                   <option value="eticket">E-Ticket</option>
+                  <option value="eticketca">E-Ticket Cuenta Ajena</option>
                 </select>
 
               </div>
@@ -1063,7 +1065,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
           <button type="button" disabled={botonDeshabilitado} onClick={handleOpenModalGSM} className='btn-estandar'>Comprobante GSM</button>
 
-          <button type="submit" className="btn-facturar">Facturar</button>
+          <button type='button' className="btn-facturar" onClick={handleSubmitFacturar}>Facturar</button>
 
           <button type='button' className="btn-estandar" onClick={() => volver()} >Volver</button>
         </div>

@@ -2203,14 +2203,14 @@ app.post('/api/insertfactura', async (req, res) => {
         const insertFacturaCuentaAjenaQuery = `
     INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                           ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
         connection.query(insertFacturaCuentaAjenaQuery, [
           IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codEfacCA, // ComprobanteElectronico como 'efacturaca'
           Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
-          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena
+          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA
         ], (err, result) => {
           if (err) {
             return connection.rollback(() => {
@@ -2343,7 +2343,7 @@ app.post('/api/insertfactura', async (req, res) => {
                 });
               });
               const detallesCuentaAjena = DetalleFactura.flatMap((detalle) => {
-                return detalle.conceptos_cuentaajena.map((concepto) => {
+                return (Array.isArray(detalle.conceptos_cuentaajena) ? detalle.conceptos_cuentaajena : []).map((concepto) => {
                   const importeFormateado = parseFloat(concepto.importe.toFixed(2));
 
                   return {
@@ -2380,6 +2380,7 @@ app.post('/api/insertfactura', async (req, res) => {
                 return new Promise((resolve, reject) => {
                   axios.post('http://localhost:3000/pruebaws', { xml, xmlCuentaAjena })
                     .then(response => {
+                      const resultados = response.data.resultados;
                       const updateQuery = `
           UPDATE facturas SET 
             FechaCFE = ?, 
@@ -2398,72 +2399,65 @@ app.post('/api/insertfactura', async (req, res) => {
           WHERE IdFactura = ?
         `;
 
-                      const doc1 = response.data.resultados[0];
-                      const doc2 = response.data.resultados[1];
+                      // Actualiza la factura principal
+                      const doc1 = resultados[0];
 
-                      connection.query(updateQuery, [
-                        doc1.fechadocumento,
-                        doc1.tipodocumento,
-                        doc1.tipodocumento,
-                        doc1.seriedocumento,
-                        doc1.numerodocumento,
-                        doc1.pdfBase64,
-                        facturaId
-                      ], (err) => {
-                        if (err) {
-                          console.error('Error al actualizar la primera factura:', err);
-                          return reject(new Error('Error al actualizar la primera factura'));
-                        }
-
+                      const updateFacturaPrincipal = new Promise((resolve, reject) => {
                         connection.query(updateQuery, [
-                          doc2.fechadocumento,
-                          doc2.tipodocumento,
-                          doc2.tipodocumento,
-                          doc2.seriedocumento,
-                          doc2.numerodocumento,
-                          doc2.pdfBase64,
-                          facturaCuentaAjenaId
-                        ], (err2) => {
-                          if (err2) {
-                            console.error('Error al actualizar la segunda factura:', err2);
-                            return reject(new Error('Error al actualizar la segunda factura'));
-                          }
+                          doc1.fechadocumento,
+                          doc1.tipodocumento,
+                          doc1.tipodocumento,
+                          doc1.seriedocumento,
+                          doc1.numerodocumento,
+                          doc1.pdfBase64,
+                          facturaId
+                        ], (err) => {
+                          if (err) return reject(err);
                           connection.query(updateCuentaCorrienteQuery, [
                             doc1.tipodocumento,
                             doc1.numerodocumento,
                             doc1.fechadocumento,
                             facturaId
-                          ], (err3) => {
-                            if (err3) {
-                              console.error('Error al actualizar cuenta_corriente (doc1):', err3);
-                              return reject(new Error('Error al actualizar cuenta_corriente doc1'));
-                            }
+                          ], (err) => {
+                            if (err) return reject(err);
+                            resolve();
+                          });
+                        });
+                      });
 
-                            // Update cuenta_corriente para doc2
+                      const updateFacturaCuentaAjena = facturaCuentaAjenaId && resultados[1]
+                        ? new Promise((resolve, reject) => {
+                          const doc2 = resultados[1];
+                          connection.query(updateQuery, [
+                            doc2.fechadocumento,
+                            doc2.tipodocumento,
+                            doc2.tipodocumento,
+                            doc2.seriedocumento,
+                            doc2.numerodocumento,
+                            doc2.pdfBase64,
+                            facturaCuentaAjenaId
+                          ], (err) => {
+                            if (err) return reject(err);
                             connection.query(updateCuentaCorrienteQuery, [
                               doc2.tipodocumento,
                               doc2.numerodocumento,
                               doc2.fechadocumento,
                               facturaCuentaAjenaId
-                            ], (err4) => {
-                              if (err4) {
-                                console.error('Error al actualizar cuenta_corriente (doc2):', err4);
-                                return reject(new Error('Error al actualizar cuenta_corriente doc2'));
-                              }
-
-                              resolve(response.data);
+                            ], (err) => {
+                              if (err) return reject(err);
+                              resolve();
                             });
                           });
-                        });
-                      });
+                        })
+                        : Promise.resolve(); // No hay cuenta ajena, no hace nada
+
+                      Promise.all([updateFacturaPrincipal, updateFacturaCuentaAjena])
+                        .then(() => resolve(response.data))
+                        .catch(reject);
                     })
                     .catch(error => {
                       console.error('Error en enviarFacturaSOAP:', error.response?.data || error.message || error);
-                      if (error.response && error.response.data) {
-                        reject(error.response.data);
-                      } else {
-                        reject(new Error('Error en SOAP'));
-                      }
+                      reject(error.response?.data || new Error('Error en SOAP'));
                     });
                 });
               };
@@ -2472,12 +2466,15 @@ app.post('/api/insertfactura', async (req, res) => {
               (async () => {
                 try {
                   const xml = generarXmlefacimpopp(datos);
-                  const xmlCuentaAjena = generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjena);
+
+                  let xmlCuentaAjena = null;
+                  if (facturaCuentaAjenaId) {
+                    xmlCuentaAjena = generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjena);
+                  }
 
                   const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
 
                   res.status(200).json(resultadoSOAP);
-
                 } catch (error) {
                   if (typeof error === 'object' && error !== null) {
                     res.status(422).json(error);
@@ -2613,14 +2610,14 @@ app.post('/api/insertticket', async (req, res) => {
         const insertFacturaCuentaAjenaQuery = `
     INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                           ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
         connection.query(insertFacturaCuentaAjenaQuery, [
           IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codETickCA,
           Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
-          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena
+          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA
         ], (err, result) => {
           if (err) {
             return connection.rollback(() => {
@@ -2934,14 +2931,14 @@ app.post('/api/insertfacturamanual', async (req, res) => {
     const insertFacturaQuery = `
       INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                             ComprobanteElectronico, Comprobante, Electronico, Moneda, Fecha, TipoIVA, 
-                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, esManual)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     connection.query(insertFacturaQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, tipoComprobante,
       Comprobante, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
-      Redondeo, Total, TotalCobrar
+      Redondeo, Total, TotalCobrar, codigoClienteGIA, 1
     ], (err, result) => {
       if (err) {
         return connection.rollback(() => {
@@ -3573,8 +3570,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
 });
 app.post('/pruebaws', async (req, res) => {
   const { xml, xmlCuentaAjena } = req.body;
-  const xmlBuffer = Buffer.from(xml, 'utf-8');
-  const xmlBufferca = Buffer.from(xmlCuentaAjena, 'utf-8');
+
   const datosEmpresa = await obtenerDatosEmpresa(connection);
   const headersAgregar = {
     'Content-Type': 'text/xml;charset=utf-8',
@@ -3601,7 +3597,6 @@ app.post('/pruebaws', async (req, res) => {
     return await innerParser.parseStringPromise(rawXml);
   };
 
-  // Función que arma el XML para obtener el PDF base64 dado un documento
   const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
       <soapenv:Header/>
@@ -3626,111 +3621,86 @@ app.post('/pruebaws', async (req, res) => {
   `;
 
   try {
-    // 1) Enviar ambas solicitudes agregarDocumentoFacturacion en paralelo
-    const [response1, response2] = await Promise.all([
-      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlBuffer, { headers: headersAgregar }),
-      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlBufferca, { headers: headersAgregar }),
-    ]);
+    const resultados = [];
 
-    // 2) Parsear respuestas SOAP originales
-    const result1 = await parseSOAP(response1.data);
-    const result2 = await parseSOAP(response2.data);
+    // Proceso principal
+    const procesarXML = async (xmlData) => {
+      const xmlBuffer = Buffer.from(xmlData, 'utf-8');
 
-    const inner1 = await parseInnerXML(result1.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
-    const inner2 = await parseInnerXML(result2.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+      // 1. Enviar SOAP agregarDocumentoFacturacion
+      const response = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xmlBuffer,
+        { headers: headersAgregar }
+      );
 
-    const res1 = inner1.agregarDocumentoFacturacionResultado;
-    const res2 = inner2.agregarDocumentoFacturacionResultado;
+      // 2. Parsear respuesta
+      const parsed = await parseSOAP(response.data);
+      const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+      const resultado = inner.agregarDocumentoFacturacionResultado;
 
-    // ✅ Verificamos si alguno falló
-    if (res1.resultado !== "1" || res2.resultado !== "1") {
-      console.log('res1:', res1);
-      console.log('res2:', res2);
-      console.log('Enviando error 422 con este objeto:', {
-        success: false,
-        mensaje: 'Uno o ambos documentos no fueron aceptados por GFE',
-        errores: [
-          { descripcion: res1.descripcion, resultado: res1.resultado },
-          { descripcion: res2.descripcion, resultado: res2.resultado },
-        ],
+      // 3. Validar resultado
+      if (resultado.resultado !== "1") {
+        throw {
+          success: false,
+          mensaje: 'Error en agregarDocumentoFacturacion',
+          errores: [{ descripcion: resultado.descripcion, resultado: resultado.resultado }],
+        };
+      }
+
+      // 4. Construir XML para obtener PDF
+      const xmlPdf = construirXmlObtenerPdf({
+        fechaDocumento: resultado.datos.documento.fechaDocumento,
+        tipoDocumento: resultado.datos.documento.tipoDocumento,
+        serieDocumento: resultado.datos.documento.serieDocumento,
+        numeroDocumento: resultado.datos.documento.numeroDocumento,
       });
-      return res.status(422).json({
-        success: false,
-        mensaje: 'Uno o ambos documentos no fueron aceptados por GFE',
-        errores: [
-          { descripcion: res1.descripcion, resultado: res1.resultado },
-          { descripcion: res2.descripcion, resultado: res2.resultado },
-        ],
-      });
+
+      // 5. Pedir PDF
+      const pdfResponse = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xmlPdf,
+        { headers: headersObtenerPdf }
+      );
+
+      const parsedPdf = await parseSOAP(pdfResponse.data);
+      const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+      const innerPdfXml = innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+      const innerPdf = await parseInnerXML(innerPdfXml);
+
+      const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
+
+      return {
+        resultado: resultado.resultado,
+        descripcion: resultado.descripcion,
+        fechadocumento: resultado.datos.documento.fechaDocumento,
+        tipodocumento: resultado.datos.documento.tipoDocumento,
+        seriedocumento: resultado.datos.documento.serieDocumento,
+        numerodocumento: resultado.datos.documento.numeroDocumento,
+        pdfBase64,
+      };
+    };
+
+    // Procesar factura principal
+    const resultado1 = await procesarXML(xml);
+    resultados.push(resultado1);
+
+    // Procesar cuenta ajena solo si existe
+    if (xmlCuentaAjena) {
+      const resultado2 = await procesarXML(xmlCuentaAjena);
+      resultados.push(resultado2);
     }
 
-    // 3) Construir XMLs para pedir PDF base64 usando los datos de cada documento
-    const xmlPdf1 = construirXmlObtenerPdf({
-      fechaDocumento: res1.datos.documento.fechaDocumento,
-      tipoDocumento: res1.datos.documento.tipoDocumento,
-      serieDocumento: res1.datos.documento.serieDocumento,
-      numeroDocumento: res1.datos.documento.numeroDocumento,
-    });
-
-    const xmlPdf2 = construirXmlObtenerPdf({
-      fechaDocumento: res2.datos.documento.fechaDocumento,
-      tipoDocumento: res2.datos.documento.tipoDocumento,
-      serieDocumento: res2.datos.documento.serieDocumento,
-      numeroDocumento: res2.datos.documento.numeroDocumento,
-    });
-
-    // 4) Pedir los PDFs base64 en paralelo
-    const [pdfResponse1, pdfResponse2] = await Promise.all([
-      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf1, { headers: headersObtenerPdf }),
-      axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf2, { headers: headersObtenerPdf }),
-    ]);
-
-    // 5) Parsear las respuestas con los PDFs
-    const parsedPdf1 = await parseSOAP(pdfResponse1.data);
-    const parsedPdf2 = await parseSOAP(pdfResponse2.data);
-
-    // 6) Extraer el XML interno con el base64 del PDF
-    const innerPdf1XmlEscaped = parsedPdf1.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
-    const innerPdf2XmlEscaped = parsedPdf2.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
-
-    const innerPdf1Xml = innerPdf1XmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-    const innerPdf2Xml = innerPdf2XmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-
-    const innerPdf1 = await parseInnerXML(innerPdf1Xml);
-    const innerPdf2 = await parseInnerXML(innerPdf2Xml);
-    console.log('dos innerpdf', innerPdf1, innerPdf2);
-
-    // 7) Extraer base64 
-    const pdfBase641 = innerPdf1.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
-    const pdfBase642 = innerPdf2.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
-
-    // 8) Retornar la respuesta con datos y PDFs base64
     return res.status(200).json({
       success: true,
-      resultados: [
-        {
-          resultado: res1.resultado,
-          descripcion: res1.descripcion,
-          fechadocumento: res1.datos.documento.fechaDocumento || null,
-          tipodocumento: res1.datos.documento.tipoDocumento || null,
-          seriedocumento: res1.datos.documento.serieDocumento || null,
-          numerodocumento: res1.datos.documento.numeroDocumento || null,
-          pdfBase64: pdfBase641,
-        },
-        {
-          resultado: res2.resultado,
-          descripcion: res2.descripcion,
-          fechadocumento: res2.datos.documento.fechaDocumento || null,
-          tipodocumento: res2.datos.documento.tipoDocumento || null,
-          seriedocumento: res2.datos.documento.serieDocumento || null,
-          numerodocumento: res2.datos.documento.numeroDocumento || null,
-          pdfBase64: pdfBase642,
-        },
-      ],
+      resultados,
     });
 
   } catch (error) {
-    console.error('Error procesando solicitudes SOAP:', error);
+    console.error('Error procesando SOAP:', error);
+    if (error && error.errores) {
+      return res.status(422).json(error);
+    }
     return res.status(500).send('Error al enviar las facturas');
   }
 });
@@ -4483,14 +4453,15 @@ app.get('/api/guias-sin-facturar', (req, res) => {
 app.post('/api/impactardocumento', async (req, res) => {
   const factura = req.body;
   const idFactura = factura.factura.Id;
-
+  const esManual = factura.factura.esManual;
+  console.log('Impactando Documento en el back Factura: ', factura, ' idFactura: ', idFactura);
   try {
     const datosEmpresa = await obtenerDatosEmpresa(connection);
-
+    const tablaDetalles = esManual === 1 ? 'detalle_facturas_manuales' : 'detalle_facturas';
     // Obtener detalles de la factura
     const sql = `
       SELECT *
-      FROM detalle_facturas
+      FROM ${tablaDetalles}
       WHERE IdFactura = ?
     `;
 
@@ -4505,8 +4476,11 @@ app.post('/api/impactardocumento', async (req, res) => {
       // Preparar detalles de la factura
       const detallesFactura = resultados.map((concepto) => {
         const importeFormateado = parseFloat(concepto.Importe.toFixed(2));
+        const codItem = esManual === 1
+          ? concepto.codigoGIA?.toString() || 'SIN_CODIGO'
+          : concepto.Id_concepto?.toString() || 'SIN_CODIGO';
         return {
-          codItem: concepto.Id_concepto.toString(),
+          codItem: codItem,
           indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
           nombreItem: concepto.Descripcion,
           cantidad: "1",
