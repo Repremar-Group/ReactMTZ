@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funciones';
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
 
 const BuscarFacturas = () => {
     const navigate = useNavigate();
@@ -32,6 +33,36 @@ const BuscarFacturas = () => {
         setSubmenuVisibleId((prevId) => (prevId === id ? null : id));
     };
     const backURL = import.meta.env.VITE_BACK_URL;
+
+    //Estados para Modal Modificar Factura
+    const [isModalOpenModificarFactura, SetIsModalOpenModificarFactura] = useState(false);
+    const [facturaamodificar, setFacturaAModificar] = useState([]);
+    const onCloseModificarFactura = () => {
+        SetIsModalOpenModificarFactura(false);
+
+    };
+    const onFinallyModificarFactura = () => {
+        SetIsModalOpenModificarFactura(false);
+        fetchFacturas();
+    };
+    const handleSuccess = () => {
+        toast.success('Factura actualizada correctamente', {
+            autoClose: 1500,
+            onClose: () => {
+                onCloseModificarFactura();  // cerrar modal cuando la toast desaparezca
+                onFinallyModificarFactura(); // hacer otras cosas si querés (recargar, etc)
+            },
+        });
+    };
+    const handleError = () => {
+        toast.error('Ocurrió un error al actualizar', {
+            autoClose: 1500,
+            onClose: () => {
+                onCloseModificarFactura();
+            },
+        });
+    };
+
     const [loadingEnvioGFE, setLoadingEnvioGFE] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
@@ -303,6 +334,7 @@ const BuscarFacturas = () => {
                                                             onClick={async () => {
                                                                 try {
                                                                     setLoadingEnvioGFE(true);
+                                                                    console.log('Factura antes del back',row);
                                                                     const response = await impactarEnGIA(row, backURL);
                                                                     if (response.success) {
                                                                         const doc = response.documento;
@@ -346,7 +378,19 @@ const BuscarFacturas = () => {
                                                     {!row.NumeroCFE && row.esManual === 1 && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'
-                                                            onClick={() => alert(`Enviar PDF de ${row.Id}`)}
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const response = await axios.get(`${backURL}/api/obtenerModificarFactura?id=${row.Id}`);
+                                                                    setFacturaAModificar(response.data);
+                                                                    setLoadingEnvioGFE(true);
+                                                                    SetIsModalOpenModificarFactura(true)
+                                                                } catch {
+
+                                                                } finally {
+                                                                    setLoadingEnvioGFE(false);
+                                                                }
+                                                            }
+                                                            }
                                                         >
                                                             Modificar
                                                         </button>
@@ -370,6 +414,14 @@ const BuscarFacturas = () => {
                         message={mensajeAlertaGFE}
                         onConfirm={handleConfirmAlertaGFE}
                         iconType={iconoAlertaGFE}
+                    />
+                    <ModificarFacturasManuales
+                        isOpen={isModalOpenModificarFactura}
+                        onClose={onCloseModificarFactura}
+                        onFinally={onFinallyModificarFactura}
+                        onSuccess={handleSuccess}
+                        onError={handleError}
+                        factura={facturaamodificar}
                     />
 
                 </div>

@@ -149,8 +149,19 @@ app.get('/api/previewfacturas', (req, res) => {
         month: '2-digit',
         year: 'numeric',
       });
-
-      return { ...row, Fecha: formattedFecha };
+      const fechaVenc = row.fechaVencimiento ? new Date(row.fechaVencimiento) : null;
+      const formattedFechaVenc = fechaVenc
+        ? fechaVenc.toLocaleDateString('es-AR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
+        : '';
+      return {
+        ...row,
+        Fecha: formattedFecha,
+        fechaVencimiento: formattedFechaVenc, // aquí se agrega
+      };
     });
 
     res.status(200).json(formattedResult);
@@ -2088,6 +2099,7 @@ app.post('/api/insertfactura', async (req, res) => {
     Electronico,
     Moneda,
     Fecha,
+    FechaVencimiento,
     TipoIVA,
     CASS,
     TipoEmbarque,
@@ -2156,14 +2168,14 @@ app.post('/api/insertfactura', async (req, res) => {
     const insertFacturaQuery = `
       INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                             ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia,fechaVencimiento)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     connection.query(insertFacturaQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, comprobanteElectronicoFinal,
       Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
-      Redondeo, Total, TotalCobrar, CodigoGIA
+      Redondeo, Total, TotalCobrar, CodigoGIA, FechaVencimiento
     ], (err, result) => {
       if (err) {
         return connection.rollback(() => {
@@ -2203,14 +2215,14 @@ app.post('/api/insertfactura', async (req, res) => {
         const insertFacturaCuentaAjenaQuery = `
     INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                           ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia,fechaVencimiento)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
         connection.query(insertFacturaCuentaAjenaQuery, [
           IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codEfacCA, // ComprobanteElectronico como 'efacturaca'
           Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
-          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA
+          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA, FechaVencimiento
         ], (err, result) => {
           if (err) {
             return connection.rollback(() => {
@@ -2360,6 +2372,7 @@ app.post('/api/insertfactura', async (req, res) => {
 
               const datos = {
                 fechaCFE: Fecha,
+                fechaVencimientoCFE: FechaVencimiento,
                 Moneda: Moneda,
                 detalleFactura: detallesFactura,
                 adendadoc: adenda,
@@ -2368,6 +2381,7 @@ app.post('/api/insertfactura', async (req, res) => {
               }
               const datosEfacCuentaAjena = {
                 fechaCFE: Fecha,
+                fechaVencimientoCFE: FechaVencimiento,
                 Moneda: Moneda,
                 detalleFacturaCuentaAjena: detallesCuentaAjena,
                 adendadoc: adendaCUENTAAJENA,
@@ -2514,6 +2528,7 @@ app.post('/api/insertticket', async (req, res) => {
     Electronico,
     Moneda,
     Fecha,
+    FechaVencimiento,
     TipoIVA,
     CASS,
     TipoEmbarque,
@@ -2564,14 +2579,14 @@ app.post('/api/insertticket', async (req, res) => {
     const insertFacturaQuery = `
       INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                             ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, fechaVencimiento)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     connection.query(insertFacturaQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, comprobanteElectronicoFinal,
       Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
-      Redondeo, Total, TotalCobrar, CodigoGIA
+      Redondeo, Total, TotalCobrar, CodigoGIA, FechaVencimiento
     ], (err, result) => {
       if (err) {
         return connection.rollback(() => {
@@ -2610,14 +2625,14 @@ app.post('/api/insertticket', async (req, res) => {
         const insertFacturaCuentaAjenaQuery = `
     INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                           ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, fechaVencimiento)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
         connection.query(insertFacturaCuentaAjenaQuery, [
           IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codETickCA,
           Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
-          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA
+          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA, FechaVencimiento
         ], (err, result) => {
           if (err) {
             return connection.rollback(() => {
@@ -2767,6 +2782,7 @@ app.post('/api/insertticket', async (req, res) => {
 
               const datos = {
                 fechaCFE: Fecha,
+                fechaVencimientoCFE: FechaVencimiento,
                 Moneda: Moneda,
                 detalleFactura: detallesFactura,
                 adendadoc: adenda,
@@ -2776,6 +2792,7 @@ app.post('/api/insertticket', async (req, res) => {
               }
               const datosEfacCuentaAjena = {
                 fechaCFE: Fecha,
+                fechaVencimientoCFE: FechaVencimiento,
                 Moneda: Moneda,
                 detalleFactura: detallesCuentaAjena,
                 adendadoc: adendaCUENTAAJENA,
@@ -2890,6 +2907,7 @@ app.post('/api/insertfacturamanual', async (req, res) => {
     Electronico,
     Moneda,
     Fecha,
+    FechaVencimiento,
     TipoIVA,
     CASS,
     TipoEmbarque,
@@ -2931,14 +2949,14 @@ app.post('/api/insertfacturamanual', async (req, res) => {
     const insertFacturaQuery = `
       INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                             ComprobanteElectronico, Comprobante, Electronico, Moneda, Fecha, TipoIVA, 
-                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, esManual)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, esManual, fechaVencimiento)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     connection.query(insertFacturaQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, tipoComprobante,
       Comprobante, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
-      Redondeo, Total, TotalCobrar, codigoClienteGIA, 1
+      Redondeo, Total, TotalCobrar, codigoClienteGIA, 1, FechaVencimiento
     ], (err, result) => {
       if (err) {
         return connection.rollback(() => {
@@ -3012,6 +3030,7 @@ app.post('/api/insertfacturamanual', async (req, res) => {
               codigoClienteGIA: codigoClienteGIA || '', // Lo tenés que traer del cliente, si no venía del frontend
               Moneda: Moneda,
               fechaCFE: Fecha,
+              fechaVencimientoCFE: FechaVencimiento,
               adendadoc: adenda, // o cualquier observación que uses
               detalleFactura: DetalleFactura.map((item) => ({
                 codItem: item.codigoGIA,
@@ -4355,6 +4374,175 @@ AND g.facturada = 0
   });
 });
 
+app.get('/api/obtenerModificarFactura', (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ error: 'Falta el parámetro "id"' });
+  }
+
+  // Primero buscamos la factura
+  connection.query('SELECT * FROM facturas WHERE Id = ?', [id], (error, facturaResults) => {
+    if (error) {
+      console.error('Error al obtener la factura:', error);
+      return res.status(500).json({ error: 'Error al obtener la factura' });
+    }
+
+    if (facturaResults.length === 0) {
+      return res.status(404).json({ error: 'Factura no encontrada' });
+    }
+
+    // Luego buscamos los detalles
+    connection.query(
+      'SELECT * FROM detalle_facturas_manuales WHERE IdFactura = ?',
+      [id],
+      (error, detalleResults) => {
+        if (error) {
+          console.error('Error al obtener los detalles:', error);
+          return res.status(500).json({ error: 'Error al obtener los detalles de la factura' });
+        }
+
+        // Respuesta final
+        res.status(200).json({
+          factura: facturaResults[0],
+          detalles: detalleResults,
+        });
+      }
+    );
+  });
+});
+
+app.put('/api/modificarFacturaManual', (req, res) => {
+  const {
+    Id,
+    IdCliente,
+    Nombre,
+    codigoClienteGIA,
+    RazonSocial,
+    DireccionFiscal,
+    Ciudad,
+    Pais,
+    RutCedula,
+    ComprobanteElectronico,
+    Comprobante,
+    Electronico,
+    Moneda,
+    Fecha,
+    fechaVencimiento,
+    TipoIVA,
+    CASS,
+    TipoEmbarque,
+    TC,
+    Subtotal,
+    IVA,
+    Redondeo,
+    Total,
+    TotalCobrar,
+    DetalleFactura,
+  } = req.body;
+
+  const updateFacturaQuery = `
+    UPDATE facturas SET 
+      IdCliente = ?, Nombre = ?, CodigoClienteGia = ?, RazonSocial = ?, DireccionFiscal = ?, 
+      Ciudad = ?, Pais = ?, RutCedula = ?, ComprobanteElectronico = ?, Comprobante = ?, 
+      Electronico = ?, Moneda = ?, Fecha = ?, TipoIVA = ?, CASS = ?, TipoEmbarque = ?, 
+      TC = ?, Subtotal = ?, IVA = ?, Redondeo = ?, Total = ?, TotalCobrar = ?, fechaVencimiento = ?
+    WHERE Id = ?
+  `;
+
+  const params = [
+    IdCliente, Nombre, codigoClienteGIA, RazonSocial, DireccionFiscal,
+    Ciudad, Pais, RutCedula, ComprobanteElectronico, Comprobante,
+    Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque,
+    TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, fechaVencimiento,
+    Id
+  ];
+
+  connection.query(updateFacturaQuery, params, (err) => {
+    if (err) {
+      console.error('Error al actualizar la factura:', err);
+      return res.status(500).json({ error: 'Error al actualizar la factura' });
+    }
+
+    // Eliminar detalles anteriores
+    connection.query('DELETE FROM detalle_facturas_manuales WHERE IdFactura = ?', [Id], (err) => {
+      if (err) {
+        console.error('Error al eliminar detalles:', err);
+        return res.status(500).json({ error: 'Error al eliminar los detalles de la factura' });
+      }
+
+      if (!DetalleFactura || DetalleFactura.length === 0) {
+        return res.status(200).json({ success: true, message: 'Factura actualizada sin detalles' });
+      }
+
+      // Insertar nuevos detalles
+      const insertQuery = `
+        INSERT INTO detalle_facturas_manuales 
+        (IdFactura, Codigo, Descripcion, Moneda, IVA, Importe, impuesto, codigoGIA)
+        VALUES ?
+      `;
+
+      const values = DetalleFactura.map(d => [
+        Id,
+        d.codigo,
+        d.descripcion,
+        d.moneda,
+        parseFloat(d.ivaCalculado || 0),
+        parseFloat(d.importe || 0),
+        d.impuesto,
+        d.codigoGIA
+      ]);
+
+      connection.query(insertQuery, [values], (err) => {
+        if (err) {
+          console.error('Error al insertar los detalles:', err);
+          return res.status(500).json({ error: 'Error al insertar los detalles de la factura' });
+        }
+
+        res.status(200).json({ success: true, message: 'Factura y detalles actualizados correctamente' });
+      });
+    });
+  });
+});
+
+app.get('/api/obtenerguiasimporeporte', (req, res) => {
+  const { cliente, desde, hasta, tipoPago } = req.query;
+
+  console.log("Generando reporte impo:", cliente, desde, hasta, tipoPago);
+
+  let query = `
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.emision >= ? AND g.emision <= ?
+  `;
+
+  const params = [desde, hasta];
+
+  if (cliente && cliente.trim() !== '') {
+    query += ` AND g.consignatario LIKE ?`;
+    params.push(`%${cliente}%`);
+  }
+
+  if (tipoPago && tipoPago !== 'ALL' && tipoPago !== 'Cualquiera') {
+    query += ` AND g.tipodepagoguia = ?`;
+    params.push(tipoPago);
+  }
+
+  query += ` ORDER BY g.emision ASC`;
+
+  connection.query(query, params, (error, results) => {
+    if (error) {
+      console.error('Error al obtener guías impo:', error);
+      res.status(500).json({ error: 'Error al obtener guías impo' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
 app.get('/api/facturas-sin-cobrar', (req, res) => {
   console.log('Received request for /api/facturas-sin-cobrar');
 
@@ -4491,12 +4679,14 @@ app.post('/api/impactardocumento', async (req, res) => {
 
       // Convertir fecha DD/MM/YYYY a YYYY-MM-DD
       function convertirFechaAISO(fechaStr) {
+        console.log('Convirtiendo esta fecha', fechaStr)
         const [dia, mes, anio] = fechaStr.split('/');
         return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
       }
 
       const datos = {
         fechaCFE: convertirFechaAISO(factura.factura.Fecha),
+        fechaVencimientoCFE: convertirFechaAISO(factura.factura.fechaVencimiento),
         Moneda: factura.factura.Moneda,
         detalleFactura: detallesFactura,
         adendadoc: adenda,

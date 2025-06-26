@@ -33,6 +33,7 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [ectipoiva, setEcTipoIva] = useState('');
   const [ecmoneda, setEcMoneda] = useState('USD');
   const [ecfecha, setEcFecha] = useState('');
+  const [ecfechaVencimiento, setEcFechaVencimiento] = useState('');
   const [eccomprobante, setEcComprobante] = useState('');
   const [ecelectronico, setEcElectronico] = useState('');
   const [ecdireccionfiscal, setEcDireccionFiscal] = useState('');
@@ -448,7 +449,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
   const fetchEmbarques = async () => {
     try {
-      const clienteId = searchTerm;  // Asumiendo que el cliente es identificado por nombre o algún campo
+      const clienteId = searchTerm;
       const response = await axios.get(`${backURL}/api/obtenerembarques`, {
         params: {
           tipoEmbarque: ectipodeembarque,
@@ -456,9 +457,19 @@ const Comprobantes = ({ isLoggedIn }) => {
         }
       });
 
-      setEmbarques(response.data);  // Guardamos los embarques en el estado
-      console.log('Embarques traidos desde la base:', response.data);
-      setShowModal(true);  // Mostramos el modal con los embarques
+      const embarquesDesdeBackend = response.data;
+
+      // 🔴 FILTRAR los que ya están seleccionados
+      const embarquesFiltrados = embarquesDesdeBackend.filter((embarque) => {
+        const id = embarque.idguiasexpo || embarque.idguia;
+        return !embarquesSeleccionados.some(
+          (e) => (e.idguiasexpo || e.idguia) === id
+        );
+      });
+
+      setEmbarques(embarquesFiltrados); // 🟢 Solo los no seleccionados
+      console.log('Embarques nuevos para seleccionar:', embarquesFiltrados);
+      setShowModal(true);
     } catch (error) {
       if (error.response && error.response.status === 404) {
         toast.error('No hay embarques a facturar.');
@@ -485,6 +496,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
     const icfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
     setEcFecha(icfechaactual);
+    setEcFechaVencimiento(icfechaactual);
 
     // Llamar al endpoint para obtener el tipo de cambio
     const obtenerTipoCambio = async () => {
@@ -622,6 +634,7 @@ const Comprobantes = ({ isLoggedIn }) => {
       Electronico: ecelectronico,
       Moneda: ecmoneda,
       Fecha: ecfecha,
+      FechaVencimiento: ecfechaVencimiento,
       TipoIVA: ectipoiva,
       CASS: eccass,
       TipoEmbarque: ectipodeembarque,
@@ -763,17 +776,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             <h3 className='subtitulo-estandar'>Datos del Comprobante</h3>
 
             <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="ecID">ID de Cliente:</label>
-                <input
-                  type="text"
-                  id="ecID"
-                  value={ecid}
-                  onChange={(e) => setEcId(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
+
               <div>
                 <label htmlFor="ecnombre">Nombre:</label>
                 <input
@@ -815,18 +818,26 @@ const Comprobantes = ({ isLoggedIn }) => {
                 </select>
 
               </div>
-              <div>
-                <label htmlFor="ecciudad">Ciudad:</label>
+              <div className="fecha-emision-comprobante">
+                <label htmlFor="ecfecha">Fecha:</label>
                 <input
-                  type="text"
-                  id="ecciudad"
-                  value={ecciudad}
-                  onChange={(e) => setEcCiudad(e.target.value)}
+                  type="date"
+                  id="ecfecha"
+                  value={ecfecha}
+                  onChange={(e) => setEcFecha(e.target.value)}
                   required
-                  readOnly
                 />
               </div>
-
+              <div className="fecha-emision-comprobante">
+                <label htmlFor="ecfecha">Fecha Vencimiento:</label>
+                <input
+                  type="date"
+                  id="ecfecha"
+                  value={ecfechaVencimiento}
+                  onChange={(e) => setEcFechaVencimiento(e.target.value)}
+                  required
+                />
+              </div>
 
             </div>
 
@@ -855,14 +866,16 @@ const Comprobantes = ({ isLoggedIn }) => {
                   <option value="UYU">UYU</option>
                 </select>
               </div>
-              <div className="fecha-emision-comprobante">
-                <label htmlFor="ecfecha">Fecha:</label>
+
+              <div>
+                <label htmlFor="ecciudad">Ciudad:</label>
                 <input
-                  type="date"
-                  id="ecfecha"
-                  value={ecfecha}
-                  onChange={(e) => setEcFecha(e.target.value)}
+                  type="text"
+                  id="ecciudad"
+                  value={ecciudad}
+                  onChange={(e) => setEcCiudad(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>

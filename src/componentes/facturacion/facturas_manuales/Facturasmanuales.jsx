@@ -31,6 +31,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [fmtipoiva, setFmTipoIva] = useState('');
   const [fmmoneda, setFmMoneda] = useState('USD');
   const [fmfecha, setFmFecha] = useState('');
+  const [fmfechaVencimiento, setFmFechaVencimiento] = useState('');
   const [fmcomprobante, setFmComprobante] = useState('');
   const [fmelectronico, setFmElectronico] = useState('');
   const [fmdireccionfiscal, setFmDireccionFiscal] = useState('');
@@ -199,6 +200,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
     };
     const icfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
     setFmFecha(icfechaactual);
+    setFmFechaVencimiento(icfechaactual);
     fetchMonedas();
     obtenerTipoCambio();
   }, []); // Se ejecuta solo una vez al montar el componente
@@ -206,7 +208,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   // Función para manejar el envío del formulario
   const handleSubmitAgregarFm = async (event) => {
     event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
-
+    setLoading(true);
     // Recopilar los datos del formulario en un objeto
     const datosFormulario = {
       IdCliente: fmid,
@@ -222,6 +224,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       Electronico: fmelectronico,
       Moneda: fmmoneda,
       Fecha: fmfecha,
+      FechaVencimiento: fmfechaVencimiento,
       TipoIVA: fmtipoiva,
       CASS: fmcass,
       TipoEmbarque: fmtipodeembarque,
@@ -254,7 +257,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
             const nombreArchivo = `${documento.tipo}_${documento.serie}_${documento.numero}.pdf`;
             descargarPDFBase64(documento.pdfBase64, nombreArchivo);
           }
-          let mensajeExito= `Documento ${documento.tipo}_${documento.serie}_${documento.numero} guardado correctamente.`;
+          let mensajeExito = `Documento ${documento.tipo}_${documento.serie}_${documento.numero} guardado correctamente.`;
           setTituloAlertaGfe('Factura Ingresada Correctamente');
           setmensajeAlertaGFE(mensajeExito || '');
           setIconoAlertaGFE('success');
@@ -430,16 +433,6 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
             <div className='div-renglon-datos-facturasmanuales'>
               <div>
-                <label htmlFor="ecID">ID de Cliente:</label>
-                <input
-                  type="text"
-                  id="ecID"
-                  value={fmid}
-                  onChange={(e) => setFmId(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
                 <label htmlFor="ecnombre">Nombre:</label>
                 <input
                   type="text"
@@ -460,6 +453,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   value={codigoClienteGIA}
                   onChange={(e) => setCodigoClienteGIA(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -478,16 +472,27 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                 </select>
 
               </div>
-              <div>
-                <label htmlFor="fmciudad">Ciudad:</label>
+              <div className="fecha-emision-comprobante">
+                <label htmlFor="fmfecha">Fecha:</label>
                 <input
-                  type="text"
-                  id="fmciudad"
-                  value={fmciudad}
-                  onChange={(e) => setFmCiudad(e.target.value)}
+                  type="date"
+                  id="fmfecha"
+                  value={fmfecha}
+                  onChange={(e) => setFmFecha(e.target.value)}
                   required
                 />
               </div>
+              <div className="fecha-emision-comprobante">
+                <label htmlFor="fmfecha">Fecha Vencimiento:</label>
+                <input
+                  type="date"
+                  id="fmfecha"
+                  value={fmfechaVencimiento}
+                  onChange={(e) => setFmFechaVencimiento(e.target.value)}
+                  required
+                />
+              </div>
+
 
             </div>
 
@@ -501,6 +506,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   value={fmrazonsocial}
                   onChange={(e) => setFmRazonSocial(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -517,14 +523,16 @@ const Facturasmanuales = ({ isLoggedIn }) => {
               </div>
 
 
-              <div className="fecha-emision-comprobante">
-                <label htmlFor="fmfecha">Fecha:</label>
+
+              <div>
+                <label htmlFor="fmciudad">Ciudad:</label>
                 <input
-                  type="date"
-                  id="fmfecha"
-                  value={fmfecha}
-                  onChange={(e) => setFmFecha(e.target.value)}
+                  type="text"
+                  id="fmciudad"
+                  value={fmciudad}
+                  onChange={(e) => setFmCiudad(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -535,6 +543,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   value={fmpais}
                   onChange={(e) => setFmPais(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -561,6 +570,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   value={fmdireccionfiscal}
                   onChange={(e) => setFmDireccionFiscal(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
 
@@ -572,6 +582,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   value={fmrutcedula}
                   onChange={(e) => setFmRutCedula(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
               <div>
@@ -608,6 +619,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   value={fmtc}
                   onChange={(e) => setFmTc(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
 

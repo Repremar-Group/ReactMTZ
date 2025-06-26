@@ -24,7 +24,7 @@ function generarXmlefacimpopp(datos) {
 
                 <cliente>${datos.codigoClienteGIA}</cliente>
                 <moneda>${moneda}</moneda>
-                <fechaVencimiento>{{fechaCFE}}</fechaVencimiento>
+                <fechaVencimiento>{{fechaVencimientoCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
                 <autonumerar>S</autonumerar>
                 <renglones>
@@ -42,7 +42,7 @@ function generarXmlefacimpopp(datos) {
 
     // Reemplazar las partes del XML base con los valores de los parámetros
     xmlBase = xmlBase.replace('{{fechaCFE}}', datos.fechaCFE)
-        .replace('{{fechaCFE}}', datos.fechaCFE)
+        .replace('{{fechaVencimientoCFE}}', datos.fechaVencimientoCFE)
         .replace('{{Adenda}}', datos.adendadoc);
 
     // Generar el bloque de detalles de factura
@@ -92,7 +92,7 @@ function generarXmlimpactarDocumento(datos) {
 
                 <cliente>${datos.codigoClienteGIA}</cliente>
                 <moneda>${moneda}</moneda>
-                <fechaVencimiento>{{fechaCFE}}</fechaVencimiento>
+                <fechaVencimiento>{{fechaVencimientoCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
                 <autonumerar>S</autonumerar>
                 <renglones>
@@ -110,7 +110,7 @@ function generarXmlimpactarDocumento(datos) {
 
     // Reemplazar las partes del XML base con los valores de los parámetros
     xmlBase = xmlBase.replace('{{fechaCFE}}', datos.fechaCFE)
-        .replace('{{fechaCFE}}', datos.fechaCFE)
+        .replace('{{fechaVencimientoCFE}}', datos.fechaVencimientoCFE)
         .replace('{{Adenda}}', datos.adendadoc);
 
     // Generar el bloque de detalles de factura
@@ -159,7 +159,7 @@ function generarXmlefacCuentaAjenaimpopp(datosCA) {
 
                 <cliente>${datosCA.codigoClienteGIA}</cliente>
                 <moneda>${moneda}</moneda>
-                <fechaVencimiento>{{fechaCFE}}</fechaVencimiento>
+                <fechaVencimiento>{{fechaVencimientoCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
                 <autonumerar>S</autonumerar>
                 <renglones>
@@ -177,7 +177,7 @@ function generarXmlefacCuentaAjenaimpopp(datosCA) {
 
     // Reemplazar las partes del XML base con los valores de los parámetros
     xmlBase = xmlBase.replace('{{fechaCFE}}', datosCA.fechaCFE)
-        .replace('{{fechaCFE}}', datosCA.fechaCFE)
+        .replace('{{fechaVencimientoCFE}}', datosCA.fechaVencimientoCFE)
         .replace('{{Adenda}}', datosCA.adendadoc);
 
     // Generar el bloque de detalles de factura
