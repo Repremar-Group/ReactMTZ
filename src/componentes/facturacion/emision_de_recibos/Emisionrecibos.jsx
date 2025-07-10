@@ -9,14 +9,14 @@ import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const Emisionrecibos = ({ isLoggedIn }) => {
-    const navigate = useNavigate();
-        useEffect(() => {
-            const rol = localStorage.getItem('rol');
-    
-            if (rol == '') {
-                navigate('/');
-            }
-        }, [navigate]);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const rol = localStorage.getItem('rol');
+
+    if (rol == '') {
+      navigate('/');
+    }
+  }, [navigate]);
   // Estado para los campos del formulario
   const backURL = import.meta.env.VITE_BACK_URL;
   const [ernumrecibo, setErNumRecibo] = useState('');
@@ -86,25 +86,37 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           toast.error('Esta factura ya tiene un recibo asociado.');
           return; // Salir de la función para evitar agregarla a las facturas asociadas
         }
-       // Comprobar si la factura ya está en el array de facturas asociadas
-      setErFacturasAsociadas(prevFacturas => {
-        const existe = prevFacturas.some(f => f.erdocumentoasociado === response.data.Id);
-        if (existe) {
-          toast.error('Esta factura ya ha sido agregada.');
-          return prevFacturas; // Si ya existe, no la agrega
+        //comprobamos si la factura ya esta en GFE
+        const factura = response.data;
+        if (
+          factura.TipoDocCFE == null ||
+          factura.NumeroCFE == null ||
+          factura.fechaVencimiento == null ||
+          factura.TotalCobrar == null
+        ) {
+          toast.error('La factura no tiene todos los campos requeridos por GFE, verifique que fue dada de alta en GFE.');
+          return;
         }
 
-        return [...prevFacturas, {
-          erdocumentoasociado: response.data.Id,
-          erimportefacturaasociada: response.data.TotalCobrar
-        }];
+        // Comprobar si la factura ya está en el array de facturas asociadas
+        setErFacturasAsociadas(prevFacturas => {
+          const existe = prevFacturas.some(f => f.erdocumentoasociado === response.data.Id);
+          if (existe) {
+            toast.error('Esta factura ya ha sido agregada.');
+            return prevFacturas; // Si ya existe, no la agrega
+          }
+
+          return [...prevFacturas, {
+            erdocumentoasociado: response.data.Id,
+            erimportefacturaasociada: response.data.TotalCobrar
+          }];
+        });
+      })
+      .catch(error => {
+        console.error("Error al buscar factura:", error);
+        toast.error('Factura no encontrada. Favor de ingresar un Nro Correcto');
       });
-    })
-    .catch(error => {
-      console.error("Error al buscar factura:", error);
-      toast.error('Factura no encontrada. Favor de ingresar un Nro Correcto');
-    });
-};
+  };
 
   // Selección de un cliente desde el modal
   const handleSelectCliente = (cliente) => {
@@ -204,30 +216,32 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
 
   const TablaMovimientos = ({ datos }) => (
-    <table className='tabla-cuentacorriente' >
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Tipo</th>
-          <th>Documento</th>
-          <th>Recibo</th>
-          <th>Debe</th>
-          <th>Haber</th>
-        </tr>
-      </thead>
-      <tbody>
-        {datos.map((movimiento, index) => (
-          <tr key={index}>
-            <td>{movimiento.Fecha}</td>
-            <td>{movimiento.TipoDocumento === 'Factura' ? 'F' : movimiento.TipoDocumento === 'Recibo' ? 'R' : movimiento.TipoDocumento}</td>
-            <td>{movimiento.IdFactura}</td>
-            <td>{movimiento.NumeroRecibo}</td>
-            <td>{movimiento.Debe}</td>
-            <td>{movimiento.Haber}</td>
+    <div className='contenedor-tabla-cuentacorriente'>
+      <table className='tabla-cuentaco' >
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Documento</th>
+            <th>Recibo</th>
+            <th>Debe</th>
+            <th>Haber</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {datos.map((movimiento, index) => (
+            <tr key={index}>
+              <td>{movimiento.Fecha}</td>
+              <td>{movimiento.TipoDocumento === 'Factura' ? 'F' : movimiento.TipoDocumento === 'Recibo' ? 'R' : movimiento.TipoDocumento}</td>
+              <td>{movimiento.IdFactura}</td>
+              <td>{movimiento.NumeroRecibo}</td>
+              <td>{movimiento.Debe}</td>
+              <td>{movimiento.Haber}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 
   useEffect(() => {
@@ -239,15 +253,15 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   // Función para manejar el envío del formulario
   const handleSubmitAgregarRecibo = (e) => {
     e.preventDefault();
-    if(ersaldodelrecibo != 0){
+    if (ersaldodelrecibo != 0) {
       toast.error("El recibo debe cancelar exactamente el total de las facturas");
       return;
-      
-    } else if (erfacturasasociadas.length === 0 ) {
+
+    } else if (erfacturasasociadas.length === 0) {
       toast.error("Debes asociar al menos una factura antes de continuar.");
       return; // Detiene la ejecución y no abre el modal
     }
-    
+
 
     setIsModalOpenCheque(true);
   };
@@ -289,12 +303,15 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
             <div className='div-primerrenglon-datos-recibos'>
               <div>
-                <label htmlFor="recibo">Recibo:</label>
+                <label htmlFor="ecnombre">Nombre:</label>
                 <input
                   type="text"
-                  id="recibo"
-                  value={ernumrecibo}
-                  onChange={(e) => setErNumRecibo(e.target.value)}
+                  id="ecnombre"
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Buscar Cliente"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -312,32 +329,63 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
             <div className='div-segundorenglon-datos-recibos'>
               <div>
-                <label htmlFor="erid">ID:</label>
+                <label htmlFor="errazonsocial">Razon Social:</label>
                 <input
                   type="text"
-                  id="erid"
-                  value={erid}
-                  onChange={(e) => setErID(e.target.value)}
+                  id="ererrazonsocial"
+                  value={errazonSocial}
+                  onChange={(e) => setErRazonSocial(e.target.value)}
                   required
                   readOnly
                 />
               </div>
               <div>
-                <label htmlFor="ecnombre">Nombre:</label>
+                <label htmlFor="errut">Rut:</label>
+                <input
+                  type="number"
+                  id="errut"
+                  value={errut}
+                  onChange={(e) => setErRut(e.target.value)}
+                  required
+                  readOnly
+                />
+              </div>
+
+            </div>
+
+            <div className='div-sextorenglon-datos-recibos'>
+              <div>
+                <label htmlFor="erdireccion">Direccion:</label>
                 <input
                   type="text"
-                  id="ecnombre"
-                  value={searchTerm}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Buscar Cliente"
-                  autoComplete="off"
+                  id="erdireccion"
+                  value={erdireccion}
+                  onChange={(e) => setErDireccion(e.target.value)}
                   required
+                  readOnly
                 />
+              </div>
+
+            </div>
+
+            <div className='div-cuartorenglon-datos-recibos'>
+              <div>
+                <label htmlFor="erformadepago">Forma de Pago:</label>
+                <select
+                  id="erformadepago"
+                  value={erformadepago}
+                  onChange={(e) => setErFormaDePago(e.target.value)}
+                  required
+                >
+                  <option value="">Forma de pago</option>
+                  <option value="cheques">Cheque</option>
+                  <option value="transferencia">Transferencia</option>
+                  <option value="efectivo">Efectivo</option>
+                </select>
               </div>
             </div>
 
-            <div className='div-tercerrenglon-datos-recibos'>
+            <div className='div-quintorenglon-datos-recibos'>
               <div>
                 <label htmlFor="ecmoneda">Moneda:</label>
                 <select
@@ -366,60 +414,8 @@ const Emisionrecibos = ({ isLoggedIn }) => {
               </div>
             </div>
 
-            <div className='div-cuartorenglon-datos-recibos'>
-              <div>
-                <label htmlFor="erformadepago">Forma de Pago:</label>
-                <select
-                  id="erformadepago"
-                  value={erformadepago}
-                  onChange={(e) => setErFormaDePago(e.target.value)}
-                  required
-                >
-                  <option value="">Forma de pago</option>
-                  <option value="cheques">Cheque</option>
-                  <option value="transferencia">Transferencia</option>
-                  <option value="efectivo">Efectivo</option>
-                </select>
-              </div>
-            </div>
-
-            <div className='div-quintorenglon-datos-recibos'>
-              <div>
-                <label htmlFor="errazonsocial">Razon Social:</label>
-                <input
-                  type="text"
-                  id="ererrazonsocial"
-                  value={errazonSocial}
-                  onChange={(e) => setErRazonSocial(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="errut">Rut:</label>
-                <input
-                  type="number"
-                  id="errut"
-                  value={errut}
-                  onChange={(e) => setErRut(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-            </div>
-
             <div className='div-sextorenglon-datos-recibos'>
-              <div>
-                <label htmlFor="erdireccion">Direccion:</label>
-                <input
-                  type="text"
-                  id="erdireccion"
-                  value={erdireccion}
-                  onChange={(e) => setErDireccion(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
+
             </div>
 
           </div>
@@ -445,28 +441,30 @@ const Emisionrecibos = ({ isLoggedIn }) => {
               </div>
 
               {/* Tabla que muestra las facturas agregadas */}
-              <table className='tabla-facturasasociadas' >
-                <thead>
-                  <tr>
-                    <th>Documento</th>
-                    <th>Importe</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {erfacturasasociadas.map((factura, index) => (
-                    <tr
-                      key={index}
-                      onClick={() => handleSeleccionarFacturaAsociada(index)}
-                      style={{
-                        cursor: 'pointer', fontWeight: erfacturaSeleccionada === index ? "bold" : "normal"
-                      }}
-                    >
-                      <td>{factura.erdocumentoasociado}</td>
-                      <td>{factura.erimportefacturaasociada}</td>
+              <div className='contenedor-tabla-facasociadas'>
+                <table className='tabla-cuentaco' >
+                  <thead>
+                    <tr>
+                      <th>Documento</th>
+                      <th>Importe</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {erfacturasasociadas.map((factura, index) => (
+                      <tr
+                        key={index}
+                        onClick={() => handleSeleccionarFacturaAsociada(index)}
+                        style={{
+                          cursor: 'pointer', fontWeight: erfacturaSeleccionada === index ? "bold" : "normal"
+                        }}
+                      >
+                        <td>{factura.erdocumentoasociado}</td>
+                        <td>{factura.erimportefacturaasociada}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
             </div>
 
