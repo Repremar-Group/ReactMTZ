@@ -18,7 +18,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
           }, [navigate]);
           
     // Estado para los campos del formulario
-    if (!isOpen) return null;
+ 
     const backURL = import.meta.env.VITE_BACK_URL;
     const [monedas, setMonedas] = useState([]);
     const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
@@ -210,12 +210,12 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     };
 
 
-
+   if (!isOpen) return null;
 
     return (
         <div className="modal" onClick={closeModal}>
             <ToastContainer />
-            <div className="modal-content-muygrande" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content-ingresodepagos" onClick={(e) => e.stopPropagation()}>
                 {loading && (
                     <div className="loading-overlay">
                         {/* El spinner se muestra cuando loading es true */}
@@ -312,7 +312,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                     />
                                 </div>
                                 <div className="fecha-vencimiento-cheque">
-                                    <label htmlFor="fechavencimientocheque">Fecha Vencimiento:</label>
+                                    <label htmlFor="fechavencimientocheque">Vencimiento:</label>
                                     <input
                                         type="date"
                                         id="fechavencimientocheque"

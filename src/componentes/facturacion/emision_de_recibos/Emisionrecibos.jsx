@@ -25,7 +25,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   const [ernombre, setErNombre] = useState('');
   const [erid, setErID] = useState('');
 
-  const [ertipoMoneda, setErTipoMoneda] = useState(false);//*
+  const [ertipoMoneda, setErTipoMoneda] = useState('USD');//*
   const [erimporte, setErImporte] = useState('');
 
   const [erformadepago, setErFormaDePago] = useState('');
@@ -108,7 +108,9 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
           return [...prevFacturas, {
             erdocumentoasociado: response.data.Id,
-            erimportefacturaasociada: response.data.TotalCobrar
+            erimportefacturaasociada: response.data.TotalCobrar,
+            ermonedafacturaasociada: response.data.Moneda,
+            ertasadecambiofacturaasociada: response.data.TC
           }];
         });
       })
@@ -230,7 +232,13 @@ const Emisionrecibos = ({ isLoggedIn }) => {
         </thead>
         <tbody>
           {datos.map((movimiento, index) => (
-            <tr key={index}>
+            <tr key={index}
+             onDoubleClick={() => {
+              if (movimiento.IdFactura) {
+                buscarFactura(movimiento.IdFactura);
+              }
+            }}
+             style={{ cursor: 'pointer' }}>
               <td>{movimiento.Fecha}</td>
               <td>{movimiento.TipoDocumento === 'Factura' ? 'F' : movimiento.TipoDocumento === 'Recibo' ? 'R' : movimiento.TipoDocumento}</td>
               <td>{movimiento.IdFactura}</td>
@@ -394,12 +402,8 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                   onChange={(e) => setErTipoMoneda(e.target.value)}
                   required
                 >
-                  <option value="">Selecciona una Moneda</option>
-                  {monedas.map((moneda, index) => (
-                    <option key={index} value={moneda.moneda}>
-                      {moneda.moneda}
-                    </option>
-                  ))}
+                  <option value="USD">USD</option>
+                  <option value="UYU">UYU</option>
                 </select>
               </div>
               <div>
@@ -423,49 +427,57 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           <div className='erfacturasasociadas'>
             <h3 className='Titulos-formularios-ingreso-recibos'>Facturas Asociadas</h3>
             <div className='primerafilafacturasasociadas'>
-              <div classname='inputsfacturasasociadas'>
-                {/* Inputs para Documento y Importe */}
-                <div>
-                  <label htmlFor="documento">Documento:</label>
-                  <input
-                    type="text"
-                    id="documento"
-                    value={erdocumentoasociado}
-                    onChange={(e) => setErDocumentoAsociado(e.target.value)}
-                    onKeyDown={handleKeyPressDocumento}
-                    placeholder='Nro. Comprobante'
 
-                  />
-                </div>
 
-              </div>
 
-              {/* Tabla que muestra las facturas agregadas */}
-              <div className='contenedor-tabla-facasociadas'>
-                <table className='tabla-cuentaco' >
-                  <thead>
-                    <tr>
-                      <th>Documento</th>
-                      <th>Importe</th>
+            </div>
+            {/* Tabla que muestra las facturas agregadas */}
+            <div className='contenedor-tabla-facasociadas'>
+              <table className='tabla-cuentaco2'>
+                <thead>
+                  <tr>
+
+                    <th>Documento</th>
+                    <th>Importe</th>
+                    <th>Moneda</th>
+                    <th>
+                      <div>
+                        <input
+                          type="text"
+                          id="documento"
+                          value={erdocumentoasociado}
+                          onChange={(e) => setErDocumentoAsociado(e.target.value)}
+                          onKeyDown={handleKeyPressDocumento}
+                          placeholder='Nro. Comprobante'
+                          autoComplete="off"
+                          disabled= {!searchTerm}
+                        />
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {erfacturasasociadas.map((factura, index) => (
+                    <tr
+                      key={index}
+                      onClick={() => handleSeleccionarFacturaAsociada(index)}
+                      style={{
+                        cursor: 'pointer',
+                        fontWeight: erfacturaSeleccionada === index ? "bold" : "normal"
+                      }}
+                    >
+
+                      <td>{factura.erdocumentoasociado}</td>
+                      <td>{factura.erimportefacturaasociada}</td>
+                      <td>{factura.ermonedafacturaasociada}</td>
+                      <td>
+        
+                        <button type="button" onClick={handleEliminarFacturaAsociada} disabled={erfacturaSeleccionada !== index} className='action-button' >❌</button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {erfacturasasociadas.map((factura, index) => (
-                      <tr
-                        key={index}
-                        onClick={() => handleSeleccionarFacturaAsociada(index)}
-                        style={{
-                          cursor: 'pointer', fontWeight: erfacturaSeleccionada === index ? "bold" : "normal"
-                        }}
-                      >
-                        <td>{factura.erdocumentoasociado}</td>
-                        <td>{factura.erimportefacturaasociada}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <div className='botonesfacturasasociadas'>
@@ -475,7 +487,6 @@ const Emisionrecibos = ({ isLoggedIn }) => {
               <div></div>
               <div></div>
               <div></div>
-              <button type="button" onClick={handleEliminarFacturaAsociada} disabled={erfacturaSeleccionada === null} className='btn-eliminar-fasociada'>Eliminar Factura</button>
               <div></div>
               <div></div>
               <div></div>
