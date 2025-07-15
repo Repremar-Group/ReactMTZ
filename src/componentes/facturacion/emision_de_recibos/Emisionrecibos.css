@@ -13,13 +13,16 @@
     border-radius: 10px;
     width: fit-content;
     max-width: 100%;
-    margin: auto; /* Centra horizontalmente */
+    margin: auto;
+    /* Centra horizontalmente */
 }
+
 .EmitirRecibos-wrapper {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centra todo horizontalmente */
+    align-items: center;
+    /* Centra todo horizontalmente */
     width: 100%;
     background-color: #f9f9f9;
     border-radius: 10px;
@@ -71,8 +74,9 @@
     grid-row: 1 / 2;
     padding: 20px;
     border-radius: 10px;
-    
-    height: 280px; /* Establece la altura */
+
+    height: 280px;
+    /* Establece la altura */
 }
 
 .primerafilafacturasasociadas {
@@ -123,6 +127,42 @@ p {
 .div-primerrenglon-datos-recibos div {
     width: 48%;
 }
+  .div-primerrenglon-datos-recibos input,
+.div-primerrenglon-datos-recibos select {
+    width: 100%;
+    padding: 5px;
+
+    border-radius: 5px;
+    box-sizing: border-box;
+
+    color: gray;
+    border: 1.5px solid #ccc;
+    background-color: #fff;
+
+
+    outline-color: #3366ff;
+    transition: border-color 0.3s ease;
+    width: 100%;
+
+}
+
+.div-primerrenglon-datos-recibos input:focus {
+    outline: none;
+    /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5);
+    /* Sombra sutil */
+    border-color: #1a4a8e;
+    /* Opcional: cambia ligeramente el borde */
+}
+
+.div-primerrenglon-datos-recibos select:focus {
+    outline: none;
+    /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5);
+    /* Sombra sutil */
+    border-color: #1a4a8e;
+    /* Opcional: cambia ligeramente el borde */
+}
 
 .div-segundorenglon-datos-recibos {
     display: flex;
@@ -170,6 +210,7 @@ p {
 .div-quintorenglon-datos-recibos div {
     width: 99%;
 }
+
 .formulario-emitir-recibo2 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -180,13 +221,17 @@ p {
 
 .contenedorbotonconfirmarcheque {
     display: grid;
-    grid-template-rows: auto 1fr auto; /* Separa en 3 filas, dejando el botón abajo */
+    grid-template-rows: auto 1fr auto;
+    /* Separa en 3 filas, dejando el botón abajo */
     height: 100%;
 }
-.btn-confirmarcheque{
+
+.btn-confirmarcheque {
     width: 100%;
-    padding: 2px 5px; /* Reduce el espacio interno */
-    height: 30px; /* Ajusta la altura manualmente */
+    padding: 2px 5px;
+    /* Reduce el espacio interno */
+    height: 30px;
+    /* Ajusta la altura manualmente */
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;
@@ -194,6 +239,7 @@ p {
     color: white;
     transition: background-color 0.3s ease;
 }
+
 .btn-confirmarcheque:hover {
     background-color: #007bff;
 }
@@ -347,6 +393,7 @@ p {
 .tabla-cuentacorriente::-webkit-scrollbar-thumb:hover {
     background-color: #4885e2;
 }
+
 /* Estilo del scrollbar */
 .tabla-facturasasociadas::-webkit-scrollbar {
     width: 10px;
@@ -363,24 +410,28 @@ p {
 .tabla-facturasasociadas::-webkit-scrollbar-thumb:hover {
     background-color: #4885e2;
 }
+
 .tabla-facturasasociadas tbody {
     overflow-y: auto;
     /* Permite el desplazamiento vertical */
     max-height: 150px;
     /* Ajusta la altura para 3 filas */
 }
+
 .tabla-facturasasociadas th {
     background-color: #143361;
     font-weight: bold;
     color: white;
     padding: 2px 5px;
 }
+
 .tabla-facturasasociadas thead {
     position: relative;
     top: 0;
     /* Fija el cabezal en la parte superior */
     position: sticky;
 }
+
 .tabla-cuentacorriente {
     font-size: 14px;
     border-collapse: collapse;
@@ -465,155 +516,235 @@ p {
 }
 
 .contenedor-tabla-cuentacorriente {
-  max-height: 400px;
-  overflow-y: auto;
-  border-radius: 8px;
-  max-width: 500px;
-
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 8px;
+    max-width: 500px;
+    user-select: none;
 }
+
 .contenedor-tabla-facasociadas {
-  max-height: 180px;
-  overflow-y: auto;
-  border-radius: 8px;
-  max-width: 500px;
+    max-height: 180px;
+    overflow-y: auto;
+    border-radius: 8px;
+    max-width: 500px;
 
 }
+.contenedor-tabla-cheques {
+    max-height: 250px;
+    overflow-y: auto;
+    border-radius: 8px;
+    max-width: 1500px;
+    user-select: none;
+    margin-bottom: 20px;
+}
+
 .contenedor-tabla-cuentacorriente::-webkit-scrollbar {
-  width: 10px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
+    width: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
 }
 
 .contenedor-tabla-cuentacorriente::-webkit-scrollbar-thumb {
-  background-color: #143361;
-  border-radius: 5px;
-  border: 2px solid #f0f0f0;
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
 }
 
 .contenedor-tabla-cuentacorriente::-webkit-scrollbar-thumb:hover {
-  background-color: #4885e2;
+    background-color: #4885e2;
+}
+.contenedor-tabla-cheques::-webkit-scrollbar {
+    width: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.contenedor-tabla-cheques::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+
+.contenedor-tabla-cheques::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
 }
 .contenedor-tabla-facasociadas::-webkit-scrollbar {
-  width: 10px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
+    width: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
 }
 
 .contenedor-tabla-facasociadas::-webkit-scrollbar-thumb {
-  background-color: #143361;
-  border-radius: 5px;
-  border: 2px solid #f0f0f0;
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
 }
 
 .contenedor-tabla-facasociadas::-webkit-scrollbar-thumb:hover {
-  background-color: #4885e2;
+    background-color: #4885e2;
 }
+
 /* Tabla */
 .tabla-cuentaco {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 14px;
-  border-collapse: collapse;
-  table-layout: auto;
-  width: 100%;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: visible;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: auto;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: visible;
 }
 
 /* Encabezado fijo y sin separadores */
 .tabla-cuentaco thead {
-  position: sticky;
-  top: 0;
-  background-color: #143361;
-  z-index: 2;
+    position: sticky;
+    top: 0;
+    background-color: #143361;
+    z-index: 2;
 }
 
 .tabla-cuentaco th {
-  padding: 5px;
-  text-align: left;
-  background-color: #143361;
-  color: white;
-  border: none;
-  /* quitar borde blanco */
+    padding: 5px;
+    text-align: left;
+    background-color: #143361;
+    color: white;
+    border: none;
+    /* quitar borde blanco */
 }
 
 /* Cuerpo de la tabla */
 .tabla-cuentaco tbody tr {
-  border-bottom: 1px solid #e1e1e1;
-  background-color: white;
-  transition: background 0.3s;
+    border-bottom: 1px solid #e1e1e1;
+    background-color: white;
+    transition: background 0.3s;
 }
 
 .tabla-cuentaco tbody tr:nth-child(even) {
-  background-color: #f7f7fa;
+    background-color: #f7f7fa;
 }
 
 .tabla-cuentaco tbody tr:hover {
-  background-color: #ece9f6;
+    background-color: #ece9f6;
 }
 
 .tabla-cuentaco td {
-  padding: 5px;
-  text-align: left;
-  color: #333;
-  background-color: inherit;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  border: none;
+    padding: 5px;
+    text-align: left;
+    color: #333;
+    background-color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: none;
 }
+
 
 /* Tabla */
 .tabla-cuentaco2 {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 14px;
-  border-collapse: collapse;
-  table-layout: auto;
-  width: 100%;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: visible;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: auto;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: visible;
 }
 
 /* Encabezado fijo y sin separadores */
 .tabla-cuentaco2 thead {
-  position: sticky;
-  top: 0;
-  background-color: #143361;
-  z-index: 2;
+    position: sticky;
+    top: 0;
+    background-color: #143361;
+    z-index: 2;
 }
 
 .tabla-cuentaco2 th {
-  padding: 5px;
-  text-align: left;
-  background-color: #143361;
-  color: white;
-  border: none;
-  /* quitar borde blanco */
+    padding: 5px;
+    text-align: left;
+    background-color: #143361;
+    color: white;
+    border: none;
+    /* quitar borde blanco */
 }
 
 /* Cuerpo de la tabla */
 .tabla-cuentaco2 tbody tr {
-  border-bottom: 1px solid #e1e1e1;
-  background-color: white;
-  transition: background 0.3s;
+    border-bottom: 1px solid #e1e1e1;
+    background-color: white;
+    transition: background 0.3s;
 }
 
 .tabla-cuentaco2 tbody tr:nth-child(even) {
-  background-color: #f7f7fa;
+    background-color: #f7f7fa;
 }
 
 .tabla-cuentaco2 tbody tr:hover {
-  background-color: #ece9f6;
+    background-color: #ece9f6;
 }
 
 .tabla-cuentaco2 td {
-  padding: 5px;
-  text-align: left;
-  color: #333;
-  background-color: inherit;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  border: none;
+    padding: 5px;
+    text-align: left;
+    color: #333;
+    background-color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: none;
+}
+/* Tabla */
+.tabla-cheques {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: auto;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+}
+
+/* Encabezado fijo y sin separadores */
+.tabla-cheques thead {
+    position: sticky;
+    top: 0;
+    background-color: #143361;
+    z-index: 2;
+}
+
+.tabla-cheques th {
+    padding: 5px;
+    text-align: left;
+    background-color: #143361;
+    color: white;
+    border: none;
+    /* quitar borde blanco */
+}
+
+/* Cuerpo de la tabla */
+.tabla-cheques tbody tr {
+    border-bottom: 1px solid #e1e1e1;
+    background-color: white;
+    transition: background 0.3s;
+}
+
+.tabla-cheques tbody tr:nth-child(even) {
+    background-color: #f7f7fa;
+}
+
+.tabla-cheques tbody tr:hover {
+    background-color: #ece9f6;
+}
+
+.tabla-cheques td {
+    padding: 5px;
+    text-align: left;
+    color: #333;
+    background-color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: none;
 }
 
 .div-datos-recibos input,
@@ -625,8 +756,9 @@ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
     background-color: #f0f0f0;
     color: gray;
-    
+
 }
+
 /*Estilo para los campos*/
 .formulario-emitir-recibo2 input,
 .formulario-emitir-recibo2 select {
@@ -640,7 +772,7 @@ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border: 1.5px solid #ccc;
     background-color: #fff;
 
-    
+
     outline-color: #3366ff;
     transition: border-color 0.3s ease;
     width: 100%;
@@ -664,25 +796,31 @@ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-color: #1a4a8e;
     /* Opcional: cambia ligeramente el borde */
 }
+
 .tabla-cuentaco2 th:nth-child(1),
 .tabla-cuentaco2 td:nth-child(1) {
-  width: 45px; /* o el valor que desees */
-  text-align: center;
+    width: 45px;
+    /* o el valor que desees */
+    text-align: center;
 }
+
 .tabla-cuentaco2 th:nth-child(2),
 .tabla-cuentaco2 td:nth-child(2) {
-  width: 60px; /* o el valor que desees */
-  text-align: center;
+    width: 60px;
+    /* o el valor que desees */
+    text-align: center;
 }
 
 .tabla-cuentaco2 th:nth-child(3),
 .tabla-cuentaco2 td:nth-child(3) {
-  width: 60px; /* o el valor que desees */
-  text-align: center;
-}
-.tabla-cuentaco2 th:nth-child(4),
-.tabla-cuentaco2 td:nth-child(4) {
-  width: 75px; /* o el valor que desees */
-  text-align: center;
+    width: 60px;
+    /* o el valor que desees */
+    text-align: center;
 }
 
+.tabla-cuentaco2 th:nth-child(4),
+.tabla-cuentaco2 td:nth-child(4) {
+    width: 75px;
+    /* o el valor que desees */
+    text-align: center;
+}

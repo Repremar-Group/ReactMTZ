@@ -390,7 +390,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                         <div className='div-tabla-cheque'>
                             <h3 className='Titulos-formularios-ingreso-recibos'>Medios de Pago</h3>
 
-                            <div className='div-primerrenglon-datos-recibos'>
+                            <div className='contenedor-tabla-cheques'>
                                 {/* Tabla que muestra las facturas agregadas */}
                                 <table className='tabla-cheques' >
                                     <thead>

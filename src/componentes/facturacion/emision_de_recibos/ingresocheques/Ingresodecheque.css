@@ -31,33 +31,41 @@
 
 }
 
-.tabla-cheques {
-    font-size: 14px; /* Tamaño de fuente más pequeño */
-    border-collapse: collapse; /* Sin espacios entre celdas */
-    table-layout: auto; /* Permite que las celdas se ajusten al contenido */
-    width: 100%; /* Asegúrate de que la tabla use el ancho completo */
-    max-height: 200px; /* Altura máxima para mostrar 3 filas (ajusta según tus necesidades) */
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    display: block; /* Hace que la tabla se comporte como un bloque */
-    border-radius: 5px;;
-  }
-  
 
   
-  .tabla-cheques tbody {
-    
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    max-height: 150px; /* Ajusta la altura para 3 filas */
-  }
-  
-  .tabla-cheques th, .tabla-cheques td {
-    padding: 2px 5px; /* Espaciado reducido */
-    text-align: left; /* Alineación del texto a la izquierda */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-  }
-  
-  .tabla-cheques th {
-    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
-    font-weight: bold;
-    padding: 2px 5px;
-  }
+  .div-datos-cheque input,
+.div-datos-cheque select {
+    width: 100%;
+    padding: 5px;
+
+    border-radius: 5px;
+    box-sizing: border-box;
+
+    color: gray;
+    border: 1.5px solid #ccc;
+    background-color: #fff;
+
+
+    outline-color: #3366ff;
+    transition: border-color 0.3s ease;
+    width: 100%;
+
+}
+
+.div-datos-cheque input:focus {
+    outline: none;
+    /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5);
+    /* Sombra sutil */
+    border-color: #1a4a8e;
+    /* Opcional: cambia ligeramente el borde */
+}
+
+.div-datos-cheque select:focus {
+    outline: none;
+    /* Elimina el borde azul predeterminado del navegador */
+    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5);
+    /* Sombra sutil */
+    border-color: #1a4a8e;
+    /* Opcional: cambia ligeramente el borde */
+}
