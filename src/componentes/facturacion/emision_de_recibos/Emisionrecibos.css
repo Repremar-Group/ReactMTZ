@@ -243,6 +243,11 @@ p {
 .btn-confirmarcheque:hover {
     background-color: #007bff;
 }
+.btn-confirmarcheque:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}
 
 .tabla-facturasasociadas {
     font-size: 12px;

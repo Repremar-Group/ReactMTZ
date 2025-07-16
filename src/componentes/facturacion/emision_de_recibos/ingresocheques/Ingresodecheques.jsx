@@ -7,34 +7,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, fechaActual, totalfacturas, clienteAsociado }) => {
-
-      const navigate = useNavigate();
-          useEffect(() => {
-              const rol = localStorage.getItem('rol');
-      
-              if (rol == '') {
-                  navigate('/');
-              }
-          }, [navigate]);
-          
-    // Estado para los campos del formulario
- 
-    const backURL = import.meta.env.VITE_BACK_URL;
-    const [monedas, setMonedas] = useState([]);
-    const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
-    //Traigo las monedas desde la BD
-    const fetchMonedas = async () => {
-        try {
-            const response = await axios.get(`${backURL}/api/obtenermonedas`);
-            setMonedas(response.data);
-            setIsFetchedMonedas(true); // Indica que ya se obtuvieron los datos
-        } catch (error) {
-            console.error('Error al obtener monedas:', error);
-        }
-    }
-
+    console.log('Total Facturas: ', totalfacturas);
     useEffect(() => {
-        fetchMonedas();
+
         setIcFecha(fechaActual);
         setIcFechavencimiento(fechaActual);
         setIcArbitraje(1);
@@ -43,8 +18,27 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         setIcTipoMoneda(datosRecibo.ertipoMoneda);
         setIcTotalDeLasGuias(totalfacturas);
         setIcSaldoDelDocumento(totalfacturas);
+        setIcSaldoDelCheque(totalfacturas)
         saldoOriginalRef.current = totalfacturas;
-    }, []); // Se ejecuta solo una vez al montar el componente
+    }, [isOpen]); // Se ejecuta solo una vez al montar el componente
+
+    const navigate = useNavigate();
+    useEffect(() => {
+        const rol = localStorage.getItem('rol');
+
+        if (rol == '') {
+            navigate('/');
+        }
+    }, [navigate]);
+
+    // Estado para los campos del formulario
+
+    const backURL = import.meta.env.VITE_BACK_URL;
+    const [monedas, setMonedas] = useState([]);
+    const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
+
+
+
 
     const [icnrocheque, setIcNroCheque] = useState('');
     const [icbanco, setIcBanco] = useState('');
@@ -84,6 +78,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     };
     // Función para agregar una factura asociada a la tabla
     const handleAgregarChequeCargado = () => {
+        console.log('Validando Cheque con estos datos: ', icnrocheque, icbanco, icfecha, ictipoMoneda, icarbitraje, icimpdelcheque, icimporteendolares, icfechavencimiento)
         if (icnrocheque && icbanco && icfecha && ictipoMoneda && icarbitraje && icimpdelcheque && icimporteendolares && icfechavencimiento) {
             const nuevocheque = { icfecha, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
             setIcListaDeCheques([...iclistadecheques, nuevocheque]);
@@ -208,9 +203,32 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
 
     };
+    useEffect(() => {
+        if (!isOpen) {
+            // Campos individuales
+            setIcNroCheque('');
+            setIcBanco('');
+            setIcFecha(fechaActual);
+            setIcTipoMoneda('');
+            setIcArbitraje('1');
+            setIcImpDelCheque('');
+            setIcImporteEnDolares('');
+            setIcFechavencimiento(fechaActual);
 
+            // Totales y saldos
+            setIcTotalDeLasGuias('');
+            setIcTotalIngresado(0);
+            setIcSaldoDelCheque(0);
+            setIcImpDelDocumento('');
+            setIcSaldoDelDocumento('');
 
-   if (!isOpen) return null;
+            // Tabla y selección
+            setIcListaDeCheques([]);
+            setIcChequeSeleccionado(null);
+        }
+    }, [isOpen]);
+
+    if (!isOpen) return null;
 
     return (
         <div className="modal" onClick={closeModal}>
@@ -274,11 +292,9 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
                                     >
                                         <option value="">Selecciona una Moneda</option>
-                                        {monedas.map((moneda, index) => (
-                                            <option key={index} value={moneda.moneda}>
-                                                {moneda.moneda}
-                                            </option>
-                                        ))}
+                                        <option value="USD">USD</option>
+                                        <option value="UYU">UYU</option>
+
                                     </select>
                                 </div>
                                 <div>
@@ -323,7 +339,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                 </div>
                                 <div className='contenedorbotonconfirmarcheque'>
                                     <br />
-                                    <button type="button" onClick={handleAgregarChequeCargado} className='btn-confirmarcheque'>Confirmar</button>
+                                    <button type="button" disabled={icsaldodeldocumento === 0} onClick={handleAgregarChequeCargado} className='btn-confirmarcheque'>Confirmar</button>
                                 </div>
 
                             </div>
