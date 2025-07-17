@@ -43,7 +43,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     const [icnrocheque, setIcNroCheque] = useState('');
     const [icbanco, setIcBanco] = useState('');
     const [icfecha, setIcFecha] = useState('');
-    const [ictipoMoneda, setIcTipoMoneda] = useState(false);//*
+    const [ictipoMoneda, setIcTipoMoneda] = useState('USD');//*
     const [icarbitraje, setIcArbitraje] = useState('');
     const [icimpdelcheque, setIcImpDelCheque] = useState('');
     const [icimporteendolares, setIcImporteEnDolares] = useState('');
@@ -80,11 +80,17 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     const handleAgregarChequeCargado = () => {
         console.log('Validando Cheque con estos datos: ', icnrocheque, icbanco, icfecha, ictipoMoneda, icarbitraje, icimpdelcheque, icimporteendolares, icfechavencimiento)
         if (icnrocheque && icbanco && icfecha && ictipoMoneda && icarbitraje && icimpdelcheque && icimporteendolares && icfechavencimiento) {
-            const nuevocheque = { icfecha, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
-            setIcListaDeCheques([...iclistadecheques, nuevocheque]);
-            setIcNroCheque('');
-            setIcImpDelCheque('');
-            setIcImporteEnDolares('');
+            console.log('Valores del cheque, Importe: ',icimporteendolares,' Saldo del Pago: ',icsaldodelcheque);
+            if (icimporteendolares <= icsaldodeldocumento) {
+                const nuevocheque = { icfecha, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
+                setIcListaDeCheques([...iclistadecheques, nuevocheque]);
+                setIcNroCheque('');
+                setIcImpDelCheque('');
+                setIcImporteEnDolares('');
+            }else{
+                toast.error('No se puede ingresar un pago con un monto mayor al saldo del pago.')
+            }
+
         } else {
             toast.error('Debes completar todos los campos para agregar el pago');
         }
@@ -98,8 +104,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     useEffect(() => {
         const totalImportes = iclistadecheques.reduce((total, cheque) => total + parseFloat(cheque.icimpdelcheque || 0), 0);
         setIcTotalIngresado(totalImportes);
-        setIcSaldoDelDocumento(saldoOriginalRef.current - totalImportes);
-        setIcSaldoDelCheque(totalImportes - totalfacturas)
+        setIcSaldoDelDocumento((saldoOriginalRef.current - totalImportes).toFixed(2));
+        setIcSaldoDelCheque((totalImportes - totalfacturas).toFixed(2));
     }, [iclistadecheques]); // Se ejecuta solo una vez al montar el componente
 
     const descargarPDF = async (datosRecibo) => {
@@ -209,7 +215,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
             setIcNroCheque('');
             setIcBanco('');
             setIcFecha(fechaActual);
-            setIcTipoMoneda('');
+            setIcTipoMoneda('USD');
             setIcArbitraje('1');
             setIcImpDelCheque('');
             setIcImporteEnDolares('');

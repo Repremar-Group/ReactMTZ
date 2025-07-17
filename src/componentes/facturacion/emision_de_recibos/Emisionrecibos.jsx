@@ -195,7 +195,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
       0
     );
     setErTotalDeFacturas(totalFacturas);
-    setErSaldoDelRecibo(erimportedelrecibo - totalFacturas);
+    setErSaldoDelRecibo((erimportedelrecibo - totalFacturas).toFixed(2));
   }, [erimportedelrecibo, erfacturasasociadas]);
 
   // Función para seleccionar una factura al hacer clic en una fila
