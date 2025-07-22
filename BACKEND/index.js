@@ -3294,12 +3294,12 @@ app.post('/api/insertrecibo', (req, res) => {
 
   // Consulta para insertar el recibo
   const insertReciboQuery = `
-    INSERT INTO recibos (nrorecibo, fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO recibos ( fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   // Ejecutar la inserción del recibo
-  connection.query(insertReciboQuery, [nrorecibo, fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion], (err, results) => {
+  connection.query(insertReciboQuery, [fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion], (err, results) => {
     if (err) {
       console.error('Error al insertar el recibo:', err);
       return res.status(500).json({ error: 'Error al insertar el recibo' });

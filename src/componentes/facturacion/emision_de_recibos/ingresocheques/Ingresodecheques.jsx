@@ -15,7 +15,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         setIcArbitraje(1);
         setIcImpDelCheque(datosRecibo.erimporte);
         setIcImporteEnDolares(datosRecibo.erimporte);
-        setIcTipoMoneda(datosRecibo.ertipoMoneda);
+        
+        setIcFormaDePago(datosRecibo.erformadepago)
         setIcTotalDeLasGuias(totalfacturas);
         setIcSaldoDelDocumento(totalfacturas);
         setIcSaldoDelCheque(totalfacturas)
@@ -51,6 +52,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     const [ictotaldelasguias, setIcTotalDeLasGuias] = useState('');
     const [ictotalingresado, setIcTotalIngresado] = useState(0);
     const [icsaldodelcheque, setIcSaldoDelCheque] = useState(0);
+    const [icformadepago, setIcFormaDePago] = useState('');
     const [icimpdeldocumento, setIcImpDelDocumento] = useState('');
     const [icsaldodeldocumento, setIcSaldoDelDocumento] = useState('');
     const [iclistadecheques, setIcListaDeCheques] = useState([]);
@@ -140,7 +142,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     const handleSubmitAgregarRecibo = async (e) => {
         e.preventDefault();
         setLoading(true);
-        if (icsaldodeldocumento === 0) {
+        console.log('Saldo del documento antes de enviar el recibo', icsaldodeldocumento)
+        if (icsaldodeldocumento === '0.00') {
             console.log('Estas son las facturas asociadas al Recibo: ', facturasAsociadas);
 
 
@@ -162,12 +165,11 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     nombrecliente: datosRecibo.searchTerm,
                     moneda: datosRecibo.ertipoMoneda,
                     importe: datosRecibo.erimporte,
-                    formapago: datosRecibo.erformadepago,
                     razonsocial: datosRecibo.errazonSocial,
                     rut: datosRecibo.errut,
                     direccion: datosRecibo.erdireccion
                 };
-
+                console.log('Datos Recibo antes de insertar en bd', nuevoRecibo);
                 const response = await axios.post(`${backURL}/api/insertrecibo`, nuevoRecibo);
                 const idrecibo = response.data.idrecibo;
 
