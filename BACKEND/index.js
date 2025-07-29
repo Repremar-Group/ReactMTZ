@@ -8,7 +8,7 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo } = require('./ControladoresGFE/controladoresGfe')
 const { obtenerDatosEmpresa } = require('./ControladoresGFE/datosdelaempresaGFE')
 const cron = require('node-cron');
 const { Console } = require('console');
@@ -102,9 +102,13 @@ app.get('/api/cierre_diario', (req, res) => {
 });
 
 // Función para generar el mensaje en el backend
-function generarMensaje(monto) {
+function generarMensaje(monto, moneda) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
-  return `Son dólares americanos U$S ${montoEnLetras}`;
+  if (moneda === 'USD') {
+    return `Son dólares americanos U$S ${montoEnLetras}`;
+  } else {
+    return `Son pesos uruguayos $ ${montoEnLetras}`;
+  }
 }
 function generarAdenda(numerodoc, monto, moneda) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
@@ -3275,39 +3279,212 @@ app.get('/api/buscarfacturaporcomprobante/:comprobante', (req, res) => {
     res.status(200).json(result[0]); // Devuelve solo la primera coincidencia
   });
 });
+
 // Ruta para insertar un recibo
-app.post('/api/insertrecibo', (req, res) => {
+app.post('/api/insertrecibo', async (req, res) => {
   console.log('Received request for /api/insertrecibo');
 
   const {
     nrorecibo,
     fecha,
     idcliente,
+    clienteGIA,
     nombrecliente,
     moneda,
     importe,
     formapago,
     razonsocial,
     rut,
-    direccion
-  } = req.body; // Datos del recibo enviados desde el front
+    direccion,
+    listadepagos
+  } = req.body;
 
-  // Consulta para insertar el recibo
   const insertReciboQuery = `
-    INSERT INTO recibos ( fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion)
+    INSERT INTO recibos (fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  // Ejecutar la inserción del recibo
   connection.query(insertReciboQuery, [fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion], (err, results) => {
     if (err) {
       console.error('Error al insertar el recibo:', err);
       return res.status(500).json({ error: 'Error al insertar el recibo' });
     }
-    // Respuesta exitosa con el ID del recibo insertado
-    res.status(200).json({ message: 'Recibo insertado exitosamente', idrecibo: results.insertId });
+
+    const idrecibo = results.insertId;
+    console.log('ID del recibo insertado:', idrecibo);
+
+    if (!Array.isArray(listadepagos) || listadepagos.length === 0) {
+      // Si no hay pagos, directamente impactamos
+      return impactarReciboInternamente(idrecibo, res);
+    }
+
+    const pagosValues = listadepagos.map(pago => [
+      idrecibo,
+      pago.icfecha,
+      pago.icbanco,
+      pago.icnrocheque,
+      pago.ictipoMoneda,
+      pago.icimpdelcheque,
+      pago.icfechavencimiento
+    ]);
+
+    const insertPagosQuery = `
+      INSERT INTO pagos (idrecibo, fecha, banco, nro_pago, moneda, importe, vencimiento)
+      VALUES ?
+    `;
+
+    connection.query(insertPagosQuery, [pagosValues], (err, pagoResults) => {
+      if (err) {
+        console.error('Error al insertar los pagos:', err);
+        return res.status(500).json({ error: 'Recibo insertado, pero error al insertar pagos' });
+      }
+
+      console.log('Pagos insertados correctamente');
+      return res.status(200).json({ message: 'Recibo y pagos insertados exitosamente', idrecibo });
+    });
   });
 });
+
+app.post('/api/impactarrecibo', (req, res) => {
+  console.log('ImpactarRecibo endpoint alcanzado');
+  const { idrecibo } = req.body;
+
+  obtenerDatosEmpresa(connection).then((datosEmpresa) => {
+    // 1. Traer datos del recibo
+    connection.query('SELECT * FROM recibos WHERE idrecibo = ?', [idrecibo], (err, reciboRows) => {
+      if (err) return res.status(500).json({ error: 'Error al obtener recibo' });
+      const recibo = reciboRows[0];
+      if (!recibo) return res.status(404).json({ error: 'Recibo no encontrado' });
+
+      // 2. Traer pagos
+      connection.query('SELECT * FROM pagos WHERE idrecibo = ?', [idrecibo], (err, pagos) => {
+        if (err) return res.status(500).json({ error: 'Error al obtener pagos' });
+
+        // 3. Traer facturas asociadas
+        connection.query('SELECT * FROM facturas WHERE idrecibo = ?', [idrecibo], async (err, facturasAsociadas) => {
+          if (err) return res.status(500).json({ error: 'Error al obtener facturas asociadas' });
+          if (facturasAsociadas.length === 0) return res.status(400).json({ error: 'No hay facturas asociadas' });
+
+          // 4. Armar el XML
+          const datosXml = {
+            datosEmpresa,
+            fechaCFE: formatFecha(recibo.fecha),
+            fechaVencimientoCFE: formatFecha(recibo.fecha),
+            adendadoc: generarMensaje(recibo.importe, recibo.moneda),
+            codigoClienteGIA: facturasAsociadas[0].CodigoClienteGia || '',
+            cancelaciones: facturasAsociadas.map(factura => ({
+              rubroAfectado: '113102',
+              tipoDocumentoAfectado: factura.TipoDocCFE,
+              comprobanteAfectado: factura.NumeroCFE,
+              vencimientoAfectado: formatFecha(factura.fechaVencimiento || factura.Fecha),
+              importe: factura.TotalCobrar
+            })),
+            formasPago: pagos.map(pago => ({
+              formaPago: recibo.formapago,
+              importe: pago.importe,
+              comprobante: pago.nro_pago,
+              vencimiento: formatFecha(pago.vencimiento)
+            })),
+            Moneda: recibo.moneda
+          };
+
+          const xml = generarXmlRecibo(datosXml);
+          console.log('Impactando Recibo, XML: ', xml);
+
+          // 5. Enviar XML al WS
+          const headers = {
+            'Content-Type': 'text/xml;charset=utf-8',
+            'SOAPAction': '"agregarDocumentoFacturacion"',
+            'Accept-Encoding': 'gzip,deflate',
+            'Host': datosEmpresa.serverFacturacion,
+            'Connection': 'Keep-Alive',
+            'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
+          };
+
+          try {
+            const response = await axios.post(
+              `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+              xml,
+              { headers }
+            );
+
+            const parsed = await parseSOAP(response.data);
+            const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+            const resultado = inner.agregarDocumentoFacturacionResultado;
+
+            if (resultado.resultado !== "1") {
+              return res.status(422).json({
+                success: false,
+                mensaje: 'Error en agregarDocumentoFacturacion',
+                errores: [{ descripcion: resultado.descripcion, resultado: resultado.resultado }],
+              });
+            }
+
+            // 🆕 Guardar datos del documento en la tabla recibos
+            const datosDoc = resultado?.datos?.documento;
+            if (datosDoc) {
+              const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
+
+              const updateQuery = `
+                UPDATE recibos
+                SET fechaDocumentoCFE = ?, tipoDocumentoCFE = ?, serieDocumentoCFE = ?, numeroDocumentoCFE = ?
+                WHERE idrecibo = ?
+              `;
+
+              connection.query(
+                updateQuery,
+                [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idrecibo],
+                (err, result) => {
+                  if (err) {
+                    console.error('Error al actualizar recibo con datos del WS:', err);
+                    return res.status(500).json({ success: false, error: 'Error al guardar datos del documento' });
+                  }
+
+                  return res.status(200).json({
+                    success: true,
+                    message: 'Recibo impactado y datos del WS guardados correctamente',
+                    resultado
+                  });
+                }
+              );
+            } else {
+              // Si no hay datos del documento, igual devolvemos la respuesta
+              return res.status(200).json({
+                success: true,
+                message: 'Recibo impactado, pero sin datos del documento',
+                resultado
+              });
+            }
+          } catch (error) {
+            console.error('Error al enviar XML al WS:', error);
+            return res.status(500).json({ error: 'Error al impactar recibo con el WS' });
+          }
+        });
+      });
+    });
+  }).catch(err => {
+    console.error('Error al obtener datos de empresa:', err);
+    return res.status(500).json({ error: 'Error al obtener datos de empresa' });
+  });
+});
+
+// Función auxiliar para formatear fecha a YYYY-MM-DD
+function formatFecha(fecha) {
+  if (!fecha) return '';
+  return new Date(fecha).toISOString().split('T')[0];
+}
+
+// Función para parsear el SOAP
+async function parseSOAP(xmlData) {
+  const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+  return await parser.parseStringPromise(xmlData);
+}
+
+async function parseInnerXML(escapedXml) {
+  const rawXml = escapedXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const parser = new xml2js.Parser({ explicitArray: false });
+  return await parser.parseStringPromise(rawXml);
+}
 
 
 app.put('/api/actualizarFactura/:idFactura', (req, res) => {
@@ -3445,7 +3622,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
         });
         //Sumo todos los improes
         let montototalpagos = datosRecibo.totalrecibo;
-        let montoenletras = generarMensaje(montototalpagos);
+        let montoenletras = generarMensaje(montototalpagos, datosRecibo.ertipoMoneda);
         primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10 });
         primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, color: rgb(0, 0, 0) });
       } else {

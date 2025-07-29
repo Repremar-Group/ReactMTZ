@@ -7,6 +7,7 @@ import Ingresodecheques from './ingresocheques/Ingresodecheques';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import ModalTipoCambio from '../../modales/TipoCambioRecibos';
 
 const Emisionrecibos = ({ isLoggedIn }) => {
   const navigate = useNavigate();
@@ -25,7 +26,11 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   const [ernombre, setErNombre] = useState('');
   const [erid, setErID] = useState('');
 
+  //Estados para manejar la moneda del cheque
   const [ertipoMoneda, setErTipoMoneda] = useState('USD');//*
+  const [isModalTipoCambioAbierto, setIsModalTipoCambioAbierto] = useState(false);
+  const [tipoCambio, setTipoCambio] = useState(null);
+
   const [erimporte, setErImporte] = useState('');
 
   const [erformadepago, setErFormaDePago] = useState('');
@@ -43,6 +48,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
   // Estado para la búsqueda de clientes
   const [searchTerm, setSearchTerm] = useState('');
+  const [clienteGIA, setClienteGIA] = useState('');
   const [filteredClientes, setFilteredClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [isSelectEnabled, setIsSelectEnabled] = useState(false);
@@ -125,6 +131,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     setSelectedCliente(cliente);
     console.log('Cliente Seleccionado:', cliente)
     setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    setClienteGIA(cliente.CodigoGIA);
     setIsSelectEnabled(true);
     setIsModalOpen(false); // Cierra el modal
   };
@@ -153,7 +160,6 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           setErRazonSocial(selectedCliente.RazonSocial);
           setErRut(selectedCliente.Rut);
           setErDireccion(selectedCliente.Direccion);
-          setErTipoMoneda(selectedCliente.Moneda)
         })
         .catch(error => console.error('Error al obtener datos:', error));
     }
@@ -188,15 +194,27 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     setErImporteDelRecibo(erimporte);
   }, [erimporte]);
 
-  useEffect(() => {
-    // Calcular ersaldodelrecibo
-    const totalFacturas = erfacturasasociadas.reduce(
-      (total, factura) => total + Number(factura.erimportefacturaasociada || 0),
-      0
-    );
-    setErTotalDeFacturas(totalFacturas);
-    setErSaldoDelRecibo((erimportedelrecibo - totalFacturas).toFixed(2));
-  }, [erimportedelrecibo, erfacturasasociadas]);
+ useEffect(() => {
+  const totalFacturas = erfacturasasociadas.reduce((total, factura) => {
+    const importe = Number(factura.erimportefacturaasociada || 0);
+    const monedaFactura = factura.ermonedafacturaasociada;
+
+    let importeConvertido = importe;
+
+    if (ertipoMoneda === 'USD' && monedaFactura === 'UYU') {
+      // Convertir de UYU a USD
+      importeConvertido = importe / tipoCambio;
+    } else if (ertipoMoneda === 'UYU' && monedaFactura === 'USD') {
+      // Convertir de USD a UYU
+      importeConvertido = importe * tipoCambio;
+    }
+
+    return total + importeConvertido;
+  }, 0);
+
+  setErTotalDeFacturas(totalFacturas);
+  setErSaldoDelRecibo((erimportedelrecibo - totalFacturas).toFixed(2));
+}, [erimportedelrecibo, erfacturasasociadas, tipoCambio, ertipoMoneda]);
 
   // Función para seleccionar una factura al hacer clic en una fila
   const handleSeleccionarFacturaAsociada = (index) => {
@@ -233,12 +251,12 @@ const Emisionrecibos = ({ isLoggedIn }) => {
         <tbody>
           {datos.map((movimiento, index) => (
             <tr key={index}
-             onDoubleClick={() => {
-              if (movimiento.IdFactura) {
-                buscarFactura(movimiento.IdFactura);
-              }
-            }}
-             style={{ cursor: 'pointer' }}>
+              onDoubleClick={() => {
+                if (movimiento.IdFactura) {
+                  buscarFactura(movimiento.IdFactura);
+                }
+              }}
+              style={{ cursor: 'pointer' }}>
               <td>{movimiento.Fecha}</td>
               <td>{movimiento.TipoDocumento === 'Factura' ? 'F' : movimiento.TipoDocumento === 'Recibo' ? 'R' : movimiento.TipoDocumento}</td>
               <td>{movimiento.IdFactura}</td>
@@ -287,6 +305,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     ernumrecibo,
     erfecharecibo,
     erid,
+    clienteGIA,
     searchTerm,
     ertipoMoneda,
     erimporte,
@@ -399,11 +418,18 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                 <select
                   id="ecmoneda"
                   value={ertipoMoneda}
-                  onChange={(e) => setErTipoMoneda(e.target.value)}
-                  required
+                  onChange={(e) => {
+                    const nuevaMoneda = e.target.value;
+                    setErTipoMoneda(nuevaMoneda);
+
+                    if (nuevaMoneda === 'UYU') {
+                      setIsModalTipoCambioAbierto(true);
+                    }
+                  }}
                 >
+                  <option value="">Selecciona una Moneda</option>
                   <option value="USD">USD</option>
-                  <option value="UYU">UYU</option>
+                  <option value="UYU">UYU / TC: ${tipoCambio}</option>
                 </select>
               </div>
               <div>
@@ -450,7 +476,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                           onKeyDown={handleKeyPressDocumento}
                           placeholder='Nro. Comprobante'
                           autoComplete="off"
-                          disabled= {!searchTerm}
+                          disabled={!searchTerm}
                         />
                       </div>
                     </th>
@@ -471,7 +497,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                       <td>{factura.erimportefacturaasociada}</td>
                       <td>{factura.ermonedafacturaasociada}</td>
                       <td>
-        
+
                         <button type="button" onClick={handleEliminarFacturaAsociada} disabled={erfacturaSeleccionada !== index} className='action-button' >❌</button>
                       </td>
                     </tr>
@@ -556,6 +582,15 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           fechaActual={erfecharecibo}
           totalfacturas={ertotaldefacturas}
           clienteAsociado={erid}
+        />
+
+        <ModalTipoCambio
+          isOpen={isModalTipoCambioAbierto}
+          closeModal={() => setIsModalTipoCambioAbierto(false)}
+          onConfirm={(valor) => {
+            setTipoCambio(valor);
+            console.log('Tipo de cambio establecido:', valor);
+          }}
         />
       </div>
     </div>

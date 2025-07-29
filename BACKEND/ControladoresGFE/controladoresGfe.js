@@ -242,15 +242,15 @@ function generarXmlRecibo(datos) {
                      .replace('{{fechaVencimientoCFE}}', datos.fechaVencimientoCFE)
                      .replace('{{Adenda}}', datos.adendadoc);
 
-    // Generar <renglones> desde cancelaciones
+    // Generar <renglones> desde formas de pago
     let renglones = '';
-    for (let cancelacion of datos.cancelaciones) {
+    for (let renglon of datos.formasPago) {
         renglones += `
             <renglon>
-                <producto>${cancelacion.producto || 'COM004'}</producto>
-                <nombreProducto>${cancelacion.nombreProducto || 'COBRO'}</nombreProducto>
+                <producto>COM004</producto>
+                <nombreProducto>COBRO</nombreProducto>
                 <cantidad>1</cantidad>
-                <precioUnitario>${cancelacion.importe}</precioUnitario>
+                <precioUnitario>${renglon.importe}</precioUnitario>
             </renglon>`;
     }
     xmlBase = xmlBase.replace('{{Renglones}}', renglones);

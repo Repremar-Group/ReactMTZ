@@ -5,9 +5,10 @@ import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import ModalAlertaGFE from '../../../modales/AlertasGFE';
 
 const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, fechaActual, totalfacturas, clienteAsociado }) => {
-    console.log('Total Facturas: ', totalfacturas);
+    console.log('Total Facturas: ', totalfacturas, 'Datos del recibo recibidos en modal', datosRecibo);
     useEffect(() => {
 
         setIcFecha(fechaActual);
@@ -15,11 +16,12 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         setIcArbitraje(1);
         setIcImpDelCheque(datosRecibo.erimporte);
         setIcImporteEnDolares(datosRecibo.erimporte);
-        
+        setIcClienteGIA(datosRecibo.clienteGIA);
         setIcFormaDePago(datosRecibo.erformadepago)
         setIcTotalDeLasGuias(totalfacturas);
         setIcSaldoDelDocumento(totalfacturas);
         setIcSaldoDelCheque(totalfacturas)
+        setIcTipoMoneda(datosRecibo.ertipoMoneda);
         saldoOriginalRef.current = totalfacturas;
     }, [isOpen]); // Se ejecuta solo una vez al montar el componente
 
@@ -38,13 +40,25 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     const [monedas, setMonedas] = useState([]);
     const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
 
-
+    const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
+    const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
+    const [mensajeAlertaGFE, setmensajeAlertaGFE] = useState('');
+    const [iconoAlertaGFE, setIconoAlertaGFE] = useState('');
+    const handleConfirmAlertaGFE = () => {
+        setIsModalOpenAlertaGFE(false);
+        window.location.reload();
+    };
 
 
     const [icnrocheque, setIcNroCheque] = useState('');
+    const [icClienteGIA, setIcClienteGIA] = useState('');
     const [icbanco, setIcBanco] = useState('');
     const [icfecha, setIcFecha] = useState('');
+    
     const [ictipoMoneda, setIcTipoMoneda] = useState('USD');//*
+    const [isModalTipoCambioAbierto, setIsModalTipoCambioAbierto] = useState(false);
+    const [tipoCambio, setTipoCambio] = useState(null);
+
     const [icarbitraje, setIcArbitraje] = useState('');
     const [icimpdelcheque, setIcImpDelCheque] = useState('');
     const [icimporteendolares, setIcImporteEnDolares] = useState('');
@@ -82,14 +96,14 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     const handleAgregarChequeCargado = () => {
         console.log('Validando Cheque con estos datos: ', icnrocheque, icbanco, icfecha, ictipoMoneda, icarbitraje, icimpdelcheque, icimporteendolares, icfechavencimiento)
         if (icnrocheque && icbanco && icfecha && ictipoMoneda && icarbitraje && icimpdelcheque && icimporteendolares && icfechavencimiento) {
-            console.log('Valores del cheque, Importe: ',icimporteendolares,' Saldo del Pago: ',icsaldodelcheque);
+            console.log('Valores del cheque, Importe: ', icimporteendolares, ' Saldo del Pago: ', icsaldodelcheque);
             if (icimporteendolares <= icsaldodeldocumento) {
                 const nuevocheque = { icfecha, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
                 setIcListaDeCheques([...iclistadecheques, nuevocheque]);
                 setIcNroCheque('');
                 setIcImpDelCheque('');
                 setIcImporteEnDolares('');
-            }else{
+            } else {
                 toast.error('No se puede ingresar un pago con un monto mayor al saldo del pago.')
             }
 
@@ -162,16 +176,22 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     nrorecibo: datosRecibo.ernumrecibo,
                     fecha: datosRecibo.erfecharecibo,
                     idcliente: datosRecibo.erid,
+                    clienteGIA: icClienteGIA,
                     nombrecliente: datosRecibo.searchTerm,
                     moneda: datosRecibo.ertipoMoneda,
+                    formapago: 'CHEQUEUS',
                     importe: datosRecibo.erimporte,
                     razonsocial: datosRecibo.errazonSocial,
                     rut: datosRecibo.errut,
-                    direccion: datosRecibo.erdireccion
+                    direccion: datosRecibo.erdireccion,
+                    listadepagos: datosRecibo.listadepagos,
+                    facturasAsociadas: datosRecibo.facturas
                 };
                 console.log('Datos Recibo antes de insertar en bd', nuevoRecibo);
                 const response = await axios.post(`${backURL}/api/insertrecibo`, nuevoRecibo);
+                console.log('Respuesta completa del WS:', response);
                 const idrecibo = response.data.idrecibo;
+
 
                 if (facturasAsociadas.length > 0) {
                     await Promise.all(
@@ -195,6 +215,28 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
                 // Enviar datos al backend para insertar en cuenta corriente
                 await axios.post(`${backURL}/api/insertarCuentaCorriente`, movimientoCuentaCorriente);
+                try {
+                    const impactarResponse = await axios.post(`${backURL}/api/impactarrecibo`, { idrecibo });
+
+                    const respuestaWS = impactarResponse.data; // Asegurate que el backend te devuelva algo útil
+                    console.log('Respuesta completa del WS:', respuestaWS);
+
+                    // Ahora seteás el modal
+                    setTituloAlertaGfe('Recibo Impactado Correctamente');
+                    setmensajeAlertaGFE(JSON.stringify(respuestaWS, null, 2)); // Podés formatear esto mejor si querés
+                    setIconoAlertaGFE('success');
+                    setIsModalOpenAlertaGFE(true);
+
+                } catch (impactarError) {
+                    const errorData = impactarError.response?.data || { mensaje: impactarError.message };
+                    console.error('Error al impactar recibo:', errorData);
+                    console.error('Error al impactar recibo:', impactarError.response?.data || impactarError.message);
+
+                    setTituloAlertaGfe('Error al Impactar el Recibo');
+                    setmensajeAlertaGFE(JSON.stringify(errorData, null, 2));
+                    setIconoAlertaGFE('error');
+                    setIsModalOpenAlertaGFE(true);
+                }
 
 
                 await descargarPDF(datosRecibo);
@@ -465,6 +507,15 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
 
                 </form>
+
+                <ModalAlertaGFE
+                    isOpen={isModalOpenAlertaGFE}
+                    title={tituloAlertaGfe}
+                    message={mensajeAlertaGFE}
+                    onConfirm={handleConfirmAlertaGFE}
+                    iconType={iconoAlertaGFE}
+                />
+
             </div>
         </div>
     );

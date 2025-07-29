@@ -215,7 +215,25 @@ body {
     /* Rojo pálido para botones deshabilitados */
     cursor: not-allowed;
 }
+.input-estandar {
+  width: 150px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
 
+.input-estandar:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+}
+
+.input-estandar::placeholder {
+  color: #999;
+  font-style: italic;
+}
 /*Estilo para los campos*/
 .formulario-estandar input,
 .formulario-estandar select {
