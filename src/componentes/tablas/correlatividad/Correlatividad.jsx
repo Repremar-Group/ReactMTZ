@@ -3,8 +3,30 @@ import { Link } from "react-router-dom";
 import ModificarCorrelatividad from './modificarcorrelatividad/ModificarCorrelatividad';
 import Eliminarcorrelatividad from './eliminarcorrelatividad/Eliminarcorrelatividad';
 import './Correlatividad.css';
+import axios from 'axios';
 
 const Correlatividad = ({ isLoggedIn }) => {
+  const backURL = import.meta.env.VITE_BACK_URL;
+
+  useEffect(() => {
+  const fetchCorrelatividad = async () => {
+    try {
+      const { data } = await axios.get(`${backURL}/api/obtenercorrelatividad`);
+      // data = { ultimoFormularioRecibo: ..., ultimoDocumentoRecibo: ... }
+
+      if (data) {
+        setCcFormulario(data.ultimoFormularioRecibo ?? '');
+        setCcDocumento(data.ultimoDocumentoRecibo ?? '');
+      }
+    } catch (err) {
+      console.error('Error al obtener correlatividad:', err);
+      // opcional: mostrar alerta al usuario
+    }
+  };
+
+  fetchCorrelatividad();
+}, []);         
+
   // Estado para los campos del formulario
 
   const [ccformulario, setCcFormulario] = useState('');
@@ -12,6 +34,109 @@ const Correlatividad = ({ isLoggedIn }) => {
   const [cctipocomprobante, setCcTipoComprobante] = useState('');
   const [ccestado, setCcEstado] = useState('');
   const [ccfecha, setCcFecha] = useState('');
+
+  const [accionPendiente, setAccionPendiente] = useState(null); // 'editar' | 'eliminar'
+  const [datosPendientes, setDatosPendientes] = useState(null);
+
+  //Estados para controlar la correlatividad
+  const [mostrarModalPassword, setMostrarModalPassword] = useState(false);
+  const [mostrarModalPasswordediciones, setMostrarModalPasswordEdiciones] = useState(false);
+  const [campoADesbloquear, setCampoADesbloquear] = useState('');
+  const [inputPassword, setInputPassword] = useState('');
+
+  const abrirModalPassword = (campo) => {
+    setCampoADesbloquear(campo);
+    setInputPassword('');
+    setMostrarModalPassword(true);
+  };
+
+  const abrirModalPasswordEdiciones = (accion, datos) => {
+    setAccionPendiente(accion);         // 'editar' o 'eliminar'
+    setDatosPendientes(datos);         // lo que le pasás a handleModificar / handleEliminar
+    setInputPassword('');
+    setMostrarModalPasswordEdiciones(true);
+  };
+
+  const confirmarPassword = () => {
+    if (inputPassword === 'SistemasAirbill2025') {
+      if (campoADesbloquear === 'ultimoFormularioRecibo') setCcFormularioEditable(true);
+      if (campoADesbloquear === 'ultimoDocumentoRecibo') setCcDocumentoEditable(true);
+      setMostrarModalPassword(false);
+    } else {
+      alert("Contraseña incorrecta");
+    }
+  };
+  const confirmarPasswordEdiciones = () => {
+    if (inputPassword === 'SistemasAirbill2025') {
+      if (accionPendiente === 'editar') {
+        handleModificar(
+          datosPendientes.ccformulario,
+          datosPendientes.ccdocumento,
+          datosPendientes.ccfecha,
+          datosPendientes.cctipocomprobante,
+          datosPendientes.ccestado
+        );
+      }
+      if (accionPendiente === 'eliminar') {
+        handleEliminar(
+          datosPendientes.ccformulario,
+          datosPendientes.ccdocumento,
+          datosPendientes.ccfecha,
+          datosPendientes.cctipocomprobante,
+          datosPendientes.ccestado
+        );
+      }
+      setMostrarModalPasswordEdiciones(false);
+    } else {
+      alert('Contraseña incorrecta');
+    }
+  };
+
+
+  const [ccformularioEditable, setCcFormularioEditable] = useState(false);
+  const [ccdocumentoEditable, setCcDocumentoEditable] = useState(false);
+
+  const desbloquearCampo = async (campo) => {
+    if (campo === 'formulario') {
+      if (ccformularioEditable) {
+        guardarDato('formulario', ccformulario);
+        setCcFormularioEditable(false);
+      } else {
+        const ok = await verificarContraseña();
+        if (ok) {
+          setCcFormularioEditable(true);
+        } else {
+          alert("Contraseña incorrecta");
+        }
+      }
+    }
+
+    if (campo === 'documento') {
+      if (ccdocumentoEditable) {
+        guardarDato('documento', ccdocumento);
+        setCcDocumentoEditable(false);
+      } else {
+        const ok = await verificarContraseña();
+        if (ok) {
+          setCcDocumentoEditable(true);
+        } else {
+          alert("Contraseña incorrecta");
+        }
+      }
+    }
+  };
+  const guardarDato = async (campo, valor) => {
+    try {
+      const response = await axios.post(`${backURL}/api/actualizarcorrelatividad`, {
+        campo,
+        valor,
+      });
+      alert(response.data.message);
+    } catch (error) {
+      console.error('Error al guardar el dato:', error);
+      alert('Hubo un error al guardar el dato');
+    }
+  };
 
   //Variables de estado para eliminar empresas
   const [ccdocumentoAEliminar, setCcDocumentoAEliminar] = useState(null);
@@ -35,8 +160,8 @@ const Correlatividad = ({ isLoggedIn }) => {
 
   //Handle Eliminar lo que hace es cargar las variables de estado para la eliminacion
   const handleEliminar = (documento, formulario) => {
-    setCcDocumentoAEliminar(documento); 
-    setCcFormularioAEliminar(formulario); 
+    setCcDocumentoAEliminar(documento);
+    setCcFormularioAEliminar(formulario);
   };
   const closeModalModificar = () => {
     setFormularioAModificar(null);
@@ -148,65 +273,55 @@ const Correlatividad = ({ isLoggedIn }) => {
           <div className='div-guias-asociadas'>
             <h3 className='subtitulo-estandar'>Datos del Documento</h3>
             <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="ccformulario">Formulario:</label>
+              <div style={{ position: 'relative' }}>
+                <label htmlFor="ccformulario">Ultimo Nro. Formulario:</label>
                 <input
                   type="text"
                   id="ccformulario"
                   value={ccformulario}
                   onChange={(e) => setCcFormulario(e.target.value)}
                   required
+                  readOnly={!ccformularioEditable}
                 />
+                <span
+                  onClick={() => {
+                    if (ccformularioEditable) {
+                      guardarDato('ultimoFormularioRecibo', ccformulario);
+                      setCcFormularioEditable(false);
+                    } else {
+                      abrirModalPassword('ultimoFormularioRecibo');
+                    }
+                  }}
+                  style={{ cursor: 'pointer', position: 'absolute', top: '24px', right: '10px' }}
+                  title={ccformularioEditable ? "Guardar y bloquear" : "Desbloquear"}
+                >
+                  {ccformularioEditable ? '🔓' : '🔒'}
+                </span>
               </div>
-              <div>
-                <label htmlFor="ccdocumento">Documento:</label>
+              <div style={{ position: 'relative' }}>
+                <label htmlFor="ccdocumento">Ultimo Nro. Documento:</label>
                 <input
                   type="text"
                   id="ccdocumento"
                   value={ccdocumento}
                   onChange={(e) => setCcDocumento(e.target.value)}
                   required
+                  readOnly={!ccdocumentoEditable}
                 />
-              </div>
-              <div className="fecha-emision-comprobante">
-                <label htmlFor="ccfecha">Fecha:</label>
-                <input
-                  type="date"
-                  id="ccfecha"
-                  value={ccfecha}
-                  onChange={(e) => setCcFecha(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="cctipocomprobante">Tipo de Comprobante:</label>
-                <select
-                  id="cctipocomprobante"
-                  value={cctipocomprobante}
-                  onChange={(e) => setCcTipoComprobante(e.target.value)}
-                  required
+                <span
+                  onClick={() => {
+                    if (ccdocumentoEditable) {
+                      guardarDato('ultimoDocumentoRecibo', ccdocumento);
+                      setCcDocumentoEditable(false);
+                    } else {
+                      abrirModalPassword('ultimoDocumentoRecibo');
+                    }
+                  }}
+                  style={{ cursor: 'pointer', position: 'absolute', top: '24px', right: '10px' }}
+                  title={ccdocumentoEditable ? "Guardar y bloquear" : "Desbloquear"}
                 >
-                  <option value="">Selecciona una Tipo</option>
-                  <option value="Recibo">Recibo</option>
-                  <option value="Factura">Factura</option>
-                  <option value="etc">Etc</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="ccestado">Estado:</label>
-                <input
-                  type="text"
-                  id="ccestado"
-                  value={ccestado}
-                  onChange={(e) => setCcEstado(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className='botonesfacturasasociadas'>
-                <button type="button" onClick={handleAgregarDocumentoCorrelatividad} className='btn-estandar'>Agregar</button>
+                  {ccdocumentoEditable ? '🔓' : '🔒'}
+                </span>
               </div>
 
             </div>
@@ -243,8 +358,22 @@ const Correlatividad = ({ isLoggedIn }) => {
                       <td>{Documento.cctipocomprobante}</td>
                       <td>{Documento.ccestado}</td>
                       <td>
-                        <button type="button" className="action-button" disabled={ccdocumentoseleccionado !== indexec} onClick={() => handleModificar(Documento.ccformulario, Documento.ccdocumento, Documento.ccfecha, Documento.cctipocomprobante, Documento.ccestado)}>✏️</button>
-                        <button type="button" className="action-button" disabled={ccdocumentoseleccionado !== indexec} onClick={() => handleEliminar(Documento.ccformulario, Documento.ccdocumento, Documento.ccfecha, Documento.cctipocomprobante, Documento.ccestado)}>❌</button>
+                        <button
+                          type="button"
+                          className="action-button"
+                          disabled={ccdocumentoseleccionado !== indexec}
+                          onClick={() => abrirModalPasswordEdiciones('editar', Documento)}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          type="button"
+                          className="action-button"
+                          disabled={ccdocumentoseleccionado !== indexec}
+                          onClick={() => abrirModalPasswordEdiciones('eliminar', Documento)}
+                        >
+                          ❌
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -289,6 +418,130 @@ const Correlatividad = ({ isLoggedIn }) => {
             <ModificarCorrelatividad formulario={ccformularioAModificar} documento={ccdocumentoAModificar} fecha={ccfechaAModificar} tipocomprobante={cctipocomprobanteAModificar} estado={ccestadoAModificar} closeModal={closeModalModificar} />
           </div>
         </>
+      )}
+      {mostrarModalPassword && (
+        <div
+          className="modal"
+          onClick={() => setMostrarModalPassword(false)}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#fff',
+              padding: '20px',
+              borderRadius: '10px',
+              minWidth: '300px',
+              textAlign: 'center',
+            }}
+          >
+            <h3 className="subtitulo-estandar">Ingrese la contraseña</h3>
+            <input
+              type="password"
+              value={inputPassword}
+              onChange={(e) => setInputPassword(e.target.value)}
+              placeholder="Contraseña"
+              autoComplete="new-password"
+              style={{
+                padding: '8px',
+                width: '100%',
+                marginTop: '10px',
+                marginBottom: '20px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              <button
+                className="btn-estandartablas"
+                onClick={confirmarPassword}
+                style={{ padding: '8px 12px' }}
+              >
+                Confirmar
+              </button>
+              <button
+                className="btn-estandartablas"
+                onClick={() => setMostrarModalPassword(false)}
+                style={{ padding: '8px 12px' }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {mostrarModalPasswordediciones && (
+        <div
+          className="modal"
+          onClick={() => setMostrarModalPasswordEdiciones(false)}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#fff',
+              padding: '20px',
+              borderRadius: '10px',
+              minWidth: '300px',
+              textAlign: 'center',
+            }}
+          >
+            <h3 className="subtitulo-estandar">Ingrese la contraseña</h3>
+            <input
+              type="password"
+              value={inputPassword}
+              onChange={(e) => setInputPassword(e.target.value)}
+              placeholder="Contraseña"
+              autoComplete="new-password"
+              style={{
+                padding: '8px',
+                width: '100%',
+                marginTop: '10px',
+                marginBottom: '20px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              <button
+                className="btn-estandartablas"
+                onClick={confirmarPasswordEdiciones}
+                style={{ padding: '8px 12px' }}
+              >
+                Confirmar
+              </button>
+              <button
+                className="btn-estandartablas"
+                onClick={() => setMostrarModalPasswordEdiciones(false)}
+                style={{ padding: '8px 12px' }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

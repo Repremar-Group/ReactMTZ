@@ -10,6 +10,7 @@ import Emisionrecibos from '../facturacion/emision_de_recibos/Emisionrecibos';
 import Ingresodecheques from '../facturacion/emision_de_recibos/ingresocheques/Ingresodecheques';
 import Facturasmanuales from '../facturacion/facturas_manuales/Facturasmanuales';
 import BuscarFacturas from '../facturacion/buscarfacturas/BuscarFacturas';
+import BuscarRecibos from '../facturacion/buscarrecibos/BuscarRecibos';
 
 //Importo componentes de Reportes
 import Reportespendientesexpo from '../reportes/expo/Reportespendientesexpo';
@@ -121,6 +122,17 @@ function Layout({ isLoggedIn, handleLogin }) {
                     element={
                         isLoggedIn ? (
                             <BuscarFacturas isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+
+                <Route
+                    path="/facturacion/BuscarRecibos"
+                    element={
+                        isLoggedIn ? (
+                            <BuscarRecibos isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )

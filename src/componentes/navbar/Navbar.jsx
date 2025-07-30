@@ -21,6 +21,7 @@ const NavBar = () => {
                         <Link to="/facturacion/recibos" className="submenuItem">Emisión de Recibos</Link>
                         <Link to="/facturacion/FacturasManuales" className="submenuItem">Facturas Manuales</Link>
                         <Link to="/facturacion/BuscarFacturas" className="submenuItem">Buscar Facturas</Link>
+                        <Link to="/facturacion/BuscarRecibos" className="submenuItem">Buscar Recibos</Link>
                     </div>
                 </div>
 

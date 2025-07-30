@@ -5028,6 +5028,48 @@ app.post('/api/impactardocumento', async (req, res) => {
     });
   }
 });
+
+app.post('/api/actualizarcorrelatividad', (req, res) => {
+  const { campo, valor } = req.body;
+
+  const camposPermitidos = ['ultimoFormularioRecibo', 'ultimoDocumentoRecibo'];
+
+  if (!camposPermitidos.includes(campo)) {
+    return res.status(400).json({ error: 'Campo no permitido' });
+  }
+
+  const sql = `UPDATE datos_empresa SET ${campo} = ? WHERE id = 1`; // ajusta el WHERE si lo necesitas dinámico
+
+  connection.query(sql, [valor], (err, result) => {
+    if (err) {
+      console.error('Error al actualizar:', err);
+      return res.status(500).json({ error: 'Error al actualizar el dato' });
+    }
+    res.status(200).json({ message: `Campo ${campo} actualizado correctamente` });
+  });
+});
+app.get('/api/obtenercorrelatividad', (req, res) => {
+  const sql = `
+    SELECT ultimoFormularioRecibo, ultimoDocumentoRecibo
+    FROM datos_empresa
+    WHERE id = 1
+    LIMIT 1
+  `;
+
+  connection.query(sql, (err, rows) => {
+    if (err) {
+      console.error('Error al consultar correlatividad:', err);
+      return res.status(500).json({ error: 'Error al obtener datos' });
+    }
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Sin datos de correlatividad' });
+    }
+
+    res.json(rows[0]); // { ultimoFormularioRecibo: 123, ultimoDocumentoRecibo: 456 }
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
