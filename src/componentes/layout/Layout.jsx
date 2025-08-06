@@ -11,6 +11,8 @@ import Ingresodecheques from '../facturacion/emision_de_recibos/ingresocheques/I
 import Facturasmanuales from '../facturacion/facturas_manuales/Facturasmanuales';
 import BuscarFacturas from '../facturacion/buscarfacturas/BuscarFacturas';
 import BuscarRecibos from '../facturacion/buscarrecibos/BuscarRecibos';
+import BuscarNC from '../facturacion/buscarNC/Buscarnc';
+import EmitirNC from '../facturacion/emitirNC/EmitirNC';
 
 //Importo componentes de Reportes
 import Reportespendientesexpo from '../reportes/expo/Reportespendientesexpo';
@@ -133,6 +135,26 @@ function Layout({ isLoggedIn, handleLogin }) {
                     element={
                         isLoggedIn ? (
                             <BuscarRecibos isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                 <Route
+                    path="/facturacion/EmitirNC"
+                    element={
+                        isLoggedIn ? (
+                            <EmitirNC isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                <Route
+                    path="/facturacion/buscarNC"
+                    element={
+                        isLoggedIn ? (
+                            <BuscarNC isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )

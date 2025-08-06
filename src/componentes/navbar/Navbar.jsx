@@ -20,8 +20,10 @@ const NavBar = () => {
                         <Link to="/facturacion/comprobantes" className="submenuItem">Emision de Comprobantes</Link>
                         <Link to="/facturacion/recibos" className="submenuItem">Emisión de Recibos</Link>
                         <Link to="/facturacion/FacturasManuales" className="submenuItem">Facturas Manuales</Link>
+                        <Link to="/facturacion/EmitirNC" className="submenuItem">Emisión de N/C</Link>
                         <Link to="/facturacion/BuscarFacturas" className="submenuItem">Buscar Facturas</Link>
                         <Link to="/facturacion/BuscarRecibos" className="submenuItem">Buscar Recibos</Link>
+                        <Link to="/facturacion/buscarNC" className="submenuItem">Buscar N/C</Link>
                     </div>
                 </div>
 

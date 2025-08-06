@@ -1,0 +1,169 @@
+.EmitirFacturaManual-container{
+    max-width: 1600px;
+    /* Limita el ancho máximo del formulario */
+    max-height: 900px;
+    /* Limita el ancho máximo del formulario */
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+}
+
+.tabla-conceptos {
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    border-collapse: collapse; /* Sin espacios entre celdas */
+    table-layout: fixed; /* Establece anchos fijos para las columnas */
+    width: 100%; /* Asegura que la tabla use el ancho completo */
+    max-height: 200px;
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    display: block; /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+}
+
+.tabla-conceptos tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 150px; /* Ajusta la altura para 3 filas */
+}
+
+.tabla-conceptos th, .tabla-conceptos td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-conceptos th {
+    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+/* Define anchos para las columnas */
+.tabla-conceptos th:nth-child(1),
+.tabla-conceptos td:nth-child(1) {
+    width: 5%; /* Columna Codigo */
+}
+
+.tabla-conceptos th:nth-child(2),
+.tabla-conceptos td:nth-child(2) {
+    width: 70%; /* Columna Descripcion */
+}
+
+.tabla-conceptos th:nth-child(3),
+.tabla-conceptos td:nth-child(3) {
+    width: 10%; /* Columna Moneda */
+}
+
+.tabla-conceptos th:nth-child(4),
+.tabla-conceptos td:nth-child(4) {
+    width: 5%; /* Columna IVA */
+}
+
+.tabla-conceptos th:nth-child(5),
+.tabla-conceptos td:nth-child(5) {
+    width: 10%; /* Columna Importe */
+}
+
+.ttabla-conceptos th:nth-child(6),
+.tabla-conceptos td:nth-child(6) {
+    width: 5%; /* Columna Acciones */
+}
+
+.div-renglon-datos-facturasmanuales {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    /* Espacio entre los campos */
+
+}
+
+.div-renglon-datos-facturasmanuales div {
+    width: 48%;
+}
+
+.tabla-conceptos-asociados::-webkit-scrollbar {
+    width: 10px; 
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+  
+.tabla-conceptos-asociados::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+  
+.tabla-conceptos-asociados::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
+}
+.tabla-conceptos-asociados {
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
+    width: 100%; /* La tabla ocupará el 100% del contenedor */
+    max-height: 200px;
+    overflow-y: auto;
+    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.tabla-conceptos-asociados tbody {
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    max-height: 150px; /* Ajusta la altura para 3 filas */
+}
+
+.tabla-conceptos-asociados th, .tabla-conceptos-asociados td {
+    padding: 2px 5px; /* Espaciado reducido */
+    text-align: left; /* Alineación del texto a la izquierda */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.tabla-conceptos-asociados th {
+    background-color: #143361;
+    font-weight: bold;
+    color: white;
+    padding: 2px 5px;
+}
+.tabla-conceptos-asociados thead {
+    position: relative;
+    top: 0; /* Fija el cabezal en la parte superior */
+    
+}
+
+/* Define anchos para las columnas */
+.tabla-conceptos-asociados th:nth-child(1),
+.tabla-conceptos-asociados td:nth-child(1) {
+    width: 5%; /* Columna Tipo */
+}
+
+.tabla-conceptos-asociados th:nth-child(2),
+.tabla-conceptos-asociados td:nth-child(2) {
+    width: 60%; /* Columna Guia */
+}
+
+.tabla-conceptos-asociados th:nth-child(3),
+.tabla-conceptos-asociados td:nth-child(3) {
+    width: 5%; /* Columna Descripción */
+}
+
+.tabla-conceptos-asociados th:nth-child(4),
+.tabla-conceptos-asociados td:nth-child(4) {
+    width: 10%; /* Columna Moneda */
+}
+
+.tabla-conceptos-asociados th:nth-child(5),
+.tabla-conceptos-asociados td:nth-child(5) {
+    width: 10%; /* Columna Importe */
+}
+
+ .modal-content-conceptos {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+  }
+  

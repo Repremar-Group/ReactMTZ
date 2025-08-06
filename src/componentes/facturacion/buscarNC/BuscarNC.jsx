@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
 import axios from 'axios';
-import './BuscarFacturas.css';
+import './BuscarNC.css';
 import { Link } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import ModalVerGuiaImpo from '../../modales/ModalVerGuiaImpo';
@@ -17,7 +17,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
 
-const BuscarRecibos = () => {
+const BuscarNC = () => {
     const navigate = useNavigate();
     useEffect(() => {
         const rol = localStorage.getItem('rol');
@@ -144,7 +144,7 @@ const BuscarRecibos = () => {
             setLoadingTabla(true); // Activar indicador de carga
 
             // Hacer solicitudes a ambos endpoints
-            const response = await axios.get(`${backURL}/api/previewRecibos`);// Endpoint para guías expo
+            const response = await axios.get(`${backURL}/api/previewfacturas`);// Endpoint para guías expo
 
 
             // Actualizar el estado con las guías combinadas
@@ -171,29 +171,24 @@ const BuscarRecibos = () => {
         setSearchTerm(event.target.value);
         setBusquedaRealizada(true);
     };
-    const facturasFiltradas = facturas.filter((factura) => {
-        const term = searchTerm.toLowerCase();
+    const facturasFiltradas = facturas.filter((row) => {
+        const cumpleBusqueda = !searchField || searchTerm.trim() === ''
+            || row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesSearch = searchTerm.trim() === ''
-            ? true
-            : searchField === 'idrecibo'
-                ? factura.numeroDocumentoCFE?.toString().toLowerCase().includes(term)
-                : searchField === 'RazonSocial'
-                    ? factura.razonsocial?.toLowerCase().includes(term)
-                    : searchField === 'Rut'
-                        ? factura.rut?.toLowerCase().includes(term)
-                        : searchField === 'Formulario'
-                            ? factura.tipoDocumentoCFE?.toLowerCase().includes(term)
-                            : true;
+        const parseFecha = (str) => {
+            const [dia, mes, anio] = str.split('/');
+            return new Date(`${anio}-${mes}-${dia}`);
+        };
 
-        const fechaFactura = new Date(factura.fecha.split('/').reverse().join('-')); // Convierte dd/mm/yyyy a yyyy-mm-dd
+        const fechaFactura = parseFecha(row.Fecha);
         const desde = fechaDesde ? new Date(fechaDesde) : null;
         const hasta = fechaHasta ? new Date(fechaHasta) : null;
 
-        const matchesFechaDesde = desde ? fechaFactura >= desde : true;
-        const matchesFechaHasta = hasta ? fechaFactura <= hasta : true;
+        const cumpleFecha =
+            (!desde || fechaFactura >= desde) &&
+            (!hasta || fechaFactura <= hasta);
 
-        return matchesSearch && matchesFechaDesde && matchesFechaHasta;
+        return cumpleBusqueda && cumpleFecha;
     });
     useEffect(() => {
         const filtrosVacios =
@@ -213,7 +208,7 @@ const BuscarRecibos = () => {
                 </div>
             )}
             <ToastContainer />
-            <div className='titulo-estandar'><h1>Buscar Recibos</h1></div>
+            <div className='titulo-estandar'><h1>Buscar Facturas</h1></div>
             {loadingtabla ? (
                 <div className="loading-spinner">
                     {/* El spinner se muestra cuando loading es true */}
@@ -231,6 +226,15 @@ const BuscarRecibos = () => {
                                 onChange={handleSearch}
                             />
                             <div className="filtros">
+                                <label>
+                                    <input
+                                        type="radio"
+                                        value="NumeroCFE"
+                                        checked={searchField === 'NumeroCFE'}
+                                        onChange={handleCheckboxChange}
+                                    />
+                                    Nro. CFE
+                                </label>
                                 <label>
                                     <input
                                         type="radio"
@@ -252,20 +256,11 @@ const BuscarRecibos = () => {
                                 <label>
                                     <input
                                         type="radio"
-                                        value="Rut"
-                                        checked={searchField === 'Rut'}
+                                        value="RutCedula"
+                                        checked={searchField === 'RutCedula'}
                                         onChange={handleCheckboxChange}
                                     />
                                     RUT
-                                </label>
-                                <label>
-                                    <input
-                                        type="radio"
-                                        value="Formulario"
-                                        checked={searchField === 'Formulario'}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                    Formulario
                                 </label>
                                 <div className="fecha-rango">
                                     <label>Desde:</label>
@@ -289,13 +284,13 @@ const BuscarRecibos = () => {
                         <table className='tabla-facturas'>
                             <thead>
                                 <tr>
-                                    <th>Nro. Recibo</th>
-                                    <th>Formulario</th>
+                                    <th>Nro. CFE</th>
+                                    <th>Tipo Comprobante CFE</th>
+                                    <th>Recibo</th>
                                     <th>Cliente</th>
-                                    <th>Rut</th>
+                                    <th>RUT</th>
                                     <th>Fecha</th>
-                                    <th>Importe</th>
-                                    <th>Moneda</th>
+                                    <th>Monto</th>
                                     <th>Estado GFE</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -303,33 +298,43 @@ const BuscarRecibos = () => {
                             <tbody>
                                 {facturasFiltradas.map((row) => (
                                     <tr key={row.Id}>
-                                        <td>{row.numeroDocumentoCFE === null
-                                            ? '-' : row.numeroDocumentoCFE}</td>
-                                        <td></td>
-                                        <td>{row.razonsocial === null
-                                            ? '-' : row.razonsocial}
+                                        <td>{row.NumeroCFE === null
+                                            ? '-' : row.NumeroCFE}</td>
+                                        <td>
+                                            {row.TipoDocCFE === 'FCD' ? (
+                                                'E-Factura'
+                                            ) : (row.TipoDocCFE === 'FCA' || row.TipoDocCFE === 'efacturaca') ? (
+                                                'E-Factura Cuenta Ajena'
+                                            ) : (row.TipoDocCFE === 'TCD') ? (
+                                                'E-Ticket'
+                                            ) : row.TipoDocCFE === 'TCA' ? (
+                                                'E-Ticket Cuenta Ajena'
+                                            ) : (
+                                                '-'
+                                            )}
                                         </td>
-                                        <td>{row.rut === null
-                                            ? '-' : row.rut}</td>
-                                        <td>{row.fecha}</td>
-                                        <td>{row.importe}</td>
-                                        <td>{row.moneda}</td>
-                                        <td>{row.numeroDocumentoCFE ? '✔️' : '❌'}</td>
+                                        <td>{row.idrecibo === null
+                                            ? '-' : row.idrecibo}</td>
+                                        <td>{row.RazonSocial}</td>
+                                        <td>{row.RutCedula}</td>
+                                        <td>{row.Fecha}</td>
+                                        <td>{[row.Total, row.Moneda].join(' ')}</td>
+                                        <td>{row.NumeroCFE ? '✔️' : '❌'}</td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
                                                 <button disabled className="buscarfacturas-submenu-toggle">☰</button>
                                                 <div className="buscarfacturas-submenu">
-                                                    {row.numeroDocumentoCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdfBase64, row.NumeroCFE)}>Ver</button>
+                                                    {row.NumeroCFE && (
+                                                        <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdfBase64, row.NumeroCFE)}>Descargar PDF</button>
                                                     )}
 
-                                                    {!row.numeroDocumentoCFE && (
+                                                    {!row.NumeroCFE && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'
                                                             onClick={async () => {
                                                                 try {
                                                                     setLoadingEnvioGFE(true);
-                                                                    console.log('Factura antes del back', row);
+                                                                    console.log('Factura antes del back',row);
                                                                     const response = await impactarEnGIA(row, backURL);
                                                                     if (response.success) {
                                                                         const doc = response.documento;
@@ -370,7 +375,7 @@ const BuscarRecibos = () => {
                                                             Enviar a GFE
                                                         </button>
                                                     )}
-                                                    {!row.numeroDocumentoCFE && (
+                                                    {!row.NumeroCFE && row.esManual === 1 && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'
                                                             onClick={async () => {
@@ -390,7 +395,7 @@ const BuscarRecibos = () => {
                                                             Modificar
                                                         </button>
                                                     )}
-                                                    {!row.numeroDocumentoCFE && (
+                                                    {!row.NumeroCFE && (
                                                         <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
                                                             Eliminar
                                                         </button>
@@ -427,4 +432,4 @@ const BuscarRecibos = () => {
     );
 };
 
-export default BuscarRecibos;
+export default BuscarNC;

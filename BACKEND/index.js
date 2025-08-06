@@ -171,6 +171,45 @@ app.get('/api/previewfacturas', (req, res) => {
     res.status(200).json(formattedResult);
   });
 });
+//Preview de recibos 
+app.get('/api/previewrecibos', (req, res) => {
+  console.log('Received request for /api/previewrecibos');
+  const sql = 'SELECT * FROM recibos ORDER BY idrecibo DESC';
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error en el backend cargando recibos' });
+    }
+
+    const formattedResult = result.map((row) => {
+      // Formatear 'fecha'
+      const fecha = new Date(row.fecha);
+      const formattedFecha = fecha.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
+      // Formatear 'fechaDocumentoCFE' si existe
+      const fechaDoc = row.fechaDocumentoCFE ? new Date(row.fechaDocumentoCFE) : null;
+      const formattedFechaDoc = fechaDoc
+        ? fechaDoc.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        : '';
+
+      return {
+        ...row,
+        fecha: formattedFecha,
+        fechaDocumentoCFE: formattedFechaDoc,
+      };
+    });
+
+    res.status(200).json(formattedResult);
+  });
+});
 
 
 //Armado de la consulta Insert Cliente
