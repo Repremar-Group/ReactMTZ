@@ -54,7 +54,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     const [icClienteGIA, setIcClienteGIA] = useState('');
     const [icbanco, setIcBanco] = useState('');
     const [icfecha, setIcFecha] = useState('');
-    
+
     const [ictipoMoneda, setIcTipoMoneda] = useState('USD');//*
     const [isModalTipoCambioAbierto, setIsModalTipoCambioAbierto] = useState(false);
     const [tipoCambio, setTipoCambio] = useState(null);
@@ -124,14 +124,17 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         setIcSaldoDelCheque((totalImportes - totalfacturas).toFixed(2));
     }, [iclistadecheques]); // Se ejecuta solo una vez al montar el componente
 
-    const descargarPDF = async (datosRecibo) => {
+    const descargarPDF = async (datosRecibo, idrecibo) => {
         try {
             const response = await fetch(`${backURL}/api/generarReciboPDF`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(datosRecibo)
+                body: JSON.stringify({
+                    ...datosRecibo,
+                    idrecibo: idrecibo
+                })
             });
 
             if (!response.ok) throw new Error('Error al generar el PDF');
@@ -179,7 +182,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     clienteGIA: icClienteGIA,
                     nombrecliente: datosRecibo.searchTerm,
                     moneda: datosRecibo.ertipoMoneda,
-                    formapago: 'CHEQUEUS',
+                    formapago: datosRecibo.erformadepago,
                     importe: datosRecibo.erimporte,
                     razonsocial: datosRecibo.errazonSocial,
                     rut: datosRecibo.errut,
@@ -239,7 +242,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 }
 
 
-                await descargarPDF(datosRecibo);
+                await descargarPDF(datosRecibo, idrecibo);
 
             } catch (error) {
                 console.error('Error al guardar el recibo:', error);

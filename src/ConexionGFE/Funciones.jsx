@@ -21,3 +21,16 @@ export const impactarEnGIA = async (factura, backURLFUNC) => {
     throw error;
   }
 };
+
+export const impactarReciboEnGIA = async (recibo, backURLFUNC) => {
+  try {
+    console.log('Info a impactar en GIA, Recibo: ',recibo, ' urlBack: ', backURLFUNC);
+    const response = await axios.post(`${backURLFUNC}/api/impactarrecibo`, {
+     idrecibo: recibo
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al impactar documento:", error);
+    throw error;
+  }
+};

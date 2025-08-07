@@ -16,6 +16,7 @@ import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funcione
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
+import { impactarReciboEnGIA } from '../../../ConexionGFE/Funciones';
 
 const BuscarRecibos = () => {
     const navigate = useNavigate();
@@ -273,14 +274,7 @@ const BuscarRecibos = () => {
                                     <label>Hasta:</label>
                                     <input type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
                                 </div>
-                                {busquedaRealizada && facturasFiltradas.length > 0 && (
-                                    <button
-                                        className="boton-descargar-todas"
-                                        onClick={() => descargarFacturasEnZip(facturasFiltradas)}
-                                    >
-                                        Descargar facturas
-                                    </button>
-                                )}
+                                
                             </div>
                         </div>
                     </div>
@@ -303,9 +297,10 @@ const BuscarRecibos = () => {
                             <tbody>
                                 {facturasFiltradas.map((row) => (
                                     <tr key={row.Id}>
-                                        <td>{row.numeroDocumentoCFE === null
-                                            ? '-' : row.numeroDocumentoCFE}</td>
-                                        <td></td>
+                                        <td>{row.nrorecibo === null
+                                            ? '-' : row.nrorecibo}</td>
+                                        <td>{row.nroformulario === null
+                                            ? '-' : row.nroformulario}</td>
                                         <td>{row.razonsocial === null
                                             ? '-' : row.razonsocial}
                                         </td>
@@ -330,16 +325,9 @@ const BuscarRecibos = () => {
                                                                 try {
                                                                     setLoadingEnvioGFE(true);
                                                                     console.log('Factura antes del back', row);
-                                                                    const response = await impactarEnGIA(row, backURL);
+                                                                    const response = await impactarReciboEnGIA(row.idrecibo, backURL);
                                                                     if (response.success) {
-                                                                        const doc = response.documento;
-                                                                        const nombreArchivo = `${doc.tipo}_${doc.serie}_${doc.numero}.pdf`;
-
-                                                                        // Descargar PDF
-                                                                        descargarPDFBase64(doc.pdfBase64, nombreArchivo); // asegurate que esta func esté importada
-
-                                                                        // Mostrar alerta
-                                                                        setTituloAlertaGfe('Factura Ingresada Correctamente');
+                                                                        setTituloAlertaGfe('Recibo Impactado Correctamente');
                                                                         setmensajeAlertaGFE('');
                                                                         setIconoAlertaGFE('success');
                                                                         setIsModalOpenAlertaGFE(true);

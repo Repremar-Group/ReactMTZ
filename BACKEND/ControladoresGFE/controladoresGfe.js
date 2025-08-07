@@ -1,11 +1,11 @@
 function generarXmlefacimpopp(datos) {
     let moneda;
-    if(datos.Moneda === 'UYU'){
+    if (datos.Moneda === 'UYU') {
         moneda = 1;
     } else {
         moneda = 2
     }
-    console.log('GENERANDO XML EFACTURA:',datos);
+    console.log('GENERANDO XML EFACTURA:', datos);
     // XML base como texto
     let xmlBase = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
    <soapenv:Header/>
@@ -67,10 +67,10 @@ function generarXmlefacimpopp(datos) {
 }
 
 function generarXmlimpactarDocumento(datos) {
-    console.log('GENERANDO XML EFACTURA:',datos);
+    console.log('GENERANDO XML EFACTURA:', datos);
     // XML base como texto
-        let moneda;
-     if(datos.Moneda === 'UYU'){
+    let moneda;
+    if (datos.Moneda === 'UYU') {
         moneda = 1;
     } else {
         moneda = 2
@@ -134,9 +134,9 @@ function generarXmlimpactarDocumento(datos) {
     return xmlBase;
 }
 function generarXmlefacCuentaAjenaimpopp(datosCA) {
-    console.log('GENERANDO XML EFACTURA CUENTA AJENA:',datosCA);
+    console.log('GENERANDO XML EFACTURA CUENTA AJENA:', datosCA);
     let moneda;
-     if(datosCA.Moneda === 'UYU'){
+    if (datosCA.Moneda === 'UYU') {
         moneda = 1;
     } else {
         moneda = 2
@@ -239,8 +239,8 @@ function generarXmlRecibo(datos) {
 
     // Reemplazo de valores simples
     xmlBase = xmlBase.replace('{{fechaCFE}}', datos.fechaCFE)
-                     .replace('{{fechaVencimientoCFE}}', datos.fechaVencimientoCFE)
-                     .replace('{{Adenda}}', datos.adendadoc);
+        .replace('{{fechaVencimientoCFE}}', datos.fechaVencimientoCFE)
+        .replace('{{Adenda}}', datos.adendadoc);
 
     // Generar <renglones> desde formas de pago
     let renglones = '';
@@ -272,13 +272,16 @@ function generarXmlRecibo(datos) {
     // Generar bloque <formasPago>
     let formasPago = '';
     for (let pago of datos.formasPago) {
+        const esCaja = pago.formaPago === 'CAJAUYU' || pago.formaPago === 'CAJAUSD';
+
         formasPago += `
-            <formaPago>
-                <formaPago>${pago.formaPago}</formaPago>
-                <importe>${pago.importe}</importe>
-                <comprobante>${pago.comprobante}</comprobante>
-                <vencimiento>${pago.vencimiento}</vencimiento>
-            </formaPago>`;
+    <formaPago>
+        <formaPago>${pago.formaPago}</formaPago>
+        <importe>${pago.importe}</importe>` +
+            (!esCaja ? `
+        <comprobante>${pago.comprobante}</comprobante>
+        <vencimiento>${pago.vencimiento}</vencimiento>` : '') + `
+    </formaPago>`;
     }
     xmlBase = xmlBase.replace('{{FormasPago}}', formasPago);
 
@@ -287,4 +290,4 @@ function generarXmlRecibo(datos) {
 }
 
 
-module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp,generarXmlimpactarDocumento, generarXmlRecibo};
+module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo };

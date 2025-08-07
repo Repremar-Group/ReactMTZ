@@ -194,10 +194,10 @@ app.get('/api/previewrecibos', (req, res) => {
       const fechaDoc = row.fechaDocumentoCFE ? new Date(row.fechaDocumentoCFE) : null;
       const formattedFechaDoc = fechaDoc
         ? fechaDoc.toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
         : '';
 
       return {
@@ -3338,56 +3338,92 @@ app.post('/api/insertrecibo', async (req, res) => {
     listadepagos
   } = req.body;
 
-  const insertReciboQuery = `
-    INSERT INTO recibos (fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+  // Envolvé las queries en promesas para usar async/await
+  const queryAsync = (sql, params) => {
+    return new Promise((resolve, reject) => {
+      connection.query(sql, params, (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
+  };
 
-  connection.query(insertReciboQuery, [fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion], (err, results) => {
-    if (err) {
-      console.error('Error al insertar el recibo:', err);
-      return res.status(500).json({ error: 'Error al insertar el recibo' });
-    }
+  try {
+    // 🔄 INICIAR TRANSACCIÓN
+    await queryAsync('START TRANSACTION');
 
-    const idrecibo = results.insertId;
-    console.log('ID del recibo insertado:', idrecibo);
+    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const formularioausar = datosEmpresa.ultimoFormularioRecibo + 1;
+    const documentoausar = datosEmpresa.ultimoDocumentoRecibo + 1;
 
-    if (!Array.isArray(listadepagos) || listadepagos.length === 0) {
-      // Si no hay pagos, directamente impactamos
-      return impactarReciboInternamente(idrecibo, res);
-    }
+    // 🔸 INSERTAR RECIBO
+    const insertReciboQuery = `
+      INSERT INTO recibos (nrorecibo, fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion, nroformulario)
+      VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const resultInsert = await queryAsync(insertReciboQuery, [
+      documentoausar, fecha, idcliente, nombrecliente, moneda, importe,
+      formapago, razonsocial, rut, direccion, formularioausar
+    ]);
+    const idrecibo = resultInsert.insertId;
 
-    const pagosValues = listadepagos.map(pago => [
-      idrecibo,
-      pago.icfecha,
-      pago.icbanco,
-      pago.icnrocheque,
-      pago.ictipoMoneda,
-      pago.icimpdelcheque,
-      pago.icfechavencimiento
+    // 🔸 ACTUALIZAR datos_empresa
+    const updateEmpresaQuery = `
+      UPDATE datos_empresa
+      SET ultimoFormularioRecibo = ?, ultimoDocumentoRecibo = ?, fechaModifica = CURRENT_DATE
+      WHERE id = ?
+    `;
+    await queryAsync(updateEmpresaQuery, [
+      formularioausar,
+      documentoausar,
+      datosEmpresa.id
     ]);
 
-    const insertPagosQuery = `
-      INSERT INTO pagos (idrecibo, fecha, banco, nro_pago, moneda, importe, vencimiento)
-      VALUES ?
-    `;
+    // 🔸 INSERTAR PAGOS (si hay)
+    if (Array.isArray(listadepagos) && listadepagos.length > 0) {
+      const pagosValues = listadepagos.map(pago => [
+        idrecibo,
+        pago.icfecha,
+        pago.icbanco,
+        pago.icnrocheque,
+        pago.ictipoMoneda,
+        pago.icimpdelcheque,
+        pago.icfechavencimiento
+      ]);
 
-    connection.query(insertPagosQuery, [pagosValues], (err, pagoResults) => {
-      if (err) {
-        console.error('Error al insertar los pagos:', err);
-        return res.status(500).json({ error: 'Recibo insertado, pero error al insertar pagos' });
-      }
+      const insertPagosQuery = `
+        INSERT INTO pagos (idrecibo, fecha, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+      `;
+      await queryAsync(insertPagosQuery, [pagosValues]);
+    }
 
-      console.log('Pagos insertados correctamente');
-      return res.status(200).json({ message: 'Recibo y pagos insertados exitosamente', idrecibo });
-    });
-  });
+    // ✅ COMMIT si todo salió bien
+    await queryAsync('COMMIT');
+
+    console.log('Recibo y pagos insertados correctamente');
+    return res.status(200).json({ message: 'Recibo y pagos insertados exitosamente', idrecibo });
+
+  } catch (error) {
+    console.error('❌ Error general en insertrecibo:', error);
+
+    // ❌ ROLLBACK si algo falla
+    try {
+      await queryAsync('ROLLBACK');
+      console.log('Rollback ejecutado correctamente');
+    } catch (rollbackError) {
+      console.error('Error durante el rollback:', rollbackError);
+    }
+
+    return res.status(500).json({ error: 'Error general en insertrecibo', detalle: error.message });
+  }
 });
+
 
 app.post('/api/impactarrecibo', (req, res) => {
   console.log('ImpactarRecibo endpoint alcanzado');
   const { idrecibo } = req.body;
-
+  console.log('ID RECIBIDO:', idrecibo);
   obtenerDatosEmpresa(connection).then((datosEmpresa) => {
     // 1. Traer datos del recibo
     connection.query('SELECT * FROM recibos WHERE idrecibo = ?', [idrecibo], (err, reciboRows) => {
@@ -3595,6 +3631,7 @@ app.post('/api/obtenerFacturasdesdeRecibo', (req, res) => {
 app.post('/api/generarReciboPDF', async (req, res) => {
   try {
     const datosRecibo = req.body;
+    const idrecibo = req.body.idrecibo;
     console.log("Datos recibidos:", datosRecibo);
     const fecha = datosRecibo.erfecharecibo; // Suponiendo que tiene el formato "2025-02-18"
     const [year, month, day] = fecha.split('-'); // Divide la fecha en partes
@@ -3674,12 +3711,25 @@ app.post('/api/generarReciboPDF', async (req, res) => {
 
     // Guardar el nuevo PDF en memoria
     const pdfFinalBytes = await pdfDoc.save();
+    const pdfBase64 = Buffer.from(pdfFinalBytes).toString('base64');
+console.log('RECIBO BASE 64:', pdfBase64, 'ID DEL RECIBO A MODIFICAR',idrecibo);
+    const updateQuery = `
+  UPDATE recibos
+  SET pdfbase64 = ?
+  WHERE idrecibo = ?
+`;
 
-    // Enviar el PDF como respuesta
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=Recibo_${datosRecibo.ernumrecibo}.pdf`);
-    res.send(Buffer.from(pdfFinalBytes));
+    connection.query(updateQuery, [pdfBase64, idrecibo], (err, result) => {
+      if (err) {
+        console.error('Error al actualizar el PDF del recibo:', err);
+        return res.status(500).json({ error: 'Error al actualizar el PDF' });
+      }
 
+      // ✅ Enviar PDF como respuesta SOLO después de guardar en la DB
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=Recibo_${datosRecibo.ernumrecibo}.pdf`);
+      res.send(Buffer.from(pdfFinalBytes));
+    });
   } catch (error) {
     console.error('Error al generar el PDF:', error);
     res.status(500).json({ error: 'Error al generar el PDF' });
@@ -5106,6 +5156,31 @@ app.get('/api/obtenercorrelatividad', (req, res) => {
     }
 
     res.json(rows[0]); // { ultimoFormularioRecibo: 123, ultimoDocumentoRecibo: 456 }
+  });
+});
+
+app.get('/api/obtenercorrelatividadtabla', (req, res) => {
+  const query = `
+    SELECT 
+      nroformulario AS ccformulario, 
+      nrorecibo AS ccdocumento, 
+      DATE_FORMAT(fecha, '%d/%m/%Y') AS ccfecha, 
+      'Recibo' AS cctipocomprobante, 
+      CASE 
+        WHEN numeroDocumentoCFE IS NOT NULL AND numeroDocumentoCFE != '' THEN 'Correcto'
+        ELSE 'Sin impactar'
+      END AS ccestado
+    FROM recibos
+    ORDER BY nroformulario DESC
+  `;
+
+  connection.query(query, (err, result) => {
+    if (err) {
+      console.error('Error al obtener datos de correlatividad:', err);
+      return res.status(500).json({ error: 'Error al obtener datos de correlatividad' });
+    }
+
+    res.json(result);
   });
 });
 
