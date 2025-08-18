@@ -10,6 +10,7 @@ import ModalVerGuiaExpo from '../../modales/ModalVerGuiaExpo';
 import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
 import ModalAlertaGFE from '../../modales/AlertasGFE';
+import ModificarNC from '../../modales/ModalModificarNC';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funciones';
@@ -36,22 +37,22 @@ const BuscarNC = () => {
     const backURL = import.meta.env.VITE_BACK_URL;
 
     //Estados para Modal Modificar Factura
-    const [isModalOpenModificarFactura, SetIsModalOpenModificarFactura] = useState(false);
-    const [facturaamodificar, setFacturaAModificar] = useState([]);
-    const onCloseModificarFactura = () => {
-        SetIsModalOpenModificarFactura(false);
+    const [isModalOpenModificarNc, SetIsModalOpenModificarNC] = useState(false);
+    const [NCamodificar, setNCAModificar] = useState([]);
+    const onCloseModificarNC = () => {
+        SetIsModalOpenModificarNC(false);
 
     };
-    const onFinallyModificarFactura = () => {
-        SetIsModalOpenModificarFactura(false);
+    const onFinallyModificarNC = () => {
+        SetIsModalOpenModificarNC(false);
         fetchFacturas();
     };
     const handleSuccess = () => {
         toast.success('Factura actualizada correctamente', {
             autoClose: 1500,
             onClose: () => {
-                onCloseModificarFactura();  // cerrar modal cuando la toast desaparezca
-                onFinallyModificarFactura(); // hacer otras cosas si querés (recargar, etc)
+                onCloseModificarNC();  // cerrar modal cuando la toast desaparezca
+                onFinallyModificarNC(); // hacer otras cosas si querés (recargar, etc)
             },
         });
     };
@@ -59,7 +60,7 @@ const BuscarNC = () => {
         toast.error('Ocurrió un error al actualizar', {
             autoClose: 1500,
             onClose: () => {
-                onCloseModificarFactura();
+                onCloseModificarNC();
             },
         });
     };
@@ -371,15 +372,15 @@ const BuscarNC = () => {
                                                             Enviar a GFE
                                                         </button>
                                                     )}
-                                                    {!row.NumeroCFE && row.esManual === 1 && (
+                                                    {!row.NumeroCFE && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'
                                                             onClick={async () => {
                                                                 try {
-                                                                    const response = await axios.get(`${backURL}/api/obtenerModificarFactura?id=${row.Id}`);
-                                                                    setFacturaAModificar(response.data);
+                                                                    const response = await axios.get(`${backURL}/api/obtenerModificarNC?id=${row.idNC}`);
+                                                                    setNCAModificar(response.data);
                                                                     setLoadingEnvioGFE(true);
-                                                                    SetIsModalOpenModificarFactura(true)
+                                                                    SetIsModalOpenModificarNC(true)
                                                                 } catch {
 
                                                                 } finally {
@@ -411,13 +412,13 @@ const BuscarNC = () => {
                         onConfirm={handleConfirmAlertaGFE}
                         iconType={iconoAlertaGFE}
                     />
-                    <ModificarFacturasManuales
-                        isOpen={isModalOpenModificarFactura}
-                        onClose={onCloseModificarFactura}
-                        onFinally={onFinallyModificarFactura}
+                    <ModificarNC
+                        isOpen={isModalOpenModificarNc}
+                        onClose={onCloseModificarNC}
+                        onFinally={onFinallyModificarNC}
                         onSuccess={handleSuccess}
                         onError={handleError}
-                        factura={facturaamodificar}
+                        factura={NCamodificar}
                     />
 
                 </div>

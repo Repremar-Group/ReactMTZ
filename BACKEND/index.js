@@ -4901,6 +4901,109 @@ app.get('/api/obtenerModificarFactura', (req, res) => {
   });
 });
 
+// Obtener NC + documentos afectados
+app.get('/api/obtenerModificarNC', (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ error: 'Falta el parámetro "id"' });
+  }
+
+  // Primero buscamos la NC
+  connection.query('SELECT * FROM nc WHERE idNC = ?', [id], (error, ncResults) => {
+    if (error) {
+      console.error('Error al obtener la NC:', error);
+      return res.status(500).json({ error: 'Error al obtener la NC' });
+    }
+
+    if (ncResults.length === 0) {
+      return res.status(404).json({ error: 'Nota de crédito no encontrada' });
+    }
+
+    const nc = ncResults[0];
+
+    // Procesar DocsAfectados (string separado por coma → array de números)
+    let docsAfectados = [];
+    if (nc.DocsAfectados) {
+      docsAfectados = nc.DocsAfectados.split(",")
+        .map(d => d.trim())
+        .filter(d => d !== "")
+        .map(Number);
+    }
+
+    // Procesar CFEsAfectados (string separado por coma → array de números)
+    let cfesAfectados = [];
+    if (nc.CFEsAfectados) {
+      cfesAfectados = nc.CFEsAfectados.split(",")
+        .map(c => c.trim())
+        .filter(c => c !== "")
+        .map(Number);
+    }
+
+    // Función auxiliar para responder con todo junto
+    const responder = (facturas = [], cfes = []) => {
+      res.status(200).json({
+        nc,
+        facturasAfectadas: facturas,
+        cfesAfectados: cfes
+      });
+    };
+
+    // Ejecutar queries en paralelo según corresponda
+    if (docsAfectados.length > 0 && cfesAfectados.length > 0) {
+      connection.query(
+        `SELECT * FROM facturas WHERE Id IN (?)`,
+        [docsAfectados],
+        (errFacturas, facturasResults) => {
+          if (errFacturas) {
+            console.error('Error al obtener facturas afectadas:', errFacturas);
+            return res.status(500).json({ error: 'Error al obtener facturas afectadas' });
+          }
+
+          connection.query(
+            `SELECT * FROM cfes WHERE Id IN (?)`,
+            [cfesAfectados],
+            (errCFEs, cfesResults) => {
+              if (errCFEs) {
+                console.error('Error al obtener CFEs afectados:', errCFEs);
+                return res.status(500).json({ error: 'Error al obtener CFEs afectados' });
+              }
+
+              responder(facturasResults, cfesResults);
+            }
+          );
+        }
+      );
+    } else if (docsAfectados.length > 0) {
+      connection.query(
+        `SELECT * FROM facturas WHERE Id IN (?)`,
+        [docsAfectados],
+        (errFacturas, facturasResults) => {
+          if (errFacturas) {
+            console.error('Error al obtener facturas afectadas:', errFacturas);
+            return res.status(500).json({ error: 'Error al obtener facturas afectadas' });
+          }
+          responder(facturasResults, []);
+        }
+      );
+    } else if (cfesAfectados.length > 0) {
+      connection.query(
+        `SELECT * FROM cfes WHERE Id IN (?)`,
+        [cfesAfectados],
+        (errCFEs, cfesResults) => {
+          if (errCFEs) {
+            console.error('Error al obtener CFEs afectados:', errCFEs);
+            return res.status(500).json({ error: 'Error al obtener CFEs afectados' });
+          }
+          responder([], cfesResults);
+        }
+      );
+    } else {
+      responder([], []);
+    }
+  });
+});
+
 app.put('/api/modificarFacturaManual', (req, res) => {
   const {
     Id,
