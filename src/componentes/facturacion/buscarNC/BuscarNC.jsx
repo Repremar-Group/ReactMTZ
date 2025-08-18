@@ -16,6 +16,7 @@ import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funcione
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
+import { impactarNCEnGIA } from '../../../ConexionGFE/Funciones';
 
 const BuscarNC = () => {
     const navigate = useNavigate();
@@ -66,7 +67,7 @@ const BuscarNC = () => {
     const [loadingEnvioGFE, setLoadingEnvioGFE] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
-    const [facturas, setFacturas] = useState([]);
+    const [Ncs, setNcs] = useState([]);
     const [error, setError] = useState('');
     const [loadingtabla, setLoadingTabla] = useState(true);
     const [busquedaRealizada, setBusquedaRealizada] = useState(false);
@@ -105,12 +106,12 @@ const BuscarNC = () => {
 
 
 
-    const descargarFacturasEnZip = async (facturas) => {
+    const descargarFacturasEnZip = async (Ncs) => {
         const zip = new JSZip();
         let descargadas = 0;
         let omitidas = 0;
 
-        facturas.forEach((factura, index) => {
+        Ncs.forEach((factura, index) => {
             if (factura.PdfBase64 && factura.NumeroCFE) {
                 // Limpiar el base64 (eliminar encabezado si lo tiene)
                 const base64Data = factura.PdfBase64.includes(',')
@@ -130,7 +131,7 @@ const BuscarNC = () => {
 
         if (descargadas > 0) {
             const blob = await zip.generateAsync({ type: 'blob' });
-            saveAs(blob, 'facturas.zip');
+            saveAs(blob, 'Ncs.zip');
         }
 
         if (descargadas > 0 || omitidas > 0) {
@@ -144,15 +145,15 @@ const BuscarNC = () => {
             setLoadingTabla(true); // Activar indicador de carga
 
             // Hacer solicitudes a ambos endpoints
-            const response = await axios.get(`${backURL}/api/previewfacturas`);// Endpoint para guías expo
+            const response = await axios.get(`${backURL}/api/previewnc`);// Endpoint para guías expo
 
 
             // Actualizar el estado con las guías combinadas
-            setFacturas(response.data);
+            setNcs(response.data);
             console.log('Facturas desde la Base: ', response.data);
 
         } catch (err) {
-            console.error('Error al obtener las facturas:', err);
+            console.error('Error al obtener las Ncs:', err);
             setError('No se pudieron cargar las Facturas.');
         } finally {
             setLoadingTabla(false); // Desactivar indicador de carga
@@ -171,7 +172,7 @@ const BuscarNC = () => {
         setSearchTerm(event.target.value);
         setBusquedaRealizada(true);
     };
-    const facturasFiltradas = facturas.filter((row) => {
+    const facturasFiltradas = Ncs.filter((row) => {
         const cumpleBusqueda = !searchField || searchTerm.trim() === ''
             || row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -180,7 +181,7 @@ const BuscarNC = () => {
             return new Date(`${anio}-${mes}-${dia}`);
         };
 
-        const fechaFactura = parseFecha(row.Fecha);
+        const fechaFactura = parseFecha(row.fecha);
         const desde = fechaDesde ? new Date(fechaDesde) : null;
         const hasta = fechaHasta ? new Date(fechaHasta) : null;
 
@@ -208,7 +209,7 @@ const BuscarNC = () => {
                 </div>
             )}
             <ToastContainer />
-            <div className='titulo-estandar'><h1>Buscar Facturas</h1></div>
+            <div className='titulo-estandar'><h1>Buscar N/C</h1></div>
             {loadingtabla ? (
                 <div className="loading-spinner">
                     {/* El spinner se muestra cuando loading es true */}
@@ -280,13 +281,14 @@ const BuscarNC = () => {
                         </div>
                     </div>
                     {error && <div className="error">{error}</div>}
-                    <div className='contenedor-tabla-buscarfacturas'>
-                        <table className='tabla-facturas'>
+                    <div className='contenedor-tabla-buscarnc'>
+                        <table className='tabla-nc'>
                             <thead>
                                 <tr>
                                     <th>Nro. CFE</th>
+                                    <th>Serie</th>
                                     <th>Tipo Comprobante CFE</th>
-                                    <th>Recibo</th>
+                                    <th>CFEs Afectados</th>
                                     <th>Cliente</th>
                                     <th>RUT</th>
                                     <th>Fecha</th>
@@ -297,28 +299,29 @@ const BuscarNC = () => {
                             </thead>
                             <tbody>
                                 {facturasFiltradas.map((row) => (
-                                    <tr key={row.Id}>
+                                    <tr key={row.idNC}>
                                         <td>{row.NumeroCFE === null
                                             ? '-' : row.NumeroCFE}</td>
+                                        <td>{row.Serie === null
+                                            ? '-' : row.Serie}</td>
                                         <td>
-                                            {row.TipoDocCFE === 'FCD' ? (
+                                            {row.TipoDocumento === 'NCT' ? (
                                                 'E-Factura'
-                                            ) : (row.TipoDocCFE === 'FCA' || row.TipoDocCFE === 'efacturaca') ? (
+                                            ) : (row.TipoDocumento === 'NTT' || row.TipoDocumento === 'efacturaca') ? (
                                                 'E-Factura Cuenta Ajena'
-                                            ) : (row.TipoDocCFE === 'TCD') ? (
+                                            ) : (row.TipoDocumento === 'NRA') ? (
                                                 'E-Ticket'
-                                            ) : row.TipoDocCFE === 'TCA' ? (
+                                            ) : row.TipoDocumento === 'NCA' ? (
                                                 'E-Ticket Cuenta Ajena'
                                             ) : (
                                                 '-'
                                             )}
                                         </td>
-                                        <td>{row.idrecibo === null
-                                            ? '-' : row.idrecibo}</td>
+                                        <td>{row.CFEsAfectados}</td>
                                         <td>{row.RazonSocial}</td>
-                                        <td>{row.RutCedula}</td>
-                                        <td>{row.Fecha}</td>
-                                        <td>{[row.Total, row.Moneda].join(' ')}</td>
+                                        <td>{row.Rut}</td>
+                                        <td>{row.fecha}</td>
+                                        <td>{[row.ImporteTotal, row.Moneda].join(' ')}</td>
                                         <td>{row.NumeroCFE ? '✔️' : '❌'}</td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
@@ -334,17 +337,10 @@ const BuscarNC = () => {
                                                             onClick={async () => {
                                                                 try {
                                                                     setLoadingEnvioGFE(true);
-                                                                    console.log('Factura antes del back',row);
-                                                                    const response = await impactarEnGIA(row, backURL);
+                                                                    console.log('Factura antes del back', row);
+                                                                    const response = await impactarNCEnGIA(row.idNC, backURL);
                                                                     if (response.success) {
-                                                                        const doc = response.documento;
-                                                                        const nombreArchivo = `${doc.tipo}_${doc.serie}_${doc.numero}.pdf`;
-
-                                                                        // Descargar PDF
-                                                                        descargarPDFBase64(doc.pdfBase64, nombreArchivo); // asegurate que esta func esté importada
-
-                                                                        // Mostrar alerta
-                                                                        setTituloAlertaGfe('Factura Ingresada Correctamente');
+                                                                        setTituloAlertaGfe('NC Impactada Correctamente');
                                                                         setmensajeAlertaGFE('');
                                                                         setIconoAlertaGFE('success');
                                                                         setIsModalOpenAlertaGFE(true);

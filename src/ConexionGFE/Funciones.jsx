@@ -34,3 +34,15 @@ export const impactarReciboEnGIA = async (recibo, backURLFUNC) => {
     throw error;
   }
 };
+export const impactarNCEnGIA = async (idNC, backURLFUNC) => {
+  try {
+    console.log('Info a impactar en GIA, N/C: ', idNC, ' urlBack: ', backURLFUNC);
+    const response = await axios.post(`${backURLFUNC}/api/impactarnc`, {
+      idNC: idNC
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al impactar N/C:", error);
+    throw error;
+  }
+};

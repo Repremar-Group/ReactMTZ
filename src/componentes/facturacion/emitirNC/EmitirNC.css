@@ -1,169 +1,234 @@
-.EmitirFacturaManual-container{
+.EmitirFacturaManual-container {
     max-width: 1600px;
-    /* Limita el ancho máximo del formulario */
     max-height: 900px;
-    /* Limita el ancho máximo del formulario */
     width: 100%;
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     box-sizing: border-box;
 }
 
 .tabla-conceptos {
-    font-size: 14px; /* Tamaño de fuente más pequeño */
-    border-collapse: collapse; /* Sin espacios entre celdas */
-    table-layout: fixed; /* Establece anchos fijos para las columnas */
-    width: 100%; /* Asegura que la tabla use el ancho completo */
-    max-height: 200px;
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    display: block; /* Hace que la tabla se comporte como un bloque */
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
     border-radius: 5px;
+    /* No display:block para evitar problemas */
 }
 
-.tabla-conceptos tbody {
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    max-height: 150px; /* Ajusta la altura para 3 filas */
-}
-
-.tabla-conceptos th, .tabla-conceptos td {
-    padding: 2px 5px; /* Espaciado reducido */
-    text-align: left; /* Alineación del texto a la izquierda */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+.tabla-conceptos th,
+.tabla-conceptos td {
+    padding: 2px 5px;
+    text-align: left;
+    white-space: nowrap;
 }
 
 .tabla-conceptos th {
-    background-color: #f0f0f0; /* Color de fondo para las cabeceras */
+    background-color: #f0f0f0;
     font-weight: bold;
-    padding: 2px 5px;
 }
 
-/* Define anchos para las columnas */
+/* Anchos columnas tabla conceptos */
 .tabla-conceptos th:nth-child(1),
 .tabla-conceptos td:nth-child(1) {
-    width: 5%; /* Columna Codigo */
+    width: 5%;
 }
 
 .tabla-conceptos th:nth-child(2),
 .tabla-conceptos td:nth-child(2) {
-    width: 70%; /* Columna Descripcion */
+    width: 70%;
 }
 
 .tabla-conceptos th:nth-child(3),
 .tabla-conceptos td:nth-child(3) {
-    width: 10%; /* Columna Moneda */
+    width: 10%;
 }
 
 .tabla-conceptos th:nth-child(4),
 .tabla-conceptos td:nth-child(4) {
-    width: 5%; /* Columna IVA */
+    width: 5%;
 }
 
 .tabla-conceptos th:nth-child(5),
 .tabla-conceptos td:nth-child(5) {
-    width: 10%; /* Columna Importe */
+    width: 10%;
 }
 
-.ttabla-conceptos th:nth-child(6),
+.tabla-conceptos th:nth-child(6),
 .tabla-conceptos td:nth-child(6) {
-    width: 5%; /* Columna Acciones */
+    width: 5%;
 }
 
 .div-renglon-datos-facturasmanuales {
     display: flex;
     width: 100%;
     gap: 20px;
-    /* Espacio entre los campos */
-
 }
 
 .div-renglon-datos-facturasmanuales div {
     width: 48%;
 }
 
-.tabla-conceptos-asociados::-webkit-scrollbar {
-    width: 10px; 
+
+/* Tabla */
+.tabla-historialfacturacion {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    border-collapse: collapse;
+    table-layout: auto;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+}
+
+/* Encabezado fijo y sin separadores */
+.tabla-historialfacturacion thead {
+    position: sticky;
+    top: 0;
+    background-color: #143361;
+    z-index: 2;
+}
+
+.tabla-historialfacturacion th {
+
+    text-align: left;
+    background-color: #143361;
+    color: white;
+    border: none;
+    /* quitar borde blanco */
+}
+
+/* Cuerpo de la tabla */
+.tabla-facturas tbody tr {
+    border-bottom: 1px solid #e1e1e1;
+    background-color: white;
+    transition: background 0.3s;
+}
+
+.tabla-historialfacturacion tbody tr:nth-child(even) {
+    background-color: #f7f7fa;
+}
+
+.tabla-historialfacturacion tbody tr:hover {
+    background-color: #ece9f6;
+}
+
+.tabla-historialfacturacion td {
+    padding: 12px 15px;
+    text-align: left;
+    color: #333;
+    background-color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: none;
+}
+
+/* Contenedor flex para tablas + flecha */
+.div-primerrenglon-datos-recibos2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    /* espacio entre tablas y flecha */
+    max-height: 300px;
+}
+
+/* Contenedores con altura fija y scroll */
+.contenedor-tabla-historial {
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 8px;
+
+    min-height: 300px;
+}
+
+.contenedor-tabla-historial::-webkit-scrollbar {
+    width: 10px;
     background-color: #f0f0f0;
     border-radius: 5px;
 }
-  
-.tabla-conceptos-asociados::-webkit-scrollbar-thumb {
+
+.contenedor-tabla-historial::-webkit-scrollbar-thumb {
     background-color: #143361;
     border-radius: 5px;
     border: 2px solid #f0f0f0;
 }
-  
-.tabla-conceptos-asociados::-webkit-scrollbar-thumb:hover {
+
+.contenedor-tabla-historial::-webkit-scrollbar-thumb:hover {
     background-color: #4885e2;
 }
-.tabla-conceptos-asociados {
+
+/* Tablas historial */
+.tabla-historialfacturacion {
     font-size: 14px;
     border-collapse: collapse;
-    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
-    width: 100%; /* La tabla ocupará el 100% del contenedor */
-    max-height: 200px;
-    overflow-y: auto;
-    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
-    border-radius: 5px;
-    margin: 20px 0;
+    table-layout: fixed;
+    width: 100%;
+    border-radius: px;
+    user-select: none;
 }
 
-.tabla-conceptos-asociados tbody {
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    max-height: 150px; /* Ajusta la altura para 3 filas */
+.botonesemitirnc {
+    display: flex;
+    gap: 10px;
+    justify-content: center; /* <-- cambia esto */
+    align-items: center;
+}
+.botonesemitirnc button {
+  min-width: 400px; /* ejemplo para ancho mínimo */
+  max-width: 400px; /* ejemplo para ancho mínimo */
 }
 
-.tabla-conceptos-asociados th, .tabla-conceptos-asociados td {
-    padding: 2px 5px; /* Espaciado reducido */
-    text-align: left; /* Alineación del texto a la izquierda */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+/* Anchos columnas tabla historial */
+.tabla-historialfacturacion th:nth-child(1),
+.tabla-historialfacturacion td:nth-child(1) {
+    width: 10%;
 }
 
-.tabla-conceptos-asociados th {
-    background-color: #143361;
-    font-weight: bold;
-    color: white;
-    padding: 2px 5px;
-}
-.tabla-conceptos-asociados thead {
-    position: relative;
-    top: 0; /* Fija el cabezal en la parte superior */
-    
+.tabla-historialfacturacion th:nth-child(2),
+.tabla-historialfacturacion td:nth-child(2) {
+    width: 10%;
 }
 
-/* Define anchos para las columnas */
-.tabla-conceptos-asociados th:nth-child(1),
-.tabla-conceptos-asociados td:nth-child(1) {
-    width: 5%; /* Columna Tipo */
+.tabla-historialfacturacion th:nth-child(3),
+.tabla-historialfacturacion td:nth-child(3) {
+    width: 5%;
 }
 
-.tabla-conceptos-asociados th:nth-child(2),
-.tabla-conceptos-asociados td:nth-child(2) {
-    width: 60%; /* Columna Guia */
+.tabla-historialfacturacion th:nth-child(4),
+.tabla-historialfacturacion td:nth-child(4) {
+    width: 10%;
 }
 
-.tabla-conceptos-asociados th:nth-child(3),
-.tabla-conceptos-asociados td:nth-child(3) {
-    width: 5%; /* Columna Descripción */
+.tabla-historialfacturacion th:nth-child(5),
+.tabla-historialfacturacion td:nth-child(5) {
+    width: 10%;
 }
 
-.tabla-conceptos-asociados th:nth-child(4),
-.tabla-conceptos-asociados td:nth-child(4) {
-    width: 10%; /* Columna Moneda */
+.tabla-historialfacturacion th:nth-child(6),
+.tabla-historialfacturacion td:nth-child(6) {
+    width: 10%;
 }
 
-.tabla-conceptos-asociados th:nth-child(5),
-.tabla-conceptos-asociados td:nth-child(5) {
-    width: 10%; /* Columna Importe */
+/* Flecha en medio */
+.flecha-tables {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
 }
 
- .modal-content-conceptos {
+/* Modal (por si usás) */
+.modal-content-conceptos {
     background-color: white;
     padding: 20px;
     border-radius: 5px;
     position: relative;
     width: 100%;
     max-width: 800px;
-  }
-  
+}

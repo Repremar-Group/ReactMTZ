@@ -288,6 +288,70 @@ function generarXmlRecibo(datos) {
     console.log('XML Generado RECIBO:', xmlBase);
     return xmlBase;
 }
+function generarXmlNC(datos) {
+    console.log('GENERANDO XML NOTA DE CRÉDITO:', datos);
+
+    // Determinar código de moneda
+    let moneda = datos.Moneda === 'UYU' ? 1 : 2;
+
+    // XML base con placeholders
+    let xmlBase = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>${datos.datosEmpresa.usuarioGfe}</usuario>
+                <usuarioPassword>${datos.datosEmpresa.passwordGfe}</usuarioPassword>
+                <empresa>${datos.datosEmpresa.codigoEmpresa}</empresa>
+                    <documento>
+                        <fechaDocumento>${datos.fechaCFE}</fechaDocumento>
+                        <tipoDocumento>${datos.tipoComprobante}</tipoDocumento>
+                        <cliente>${datos.codigoClienteGIA}</cliente>
+                        <moneda>${moneda}</moneda>
+                        <fechaVencimiento>${datos.fechaVencimientoCFE}</fechaVencimiento>
+                        <descripcion>${datos.adendadoc}</descripcion>
+                        <autonumerar>S</autonumerar>
+                        <renglones>
+	                        <renglon>
+		                        <producto>COM004</producto>
+		                        <nombreProducto>COBRO</nombreProducto>
+		                        <cantidad>1</cantidad>
+		                        <precioUnitario>${datos.precioUnitario || '0.00'}</precioUnitario>
+	                        </renglon>
+                        </renglones>
+                        <cancelaciones> 
+                            {{CancelacionesAutomaticas}}
+                        </cancelaciones>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+
+    // Generar cancelaciones dinámicamente
+    let detallesCancelaciones = '';
+    for (let i = 0; i < datos.cancelaciones.length; i++) {
+        let c = datos.cancelaciones[i];
+        detallesCancelaciones += `
+            <cancelacion> 
+                <rubroAfectado>${c.rubroAfectado}</rubroAfectado>
+                <tipoDocumentoAfectado>${c.tipoDocumentoAfectado}</tipoDocumentoAfectado> 
+                <comprobanteAfectado>${c.comprobanteAfectado}</comprobanteAfectado> 
+                <vencimientoAfectado>${c.vencimientoAfectado}</vencimientoAfectado> 
+                <importe>${c.importe}</importe> 
+            </cancelacion>
+        `;
+    }
+
+    // Inyectar las cancelaciones en el XML
+    xmlBase = xmlBase.replace('{{CancelacionesAutomaticas}}', detallesCancelaciones.trim());
+
+    console.log('XML Generado NOTA DE CRÉDITO:', xmlBase);
+    return xmlBase;
+}
 
 
-module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo };
+module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC };

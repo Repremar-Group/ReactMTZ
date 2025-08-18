@@ -8,11 +8,20 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC } = require('./ControladoresGFE/controladoresGfe')
 const { obtenerDatosEmpresa } = require('./ControladoresGFE/datosdelaempresaGFE')
 const cron = require('node-cron');
 const { Console } = require('console');
 const ExcelJS = require('exceljs');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'alertasairbillcielosur@gmail.com', // Tu cuenta de Gmail
+    pass: 'rjlb wzca mlcw tlgh' // Contraseña de aplicación de Gmail
+  }
+});
 
 function queryAsync(sql, params) {
   return new Promise((resolve, reject) => {
@@ -45,10 +54,9 @@ const app = express();
 app.use(express.json());
 
 app.use(cors());
-cron.schedule('25 17 * * *', () => {
+cron.schedule('35 11 * * *', () => {
   console.log('⏰ Ejecutando cierre diario...');
 
-  // Consulta para contar guías sin facturar
   const queryGuias = `
     SELECT COUNT(*) AS guias FROM (
       SELECT guia FROM guiasimpo WHERE facturada = 0
@@ -57,21 +65,67 @@ cron.schedule('25 17 * * *', () => {
     ) AS total_guias;
   `;
 
-  // Consulta para contar facturas sin cobrar
   const queryFacturas = `
     SELECT COUNT(*) AS facturas FROM facturas WHERE idrecibo IS NULL;
   `;
 
+  // 🔍 Nuevas consultas detalladas (mismas que los endpoints)
+  const queryGuiasDetalladas = `
+    SELECT 
+      guia AS numero, 
+      consignatario AS cliente, 
+      DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
+      'Impo' AS tipo,
+      total
+    FROM guiasimpo
+    WHERE facturada = 0
+
+    UNION ALL
+
+    SELECT 
+      guia AS numero, 
+      agente AS cliente, 
+      DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
+      'Expo' AS tipo,
+      total
+    FROM guiasexpo
+    WHERE facturada = 0
+
+    ORDER BY fecha DESC
+  `;
+
+  const queryGuiasTotal = `
+    SELECT 
+      (SELECT IFNULL(SUM(total), 0) FROM guiasimpo WHERE facturada = 0) +
+      (SELECT IFNULL(SUM(total), 0) FROM guiasexpo WHERE facturada = 0) AS total_sin_facturar
+  `;
+
+  const queryFacturasDetalladas = `
+    SELECT 
+      Comprobante AS numero, 
+      RazonSocial AS cliente, 
+      DATE_FORMAT(Fecha, '%d/%m/%Y') AS fecha, 
+      TotalCobrar AS monto
+    FROM facturas
+    WHERE idrecibo IS NULL
+    ORDER BY Fecha DESC
+  `;
+
+  const queryFacturasTotal = `
+    SELECT SUM(TotalCobrar) AS totalSinCobrar
+    FROM facturas
+    WHERE idrecibo IS NULL
+  `;
+
   connection.query(queryGuias, (err, resultGuias) => {
     if (err) return console.error('Error al contar guías:', err);
-
     const guias = resultGuias[0].guias;
 
     connection.query(queryFacturas, (err, resultFacturas) => {
       if (err) return console.error('Error al contar facturas:', err);
-
       const facturas = resultFacturas[0].facturas;
 
+      // Guardar en cierre_diario
       const insertQuery = `
         INSERT INTO cierre_diario (fecha, guias_sin_facturar, facturas_sin_cobrar)
         VALUES (CURDATE(), ?, ?)
@@ -80,9 +134,139 @@ cron.schedule('25 17 * * *', () => {
           facturas_sin_cobrar = VALUES(facturas_sin_cobrar)
       `;
 
-      connection.query(insertQuery, [guias, facturas], (err, resultInsert) => {
+      connection.query(insertQuery, [guias, facturas], (err) => {
         if (err) return console.error('Error al guardar cierre diario:', err);
         console.log('✅ Cierre diario guardado:', new Date().toLocaleString());
+
+        // Consultas para el reporte
+        connection.query(queryGuiasDetalladas, (err, guiasDet) => {
+          if (err) return console.error('Error al obtener guías detalladas:', err);
+
+          connection.query(queryGuiasTotal, (err, totalGuias) => {
+            if (err) return console.error('Error al obtener total guías:', err);
+
+            connection.query(queryFacturasDetalladas, (err, facturasDet) => {
+              if (err) return console.error('Error al obtener facturas detalladas:', err);
+
+              connection.query(queryFacturasTotal, async (err, totalFacturas) => {
+                if (err) return console.error('Error al obtener total facturas:', err);
+
+                const totalGuiasMonto = totalGuias[0].total_sin_facturar || 0;
+                const totalFacturasMonto = totalFacturas[0].totalSinCobrar || 0;
+
+                // 📄 HTML del reporte
+                const html = `
+                  <h2>📊 Reporte Cierre Diario</h2>
+                  <p><b>Fecha:</b> ${new Date().toLocaleDateString('es-UY')}</p>
+                  <p><b>Guías sin facturar:</b> ${guias} (Total: $${totalGuiasMonto.toLocaleString()})</p>
+                  <p><b>Facturas sin cobrar:</b> ${facturas} (Total: $${totalFacturasMonto.toLocaleString()})</p>
+                  
+                  <h3>📦 Guías sin facturar</h3>
+                  <table border="1" cellpadding="5" cellspacing="0">
+                    <tr><th>N° Guía</th><th>Tipo</th><th>Cliente</th><th>Fecha</th><th>Total</th></tr>
+                    ${guiasDet.map(g => `
+                      <tr>
+                        <td>${g.numero}</td>
+                        <td>${g.tipo}</td>
+                        <td>${g.cliente}</td>
+                        <td>${g.fecha}</td>
+                        <td>$${g.total.toLocaleString()}</td>
+                      </tr>`).join('')}
+                  </table>
+
+                  <h3>💰 Facturas sin cobrar</h3>
+                  <table border="1" cellpadding="5" cellspacing="0">
+                    <tr><th>N° Factura</th><th>Cliente</th><th>Fecha</th><th>Monto</th></tr>
+                    ${facturasDet.map(f => `
+                      <tr>
+                        <td>${f.numero}</td>
+                        <td>${f.cliente}</td>
+                        <td>${f.fecha}</td>
+                        <td>$${f.monto.toLocaleString()}</td>
+                      </tr>`).join('')}
+                  </table>
+                `;
+
+                const workbook = new ExcelJS.Workbook();
+
+                // Hoja Guías sin facturar
+                const wsGuias = workbook.addWorksheet('Guías sin facturar');
+                wsGuias.columns = [
+                  { header: 'N° Guía', key: 'numero', width: 15 },
+                  { header: 'Tipo', key: 'tipo', width: 15 },
+                  { header: 'Cliente', key: 'cliente', width: 30 },
+                  { header: 'Fecha', key: 'fecha', width: 15 },
+                  { header: 'Total', key: 'total', width: 15 },
+                ];
+                guiasDet.forEach(g => wsGuias.addRow(g));
+
+                // Aplicar estilo a la fila de encabezado
+                wsGuias.getRow(1).eachCell(cell => {
+                  cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF003366' }, // azul oscuro
+                  };
+                  cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; // blanco y negrita
+                });
+
+                // Habilitar filtro en encabezado
+                wsGuias.autoFilter = { from: 'A1', to: 'E1' };
+
+                // Hoja Facturas sin cobrar
+                const wsFacturas = workbook.addWorksheet('Facturas sin cobrar');
+                wsFacturas.columns = [
+                  { header: 'N° Factura', key: 'numero', width: 15 },
+                  { header: 'Cliente', key: 'cliente', width: 30 },
+                  { header: 'Fecha', key: 'fecha', width: 15 },
+                  { header: 'Monto', key: 'monto', width: 15 },
+                ];
+                facturasDet.forEach(f => wsFacturas.addRow(f));
+
+                // Aplicar estilo a la fila de encabezado
+                wsFacturas.getRow(1).eachCell(cell => {
+                  cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF003366' }, // azul oscuro
+                  };
+                  cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; // blanco y negrita
+                });
+
+                // Habilitar filtro en encabezado
+                wsFacturas.autoFilter = { from: 'A1', to: 'D1' };
+
+                // Generar buffer del Excel
+                const bufferExcel = await workbook.xlsx.writeBuffer();
+
+                // Enviar mail con adjunto Excel
+                const mailOptions = {
+                  from: 'alertasairbillcielosur@gmail.com',
+                  to: 'pgauna@repremar.com',
+                  subject: '[TEST] Cierre Diario AirBill',
+                  text: `Hola Patricio,\n\nEl cierre diario se ejecutó correctamente.\nGuías sin facturar: ${guias} (Total: $${totalGuiasMonto})\nFacturas sin cobrar: ${facturas} (Total: $${totalFacturasMonto})\n\nSaludos,\nSistema`,
+                  html,
+                  attachments: [
+                    {
+                      filename: `CierreDiario_${new Date().toISOString().slice(0, 10)}.xlsx`,
+                      content: bufferExcel,
+                      contentType:
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    },
+                  ],
+                };
+
+                transporter.sendMail(mailOptions, (error, info) => {
+                  if (error) {
+                    return console.error('❌ Error enviando el correo:', error);
+                  }
+                  console.log('📧 Correo enviado:', info.response);
+                });
+
+              });
+            });
+          });
+        });
       });
     });
   });
@@ -165,6 +349,45 @@ app.get('/api/previewfacturas', (req, res) => {
         ...row,
         Fecha: formattedFecha,
         fechaVencimiento: formattedFechaVenc, // aquí se agrega
+      };
+    });
+
+    res.status(200).json(formattedResult);
+  });
+});
+app.get('/api/previewnc', (req, res) => {
+  console.log('Received request for /api/previewnc');
+
+    const sql = `
+    SELECT 
+      nc.*, 
+      clientes.Rut, 
+      clientes.RazonSocial
+    FROM nc
+    LEFT JOIN clientes ON nc.idCliente = clientes.Id
+    ORDER BY nc.idNC DESC
+  `;
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error fetching NC:', err);
+      return res.status(500).json({ message: 'Error en el backend cargando notas de crédito' });
+    }
+
+    const formattedResult = result.map((row) => {
+      // Formatear fecha
+      const fecha = row.fecha ? new Date(row.fecha) : null;
+      const formattedFecha = fecha
+        ? fecha.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        : '';
+
+      return {
+        ...row,
+        fecha: formattedFecha, // fecha formateada
       };
     });
 
@@ -3712,7 +3935,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     // Guardar el nuevo PDF en memoria
     const pdfFinalBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfFinalBytes).toString('base64');
-console.log('RECIBO BASE 64:', pdfBase64, 'ID DEL RECIBO A MODIFICAR',idrecibo);
+    console.log('RECIBO BASE 64:', pdfBase64, 'ID DEL RECIBO A MODIFICAR', idrecibo);
     const updateQuery = `
   UPDATE recibos
   SET pdfbase64 = ?
@@ -5181,6 +5404,253 @@ app.get('/api/obtenercorrelatividadtabla', (req, res) => {
     }
 
     res.json(result);
+  });
+});
+app.get('/api/historialfacturacionnc/:idCliente', (req, res) => {
+  const { idCliente } = req.params;
+  console.log('Endpoint historialfacturacionnc ejecutandose');
+  const sql = `
+  SELECT 
+    DATE_FORMAT(Fecha, '%d/%m/%Y') AS FechaFormateada,
+    facturas.*
+  FROM facturas
+  WHERE IdCliente = ? 
+    AND tieneNC = 0 
+    AND NumeroCFE IS NOT NULL
+  ORDER BY Fecha DESC
+`;
+
+  connection.query(sql, [idCliente], (err, results) => {
+    if (err) {
+      console.error('Error obteniendo facturas:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+    res.json(results);
+  });
+});
+
+app.post('/api/insertarNC', (req, res) => {
+  const { idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda } = req.body;
+
+  if (!idCliente || !fecha || !DocsAfectados || !ImporteTotal) {
+    return res.status(400).json({ message: 'Faltan datos obligatorios' });
+  }
+
+  const sqlInsert = `
+    INSERT INTO nc (idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  connection.query(sqlInsert, [idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda], (err, result) => {
+    if (err) {
+      console.error('Error insertando N/C:', err);
+      return res.status(500).json({ message: 'Error insertando N/C' });
+    }
+
+    const idsFacturas = DocsAfectados.split(',').map(id => id.trim()).filter(id => id.length > 0);
+
+    if (idsFacturas.length === 0) {
+      return res.json({ message: 'N/C insertada correctamente, no se actualizaron facturas', idNC: result.insertId });
+    }
+
+    const sqlUpdate = `
+      UPDATE facturas
+      SET tieneNC = 1
+      WHERE Id IN (?)
+    `;
+
+    connection.query(sqlUpdate, [idsFacturas], (err2) => {
+      if (err2) {
+        console.error('Error actualizando facturas tieneNC:', err2);
+        return res.status(500).json({ message: 'Error actualizando facturas' });
+      }
+
+      // Consultar facturas para obtener Moneda y TotalCobrar para movimientos en cuenta_corriente
+      const sqlSelectFacturas = `
+        SELECT Id, Moneda, TotalCobrar
+        FROM facturas
+        WHERE Id IN (?)
+      `;
+
+      connection.query(sqlSelectFacturas, [idsFacturas], (err3, facturas) => {
+        if (err3) {
+          console.error('Error consultando facturas:', err3);
+          return res.status(500).json({ message: 'Error consultando facturas' });
+        }
+
+        if (facturas.length === 0) {
+          return res.json({ message: 'N/C insertada y facturas actualizadas, pero no se encontraron facturas para cuenta corriente', idNC: result.insertId });
+        }
+
+        // Preparar array para insert masivo en cuenta_corriente
+        const movimientos = facturas.map(f => [
+          idCliente,            // IdCliente
+          f.Id,                 // IdFactura
+          fecha.split(' ')[0],  // Fecha (solo fecha)
+          'NC',                 // TipoDocumento
+          result.insertId.toString(), // NumeroDocumento (id de la NC insertada)
+          '',                   // NumeroRecibo (vacío)
+          f.Moneda,             // Moneda
+          0,                    // Debe
+          f.TotalCobrar || 0    // Haber (monto)
+        ]);
+
+        const sqlInsertMovimientos = `
+          INSERT INTO cuenta_corriente
+          (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, NumeroRecibo, Moneda, Debe, Haber)
+          VALUES ?
+        `;
+
+        connection.query(sqlInsertMovimientos, [movimientos], async (err4) => {
+          if (err4) {
+            console.error('Error insertando movimientos en cuenta corriente:', err4);
+            return res.status(500).json({ message: 'Error insertando movimientos en cuenta corriente' });
+          }
+
+          try {
+            const impactarResponse = await axios.post('http://localhost:3000/api/impactarnc', { idNC: result.insertId });
+
+            return res.json({
+              message: 'N/C insertada correctamente, facturas y cuenta corriente actualizadas',
+              idNC: result.insertId,
+              wsResultado: impactarResponse.data.resultado
+            });
+          } catch (errImpactar) {
+            console.error('Error impactando NC:', errImpactar);
+            return res.status(500).json({ message: 'Error impactando NC', error: errImpactar.message });
+          }
+        });
+      });
+    });
+  });
+});
+
+app.post('/api/impactarnc', (req, res) => {
+  console.log('ImpactarNC endpoint alcanzado');
+  const { idNC } = req.body;
+  console.log('ID N/C RECIBIDO:', idNC);
+
+  obtenerDatosEmpresa(connection).then((datosEmpresa) => {
+    // 1. Traer datos de la NC
+    connection.query('SELECT * FROM nc WHERE idNC = ?', [idNC], (err, ncRows) => {
+      if (err) return res.status(500).json({ error: 'Error al obtener N/C' });
+      const nc = ncRows[0];
+      if (!nc) return res.status(404).json({ error: 'N/C no encontrada' });
+
+      // 2. Obtener facturas asociadas
+      const idsFacturas = nc.DocsAfectados.split(',').map(id => id.trim()).filter(id => id.length > 0);
+      if (idsFacturas.length === 0) return res.status(400).json({ error: 'La N/C no tiene facturas asociadas' });
+
+      connection.query(`SELECT * FROM facturas WHERE Id IN (?)`, [idsFacturas], async (err2, facturas) => {
+        if (err2) return res.status(500).json({ error: 'Error al obtener facturas asociadas' });
+        if (facturas.length === 0) return res.status(400).json({ error: 'No se encontraron facturas asociadas' });
+
+        // 3. Preparar datos para XML
+        const datosXml = {
+          datosEmpresa,
+          fechaCFE: formatFecha(nc.fecha),
+          fechaVencimientoCFE: formatFecha(nc.fecha),
+          adendadoc: `NC por ${facturas.length} factura(s)`,
+          codigoClienteGIA: nc.CodigoClienteGIA,
+          precioUnitario: nc.ImporteTotal, // Monto total
+          Moneda: facturas[0].Moneda,
+          tipoComprobante:
+            facturas.length > 0
+              ? (facturas[0].TipoDocCFE === 'TCD'
+                ? 'NTT' // Codigo Nota para eticket
+                : facturas[0].TipoDocCFE === 'TCA'
+                  ? 'NRA'//Codigo Nota para eticket CA
+                  : facturas[0].TipoDocCFE === 'FCD'
+                    ? 'NCT'//Codigo Nota para Efactura 
+                    : facturas[0].TipoDocCFE === 'FCA'
+                      ? 'NCA' //Codigo Nota para Efactura CA
+                      : 'NCT')
+              : 'NCT',
+          cancelaciones: facturas.map(factura => ({
+            rubroAfectado: '113102',
+            tipoDocumentoAfectado: factura.TipoDocCFE,
+            comprobanteAfectado: factura.NumeroCFE,
+            vencimientoAfectado: formatFecha(factura.FechaVencimiento || factura.Fecha),
+            importe: factura.TotalCobrar
+          }))
+        };
+
+        const xml = generarXmlNC(datosXml);
+        console.log('Impactando N/C, XML: ', xml);
+
+        // 4. Enviar XML al WS
+        const headers = {
+          'Content-Type': 'text/xml;charset=utf-8',
+          'SOAPAction': '"agregarDocumentoFacturacion"',
+          'Accept-Encoding': 'gzip,deflate',
+          'Host': datosEmpresa.serverFacturacion,
+          'Connection': 'Keep-Alive',
+          'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
+        };
+
+        try {
+          const response = await axios.post(
+            `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+            xml,
+            { headers }
+          );
+
+          const parsed = await parseSOAP(response.data);
+          const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+          const resultado = inner.agregarDocumentoFacturacionResultado;
+
+          if (resultado.resultado !== "1") {
+            
+            return res.status(200).json({
+              success: false,
+              message: resultado.descripcion,
+              resultado
+            });
+          }
+
+          // 5. Guardar datos del documento en la tabla NC
+          const datosDoc = resultado?.datos?.documento;
+          if (datosDoc) {
+            const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
+
+            const updateQuery = `
+              UPDATE nc
+              SET fecha = ?, TipoDocumento = ?, Serie = ?, NumeroCFE = ?
+              WHERE idNC = ?
+            `;
+
+            connection.query(
+              updateQuery,
+              [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idNC],
+              (err, result) => {
+                if (err) {
+                  console.error('Error al actualizar N/C con datos del WS:', err);
+                  return res.status(500).json({ success: false, error: 'Error al guardar datos del documento' });
+                }
+
+                return res.status(200).json({
+                  success: true,
+                  message: 'N/C impactada y datos del WS guardados correctamente',
+                  resultado
+                });
+              }
+            );
+          } else {
+            return res.status(200).json({
+              success: true,
+              message: resultado.descripcion,
+              resultado
+            });
+          }
+        } catch (error) {
+          console.error('Error al enviar XML al WS:', error);
+          return res.status(500).json({ error: 'Error al impactar N/C con el WS' });
+        }
+      });
+    });
+  }).catch(err => {
+    console.error('Error al obtener datos de empresa:', err);
+    return res.status(500).json({ error: 'Error al obtener datos de empresa' });
   });
 });
 

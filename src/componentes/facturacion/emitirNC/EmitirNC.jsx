@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import ModalAlertaGFE from '../../modales/AlertasGFE';
+import Swal from 'sweetalert2';
 import { descargarPDFBase64 } from '../../../ConexionGFE/Funciones';
 const EmitirNC = ({ isLoggedIn }) => {
 
@@ -51,11 +52,14 @@ const EmitirNC = ({ isLoggedIn }) => {
   const [fmtotal, setFmTotal] = useState('');
   const [fmivaconcepto, setFmIvaConcepto] = useState('');
   const [fmlistadeconceptos, setFmListaDeConceptos] = useState([]);
+  const [facturasCliente, setFacturasCliente] = useState([]);
   const [monedas, setMonedas] = useState([]);
   const [isFetchedMonedas, setIsFetchedMonedas] = useState(false);
   const [conceptoactual, setConceptoActual] = useState([]);
   const [codigoClienteGIA, setCodigoClienteGIA] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingtabla, setLoadingTabla] = useState(false);
+
 
   const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
   const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
@@ -65,8 +69,42 @@ const EmitirNC = ({ isLoggedIn }) => {
     setIsModalOpenAlertaGFE(false);
     window.location.reload();
   };
+  const [erdocumentoasociado, setErDocumentoAsociado] = useState('');
+  const handleKeyPressDocumento = (event) => {
+
+  };
+
+  const handleEliminarFacturaSeleccionada = (numeroCFE) => {
+    setFacturasSeleccionadas(prev => prev.filter(f => f.NumeroCFE !== numeroCFE));
+  };
 
 
+  const handleAgregarFacturaSeleccionada = (factura) => {
+    if (facturasSeleccionadas.length === 0) {
+      setFacturasSeleccionadas([factura]);
+    } else {
+      const monedaExistente = facturasSeleccionadas[0].Moneda; // moneda de la primera factura
+      const tipoDocExistente = facturasSeleccionadas[0].TipoDocCFE; // tipo doc de la primera factura
+
+      if (factura.Moneda !== monedaExistente) {
+        toast.error("No se pueden mezclar facturas con monedas diferentes.");
+        return;
+      }
+
+      if (factura.TipoDocCFE !== tipoDocExistente) {
+        toast.error("No se pueden mezclar facturas de diferentes tipos.");
+        return;
+      }
+
+      const existe = facturasSeleccionadas.some(f => f.NumeroCFE === factura.NumeroCFE);
+      if (!existe) {
+        setFacturasSeleccionadas(prev => [...prev, factura]);
+      } else {
+        toast.error("Esta factura ya está seleccionada.");
+      }
+    }
+  };
+  const [facturasSeleccionadas, setFacturasSeleccionadas] = useState([]);
   const hasFetched = useRef(false);
   const [botonActivo, setBotonActivo] = useState(false);
 
@@ -206,132 +244,80 @@ const EmitirNC = ({ isLoggedIn }) => {
   }, []); // Se ejecuta solo una vez al montar el componente
 
   // Función para manejar el envío del formulario
-  const handleSubmitAgregarFm = async (event) => {
-    event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+  const handleSubmitAgregarFm = () => {
     setLoading(true);
-    // Recopilar los datos del formulario en un objeto
-    const datosFormulario = {
-      IdCliente: fmid,
-      Nombre: searchTerm,
-      codigoClienteGIA: codigoClienteGIA,
-      RazonSocial: fmrazonsocial,
-      DireccionFiscal: fmdireccionfiscal,
-      Ciudad: fmciudad,
-      Pais: fmpais,
-      RutCedula: fmrutcedula,
-      ComprobanteElectronico: fmcomprobanteelectronico,
-      Comprobante: fmcomprobante,
-      Electronico: fmelectronico,
-      Moneda: fmmoneda,
-      Fecha: fmfecha,
-      FechaVencimiento: fmfechaVencimiento,
-      TipoIVA: fmtipoiva,
-      CASS: fmcass,
-      TipoEmbarque: fmtipodeembarque,
-      TC: parseFloat(fmtc).toFixed(2),
-      Subtotal: parseFloat(fmsubtotal).toFixed(2),
-      IVA: parseFloat(fmiva).toFixed(2),
-      Redondeo: parseFloat(fmredondeo).toFixed(2),
-      Total: parseFloat(fmtotal).toFixed(2),
-      TotalCobrar: parseFloat(fmtotalacobrar).toFixed(2),
-      DetalleFactura: fmlistadeconceptos,
-
-    };
-    console.log('info al backend: ', datosFormulario);
-
-
-    try {
-      // Enviar los datos del formulario a tu servidor
-      console.log('Datos del formulario a Backend: ', datosFormulario);
-      const response = await axios.post(`${backURL}/api/insertfacturamanual`, datosFormulario);
-      console.log('Respuesta HTTP recibida:', response.status, response.data);
-
-
-      if (response.status >= 200 && response.status < 300) {
-        if (response.data?.success) {
-          const documento = response.data.documento;
-
-          if (documento) {
-            console.log('Documento generado:', documento);
-
-            const nombreArchivo = `${documento.tipo}_${documento.serie}_${documento.numero}.pdf`;
-            descargarPDFBase64(documento.pdfBase64, nombreArchivo);
-          }
-          let mensajeExito = `Documento ${documento.tipo}_${documento.serie}_${documento.numero} guardado correctamente.`;
-          setTituloAlertaGfe('Factura Ingresada Correctamente');
-          setmensajeAlertaGFE(mensajeExito || '');
-          setIconoAlertaGFE('success');
-          setIsModalOpenAlertaGFE(true);
-        } else {
-          const descripcion = response.data?.descripcion;
-          const mensajeError = descripcion || response.data?.message || 'Error desconocido al ingresar la factura';
-
-          setTituloAlertaGfe('Error al Impactar en GFE');
-          setmensajeAlertaGFE(mensajeError);
-          setIconoAlertaGFE('error');
-          setIsModalOpenAlertaGFE(true);
-        }
-      } else {
-        // Status no 2xx
-        console.warn('Respuesta HTTP inesperada:', response.status);
-        setTituloAlertaGfe('Error Desconocido');
-        setmensajeAlertaGFE(`Error HTTP ${response.status}`);
-        setIconoAlertaGFE('error');
-        setIsModalOpenAlertaGFE(true);
-      }
-    } catch (error) {
-      console.error('Error atrapado:', error);
-
-      if (error.response) {
-        console.log('Error response:', error.response);
-        console.log('Error response data:', error.response.data);
-
-        if (error.response.status === 422) {
-          const { errores, mensaje, message } = error.response.data;
-          let mensajeError = error.response.data?.descripcion || mensaje || message || 'Error al procesar los documentos.';
-
-          if (Array.isArray(errores) && errores.length > 0) {
-            const detalles = errores
-              .map((err, i) => `Documento ${i + 1}: ${err.descripcion || 'Error desconocido'}`)
-              .join('\n');
-
-            mensajeError += '\n\n' + detalles;
-          }
-
-          setTituloAlertaGfe('Error al Impactar en GFE');
-          setmensajeAlertaGFE(mensajeError);
-          setIconoAlertaGFE('error');
-          setIsModalOpenAlertaGFE(true);
-        } else if (error.response.status === 500) {
-          const mensaje = error.response.data?.message || 'Error interno en el servidor';
-
-          setTituloAlertaGfe('Error al Cargar la Factura');
-          setmensajeAlertaGFE(mensaje);
-          setIconoAlertaGFE('error');
-          setIsModalOpenAlertaGFE(true);
-        } else {
-          setTituloAlertaGfe('Error Desconocido');
-          setmensajeAlertaGFE(`Error HTTP ${error.response.status}`);
-          setIconoAlertaGFE('error');
-          setIsModalOpenAlertaGFE(true);
-        }
-      } else if (error.request) {
-        // No se recibió respuesta
-        console.error('No se recibió respuesta del servidor', error.request);
-        setTituloAlertaGfe('Error de Conexión');
-        setmensajeAlertaGFE('No se pudo conectar con el servidor.');
-        setIconoAlertaGFE('error');
-        setIsModalOpenAlertaGFE(true);
-      } else {
-        // Otro error al configurar la solicitud
-        setTituloAlertaGfe('Error Desconocido');
-        setmensajeAlertaGFE(error.message || 'Error desconocido en el ERP');
-        setIconoAlertaGFE('error');
-        setIsModalOpenAlertaGFE(true);
-      }
-    } finally {
-      setLoading(false);
+    if (facturasSeleccionadas.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'No hay facturas seleccionadas',
+        text: 'Por favor seleccioná al menos una factura.',
+      });
+      return;
     }
+
+    // Armar texto con números y series
+    const detalles = facturasSeleccionadas
+      .map(f => `Número: ${f.NumeroCFE}, Serie: ${f.SerieCFE}`)
+      .join('<br>');
+
+    Swal.fire({
+      title: 'Confirmar Generación',
+      html: `
+    <p style="color:#0a2d54; text-align:center;">
+      Se generará N/C para las siguientes facturas:
+    </p>
+    <p style="color:#0a2d54; text-align:center;">
+      ${detalles}
+    </p>
+  `,
+      icon: 'question',
+      color: '#0a2d54', // color general del texto
+      showCancelButton: true,
+      confirmButtonText: 'Sí, generar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0a2d54', // color botón confirmar
+      cancelButtonColor: '#0a2d54',  // color botón cancelar
+    }).then((result) => {
+
+      if (result.isConfirmed) {
+        const importeTotal = facturasSeleccionadas.reduce(
+          (acc, factura) => acc + (parseFloat(factura.TotalCobrar) || 0),
+          0
+        );
+        const datosNC = {
+          idCliente: selectedCliente.Id,
+          fecha: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          DocsAfectados: facturasSeleccionadas.map(f => f.Id).join(','), // separadas por coma
+          CFEsAfectados: facturasSeleccionadas.map(f => f.NumeroCFE).join(','),
+          ImporteTotal: importeTotal,
+          CodigoClienteGIA: selectedCliente.CodigoGIA,
+          Moneda: facturasSeleccionadas[0]?.Moneda || ''
+        };
+        console.log("Datos que voy a enviar:", datosNC);
+        axios.post(`${backURL}/api/insertarNC`, datosNC)
+          .then((response) => {
+            Swal.fire({
+              icon: 'success',
+              title: response.data.wsResultado?.descripcion || 'N/C generada correctamente',
+              color: '#0a2d54',
+              confirmButtonColor: '#0a2d54'
+            }).then(() => window.location.reload());
+          })
+          .catch(err => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al generar la N/C',
+              text: err.message,
+              color: '#0a2d54',
+              confirmButtonColor: '#0a2d54'
+            });
+          }).finally(() => {
+            setLoading(false);
+          });
+      } else {
+        setLoading(false); 
+      }
+    });
   };
 
   // Estado para la búsqueda de clientes
@@ -351,6 +337,7 @@ const EmitirNC = ({ isLoggedIn }) => {
       try {
         const response = await axios.get(`${backURL}/api/obtenernombrecliente?search=${searchTerm}`);
         setFilteredClientes(response.data);
+
         setIsModalOpen(true); // Abre el modal con los resultados
       } catch (error) {
         console.error('Error al buscar clientes:', error);
@@ -358,12 +345,26 @@ const EmitirNC = ({ isLoggedIn }) => {
     }
   };
   // Selección de un cliente desde el modal
-  const handleSelectCliente = (cliente) => {
+  const handleSelectCliente = async (cliente) => {
     setSelectedCliente(cliente);
-    console.log('Cliente Seleccionado:', cliente)
-    setSearchTerm(cliente.RazonSocial); // Muestra el nombre seleccionado en el input
+    console.log('Cliente desde la base: ', cliente);
+    setSearchTerm(cliente.RazonSocial);
     setIsSelectEnabled(true);
-    setIsModalOpen(false); // Cierra el modal
+    setIsModalOpen(false);
+
+    try {
+      setLoadingTabla(true);
+      const response = await axios.get(`${backURL}/api/historialfacturacionnc/${cliente.Id}`);
+      console.log("Facturas del cliente:", response.data);
+
+      // Si las querés guardar en un estado
+      setFacturasCliente(response.data);
+      console.log('Estas son las facturas del cliente', response.data);
+    } catch (error) {
+      console.error("Error al obtener facturas del cliente:", error);
+    } finally {
+      setLoadingTabla(false);
+    }
   };
 
   // Actualizar el estado del formulario luego se seleccionar un cliente 
@@ -413,7 +414,9 @@ const EmitirNC = ({ isLoggedIn }) => {
     setFmTotalACobrar(nuevoTotalACobrar.toFixed(2));
 
   }, [fmlistadeconceptos]); // Se ejecuta cada vez que cambia la lista de conceptos
-
+  const facturasFiltradas = facturasCliente.filter(factura =>
+    factura.NumeroCFE.toString().toLowerCase().includes(erdocumentoasociado.toLowerCase())
+  );
 
   return (
     <div className="EmitirFacturaManual-container">
@@ -456,48 +459,7 @@ const EmitirNC = ({ isLoggedIn }) => {
                   readOnly
                 />
               </div>
-              <div>
-                <label htmlFor="eccomprobanteelectronico">Comprobante Electronico:</label>
-                <select
-                  id="tipoComprobante"
-                  value={fmcomprobanteelectronico}
-                  onChange={(e) => setFmComprobanteElectronico(e.target.value)}
-                  required
-                >
-                  <option value="">Comprobante Electronico</option>
-                  <option value="efactura">E-Factura</option>
-                  <option value="eticket">E-Ticket</option>
-                  <option value="efacturaca">E-Factura Cuenta Ajena</option>
-                  <option value="eticketca">E-Ticket Cuenta Ajena</option>
-                </select>
 
-              </div>
-              <div className="fecha-emision-comprobante">
-                <label htmlFor="fmfecha">Fecha:</label>
-                <input
-                  type="date"
-                  id="fmfecha"
-                  value={fmfecha}
-                  onChange={(e) => setFmFecha(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="fecha-emision-comprobante">
-                <label htmlFor="fmfecha">Fecha Vencimiento:</label>
-                <input
-                  type="date"
-                  id="fmfecha"
-                  value={fmfechaVencimiento}
-                  onChange={(e) => setFmFechaVencimiento(e.target.value)}
-                  required
-                />
-              </div>
-
-
-            </div>
-
-
-            <div className='div-renglon-datos-facturasmanuales'>
               <div>
                 <label htmlFor="fmrazonsocial">Razon Social:</label>
                 <input
@@ -522,46 +484,6 @@ const EmitirNC = ({ isLoggedIn }) => {
                 </select>
               </div>
 
-
-
-              <div>
-                <label htmlFor="fmciudad">Ciudad:</label>
-                <input
-                  type="text"
-                  id="fmciudad"
-                  value={fmciudad}
-                  onChange={(e) => setFmCiudad(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="fmpais">Pais:</label>
-                <input
-                  type="text"
-                  id="fmpais"
-                  value={fmpais}
-                  onChange={(e) => setFmPais(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="fmtipoiva">Tipo de IVA:</label>
-                <select
-                  id="fmtipoiva"
-                  value={fmtipoiva}
-                  onChange={(e) => setFmTipoIva(e.target.value)}
-                  required
-                >
-                  <option value="">Seleccione un tipo de IVA</option>
-                  <option value="iva22">IVA 22%</option>
-                  <option value="excento">Exento</option>
-                </select>
-              </div>
-            </div>
-
-            <div className='div-renglon-datos-facturasmanuales'>
               <div>
                 <label htmlFor="fmdireccionfiscal">Dirección Fiscal:</label>
                 <input
@@ -598,215 +520,153 @@ const EmitirNC = ({ isLoggedIn }) => {
                   <option value="true">Si</option>
                 </select>
               </div>
-              <div>
-                <label htmlFor="ectipoembarque">Tipo de Embarque:</label>
-                <select
-                  id="ectipoembarque"
-                  value={fmtipodeembarque}
-                  onChange={(e) => setFmTipoDeEmbarque(e.target.value)}
-                  required
-                >
-                  <option value="">Seleccione un tipo</option>
-                  <option value="Impo">Impo</option>
-                  <option value="Expo">Expo</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="fmtc">Tc:</label>
-                <input
-                  type="text"
-                  id="fmtc"
-                  value={fmtc}
-                  onChange={(e) => setFmTc(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-
             </div>
+
           </div>
 
-          <div className='div-guias-asociadas'>
-            <h3 className='subtitulo-estandar'>Concepto</h3>
-            <div className='div-renglon-datos-facturasmanuales'>
-              <div>
-                <label htmlFor="fmguia">Codigo:</label>
-                <input
-                  type="text"
-                  id="fmguia"
-                  autoComplete="off"
-                  value={fmcodigoconcepto}
-                  onChange={(e) => setFmCodigoConcepto(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (!fmcodigoconcepto.trim()) {
-                        setMostrarModalBuscarConcepto(true); // Mostrar modal si está vacío
-                      } else {
-                        fetchConceptoPorCodigo(); // Buscar si hay algo escrito
-                      }
-                    }
-                  }}
 
-                />
-              </div>
-              <div>
-                <label htmlFor="fmdescripcion">Descripción:</label>
-                <input
-                  type="text"
-                  id="fmdescripcion"
-                  value={fmdescripcion}
-                  onChange={(e) => setFmDescripcion(e.target.value)}
 
-                />
-              </div>
-              <div>
-                <label htmlFor="fmmonedaconcepto">Moneda:</label>
-                <select
-                  id="fmmonedaconcepto"
-                  value={fmmonedaconcepto}
-                  onChange={(e) => setFmMonedaConcepto(e.target.value)}
-                  disabled
-                >
-                  <option value="USD">USD</option>
-                  <option value="UYU">UYU</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="fmimporte">IVA:</label>
-                <input
-                  type="text"
-                  id="fmimporte"
-                  value={fmivaconcepto}
-                  onChange={(e) => setFmIvaConcepto(e.target.value)}
-                  disabled
-                />
-              </div>
-              <div>
-                <label htmlFor="fmimporte">Importe:</label>
-                <input
-                  type="number"
-                  id="fmimporte"
-                  value={fmimporte}
-                  onChange={(e) => setFmImporte(e.target.value)}
-
-                />
-              </div>
-
-              <div className='botonesfacturasasociadas'>
-                <button type="button" disabled={!botonActivo} onClick={handleAgregarConceptoAsociado} className='btn-estandar'>Agregar</button>
-              </div>
-
-            </div>
-          </div>
-
-          <div className='div-tabla-facturas-asociadas'>
+          <div className='contenedor-tablasNC'>
             <br />
-
-            <div className='div-primerrenglon-datos-recibos'>
-              {/* Tabla que muestra las facturas agregadas */}
-              <table className='tabla-conceptos-asociados' >
-                <thead>
-                  <tr>
-                    <th>Codigo</th>
-                    <th>Descripción</th>
-                    <th>Moneda</th>
-                    <th>IVA</th>
-                    <th>Importe</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fmlistadeconceptos.map((concepto, indexec) => (
-                    <tr
-                      key={indexec}
-                      onClick={() => handleSeleccionarConceptoAsociado(indexec)}
-                      style={{
-                        cursor: 'pointer' // Indica que la fila es clickeable
-                      }}
-                    >
-                      <td>{concepto.codigo}</td>
-                      <td>{concepto.descripcion}</td>
-                      <td>{concepto.moneda}</td>
-                      <td>{concepto.ivaCalculado}</td>
-                      <td>{concepto.importe}</td>
-                      <td><button type="button" className="action-button" onClick={handleEliminarConceptoAsociado} disabled={fmconceptoseleccionado !== indexec}>❌</button></td>
+            <h3 className='subtitulo-estandar'>Historial de facturación</h3>
+            <div className='div-primerrenglon-datos-recibos2'>
+              <div className='contenedor-tabla-historial'>
+                {/* Tabla que muestra las facturas agregadas */}
+                <table className='tabla-historialfacturacion' >
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Número CFE</th>
+                      <th>Serie CFE</th>
+                      <th>Tipo de Doc.</th>
+                      <th>Importe</th>
+                      <th>
+                        <div>
+                          <input
+                            type="text"
+                            id="documento"
+                            value={erdocumentoasociado}
+                            onChange={(e) => setErDocumentoAsociado(e.target.value)}
+                            onKeyDown={handleKeyPressDocumento}
+                            placeholder='Nro. Comprobante'
+                            autoComplete="off"
+                            disabled={!searchTerm}
+                          />
+                        </div>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {loadingtabla ? (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: 'center' }}>
+                          <div className="loading-spinner">
+                            {/* Aquí tu spinner */}
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      facturasFiltradas.map((factura, indexec) => (
+                        <tr
+                          key={indexec}
+                          onDoubleClick={() => handleAgregarFacturaSeleccionada(factura)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <td>{factura.FechaFormateada}</td>
+                          <td>{factura.NumeroCFE}</td>
+                          <td>{factura.SerieCFE}</td>
+                          <td>
+                            {factura.TipoDocCFE === 'TCD'
+                              ? 'Eticket'
+                              : factura.TipoDocCFE === 'TCA'
+                                ? 'Eticket CA'
+                                : factura.TipoDocCFE === 'FCD'
+                                  ? 'Efactura'
+                                  : factura.TipoDocCFE === 'FCA'
+                                    ? 'Efactura CA'
+                                    : factura.TipoDocCFE}
+                          </td>
+                          <td>{factura.TotalCobrar}</td>
+                          <td>{factura.Moneda}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-
+              {/* Flecha */}
+              <div className="flecha-tables">
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="#0a2d54" viewBox="0 0 24 24">
+                  <path d="M10 17l5-5-5-5v10zM4 17l5-5-5-5v10z" />
+                  <path fill="none" d="M0 24V0h24v24H0z" />
+                </svg>
+              </div>
+              <div className='contenedor-tabla-historial'>
+                <table className='tabla-historialfacturacion' >
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Número CFE</th>
+                      <th>Serie CFE</th>
+                      <th>Tipo de Doc.</th>
+                      <th>Importe</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {facturasSeleccionadas.map((factura, indexec) => (
+                      <tr
+                        key={indexec}
+                        onClick={() => handleSeleccionarConceptoAsociado(indexec)}
+                        style={{
+                          cursor: 'pointer' // Indica que la fila es clickeable
+                        }}
+                      >
+                        <td>{factura.FechaFormateada}</td>
+                        <td>{factura.NumeroCFE}</td>
+                        <td>{factura.SerieCFE}</td>
+                        <td>{factura.TipoDocCFE === 'TCD'
+                          ? 'Eticket'
+                          : factura.TipoDocCFE === 'TCA'
+                            ? 'Eticket CA'
+                            : factura.TipoDocCFE === 'FCD'
+                              ? 'Efactura'
+                              : factura.TipoDocCFE === 'FCA'
+                                ? 'Efactura CA'
+                                : factura.TipoDocCFE}</td>
+                        <td>{factura.TotalCobrar} {factura.Moneda}</td>
+                        <td>
+                          <button
+                            className='action-button'
+                            type="button"
+                            onClick={() => handleEliminarFacturaSeleccionada(factura.NumeroCFE)}
+                          >
+                            ❌
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
 
           </div>
-          <div className='div-totales-comprobante'>
-            <h3 className='subtitulo-estandar'>Totales</h3>
-            <div className='div-renglon-datos-facturasmanuales'>
 
-              <div>
-                <label htmlFor="fmsubtotal">Subtotal:</label>
-                <input
-                  type="text"
-                  id="fmsubtotal"
-                  value={fmsubtotal}
-                  onChange={(e) => setFmsubtotal(e.target.value)}
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="fmivatotal">IVA:</label>
-                <input
-                  type="text"
-                  id="fmivatotal"
-                  value={fmiva}
-                  onChange={(e) => setFmIva(e.target.value)}
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="fmredondeo">Redondeo:</label>
-                <input
-                  type="text"
-                  id="fmredondeo"
-                  value={fmredondeo}
-                  onChange={(e) => setFmRedondeo(e.target.value)}
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="fmtotal">Total:</label>
-                <input
-                  type="text"
-                  id="fmtotal"
-                  value={fmtotal}
-                  onChange={(e) => setFmTotal(e.target.value)}
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="fmtotalacobrar">Total a Cobrar:</label>
-                <input
-                  type="text"
-                  id="fmtotalacobrar"
-                  value={fmtotalacobrar}
-                  onChange={(e) => setFmTotalACobrar(e.target.value)}
-                  readOnly
-                />
-              </div>
-            </div>
-          </div>
 
 
         </div>
+        <br />
+        <br />
 
 
-
-        <div className='botonesemitircomprobante'>
-          <button type="button" className='btn-facturar' onClick={handleSubmitAgregarFm}>Facturar</button>
-
+        <div className='botonesemitirnc'>
+          <div></div>
           <Link to="/home"><button type="button" className="btn-estandar">Volver</button></Link>
+          <button type="button" className='btn-facturar' onClick={handleSubmitAgregarFm}>Generar N/C</button>
+          <div></div>
         </div>
 
 
