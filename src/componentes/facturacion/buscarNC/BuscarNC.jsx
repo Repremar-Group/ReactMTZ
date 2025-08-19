@@ -18,6 +18,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
 import { impactarNCEnGIA } from '../../../ConexionGFE/Funciones';
+import Swal from 'sweetalert2';
 
 const BuscarNC = () => {
     const navigate = useNavigate();
@@ -237,15 +238,7 @@ const BuscarNC = () => {
                                     />
                                     Nro. CFE
                                 </label>
-                                <label>
-                                    <input
-                                        type="radio"
-                                        value="idrecibo"
-                                        checked={searchField === 'idrecibo'}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                    Nro. Recibo
-                                </label>
+
                                 <label>
                                     <input
                                         type="radio"
@@ -258,8 +251,8 @@ const BuscarNC = () => {
                                 <label>
                                     <input
                                         type="radio"
-                                        value="RutCedula"
-                                        checked={searchField === 'RutCedula'}
+                                        value="Rut"
+                                        checked={searchField === 'Rut'}
                                         onChange={handleCheckboxChange}
                                     />
                                     RUT
@@ -270,14 +263,7 @@ const BuscarNC = () => {
                                     <label>Hasta:</label>
                                     <input type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
                                 </div>
-                                {busquedaRealizada && facturasFiltradas.length > 0 && (
-                                    <button
-                                        className="boton-descargar-todas"
-                                        onClick={() => descargarFacturasEnZip(facturasFiltradas)}
-                                    >
-                                        Descargar facturas
-                                    </button>
-                                )}
+
                             </div>
                         </div>
                     </div>
@@ -328,50 +314,9 @@ const BuscarNC = () => {
                                             <div className="buscarfacturas-submenu-container">
                                                 <button disabled className="buscarfacturas-submenu-toggle">☰</button>
                                                 <div className="buscarfacturas-submenu">
-                                                    {row.NumeroCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdfBase64, row.NumeroCFE)}>Descargar PDF</button>
-                                                    )}
 
-                                                    {!row.NumeroCFE && (
-                                                        <button
-                                                            className='botonsubmenubuscarfactura'
-                                                            onClick={async () => {
-                                                                try {
-                                                                    setLoadingEnvioGFE(true);
-                                                                    console.log('Factura antes del back', row);
-                                                                    const response = await impactarNCEnGIA(row.idNC, backURL);
-                                                                    if (response.success) {
-                                                                        setTituloAlertaGfe('NC Impactada Correctamente');
-                                                                        setmensajeAlertaGFE('');
-                                                                        setIconoAlertaGFE('success');
-                                                                        setIsModalOpenAlertaGFE(true);
-                                                                    } else {
-                                                                        // Mostrar error
-                                                                        setTituloAlertaGfe('Error al impactar la factura');
-                                                                        setmensajeAlertaGFE(response.descripcion || 'Intente nuevamente.');
-                                                                        setIconoAlertaGFE('error');
-                                                                        setIsModalOpenAlertaGFE(true);
-                                                                    }
-                                                                } catch (error) {
-                                                                    console.error('Error inesperado:', error);
 
-                                                                    const descripcion =
-                                                                        error?.response?.data?.descripcion ||
-                                                                        error?.response?.data?.message ||
-                                                                        'Ocurrió un error al comunicarse con el servidor.';
 
-                                                                    setTituloAlertaGfe('Error inesperado');
-                                                                    setmensajeAlertaGFE(descripcion);
-                                                                    setIconoAlertaGFE('error');
-                                                                    setIsModalOpenAlertaGFE(true);
-                                                                } finally {
-                                                                    setLoadingEnvioGFE(false); // Ocultar overlay
-                                                                }
-                                                            }}
-                                                        >
-                                                            Enviar a GFE
-                                                        </button>
-                                                    )}
                                                     {!row.NumeroCFE && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'
@@ -379,6 +324,7 @@ const BuscarNC = () => {
                                                                 try {
                                                                     const response = await axios.get(`${backURL}/api/obtenerModificarNC?id=${row.idNC}`);
                                                                     setNCAModificar(response.data);
+                                                                    console.log('NC antes del modal ', response.data);
                                                                     setLoadingEnvioGFE(true);
                                                                     SetIsModalOpenModificarNC(true)
                                                                 } catch {
@@ -393,7 +339,30 @@ const BuscarNC = () => {
                                                         </button>
                                                     )}
                                                     {!row.NumeroCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                        <button
+                                                            className='botonsubmenubuscarfactura'
+                                                            onClick={() => {
+                                                                Swal.fire({
+                                                                    title: 'Eliminar N/C?',
+                                                                    text: `Esto borrará toda la N/C generada y sus movimientos`,
+                                                                    icon: 'warning',
+                                                                    showCancelButton: true,
+                                                                    confirmButtonText: 'Sí, eliminar',
+                                                                    cancelButtonText: 'Cancelar'
+                                                                }).then((result) => {
+                                                                    if (result.isConfirmed) {
+                                                                        axios.post(`${backURL}/api/eliminarNC`, { idNC: row.idNC })
+                                                                            .then(res => {
+                                                                                Swal.fire('Eliminada', res.data.message, 'success')
+                                                                                    .then(() => window.location.reload());
+                                                                            })
+                                                                            .catch(err => {
+                                                                                Swal.fire('Error', err.response?.data?.message || err.message, 'error');
+                                                                            });
+                                                                    }
+                                                                });
+                                                            }}
+                                                        >
                                                             Eliminar
                                                         </button>
                                                     )}

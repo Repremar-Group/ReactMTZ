@@ -4922,85 +4922,62 @@ app.get('/api/obtenerModificarNC', (req, res) => {
 
     const nc = ncResults[0];
 
-    // Procesar DocsAfectados (string separado por coma → array de números)
-    let docsAfectados = [];
-    if (nc.DocsAfectados) {
-      docsAfectados = nc.DocsAfectados.split(",")
-        .map(d => d.trim())
-        .filter(d => d !== "")
-        .map(Number);
-    }
+    // Traer los datos del cliente
+    connection.query('SELECT * FROM clientes WHERE Id = ?', [nc.idCliente], (errCliente, clienteResults) => {
+      if (errCliente) {
+        console.error('Error al obtener el cliente:', errCliente);
+        return res.status(500).json({ error: 'Error al obtener el cliente' });
+      }
 
-    // Procesar CFEsAfectados (string separado por coma → array de números)
-    let cfesAfectados = [];
-    if (nc.CFEsAfectados) {
-      cfesAfectados = nc.CFEsAfectados.split(",")
-        .map(c => c.trim())
-        .filter(c => c !== "")
-        .map(Number);
-    }
+      const cliente = clienteResults.length > 0 ? clienteResults[0] : null;
 
-    // Función auxiliar para responder con todo junto
-    const responder = (facturas = [], cfes = []) => {
-      res.status(200).json({
-        nc,
-        facturasAfectadas: facturas,
-        cfesAfectados: cfes
-      });
-    };
+      // Procesar DocsAfectados (Ids de facturas)
+      let docsAfectados = [];
+      if (nc.DocsAfectados) {
+        docsAfectados = nc.DocsAfectados.split(",")
+          .map(d => d.trim())
+          .filter(d => d !== "")
+          .map(Number);
+      }
 
-    // Ejecutar queries en paralelo según corresponda
-    if (docsAfectados.length > 0 && cfesAfectados.length > 0) {
-      connection.query(
-        `SELECT * FROM facturas WHERE Id IN (?)`,
-        [docsAfectados],
-        (errFacturas, facturasResults) => {
-          if (errFacturas) {
-            console.error('Error al obtener facturas afectadas:', errFacturas);
-            return res.status(500).json({ error: 'Error al obtener facturas afectadas' });
-          }
-
-          connection.query(
-            `SELECT * FROM cfes WHERE Id IN (?)`,
-            [cfesAfectados],
-            (errCFEs, cfesResults) => {
-              if (errCFEs) {
-                console.error('Error al obtener CFEs afectados:', errCFEs);
-                return res.status(500).json({ error: 'Error al obtener CFEs afectados' });
-              }
-
-              responder(facturasResults, cfesResults);
+      if (docsAfectados.length > 0) {
+        connection.query(
+          `SELECT * FROM facturas WHERE Id IN (?)`,
+          [docsAfectados],
+          (errFacturas, facturasResults) => {
+            if (errFacturas) {
+              console.error('Error al obtener facturas afectadas:', errFacturas);
+              return res.status(500).json({ error: 'Error al obtener facturas afectadas' });
             }
-          );
-        }
-      );
-    } else if (docsAfectados.length > 0) {
-      connection.query(
-        `SELECT * FROM facturas WHERE Id IN (?)`,
-        [docsAfectados],
-        (errFacturas, facturasResults) => {
-          if (errFacturas) {
-            console.error('Error al obtener facturas afectadas:', errFacturas);
-            return res.status(500).json({ error: 'Error al obtener facturas afectadas' });
+
+            // Formatear la fecha
+            const facturasConFecha = facturasResults.map(f => {
+              let fechaFormateada = null;
+              if (f.Fecha) {
+                const fechaObj = new Date(f.Fecha);
+                const dia = String(fechaObj.getDate()).padStart(2, '0');
+                const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+                const anio = fechaObj.getFullYear();
+                fechaFormateada = `${dia}/${mes}/${anio}`;
+              }
+              return { ...f, FechaFormateada: fechaFormateada };
+            });
+
+            res.status(200).json({
+              nc,
+              cliente,
+              facturasAfectadas: facturasConFecha
+            });
           }
-          responder(facturasResults, []);
-        }
-      );
-    } else if (cfesAfectados.length > 0) {
-      connection.query(
-        `SELECT * FROM cfes WHERE Id IN (?)`,
-        [cfesAfectados],
-        (errCFEs, cfesResults) => {
-          if (errCFEs) {
-            console.error('Error al obtener CFEs afectados:', errCFEs);
-            return res.status(500).json({ error: 'Error al obtener CFEs afectados' });
-          }
-          responder([], cfesResults);
-        }
-      );
-    } else {
-      responder([], []);
-    }
+        );
+      } else {
+        res.status(200).json({
+          nc,
+          cliente,
+          facturasAfectadas: []
+        });
+      }
+    });
   });
 });
 
@@ -5628,6 +5605,7 @@ app.post('/api/insertarNC', (req, res) => {
   });
 });
 
+
 app.post('/api/impactarnc', (req, res) => {
   console.log('ImpactarNC endpoint alcanzado');
   const { idNC } = req.body;
@@ -5755,6 +5733,117 @@ app.post('/api/impactarnc', (req, res) => {
     console.error('Error al obtener datos de empresa:', err);
     return res.status(500).json({ error: 'Error al obtener datos de empresa' });
   });
+});
+
+app.post('/api/eliminarNC', (req, res) => {
+  const { idNC } = req.body;
+
+  if (!idNC) {
+    return res.status(400).json({ message: 'Falta el idNC' });
+  }
+
+  // 1. Obtener la NC y sus facturas asociadas
+  connection.query('SELECT DocsAfectados FROM nc WHERE idNC = ?', [idNC], (err, ncRows) => {
+    if (err) {
+      console.error('Error obteniendo N/C:', err);
+      return res.status(500).json({ message: 'Error obteniendo N/C' });
+    }
+
+    if (ncRows.length === 0) {
+      return res.status(404).json({ message: 'N/C no encontrada' });
+    }
+
+    const idsFacturas = ncRows[0].DocsAfectados.split(',').map(id => id.trim()).filter(id => id.length > 0);
+
+    // 2. Actualizar facturas para desmarcar tieneNC
+    if (idsFacturas.length > 0) {
+      connection.query(
+        'UPDATE facturas SET tieneNC = 0 WHERE Id IN (?)',
+        [idsFacturas],
+        (err2) => {
+          if (err2) {
+            console.error('Error actualizando facturas:', err2);
+            return res.status(500).json({ message: 'Error actualizando facturas' });
+          }
+
+          // 3. Borrar movimientos de cuenta_corriente asociados
+          connection.query(
+            'DELETE FROM cuenta_corriente WHERE TipoDocumento = "NC" AND NumeroDocumento = ?',
+            [idNC],
+            (err3) => {
+              if (err3) {
+                console.error('Error borrando movimientos:', err3);
+                return res.status(500).json({ message: 'Error borrando movimientos' });
+              }
+
+              // 4. Borrar la NC
+              connection.query(
+                'DELETE FROM nc WHERE idNC = ?',
+                [idNC],
+                (err4) => {
+                  if (err4) {
+                    console.error('Error borrando N/C:', err4);
+                    return res.status(500).json({ message: 'Error borrando N/C' });
+                  }
+
+                  return res.json({ message: 'N/C eliminada correctamente' });
+                }
+              );
+            }
+          );
+        }
+      );
+    } else {
+      // Si no hay facturas asociadas, solo borrar la NC
+      connection.query('DELETE FROM nc WHERE idNC = ?', [idNC], (err) => {
+        if (err) return res.status(500).json({ message: 'Error borrando N/C' });
+        return res.json({ message: 'N/C eliminada correctamente' });
+      });
+    }
+  });
+});
+
+app.post('/api/reimpactarnc', (req, res) => {
+  const { idNC, idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda } = req.body;
+
+  if (!idNC || !idCliente || !fecha || !DocsAfectados || !ImporteTotal) {
+    return res.status(400).json({ message: 'Faltan datos obligatorios para reimpactar N/C' });
+  }
+
+  // 1. Actualizar la NC con los datos modificados
+  const sqlUpdateNC = `
+    UPDATE nc 
+    SET idCliente = ?, fecha = ?, DocsAfectados = ?, CFEsAfectados = ?, 
+        ImporteTotal = ?, CodigoClienteGIA = ?, Moneda = ?
+    WHERE idNC = ?
+  `;
+
+  connection.query(
+    sqlUpdateNC,
+    [idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda, idNC],
+    async (err, result) => {
+      if (err) {
+        console.error('Error actualizando N/C antes de reimpactar:', err);
+        return res.status(500).json({ message: 'Error actualizando N/C' });
+      }
+
+      console.log(`N/C ${idNC} actualizada correctamente, procediendo a impactar al WS...`);
+
+      try {
+        // 2. Llamar al endpoint de impactar, reutilizando la lógica ya existente
+        const impactarResponse = await axios.post('http://localhost:3000/api/impactarnc', { idNC });
+
+        return res.json({
+          message: 'N/C actualizada y reimpactada correctamente',
+          idNC,
+          wsResultado: impactarResponse.data
+        });
+      } catch (errImpactar) {
+        console.error('Error reimpactando N/C:', errImpactar);
+        return res.status(500).json({ message: 'Error al reimpactar N/C', error: errImpactar.message });
+      }
+    }
+  );
 });
 
 const PORT = process.env.PORT || 3000;
