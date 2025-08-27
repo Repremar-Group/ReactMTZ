@@ -1,23 +1,25 @@
-# Use an official Node.js runtime as a parent image
-FROM node:latest
+# Use official Node.js image
+FROM node:24-alpine
 
-# RUN apk add --no-cache samba-client cifs-utils
-
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy only package.json and package-lock.json first
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies (bcrypt se compila para Linux aquí)
 RUN npm install
 
+# Copy the rest of the app (no node_modules)
+COPY . .
+
+# Optional: create data directory
 RUN mkdir -p /mnt/data
 
-COPY . ./
+# Use the port from Azure Container Apps env variable
+ENV PORT=5000
 
-# Expose the port the app runs on
-EXPOSE 5000
+EXPOSE $PORT
 
 # Start the app
 CMD ["npm", "start"]
