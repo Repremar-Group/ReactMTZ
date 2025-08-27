@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
@@ -14,6 +15,12 @@ const cron = require('node-cron');
 const { Console } = require('console');
 const ExcelJS = require('exceljs');
 const nodemailer = require('nodemailer');
+
+
+
+const port = process.env.PORT || 5000;
+
+
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -52,6 +59,10 @@ connection.connect((err) => {
 const app = express();
 
 app.use(express.json());
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
 
 app.use(cors());
 cron.schedule('35 11 * * *', () => {
