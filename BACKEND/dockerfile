@@ -1,0 +1,23 @@
+# Use an official Node.js runtime as a parent image
+FROM node:latest
+
+# RUN apk add --no-cache samba-client cifs-utils
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+RUN mkdir -p /mnt/data
+
+COPY . ./
+
+# Expose the port the app runs on
+EXPOSE 5000
+
+# Start the app
+CMD ["npm", "start"]
