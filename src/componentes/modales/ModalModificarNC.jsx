@@ -404,9 +404,16 @@ const ModificarNC = ({ isLoggedIn, isOpen, onClose, onFinally, onSuccess, onErro
   const facturasFiltradas = facturasCliente.filter(factura =>
     factura.NumeroCFE.toString().toLowerCase().includes(erdocumentoasociado.toLowerCase())
   );
+
+    const handleClickOutside = (e) => {
+    // si el click fue en el fondo (no en el contenido)
+    if (e.target.classList.contains("modal")) {
+      onClose(); // ejecuta lo que pasaste
+    }
+  };
   if (!isOpen) return null;
   return (
-    <div className="modal" onClick={closeModal}>
+    <div className="modal" onClick={handleClickOutside}>
       <div className="EmitirFacturaManual-container">
         <ToastContainer />
         {loading && (
@@ -434,6 +441,7 @@ const ModificarNC = ({ isLoggedIn, isOpen, onClose, onFinally, onSuccess, onErro
                     placeholder="Buscar Cliente"
                     autoComplete="off"
                     required
+                    readOnly
                   />
                 </div>
                 <div>
@@ -466,6 +474,7 @@ const ModificarNC = ({ isLoggedIn, isOpen, onClose, onFinally, onSuccess, onErro
                     value={fmmoneda}
                     onChange={(e) => setFmMoneda(e.target.value)}
                     required
+                    readOnly
                   >
                     <option value="USD">USD</option>
                     <option value="UYU">UYU</option>
@@ -502,6 +511,7 @@ const ModificarNC = ({ isLoggedIn, isOpen, onClose, onFinally, onSuccess, onErro
                     value={fmcass}
                     onChange={(e) => setFmCass(e.target.value)}
                     required
+                    readOnly
                   >
                     <option value="">Selecciona el Cass</option>
                     <option value="false">No</option>

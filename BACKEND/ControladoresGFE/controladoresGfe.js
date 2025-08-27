@@ -201,10 +201,44 @@ function generarXmlefacCuentaAjenaimpopp(datosCA) {
     return xmlBase;
 }
 function generarXmlRecibo(datos) {
-    let moneda = datos.Moneda === 'UYU' ? 1 : 2;
+    // 1. Calcular sumas
+    const totalFormasPago = datos.formasPago.reduce((acc, item) => acc + Number(item.importe || 0), 0);
+    const totalCancelaciones = datos.cancelaciones.reduce((acc, item) => acc + Number(item.importe || 0), 0);
+
+    // 2. Determinar moneda y cotización
+    let moneda;
+    let cotizacion = null;
+
+    if (datos.Moneda === 'UYU' && totalFormasPago !== totalCancelaciones) {
+        moneda = 2; // Pago en pesos para cancelar factura en dólares
+        // Evitar división por cero
+        if (totalCancelaciones > 0) {
+            cotizacion = (totalFormasPago / totalCancelaciones).toFixed(6); // puedes ajustar los decimales
+        }
+    } else {
+        moneda = datos.Moneda === 'UYU' ? 1 : 2;
+    }
+
+    console.log(`TOTAL FORMAS PAGO: ${totalFormasPago}`);
+    console.log(`TOTAL CANCELACIONES: ${totalCancelaciones}`);
+    console.log(`MONEDA A USAR: ${moneda}`);
+    if (cotizacion) console.log(`COTIZACION CALCULADA: ${cotizacion}`);
 
     console.log('GENERANDO XML RECIBO:', datos);
 
+     if (datos.Moneda === 'UYU') {
+        const conversionPagos = {
+            CHEQUEUS: 'CHEQUEMN',
+            TRANSUSD: 'TRANSMN'
+        };
+        datos.formasPago = datos.formasPago.map(pago => ({
+            ...pago,
+            formaPago: conversionPagos[pago.formaPago] || pago.formaPago
+        }));
+    }
+
+
+    // 3. Armar XML
     let xmlBase = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
    <soapenv:Header/>
    <soapenv:Body>
@@ -219,6 +253,7 @@ function generarXmlRecibo(datos) {
                         <tipoDocumento>rec</tipoDocumento>
                         <cliente>${datos.codigoClienteGIA}</cliente>
                         <moneda>${moneda}</moneda>
+                        ${cotizacion ? `<cotizacion>${cotizacion}</cotizacion>` : ''}
                         <fechaVencimiento>{{fechaVencimientoCFE}}</fechaVencimiento>
                         <descripcion>{{Adenda}}</descripcion>
                         <renglones>
@@ -242,20 +277,26 @@ function generarXmlRecibo(datos) {
         .replace('{{fechaVencimientoCFE}}', datos.fechaVencimientoCFE)
         .replace('{{Adenda}}', datos.adendadoc);
 
-    // Generar <renglones> desde formas de pago
+    // Generar <renglones>
     let renglones = '';
     for (let renglon of datos.formasPago) {
-        renglones += `
-            <renglon>
-                <producto>COM004</producto>
-                <nombreProducto>COBRO</nombreProducto>
-                <cantidad>1</cantidad>
-                <precioUnitario>${renglon.importe}</precioUnitario>
-            </renglon>`;
+    // Si moneda es UYU y hay cotización, convertir importe a dólares
+    let precioUnitario = renglon.importe;
+    if (datos.Moneda === 'UYU' && totalFormasPago !== totalCancelaciones && cotizacion) {
+        precioUnitario = (Number(renglon.importe) / Number(cotizacion)).toFixed(2);
     }
+
+    renglones += `
+        <renglon>
+            <producto>COM004</producto>
+            <nombreProducto>COBRO</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>${precioUnitario}</precioUnitario>
+        </renglon>`;
+}
     xmlBase = xmlBase.replace('{{Renglones}}', renglones);
 
-    // Generar bloque <cancelaciones>
+    // Generar <cancelaciones>
     let cancelaciones = '';
     for (let cancelacion of datos.cancelaciones) {
         cancelaciones += `
@@ -269,20 +310,29 @@ function generarXmlRecibo(datos) {
     }
     xmlBase = xmlBase.replace('{{Cancelaciones}}', cancelaciones);
 
-    // Generar bloque <formasPago>
+    // Generar <formasPago>
     let formasPago = '';
     for (let pago of datos.formasPago) {
-        const esCaja = pago.formaPago === 'CAJAUYU' || pago.formaPago === 'CAJAUSD';
+    const esCaja = pago.formaPago === 'CAJAUYU' || pago.formaPago === 'CAJAUSD';
 
-        formasPago += `
+    // Contenido extra si es CHEQUEMN o TRANSMN
+    let extraCampos = '';
+    if (pago.formaPago === 'CHEQUEMN' || pago.formaPago === 'TRANSMN') {
+        extraCampos = `
+        <elemento1>CTA01</elemento1>
+        <tipoDocumento>CHQ</tipoDocumento>`;
+    }
+
+    formasPago += `
     <formaPago>
         <formaPago>${pago.formaPago}</formaPago>
-        <importe>${pago.importe}</importe>` +
-            (!esCaja ? `
+        <importe>${pago.importe}</importe>
+        ${extraCampos}` +
+        (!esCaja ? `
         <comprobante>${pago.comprobante}</comprobante>
         <vencimiento>${pago.vencimiento}</vencimiento>` : '') + `
     </formaPago>`;
-    }
+}
     xmlBase = xmlBase.replace('{{FormasPago}}', formasPago);
 
     console.log('XML Generado RECIBO:', xmlBase);
