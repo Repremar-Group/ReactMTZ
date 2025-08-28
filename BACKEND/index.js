@@ -2,7 +2,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const path = require('path');
 const fs = require('fs');
@@ -42,7 +42,7 @@ function queryAsync(sql, params) {
 const connection = mysql.createConnection({
   host: 'cielosurinvoicedb.mysql.database.azure.com', // Tu servidor MySQL flexible de Azure
   user: 'cielosurdb', // El usuario que creaste para la base de datos
-  password: 'nujqeg-giwfes-6jynzA', // La contraseña del usuario
+  password: 'nujqeg-giwfes-6jynzA', // La contraseña del usuarioServer running on port
   database: 'cielosurinvoiceprod', // El nombre de la base de datos
   port: 3306, // Puerto predeterminado de MySQL
   connectTimeout: 60000,
@@ -369,7 +369,7 @@ app.get('/api/previewfacturas', (req, res) => {
 app.get('/api/previewnc', (req, res) => {
   console.log('Received request for /api/previewnc');
 
-    const sql = `
+  const sql = `
     SELECT 
       nc.*, 
       clientes.Rut, 
@@ -390,10 +390,10 @@ app.get('/api/previewnc', (req, res) => {
       const fecha = row.fecha ? new Date(row.fecha) : null;
       const formattedFecha = fecha
         ? fecha.toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
         : '';
 
       return {
@@ -3636,7 +3636,11 @@ app.post('/api/insertrecibo', async (req, res) => {
     await queryAsync('COMMIT');
 
     console.log('Recibo y pagos insertados correctamente');
-    return res.status(200).json({ message: 'Recibo y pagos insertados exitosamente', idrecibo });
+    return res.status(200).json({
+      message: 'Recibo y pagos insertados exitosamente',
+      idrecibo,            // el ID autoincremental
+      nrorecibo: documentoausar  // el número de recibo real que se insertó
+    });
 
   } catch (error) {
     console.error('❌ Error general en insertrecibo:', error);
@@ -3820,6 +3824,16 @@ app.put('/api/actualizarFactura/:idFactura', (req, res) => {
 
 app.post('/api/insertarCuentaCorriente', (req, res) => {
   const { idcliente, fecha, tipodocumento, numerorecibo, moneda, debe, haber } = req.body;
+
+  // Mostrar en consola todos los valores recibidos
+  console.log('Datos recibidos para insertar en cuenta corriente:');
+  console.log('idcliente:', idcliente);
+  console.log('fecha:', fecha);
+  console.log('tipodocumento:', tipodocumento);
+  console.log('numerorecibo:', numerorecibo);
+  console.log('moneda:', moneda);
+  console.log('debe:', debe);
+  console.log('haber:', haber);
 
   const insertQuery = `
       INSERT INTO cuenta_corriente (IdCliente, Fecha, TipoDocumento, NumeroRecibo, Moneda, Debe, Haber)
@@ -5692,7 +5706,7 @@ app.post('/api/impactarnc', (req, res) => {
           const resultado = inner.agregarDocumentoFacturacionResultado;
 
           if (resultado.resultado !== "1") {
-            
+
             return res.status(200).json({
               success: false,
               message: resultado.descripcion,
@@ -5855,6 +5869,53 @@ app.post('/api/reimpactarnc', (req, res) => {
       }
     }
   );
+});
+
+app.delete("/api/eliminarRecibo/:id", (req, res) => {
+  const { id } = req.params;
+
+  console.log('Recibo a Eliminar:', id);
+
+  // 1. Obtener info del recibo (para validar)
+  connection.query("SELECT * FROM recibos WHERE idrecibo = ?", [id], (err, recibo) => {
+    if (err) {
+      console.error("Error consultando recibo:", err);
+      return res.status(500).json({ mensaje: "Error consultando recibo" });
+    }
+
+    if (recibo.length === 0) {
+      return res.status(404).json({ mensaje: "Recibo no encontrado" });
+    }
+
+    const nrorecibo = recibo[0].nrorecibo;
+
+    // 2. Eliminar movimientos de cuenta_corriente asociados al recibo
+    connection.query("DELETE FROM cuenta_corriente WHERE NumeroRecibo = ?", [String(nrorecibo)], (err) => {
+      if (err) {
+        console.error("Error eliminando cuenta_corriente:", err);
+        return res.status(500).json({ mensaje: "Error eliminando movimientos de cuenta corriente" });
+      }
+
+      // 3. Desasociar facturas
+      connection.query("UPDATE facturas SET idrecibo = NULL WHERE idrecibo = ?", [id], (err) => {
+        if (err) {
+          console.error("Error desasociando facturas:", err);
+          return res.status(500).json({ mensaje: "Error actualizando facturas" });
+        }
+
+        // 4. Eliminar el recibo
+        connection.query("DELETE FROM recibos WHERE idrecibo = ?", [id], (err) => {
+          if (err) {
+            console.error("Error eliminando recibo:", err);
+            return res.status(500).json({ mensaje: "Error eliminando recibo" });
+          }
+
+          console.log(`Recibo ${id} eliminado correctamente`);
+          return res.json({ mensaje: "Recibo eliminado correctamente", idrecibo: id });
+        });
+      });
+    });
+  });
 });
 
 const PORT = process.env.PORT || 3000;

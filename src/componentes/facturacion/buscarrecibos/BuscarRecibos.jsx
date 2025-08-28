@@ -17,6 +17,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
 import { impactarReciboEnGIA } from '../../../ConexionGFE/Funciones';
+import Swal from 'sweetalert2';
 
 const BuscarRecibos = () => {
     const navigate = useNavigate();
@@ -274,7 +275,7 @@ const BuscarRecibos = () => {
                                     <label>Hasta:</label>
                                     <input type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -379,7 +380,39 @@ const BuscarRecibos = () => {
                                                         </button>
                                                     )}
                                                     {!row.numeroDocumentoCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                        <button
+                                                            className="
+                                                                px-4 py-1 
+                                                                bg-azul-repremar 
+                                                                text-white 
+                                                                font-medium 
+                                                                rounded-md 
+                                                                hover:bg-azul-repremar-dark 
+                                                                transition-colors 
+                                                                duration-200
+                                                                "
+                                                            onClick={() => {
+                                                                Swal.fire({
+                                                                    title: 'Eliminar Recibo?',
+                                                                    text: `Esto borrará todo el recibo ${row.idrecibo} y sus movimientos asociados`,
+                                                                    icon: 'warning',
+                                                                    showCancelButton: true,
+                                                                    confirmButtonText: 'Sí, eliminar',
+                                                                    cancelButtonText: 'Cancelar'
+                                                                }).then((result) => {
+                                                                    if (result.isConfirmed) {
+                                                                        axios.delete(`${backURL}/api/eliminarRecibo/${row.idrecibo}`)
+                                                                            .then(res => {
+                                                                                Swal.fire('Eliminado', res.data.mensaje || `Recibo ${row.idrecibo} eliminado`, 'success')
+                                                                                    .then(() => window.location.reload());
+                                                                            })
+                                                                            .catch(err => {
+                                                                                Swal.fire('Error', err.response?.data?.mensaje || err.message, 'error');
+                                                                            });
+                                                                    }
+                                                                });
+                                                            }}
+                                                        >
                                                             Eliminar
                                                         </button>
                                                     )}

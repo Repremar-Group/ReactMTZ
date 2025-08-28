@@ -194,6 +194,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 const response = await axios.post(`${backURL}/api/insertrecibo`, nuevoRecibo);
                 console.log('Respuesta completa del WS:', response);
                 const idrecibo = response.data.idrecibo;
+                const numrecibo = response.data.nrorecibo;
 
 
                 if (facturasAsociadas.length > 0) {
@@ -210,7 +211,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     idcliente: datosRecibo.erid, // ID del cliente
                     fecha: datosRecibo.erfecharecibo, // Fecha del recibo
                     tipodocumento: "Recibo", // Tipo de documento siempre "Recibo"
-                    numerorecibo: datosRecibo.ernumrecibo, // Número de recibo
+                    numerorecibo: numrecibo, // Número de recibo
                     moneda: datosRecibo.ertipoMoneda, // Moneda del recibo
                     debe: 0, // No afecta la columna "Debe"
                     haber: datosRecibo.erimporte // El total del recibo va en "Haber"
