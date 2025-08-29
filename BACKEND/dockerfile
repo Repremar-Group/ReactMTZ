@@ -10,6 +10,13 @@ COPY package*.json ./
 # Install dependencies (bcrypt se compila para Linux aquí)
 RUN npm install
 
+# -------------------------------
+# Agregar entrada al /etc/hosts
+# -------------------------------
+
+RUN echo "10.0.10.16 srvgfe.grep.local" >> /etc/hosts
+# -------------------------------
+
 # Copy the rest of the app (no node_modules)
 COPY . .
 
