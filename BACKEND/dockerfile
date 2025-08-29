@@ -19,8 +19,6 @@ COPY . .
 RUN mkdir -p /mnt/data
 
 # Use the port from Azure Container Apps env variable
-ENV PORT=5000
-
 EXPOSE $PORT
 
 # Start the app
