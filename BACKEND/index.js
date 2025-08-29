@@ -2,7 +2,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const path = require('path');
 const fs = require('fs');
