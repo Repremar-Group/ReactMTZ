@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // URL del web service SOAP
-const SOAP_URL = "http://srvgfe.grep.local:8082/gfeclient/servlet/awsexterno";
+const SOAP_URL = "http://10.0.10.16:8082/gfeclient/servlet/awsexterno";
 
 // Función para construir el XML dinámicamente
 const generarXMLEfactura = () => {
