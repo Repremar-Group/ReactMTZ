@@ -15,9 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funciones';
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
 import { impactarReciboEnGIA } from '../../../ConexionGFE/Funciones';
 import Swal from 'sweetalert2';
+import ModalModificarRecibo from '../../modales/ModalModificarRecibos';
 
 const BuscarRecibos = () => {
     const navigate = useNavigate();
@@ -37,22 +37,22 @@ const BuscarRecibos = () => {
     const backURL = import.meta.env.VITE_BACK_URL;
 
     //Estados para Modal Modificar Factura
-    const [isModalOpenModificarFactura, SetIsModalOpenModificarFactura] = useState(false);
-    const [facturaamodificar, setFacturaAModificar] = useState([]);
-    const onCloseModificarFactura = () => {
-        SetIsModalOpenModificarFactura(false);
+    const [isModalOpenModificarRecibo, SetIsModalOpenModificarRecibo] = useState(false);
+    const [reciboamodificar, setReciboAModificar] = useState([]);
+    const onCloseModificarRecibo = () => {
+        SetIsModalOpenModificarRecibo(false);
 
     };
-    const onFinallyModificarFactura = () => {
-        SetIsModalOpenModificarFactura(false);
+    const onFinallyModificarRecibo = () => {
+        SetIsModalOpenModificarRecibo(false);
         fetchFacturas();
     };
     const handleSuccess = () => {
         toast.success('Factura actualizada correctamente', {
             autoClose: 1500,
             onClose: () => {
-                onCloseModificarFactura();  // cerrar modal cuando la toast desaparezca
-                onFinallyModificarFactura(); // hacer otras cosas si querés (recargar, etc)
+                onCloseModificarRecibo();  // cerrar modal cuando la toast desaparezca
+                onFinallyModificarRecibo(); // hacer otras cosas si querés (recargar, etc)
             },
         });
     };
@@ -60,7 +60,7 @@ const BuscarRecibos = () => {
         toast.error('Ocurrió un error al actualizar', {
             autoClose: 1500,
             onClose: () => {
-                onCloseModificarFactura();
+                onCloseModificarRecibo();
             },
         });
     };
@@ -364,17 +364,27 @@ const BuscarRecibos = () => {
                                                             className='botonsubmenubuscarfactura'
                                                             onClick={async () => {
                                                                 try {
-                                                                    const response = await axios.get(`${backURL}/api/obtenerModificarFactura?id=${row.Id}`);
-                                                                    setFacturaAModificar(response.data);
                                                                     setLoadingEnvioGFE(true);
-                                                                    SetIsModalOpenModificarFactura(true)
+                                                                    const response = await axios.get(`${backURL}/api/obtenerModificarRecibo?id=${row.idrecibo}`);
+                                                                    setReciboAModificar(response.data);
+                                                                    console.log('Recibo desde la BD:', response.data);
+                                                                    SetIsModalOpenModificarRecibo(true);
                                                                 } catch {
+                                                                    console.error('Error inesperado:', error);
 
+                                                                    const descripcion =
+                                                                        error?.response?.data?.descripcion ||
+                                                                        error?.response?.data?.message ||
+                                                                        'Ocurrió un error al comunicarse con el servidor.';
+
+                                                                    setTituloAlertaGfe('Error inesperado');
+                                                                    setmensajeAlertaGFE(descripcion);
+                                                                    setIconoAlertaGFE('error');
+                                                                    setIsModalOpenAlertaGFE(true);
                                                                 } finally {
                                                                     setLoadingEnvioGFE(false);
                                                                 }
-                                                            }
-                                                            }
+                                                            }}
                                                         >
                                                             Modificar
                                                         </button>
@@ -431,13 +441,13 @@ const BuscarRecibos = () => {
                         onConfirm={handleConfirmAlertaGFE}
                         iconType={iconoAlertaGFE}
                     />
-                    <ModificarFacturasManuales
-                        isOpen={isModalOpenModificarFactura}
-                        onClose={onCloseModificarFactura}
-                        onFinally={onFinallyModificarFactura}
+                    <ModalModificarRecibo
+                        isOpen={isModalOpenModificarRecibo}
+                        onClose={onCloseModificarRecibo}
+                        onFinally={onFinallyModificarRecibo}
                         onSuccess={handleSuccess}
                         onError={handleError}
-                        factura={facturaamodificar}
+                        recibo={reciboamodificar}
                     />
 
                 </div>

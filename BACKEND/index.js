@@ -2669,7 +2669,7 @@ app.post('/api/insertfactura', async (req, res) => {
               console.log('ESTOS SON LOS DATOS:', datos);
               const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
                 return new Promise((resolve, reject) => {
-                  axios.post('http://localhost:3000/pruebaws', { xml, xmlCuentaAjena })
+                  axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
                     .then(response => {
                       const resultados = response.data.resultados;
                       const updateQuery = `
@@ -3081,7 +3081,7 @@ app.post('/api/insertticket', async (req, res) => {
               console.log('ESTOS SON LOS DATOS:', datos);
               const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
                 return new Promise((resolve, reject) => {
-                  axios.post('http://localhost:3000/pruebaws', { xml, xmlCuentaAjena })
+                  axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
                     .then(response => {
                       const updateQuery = `
           UPDATE facturas SET 
@@ -3848,6 +3848,107 @@ app.post('/api/insertarCuentaCorriente', (req, res) => {
     res.status(200).json({ message: 'Recibo agregado a cuenta corriente' });
   });
 });
+
+app.put('/api/actualizarRecibo/:idrecibo', async (req, res) => {
+  const { idrecibo } = req.params;
+  const {
+    nrorecibo,
+    fecha,
+    idcliente,
+    clienteGIA,
+    nombrecliente,
+    moneda,
+    importe,
+    formapago,
+    razonsocial,
+    rut,
+    direccion,
+    listadepagos
+  } = req.body;
+
+  const queryAsync = (sql, params) => {
+    return new Promise((resolve, reject) => {
+      connection.query(sql, params, (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
+  };
+
+  try {
+    await queryAsync('START TRANSACTION');
+
+    // 🔸 ACTUALIZAR RECIBO
+    const updateReciboQuery = `
+      UPDATE recibos
+      SET nrorecibo = ?, fecha = ?, idcliente = ?, nombrecliente = ?, moneda = ?, importe = ?, 
+          formapago = ?, razonsocial = ?, rut = ?, direccion = ?
+      WHERE idrecibo = ?
+    `;
+    await queryAsync(updateReciboQuery, [
+      nrorecibo, fecha, idcliente, nombrecliente, moneda, importe,
+      formapago, razonsocial, rut, direccion, idrecibo
+    ]);
+
+    // 🔸 BORRAR PAGOS ANTERIORES y volver a insertarlos
+    await queryAsync(`DELETE FROM pagos WHERE idrecibo = ?`, [idrecibo]);
+
+    if (Array.isArray(listadepagos) && listadepagos.length > 0) {
+      const pagosValues = listadepagos.map(pago => [
+        idrecibo,
+        pago.icfecha,
+        pago.icbanco,
+        pago.icnrocheque,
+        pago.ictipoMoneda,
+        pago.icimpdelcheque,
+        pago.icfechavencimiento
+      ]);
+
+      const insertPagosQuery = `
+        INSERT INTO pagos (idrecibo, fecha, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+      `;
+      await queryAsync(insertPagosQuery, [pagosValues]);
+    }
+
+    await queryAsync('COMMIT');
+
+    res.status(200).json({ message: 'Recibo actualizado correctamente', idrecibo });
+  } catch (error) {
+    console.error('❌ Error al actualizar recibo:', error);
+    try {
+      await queryAsync('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Error en rollback:', rollbackError);
+    }
+    res.status(500).json({ error: 'Error al actualizar recibo', detalle: error.message });
+  }
+});
+
+app.put('/api/actualizarCuentaCorriente/:nrorecibo', (req, res) => {
+  const { nrorecibo } = req.params;
+  const { idcliente, fecha, tipodocumento, moneda, debe, haber } = req.body;
+
+  const updateQuery = `
+    UPDATE cuenta_corriente
+    SET IdCliente = ?, Fecha = ?, TipoDocumento = ?, Moneda = ?, Debe = ?, Haber = ?
+    WHERE NumeroRecibo = ?
+  `;
+
+  connection.query(updateQuery, [idcliente, fecha, tipodocumento, moneda, debe, haber, nrorecibo], (err, result) => {
+    if (err) {
+      console.error('Error al actualizar en cuenta corriente:', err);
+      return res.status(500).json({ error: 'Error al actualizar en cuenta corriente' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'No se encontró el movimiento para actualizar' });
+    }
+
+    res.status(200).json({ message: 'Cuenta corriente actualizada correctamente' });
+  });
+});
+
 app.post('/api/obtenerFacturasdesdeRecibo', (req, res) => {
   const { ids } = req.body;
 
@@ -4925,7 +5026,94 @@ app.get('/api/obtenerModificarFactura', (req, res) => {
     );
   });
 });
+//Endpoint para traer todo el redibo y poder modificarlo
+app.get('/api/obtenerModificarRecibo', (req, res) => {
+  const { id } = req.query;
 
+  if (!id) {
+    return res.status(400).json({ error: 'Falta el parámetro "id"' });
+  }
+
+  // 1️⃣ Buscar el recibo
+  connection.query('SELECT * FROM recibos WHERE idrecibo = ?', [id], (error, reciboResults) => {
+    if (error) {
+      console.error('Error al obtener el recibo:', error);
+      return res.status(500).json({ error: 'Error al obtener el recibo' });
+    }
+
+    if (reciboResults.length === 0) {
+      return res.status(404).json({ error: 'Recibo no encontrado' });
+    }
+
+    const recibo = reciboResults[0];
+    const idCliente = recibo.idcliente;
+
+    // 2️⃣ Buscar los pagos asociados
+    connection.query('SELECT * FROM pagos WHERE idrecibo = ?', [id], (error, pagosResults) => {
+      if (error) {
+        console.error('Error al obtener los pagos:', error);
+        return res.status(500).json({ error: 'Error al obtener los pagos del recibo' });
+      }
+
+      // 3️⃣ Buscar datos del cliente
+      connection.query('SELECT * FROM clientes WHERE Id = ?', [idCliente], (error, clienteResults) => {
+        if (error) {
+          console.error('Error al obtener el cliente:', error);
+          return res.status(500).json({ error: 'Error al obtener los datos del cliente' });
+        }
+
+        const cliente = clienteResults[0] || null;
+
+        // 4️⃣ Buscar facturas asociadas (idrecibo = id del recibo)
+        connection.query('SELECT * FROM facturas WHERE idrecibo = ?', [id], (error, facturasAsociadasResults) => {
+          if (error) {
+            console.error('Error al obtener las facturas asociadas:', error);
+            return res.status(500).json({ error: 'Error al obtener las facturas asociadas' });
+          }
+
+          // 5️⃣ Buscar movimientos de cuenta corriente del cliente
+          const sqlMovimientos = `
+            SELECT 
+              IdMovimiento, 
+              IdCliente, 
+              IdFactura, 
+              DATE_FORMAT(Fecha, '%d/%m/%Y') AS Fecha, 
+              TipoDocumento, 
+              NumeroDocumento, 
+              NumeroRecibo, 
+              Moneda, 
+              Debe, 
+              Haber
+            FROM cuenta_corriente
+            WHERE IdCliente = ?
+              AND Fecha <= CURDATE()
+            ORDER BY Fecha DESC
+          `;
+
+          connection.query(sqlMovimientos, [idCliente], (errMovimientos, movimientosResults) => {
+            if (errMovimientos) {
+              console.error('Error al obtener movimientos:', errMovimientos);
+              return res.status(500).json({ error: 'Error al obtener movimientos del cliente' });
+            }
+
+            // 6️⃣ Respuesta final
+            res.status(200).json({
+              recibo,
+              pagos: pagosResults,
+              cliente,
+              facturasAsociadas: facturasAsociadasResults,
+              movimientos: movimientosResults
+            });
+          });
+
+        });
+
+      });
+
+    });
+
+  });
+});
 // Obtener NC + documentos afectados
 app.get('/api/obtenerModificarNC', (req, res) => {
   const { id } = req.query;
@@ -5613,7 +5801,7 @@ app.post('/api/insertarNC', (req, res) => {
           }
 
           try {
-            const impactarResponse = await axios.post('http://localhost:3000/api/impactarnc', { idNC: result.insertId });
+            const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC: result.insertId });
 
             return res.json({
               message: 'N/C insertada correctamente, facturas y cuenta corriente actualizadas',
@@ -5856,7 +6044,7 @@ app.post('/api/reimpactarnc', (req, res) => {
 
       try {
         // 2. Llamar al endpoint de impactar, reutilizando la lógica ya existente
-        const impactarResponse = await axios.post('http://localhost:3000/api/impactarnc', { idNC });
+        const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC });
 
         return res.json({
           message: 'N/C actualizada y reimpactada correctamente',
