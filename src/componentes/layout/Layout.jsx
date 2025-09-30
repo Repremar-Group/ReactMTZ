@@ -11,7 +11,7 @@ import Ingresodecheques from '../facturacion/emision_de_recibos/ingresocheques/I
 import Facturasmanuales from '../facturacion/facturas_manuales/Facturasmanuales';
 import BuscarFacturas from '../facturacion/buscarfacturas/BuscarFacturas';
 import BuscarRecibos from '../facturacion/buscarrecibos/BuscarRecibos';
-import BuscarNC from 'src\componentes\facturacion\buscarNC\BuscarNC.jsx';
+import BuscarNC from "../facturacion/buscarNC/BuscarNC";
 import EmitirNC from '../facturacion/emitirNC/EmitirNC';
 
 //Importo componentes de Reportes
