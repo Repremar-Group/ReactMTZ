@@ -1,6 +1,7 @@
 
 const express = require('express');
 const mysql = require('mysql');
+const mysql2 = require('mysql2/promise');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
@@ -25,8 +26,8 @@ const port = process.env.PORT || 5000;
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'alertasairbillcielosur@gmail.com', // Tu cuenta de Gmail
-    pass: 'rjlb wzca mlcw tlgh' // Contraseña de aplicación de Gmail
+    user: 'alertasairbillcielosur@gmail.com', // cuenta de Gmail
+    pass: 'rjlb wzca mlcw tlgh' // Contraseña de aplicacion
   }
 });
 
@@ -38,16 +39,28 @@ function queryAsync(sql, params) {
     });
   });
 }
-// Configura la conexión a tu servidor MySQL flexible de Azure
+// Pool de conexiones mysqlmaximo 10 
+const pool = mysql2.createPool({
+  host: 'cielosurinvoicedb.mysql.database.azure.com',
+  user: 'cielosurdb',
+  password: 'nujqeg-giwfes-6jynzA',
+  database: 'cielosurinvoiceprod',
+  port: 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  connectTimeout: 60000
+});
+
 const connection = mysql.createConnection({
-  host: 'cielosurinvoicedb.mysql.database.azure.com', // Tu servidor MySQL flexible de Azure
-  user: 'cielosurdb', // El usuario que creaste para la base de datos
-  password: 'nujqeg-giwfes-6jynzA', // La contraseña del usuarioServer running on port
-  database: 'cielosurinvoiceprod', // El nombre de la base de datos
-  port: 3306, // Puerto predeterminado de MySQL
+  host: 'cielosurinvoicedb.mysql.database.azure.com',
+  user: 'cielosurdb',
+  password: 'nujqeg-giwfes-6jynzA',
+  database: 'cielosurinvoiceprod',
+  port: 3306,
   connectTimeout: 60000,
 });
-// Probar la conexión
+
 connection.connect((err) => {
   if (err) {
     console.error('Error conectando a la base de datos:', err.stack);
@@ -65,53 +78,53 @@ app.listen(port, () => {
 });
 
 app.use(cors());
-cron.schedule('35 11 * * *', () => {
-  console.log('⏰ Ejecutando cierre diario...');
+cron.schedule('34 14 * * *', async () => {
+  try {
+    console.log('⏰ Ejecutando cierre diario...');
 
-  const queryGuias = `
-    SELECT COUNT(*) AS guias FROM (
-      SELECT guia FROM guiasimpo WHERE facturada = 0
+    const [resultGuias] = await pool.query(`
+      SELECT COUNT(*) AS guias FROM (
+        SELECT guia FROM guiasimpo WHERE facturada = 0
+        UNION ALL
+        SELECT guia FROM guiasexpo WHERE facturada = 0
+      ) AS total_guias
+    `);
+    const guias = resultGuias[0].guias;
+
+    const [resultFacturas] = await pool.query(`
+      SELECT COUNT(*) AS facturas FROM facturas WHERE idrecibo IS NULL
+    `);
+    const facturas = resultFacturas[0].facturas;
+
+    await pool.query(`
+      INSERT INTO cierre_diario (fecha, guias_sin_facturar, facturas_sin_cobrar)
+      VALUES (CURDATE(), ?, ?)
+      ON DUPLICATE KEY UPDATE 
+        guias_sin_facturar = VALUES(guias_sin_facturar),
+        facturas_sin_cobrar = VALUES(facturas_sin_cobrar)
+    `, [guias, facturas]);
+
+    console.log('✅ Cierre diario guardado:', new Date().toLocaleString());
+
+
+    const [guiasDet] = await pool.query(`
+      SELECT guia AS numero, consignatario AS cliente, DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
+             'Impo' AS tipo, total
+      FROM guiasimpo WHERE facturada = 0
       UNION ALL
-      SELECT guia FROM guiasexpo WHERE facturada = 0
-    ) AS total_guias;
-  `;
+      SELECT guia AS numero, agente AS cliente, DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
+             'Expo' AS tipo, total
+      FROM guiasexpo WHERE facturada = 0
+      ORDER BY fecha DESC
+    `);
 
-  const queryFacturas = `
-    SELECT COUNT(*) AS facturas FROM facturas WHERE idrecibo IS NULL;
-  `;
-
-  // 🔍 Nuevas consultas detalladas (mismas que los endpoints)
-  const queryGuiasDetalladas = `
-    SELECT 
-      guia AS numero, 
-      consignatario AS cliente, 
-      DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
-      'Impo' AS tipo,
-      total
-    FROM guiasimpo
-    WHERE facturada = 0
-
-    UNION ALL
-
-    SELECT 
-      guia AS numero, 
-      agente AS cliente, 
-      DATE_FORMAT(emision, '%d/%m/%Y') AS fecha,
-      'Expo' AS tipo,
-      total
-    FROM guiasexpo
-    WHERE facturada = 0
-
-    ORDER BY fecha DESC
-  `;
-
-  const queryGuiasTotal = `
+    const [totalGuias] = await pool.query(`
     SELECT 
       (SELECT IFNULL(SUM(total), 0) FROM guiasimpo WHERE facturada = 0) +
       (SELECT IFNULL(SUM(total), 0) FROM guiasexpo WHERE facturada = 0) AS total_sin_facturar
-  `;
+  `);
 
-  const queryFacturasDetalladas = `
+    const [facturasDet] = await pool.query(`
     SELECT 
       Comprobante AS numero, 
       RazonSocial AS cliente, 
@@ -120,53 +133,15 @@ cron.schedule('35 11 * * *', () => {
     FROM facturas
     WHERE idrecibo IS NULL
     ORDER BY Fecha DESC
-  `;
+  `);
 
-  const queryFacturasTotal = `
-    SELECT SUM(TotalCobrar) AS totalSinCobrar
-    FROM facturas
-    WHERE idrecibo IS NULL
-  `;
-
-  connection.query(queryGuias, (err, resultGuias) => {
-    if (err) return console.error('Error al contar guías:', err);
-    const guias = resultGuias[0].guias;
-
-    connection.query(queryFacturas, (err, resultFacturas) => {
-      if (err) return console.error('Error al contar facturas:', err);
-      const facturas = resultFacturas[0].facturas;
-
-      // Guardar en cierre_diario
-      const insertQuery = `
-        INSERT INTO cierre_diario (fecha, guias_sin_facturar, facturas_sin_cobrar)
-        VALUES (CURDATE(), ?, ?)
-        ON DUPLICATE KEY UPDATE 
-          guias_sin_facturar = VALUES(guias_sin_facturar),
-          facturas_sin_cobrar = VALUES(facturas_sin_cobrar)
-      `;
-
-      connection.query(insertQuery, [guias, facturas], (err) => {
-        if (err) return console.error('Error al guardar cierre diario:', err);
-        console.log('✅ Cierre diario guardado:', new Date().toLocaleString());
-
-        // Consultas para el reporte
-        connection.query(queryGuiasDetalladas, (err, guiasDet) => {
-          if (err) return console.error('Error al obtener guías detalladas:', err);
-
-          connection.query(queryGuiasTotal, (err, totalGuias) => {
-            if (err) return console.error('Error al obtener total guías:', err);
-
-            connection.query(queryFacturasDetalladas, (err, facturasDet) => {
-              if (err) return console.error('Error al obtener facturas detalladas:', err);
-
-              connection.query(queryFacturasTotal, async (err, totalFacturas) => {
-                if (err) return console.error('Error al obtener total facturas:', err);
-
-                const totalGuiasMonto = totalGuias[0].total_sin_facturar || 0;
-                const totalFacturasMonto = totalFacturas[0].totalSinCobrar || 0;
-
-                // 📄 HTML del reporte
-                const html = `
+    const [totalFacturas] = await pool.query(`
+      SELECT SUM(TotalCobrar) AS totalSinCobrar FROM facturas WHERE idrecibo IS NULL
+    `);
+    const totalGuiasMonto = totalGuias[0].total_sin_facturar || 0;
+    const totalFacturasMonto = totalFacturas[0].totalSinCobrar || 0;
+    // HTML del reporte
+    const html = `
                   <h2>📊 Reporte Cierre Diario</h2>
                   <p><b>Fecha:</b> ${new Date().toLocaleDateString('es-UY')}</p>
                   <p><b>Guías sin facturar:</b> ${guias} (Total: $${totalGuiasMonto.toLocaleString()})</p>
@@ -198,102 +173,101 @@ cron.schedule('35 11 * * *', () => {
                   </table>
                 `;
 
-                const workbook = new ExcelJS.Workbook();
+    const workbook = new ExcelJS.Workbook();
 
-                // Hoja Guías sin facturar
-                const wsGuias = workbook.addWorksheet('Guías sin facturar');
-                wsGuias.columns = [
-                  { header: 'N° Guía', key: 'numero', width: 15 },
-                  { header: 'Tipo', key: 'tipo', width: 15 },
-                  { header: 'Cliente', key: 'cliente', width: 30 },
-                  { header: 'Fecha', key: 'fecha', width: 15 },
-                  { header: 'Total', key: 'total', width: 15 },
-                ];
-                guiasDet.forEach(g => wsGuias.addRow(g));
+    // Hoja Guías sin facturar
+    const wsGuias = workbook.addWorksheet('Guías sin facturar');
+    wsGuias.columns = [
+      { header: 'N° Guía', key: 'numero', width: 15 },
+      { header: 'Tipo', key: 'tipo', width: 15 },
+      { header: 'Cliente', key: 'cliente', width: 30 },
+      { header: 'Fecha', key: 'fecha', width: 15 },
+      { header: 'Total', key: 'total', width: 15 },
+    ];
+    guiasDet.forEach(g => wsGuias.addRow(g));
 
-                // Aplicar estilo a la fila de encabezado
-                wsGuias.getRow(1).eachCell(cell => {
-                  cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FF003366' }, // azul oscuro
-                  };
-                  cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; // blanco y negrita
-                });
-
-                // Habilitar filtro en encabezado
-                wsGuias.autoFilter = { from: 'A1', to: 'E1' };
-
-                // Hoja Facturas sin cobrar
-                const wsFacturas = workbook.addWorksheet('Facturas sin cobrar');
-                wsFacturas.columns = [
-                  { header: 'N° Factura', key: 'numero', width: 15 },
-                  { header: 'Cliente', key: 'cliente', width: 30 },
-                  { header: 'Fecha', key: 'fecha', width: 15 },
-                  { header: 'Monto', key: 'monto', width: 15 },
-                ];
-                facturasDet.forEach(f => wsFacturas.addRow(f));
-
-                // Aplicar estilo a la fila de encabezado
-                wsFacturas.getRow(1).eachCell(cell => {
-                  cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FF003366' }, // azul oscuro
-                  };
-                  cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; // blanco y negrita
-                });
-
-                // Habilitar filtro en encabezado
-                wsFacturas.autoFilter = { from: 'A1', to: 'D1' };
-
-                // Generar buffer del Excel
-                const bufferExcel = await workbook.xlsx.writeBuffer();
-
-                // Enviar mail con adjunto Excel
-                const mailOptions = {
-                  from: 'alertasairbillcielosur@gmail.com',
-                  to: 'pgauna@repremar.com',
-                  subject: '[TEST] Cierre Diario AirBill',
-                  text: `Hola Patricio,\n\nEl cierre diario se ejecutó correctamente.\nGuías sin facturar: ${guias} (Total: $${totalGuiasMonto})\nFacturas sin cobrar: ${facturas} (Total: $${totalFacturasMonto})\n\nSaludos,\nSistema`,
-                  html,
-                  attachments: [
-                    {
-                      filename: `CierreDiario_${new Date().toISOString().slice(0, 10)}.xlsx`,
-                      content: bufferExcel,
-                      contentType:
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    },
-                  ],
-                };
-
-                transporter.sendMail(mailOptions, (error, info) => {
-                  if (error) {
-                    return console.error('❌ Error enviando el correo:', error);
-                  }
-                  console.log('📧 Correo enviado:', info.response);
-                });
-
-              });
-            });
-          });
-        });
-      });
+    // Aplicar estilo a la fila de encabezado
+    wsGuias.getRow(1).eachCell(cell => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF003366' }, // azul oscuro
+      };
+      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; // blanco y negrita
     });
-  });
+
+    // Habilitar filtro en encabezado
+    wsGuias.autoFilter = { from: 'A1', to: 'E1' };
+
+    // Hoja Facturas sin cobrar
+    const wsFacturas = workbook.addWorksheet('Facturas sin cobrar');
+    wsFacturas.columns = [
+      { header: 'N° Factura', key: 'numero', width: 15 },
+      { header: 'Cliente', key: 'cliente', width: 30 },
+      { header: 'Fecha', key: 'fecha', width: 15 },
+      { header: 'Monto', key: 'monto', width: 15 },
+    ];
+    facturasDet.forEach(f => wsFacturas.addRow(f));
+
+    // Aplicar estilo a la fila de encabezado
+    wsFacturas.getRow(1).eachCell(cell => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF003366' }, // azul oscuro
+      };
+      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; // blanco y negrita
+    });
+
+    // Habilitar filtro en encabezado
+    wsFacturas.autoFilter = { from: 'A1', to: 'D1' };
+
+    // Generar buffer del Excel
+    const bufferExcel = await workbook.xlsx.writeBuffer();
+
+    // Enviar mail con adjunto Excel
+    const mailOptions = {
+      from: 'alertasairbillcielosur@gmail.com',
+      to: 'pgauna@repremar.com',
+      subject: '[TEST] Cierre Diario AirBill',
+      text: `Hola Patricio,\n\nEl cierre diario se ejecutó correctamente.\nGuías sin facturar: ${guias} (Total: $${totalGuiasMonto})\nFacturas sin cobrar: ${facturas} (Total: $${totalFacturasMonto})\n\nSaludos,\nSistema`,
+      html,
+      attachments: [
+        {
+          filename: `CierreDiario_${new Date().toISOString().slice(0, 10)}.xlsx`,
+          content: bufferExcel,
+          contentType:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      ],
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.error('❌ Error enviando el correo:', error);
+      }
+      console.log('📧 Correo enviado:', info.response);
+    });
+  } catch (err) {
+    console.error('❌ Error en cierre diario:', err);
+  }
 });
 
-app.get('/api/cierre_diario', (req, res) => {
+
+app.get('/api/cierre_diario', async (req, res) => {
   const query = `
     SELECT fecha, guias_sin_facturar, facturas_sin_cobrar
     FROM cierre_diario
     WHERE fecha >= CURDATE() - INTERVAL 15 DAY
     ORDER BY fecha ASC
   `;
-  connection.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+
+  try {
+    const [results] = await pool.query(query);
     res.json(results);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Función para generar el mensaje en el backend
@@ -318,27 +292,24 @@ function generarAdenda(numerodoc, monto, moneda) {
 
 //Consulta para cargar la tabla de preview de clientes.
 
-app.get('/api/previewclientes', (req, res) => {
-  console.log('Received request for /api/previewclientes'); // Agrega esta línea
+app.get('/api/previewclientes', async (req, res) => {
+  console.log('Received request for /api/previewclientes'); // Mantengo el log
   const sql = 'SELECT * FROM clientes ORDER BY Id DESC';
 
-  connection.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'An error occurred while fetching clients.' });
-    }
-
-    // Envía todos los resultados de la consulta al frontend
+  try {
+    const [result] = await pool.query(sql);
     res.status(200).json(result);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Error al cargar Clientes.', error: err.message });
+  }
 });
-app.get('/api/previewfacturas', (req, res) => {
+
+app.get('/api/previewfacturas', async (req, res) => {
   console.log('Received request for /api/previewfacturas');
   const sql = 'SELECT * FROM facturas ORDER BY Id DESC';
 
-  connection.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error en el backend cargando facturas' });
-    }
+  try {
+    const [result] = await pool.query(sql);
 
     // Formatear la fecha en cada resultado
     const formattedResult = result.map((row) => {
@@ -364,9 +335,12 @@ app.get('/api/previewfacturas', (req, res) => {
     });
 
     res.status(200).json(formattedResult);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Error en el backend cargando facturas', error: err.message });
+  }
 });
-app.get('/api/previewnc', (req, res) => {
+
+app.get('/api/previewnc', async (req, res) => {
   console.log('Received request for /api/previewnc');
 
   const sql = `
@@ -378,12 +352,8 @@ app.get('/api/previewnc', (req, res) => {
     LEFT JOIN clientes ON nc.idCliente = clientes.Id
     ORDER BY nc.idNC DESC
   `;
-
-  connection.query(sql, (err, result) => {
-    if (err) {
-      console.error('Error fetching NC:', err);
-      return res.status(500).json({ message: 'Error en el backend cargando notas de crédito' });
-    }
+  try {
+    const [result] = await pool.query(sql);
 
     const formattedResult = result.map((row) => {
       // Formatear fecha
@@ -403,17 +373,18 @@ app.get('/api/previewnc', (req, res) => {
     });
 
     res.status(200).json(formattedResult);
-  });
+  } catch (err) {
+    console.error('Error fetching NC:', err);
+    res.status(500).json({ message: 'Error en el backend cargando notas de crédito', error: err.message });
+  }
 });
+
 //Preview de recibos 
-app.get('/api/previewrecibos', (req, res) => {
+app.get('/api/previewrecibos', async (req, res) => {
   console.log('Received request for /api/previewrecibos');
   const sql = 'SELECT * FROM recibos ORDER BY idrecibo DESC';
-
-  connection.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error en el backend cargando recibos' });
-    }
+  try {
+    const [result] = await pool.query(sql);
 
     const formattedResult = result.map((row) => {
       // Formatear 'fecha'
@@ -442,7 +413,9 @@ app.get('/api/previewrecibos', (req, res) => {
     });
 
     res.status(200).json(formattedResult);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Error en el backend cargando recibos', error: err.message });
+  }
 });
 
 
@@ -471,11 +444,9 @@ app.post('/api/insertclientes', async (req, res) => {
 
   // Validar si ya existe la razón social
   const verificarRazonSocialQuery = 'SELECT * FROM clientes WHERE RazonSocial = ?';
-  connection.query(verificarRazonSocialQuery, [RazonSocial], async (error, results) => {
-    if (error) {
-      console.error('Error al verificar la razón social:', error);
-      return res.status(500).json({ error: 'Error al verificar la razón social' });
-    }
+
+  try {
+    const [results] = await pool.query(verificarRazonSocialQuery, [RazonSocial]);
 
     if (results.length > 0) {
       return res.status(400).json({ error: 'Ya existe un cliente con esa razón social' });
@@ -562,32 +533,33 @@ app.post('/api/insertclientes', async (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        connection.query(insertClienteQuery, [
-          Nombre,
-          RazonSocial,
-          Direccion,
-          Zona,
-          Ciudad,
-          Rut,
-          IATA,
-          Cass,
-          Pais,
-          Email,
-          Tel,
-          TDOCDGI,
-          Saldo,
-          CodigoGIA
-        ], (err, results) => {
-          if (err) {
-            console.error('Error al insertar el cliente:', err);
-            return res.status(500).json({ error: 'Error al insertar el cliente' });
-          }
+        try {
+          await pool.query(insertClienteQuery, [
+            Nombre,
+            RazonSocial,
+            Direccion,
+            Zona,
+            Ciudad,
+            Rut,
+            IATA,
+            Cass,
+            Pais,
+            Email,
+            Tel,
+            TDOCDGI,
+            Saldo,
+            CodigoGIA
+          ]);
 
           return res.status(200).json({
             message: 'Cliente insertado correctamente',
             codigoGia: CodigoGIA
           });
-        });
+        } catch (err) {
+          console.error('Error al insertar el cliente:', err);
+          return res.status(500).json({ error: 'Error al insertar el cliente' });
+        }
+
       } else {
         return res.status(500).json({ error: 'Respuesta del WS inválida: no se encontró xmlResultado' });
       }
@@ -595,8 +567,12 @@ app.post('/api/insertclientes', async (req, res) => {
       console.error('Error al enviar solicitud SOAP:', error.message);
       return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
     }
-  });
+  } catch (error) {
+    console.error('Error general en insertclientes:', error.message);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
+
 
 // Endpoint para actualizar un cliente
 app.put('/api/actualizarcliente/:id', async (req, res) => {
@@ -722,26 +698,21 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
       id
     ];
 
-    connection.query(sql, values, (err, result) => {
-      if (err) {
-        console.error('Error actualizando cliente:', err);
-        return res.status(500).json({ message: 'Error actualizando cliente' });
-      }
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: 'Cliente No encontrado' });
-      }
+    const [result] = await pool.query(sql, values);
 
-      res.status(200).json({ message: 'Cliente modificado correctamente en WS y BD' });
-    });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Cliente No encontrado' });
+    }
+
+    res.status(200).json({ message: 'Cliente modificado correctamente en WS y BD' });
   } catch (error) {
-    console.error('Error al enviar solicitud SOAP:', error.message);
+    console.error('Error al enviar solicitud SOAP o actualizar BD:', error.message);
     return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
   }
 });
 
 
 //Armando Endpoint para eliminar Cliente
-
 app.delete('/api/deleteclientes', async (req, res) => {
   console.log('Received request for /api/deleteclientes');
   const { Id, CodigoGIA } = req.body; // Se requiere el código GIA además del Id
@@ -814,11 +785,8 @@ app.delete('/api/deleteclientes', async (req, res) => {
     // Si la respuesta fue correcta, eliminar en la BD
     const deleteClienteQuery = `DELETE FROM clientes WHERE Id = ?`;
 
-    connection.query(deleteClienteQuery, [Id], (err, results) => {
-      if (err) {
-        console.error('Error al eliminar el cliente en la base de datos:', err);
-        return res.status(500).json({ error: 'Error al eliminar el cliente en la base de datos' });
-      }
+    try {
+      const [results] = await pool.query(deleteClienteQuery, [Id]);
 
       if (results.affectedRows === 0) {
         return res.status(404).json({ error: 'Cliente no encontrado en la base de datos' });
@@ -829,7 +797,10 @@ app.delete('/api/deleteclientes', async (req, res) => {
         message: 'Cliente eliminado correctamente en WS y base de datos',
         descripcionWS: descripcion
       });
-    });
+    } catch (err) {
+      console.error('Error al eliminar el cliente en la base de datos:', err);
+      return res.status(500).json({ error: 'Error al eliminar el cliente en la base de datos' });
+    }
   } catch (error) {
     console.error('Error al enviar solicitud SOAP:', error.message);
     return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
@@ -838,7 +809,7 @@ app.delete('/api/deleteclientes', async (req, res) => {
 
 
 //Obtener datos para modificar cliente.
-app.get('/api/obtenerclientes/:id', (req, res) => {
+app.get('/api/obtenerclientes/:id', async (req, res) => {
   console.log('Received request for /api/obtenerclientes/' + req.params.id);
   const { id } = req.params; // Obtener el ID del cliente desde la URL
 
@@ -848,11 +819,8 @@ app.get('/api/obtenerclientes/:id', (req, res) => {
       WHERE Id = ?
   `;
 
-  connection.query(getClienteQuery, [id], (err, results) => {
-    if (err) {
-      console.error('Error al obtener el cliente:', err);
-      return res.status(500).json({ error: 'Error al obtener el cliente' });
-    }
+  try {
+    const [results] = await pool.query(getClienteQuery, [id]);
 
     if (results.length > 0) {
       console.log('Cliente encontrado:', results[0]);
@@ -863,7 +831,10 @@ app.get('/api/obtenerclientes/:id', (req, res) => {
       console.log('Cliente no encontrado');
       res.status(404).json({ message: 'Cliente no encontrado' });
     }
-  });
+  } catch (err) {
+    console.error('Error al obtener el cliente:', err);
+    return res.status(500).json({ error: 'Error al obtener el cliente' });
+  }
 });
 
 app.post('/api/guardar-datos-empresa', async (req, res) => {
@@ -877,40 +848,23 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
     usuModifica } = req.body;
   const fechaModificacion = new Date().toISOString().slice(0, 19).replace('T', ' ');
   try {
-    const rows = await new Promise((resolve, reject) => {
-      connection.query('SELECT * FROM datos_empresa LIMIT 1', (error, results) => {
-        if (error) reject(error);
-        else resolve(results);
-      });
-    });
+    const [rows] = await pool.query('SELECT * FROM datos_empresa LIMIT 1');
 
     if (rows.length > 0) {
       // Ya hay datos → Hacer UPDATE
-      await new Promise((resolve, reject) => {
-        connection.query(
+         await pool.query(
           `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?, codEfac = ?, codEfacCA = ?, codETick = ?, codETickCA = ?, usuarioModifica = ?, fechaModifica = ?`,
           [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
-          (error) => {
-            if (error) reject(error);
-            else resolve();
-          }
         );
-      });
 
       res.send('Datos actualizados correctamente');
     } else {
       // No hay datos → Hacer INSERT
-      await new Promise((resolve, reject) => {
-        connection.query(
+
+       await pool.query(
           `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuarioModifica, fechaModifica) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
-          (error) => {
-            if (error) reject(error);
-            else resolve();
-          }
         );
-      });
-
       res.send('Datos insertados correctamente');
     }
   } catch (error) {
