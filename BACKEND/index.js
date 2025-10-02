@@ -852,19 +852,19 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
 
     if (rows.length > 0) {
       // Ya hay datos → Hacer UPDATE
-         await pool.query(
-          `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?, codEfac = ?, codEfacCA = ?, codETick = ?, codETickCA = ?, usuarioModifica = ?, fechaModifica = ?`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
-        );
+      await pool.query(
+        `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?, codEfac = ?, codEfacCA = ?, codETick = ?, codETickCA = ?, usuarioModifica = ?, fechaModifica = ?`,
+        [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
+      );
 
       res.send('Datos actualizados correctamente');
     } else {
       // No hay datos → Hacer INSERT
 
-       await pool.query(
-          `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuarioModifica, fechaModifica) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
-        );
+      await pool.query(
+        `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuarioModifica, fechaModifica) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
+      );
       res.send('Datos insertados correctamente');
     }
   } catch (error) {
@@ -875,12 +875,7 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
 
 app.get('/api/obtener-datos-empresa', async (req, res) => {
   try {
-    const rows = await new Promise((resolve, reject) => {
-      connection.query('SELECT * FROM datos_empresa LIMIT 1', (error, results) => {
-        if (error) reject(error);
-        else resolve(results);
-      });
-    });
+    const [rows] = await pool.query('SELECT * FROM datos_empresa LIMIT 1');
     if (rows.length > 0) {
       res.json(rows[0]);
     } else {
@@ -892,28 +887,30 @@ app.get('/api/obtener-datos-empresa', async (req, res) => {
   }
 });
 
-app.get('/api/obtener-conceptos', (req, res) => {
-  connection.query('SELECT * FROM conceptos', (error, results) => {
-    if (error) {
-      console.error('Error al obtener conceptos:', error);
-      return res.status(500).json({ error: 'Error al obtener conceptos' });
-    }
+app.get('/api/obtener-conceptos', async (req, res) => {
+  try {
+    const [results] = await pool.query('SELECT * FROM conceptos');
     res.json(results);
-  });
+  } catch (error) {
+    console.error('Error al obtener conceptos:', error);
+    res.status(500).json({ error: 'Error al obtener conceptos' });
+  }
 });
 
 
-
 // Endpoint para buscar clientes
-app.get('/api/obtenernombrecliente', (req, res) => {
+app.get('/api/obtenernombrecliente', async (req, res) => {
   const search = req.query.search;
-  const query = 'SELECT * FROM clientes WHERE RazonSocial LIKE ?';
-  connection.query(query, [`%${search}%`], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error en la consulta' });
-    }
+  try {
+    const [results] = await pool.query(
+      'SELECT * FROM clientes WHERE RazonSocial LIKE ?',
+      [`%${search}%`]
+    );
     res.json(results);
-  });
+  } catch (err) {
+    console.error('Error en la consulta:', err);
+    res.status(500).json({ error: 'Error en la consulta' });
+  }
 });
 
 app.post('/api/validarlogin', async (req, res) => {
@@ -921,26 +918,22 @@ app.post('/api/validarlogin', async (req, res) => {
 
   try {
     const sql = 'SELECT * FROM usuarios WHERE usuario = ?';
-    connection.query(sql, [usuario], async (err, results) => {
-      if (err) {
-        console.error('Error al consultar usuario:', err);
-        return res.status(500).json({ mensaje: 'Error en el servidor' });
-      }
+    const [results] = await pool.query(sql, [usuario]);
 
-      if (results.length === 0) {
-        return res.status(401).json({ mensaje: 'Usuario no encontrado' });
-      }
+    if (results.length === 0) {
+      return res.status(401).json({ mensaje: 'Usuario no encontrado' });
+    }
 
-      const usuarioDB = results[0];
-      const match = await bcrypt.compare(contraseña, usuarioDB.contraseña);
+    const usuarioDB = results[0];
+    const match = await bcrypt.compare(contraseña, usuarioDB.contraseña);
 
-      if (match) {
-        // Éxito
-        return res.status(200).json({ mensaje: 'Login exitoso', rol: usuarioDB.rol });
-      } else {
-        return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
-      }
-    });
+    if (match) {
+      // Éxito
+      return res.status(200).json({ mensaje: 'Login exitoso', rol: usuarioDB.rol });
+    } else {
+      return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+    }
+
   } catch (error) {
     console.error('Error en el login:', error);
     res.status(500).json({ mensaje: 'Error al procesar login' });
@@ -959,7 +952,7 @@ app.post('/api/insertusuarios', async (req, res) => {
 
   try {
     // Hashear la contraseña antes de almacenarla
-    const saltRounds = 10; // Define el número de rondas de sal para el hash
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(contraseña, saltRounds);
 
     // Consulta para insertar un nuevo usuario con la contraseña hasheada
@@ -969,38 +962,33 @@ app.post('/api/insertusuarios', async (req, res) => {
     `;
 
     // Ejecutar la inserción del usuario con la contraseña hasheada
-    connection.query(insertUsuarioQuery, [usuario, hashedPassword, rol], (err, results) => {
-      if (err) {
-        console.error('Error al insertar el usuario:', err);
-        return res.status(500).json({ error: 'Error al insertar el usuario' });
-      }
-      // Respuesta exitosa
-      res.status(200).json({ message: 'Usuario insertado exitosamente' });
-    });
+    await pool.query(insertUsuarioQuery, [usuario, hashedPassword, rol]);
+    // Respuesta exitosa
+    res.status(200).json({ message: 'Usuario insertado exitosamente' });
   } catch (error) {
-    console.error('Error al hashear la contraseña:', error);
+    console.error('Error al insertar el usuario o hashear la contraseña:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
 
 //Consulta para cargar la tabla de preview de clientes.
 
-app.get('/api/previewusuarios', (req, res) => {
+app.get('/api/previewusuarios', async (req, res) => {
   console.log('Received request for /api/previewclientes'); // Agrega esta línea
   const sql = 'SELECT * FROM usuarios';
 
-  connection.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'An error occurred while fetching clients.' });
-    }
-
+  try {
+    const [result] = await pool.query(sql);
     // Envía todos los resultados de la consulta al frontend
     res.status(200).json(result);
-  });
+  } catch (err) {
+    console.error('Error al obtener usuarios:', err);
+    res.status(500).json({ message: 'An error occurred while fetching clients.' });
+  }
 });
 
 //Obtener datos para modificar cliente.
-app.get('/api/obtenerusuario/:id', (req, res) => {
+app.get('/api/obtenerusuario/:id', async (req, res) => {
   console.log('Received request for /api/obtenerclientes/' + req.params.id);
   const { id } = req.params; // Obtener el ID del cliente desde la URL
 
@@ -1010,26 +998,24 @@ app.get('/api/obtenerusuario/:id', (req, res) => {
       WHERE id = ?
   `;
 
-  connection.query(getClienteQuery, [id], (err, results) => {
-    if (err) {
-      console.error('Error al obtener el Usuario:', err);
-      return res.status(500).json({ error: 'Error al obtener el Usuario' });
-    }
+  try {
+    const [results] = await pool.query(getUsuarioQuery, [id]);
 
     if (results.length > 0) {
       console.log('Usuario encontrado:', results[0]);
-      // Respuesta exitosa con los datos del cliente
       res.status(200).json(results[0]);
     } else {
-      // Si no se encuentra el cliente
       console.log('Usuario no encontrado');
       res.status(404).json({ message: 'Cliente no encontrado' });
     }
-  });
+  } catch (err) {
+    console.error('Error al obtener el Usuario:', err);
+    res.status(500).json({ error: 'Error al obtener el Usuario' });
+  }
 });
 
 // Endpoint para actualizar un cliente
-app.put('/api/actualizarusuario/:id', (req, res) => {
+app.put('/api/actualizarusuario/:id', async (req, res) => {
   const id = req.params.id; // Obtener el ID del cliente de la URL
   const {
     usuario,
@@ -1051,23 +1037,26 @@ app.put('/api/actualizarusuario/:id', (req, res) => {
     id
   ];
 
-  connection.query(sql, values, (err, result) => {
-    if (err) {
-      console.error('Error actualizando cliente:', err);
-      return res.status(500).json({ message: 'Error actualizando cliente' });
-    }
+  try {
+    const [result] = await pool.query(sql, values);
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Cliente No encontrado' });
     }
+
     res.status(200).json({ message: 'Cliente Modificado Correctamente' });
-  });
+  } catch (err) {
+    console.error('Error actualizando cliente:', err);
+    res.status(500).json({ message: 'Error actualizando cliente' });
+  }
 });
+
 app.delete('/api/deleteusuario', async (req, res) => {
   const { Id } = req.body;
 
   try {
     // 1. Buscar el rol del usuario
-    const usuarioRows = await queryAsync('SELECT rol FROM usuarios WHERE id = ?', [Id]);
+    const [usuarioRows] = await pool.query('SELECT rol FROM usuarios WHERE id = ?', [Id]);
 
     if (!usuarioRows || usuarioRows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
@@ -1077,7 +1066,7 @@ app.delete('/api/deleteusuario', async (req, res) => {
 
     // 2. Verificar si es el último admin
     if (rolUsuario === 'admin') {
-      const adminRows = await queryAsync('SELECT COUNT(*) AS total FROM usuarios WHERE rol = "admin"');
+      const [adminRows] = await pool.query('SELECT COUNT(*) AS total FROM usuarios WHERE rol = "admin"');
       const totalAdmins = adminRows[0].total;
 
       if (totalAdmins <= 1) {
@@ -1086,7 +1075,7 @@ app.delete('/api/deleteusuario', async (req, res) => {
     }
 
     // 3. Eliminar el usuario
-    await queryAsync('DELETE FROM usuarios WHERE id = ?', [Id]);
+    await pool.query('DELETE FROM usuarios WHERE id = ?', [Id]);
 
     res.status(200).json({ mensaje: 'Usuario eliminado correctamente' });
 
@@ -1101,7 +1090,7 @@ app.post('/api/agregarVuelo', async (req, res) => {
   const { vuelo, compania } = req.body; // Extrae vuelo y compania del cuerpo de la solicitud
   try {
     // Inserta el vuelo y la compañía en la base de datos
-    await connection.query('INSERT INTO vuelos (vuelo, compania) VALUES (?, ?)', [vuelo, compania]);
+    await pool.query('INSERT INTO vuelos (vuelo, compania) VALUES (?, ?)', [vuelo, compania]);
     res.status(201).send('Vuelo agregado correctamente');
   } catch (error) {
     console.error('Error al agregar vuelo:', error);
@@ -1110,52 +1099,50 @@ app.post('/api/agregarVuelo', async (req, res) => {
 });
 
 // Define el endpoint para obtener los vuelos
-app.get('/api/previewvuelos', (req, res) => {
+app.get('/api/previewvuelos', async (req, res) => {
   const query = 'SELECT * FROM vuelos'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener vuelos:', error);
-      res.status(500).json({ error: 'Error al obtener vuelos' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results); // Envía los resultados como respuesta JSON
+  } catch (error) {
+    console.error('Error al obtener vuelos:', error);
+    res.status(500).json({ error: 'Error al obtener vuelos' });
+  }
 });
+
 // Define el endpoint para obtener vuelos
-app.get('/api/obtenervuelos', (req, res) => {
+app.get('/api/obtenervuelos', async (req, res) => {
   const query = 'SELECT * FROM vuelos'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener vuelos:', error);
-      res.status(500).json({ error: 'Error al obtener vuelos' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results); // Envía los resultados como respuesta JSON
+  } catch (error) {
+    console.error('Error al obtener vuelos:', error);
+    res.status(500).json({ error: 'Error al obtener vuelos' });
+  }
 });
+
 //elimina el vuelo
-app.delete('/api/eliminarvuelo/:id', (req, res) => {
+app.delete('/api/eliminarvuelo/:id', async (req, res) => {
   const { id } = req.params;
   const query = 'DELETE FROM vuelos WHERE idVuelos = ?';
 
-  connection.query(query, [id], (error, results) => {
-    if (error) {
-      console.error('Error al eliminar vuelo:', error);
-      res.status(500).json({ error: 'Error al eliminar vuelo' });
-    } else {
-      res.status(200).json({ message: 'Vuelo eliminado correctamente' });
-    }
-  });
+  try {
+    const [results] = await pool.query(query, [id]);
+    res.status(200).json({ message: 'Vuelo eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar vuelo:', error);
+    res.status(500).json({ error: 'Error al eliminar vuelo' });
+  }
 });
 
 //agrega un ciudad a la bd
 app.post('/api/agregarCiudad', async (req, res) => {
   const { ciudad } = req.body;
   try {
-    // Inserta el vuelo en la base de datos. Actualiza esta lógica según tu configuración
-    await connection.query('INSERT INTO ciudades (ciudad) VALUES (?)', [ciudad]);
+    await pool.query('INSERT INTO ciudades (ciudad) VALUES (?)', [ciudad]);
     res.status(201).send('Ciudad agregada correctamente');
   } catch (error) {
     console.error('Error al agregar la ciudad:', error);
@@ -1163,53 +1150,49 @@ app.post('/api/agregarCiudad', async (req, res) => {
   }
 });
 // Define el endpoint para obtener ciudades
-app.get('/api/obtenerciudades', (req, res) => {
+app.get('/api/obtenerciudades', async (req, res) => {
   const query = 'SELECT ciudad FROM ciudades'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener ciudades:', error);
-      res.status(500).json({ error: 'Error al obtener ciudades' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results); // Envía los resultados como respuesta JSON
+  } catch (error) {
+    console.error('Error al obtener ciudades:', error);
+    res.status(500).json({ error: 'Error al obtener ciudades' });
+  }
 });
 
 // Define el endpoint para obtener ciudades
-app.get('/api/previewciudades', (req, res) => {
+app.get('/api/previewciudades', async (req, res) => {
   const query = 'SELECT * FROM ciudades'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener ciudades:', error);
-      res.status(500).json({ error: 'Error al obtener ciudades' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results); // Envía los resultados como respuesta JSON
+  } catch (error) {
+    console.error('Error al obtener ciudades:', error);
+    res.status(500).json({ error: 'Error al obtener ciudades' });
+  }
 });
+
 //elimina la ciudad
-app.delete('/api/eliminarciudad/:id', (req, res) => {
+app.delete('/api/eliminarciudad/:id', async (req, res) => {
   const { id } = req.params;
   const query = 'DELETE FROM ciudades WHERE idciudades = ?';
-
-  connection.query(query, [id], (error, results) => {
-    if (error) {
-      console.error('Error al eliminar ciudad:', error);
-      res.status(500).json({ error: 'Error al eliminar ciudad' });
-    } else {
-      res.status(200).json({ message: 'Ciudad eliminada correctamente' });
-    }
-  });
+  try {
+    const [results] = await pool.query(query, [id]);
+    res.status(200).json({ message: 'Ciudad eliminada correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar ciudad:', error);
+    res.status(500).json({ error: 'Error al eliminar ciudad' });
+  }
 });
 
 //agrega una moneda a la bd
 app.post('/api/agregarMoneda', async (req, res) => {
   const { moneda } = req.body;
   try {
-    // Inserta el vuelo en la base de datos. Actualiza esta lógica según tu configuración
-    await connection.query('INSERT INTO monedas (moneda) VALUES (?)', [moneda]);
+    await pool.query('INSERT INTO monedas (moneda) VALUES (?)', [moneda]);
     res.status(201).send('Moneda agregada correctamente');
   } catch (error) {
     console.error('Error al agregar la moneda:', error);
@@ -1218,52 +1201,48 @@ app.post('/api/agregarMoneda', async (req, res) => {
 });
 
 // Define el endpoint para obtener monedas
-app.get('/api/previewmonedas', (req, res) => {
+app.get('/api/previewmonedas', async (req, res) => {
   const query = 'SELECT * FROM monedas'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener monedas:', error);
-      res.status(500).json({ error: 'Error al obtener monedas' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error al obtener monedas:', error);
+    res.status(500).json({ error: 'Error al obtener monedas' });
+  }
 });
 // Define el endpoint para obtener monedas
-app.get('/api/obtenermonedas', (req, res) => {
+app.get('/api/obtenermonedas', async (req, res) => {
   const query = 'SELECT moneda FROM monedas'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener monedas:', error);
-      res.status(500).json({ error: 'Error al obtener monedas' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error al obtener monedas:', error);
+    res.status(500).json({ error: 'Error al obtener monedas' });
+  }
 });
 //elimina la moneda
-app.delete('/api/eliminarmoneda/:id', (req, res) => {
+app.delete('/api/eliminarmoneda/:id', async (req, res) => {
   const { id } = req.params;
   const query = 'DELETE FROM monedas WHERE idmonedas = ?';
 
-  connection.query(query, [id], (error, results) => {
-    if (error) {
-      console.error('Error al eliminar moneda:', error);
-      res.status(500).json({ error: 'Error al eliminar moneda' });
-    } else {
-      res.status(200).json({ message: 'Moneda eliminada correctamente' });
-    }
-  });
+  try {
+    const [results] = await pool.query(query, [id]);
+    res.status(200).json({ message: 'Moneda eliminada correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar moneda:', error);
+    res.status(500).json({ error: 'Error al eliminar moneda' });
+  }
 });
 //--------------------------------------------------------------------------------------------------------------------
 //agrega una moneda a la bd
 app.post('/api/agregarCompania', async (req, res) => {
   const { compania } = req.body;
   try {
-    // Inserta el vuelo en la base de datos. Actualiza esta lógica según tu configuración
-    await connection.query('INSERT INTO companias (compania) VALUES (?)', [compania]);
+    await pool.query('INSERT INTO companias (compania) VALUES (?)', [compania]);
     res.status(201).send('Compañia agregada correctamente');
   } catch (error) {
     console.error('Error al agregar la Compañia:', error);
@@ -1272,44 +1251,47 @@ app.post('/api/agregarCompania', async (req, res) => {
 });
 
 // Define el endpoint para obtener monedas
-app.get('/api/previewcompanias', (req, res) => {
+app.get('/api/previewcompanias', async (req, res) => {
   const query = 'SELECT * FROM companias'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener compañias:', error);
-      res.status(500).json({ error: 'Error al obtener compañias' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results); // Envía los resultados como respuesta JSON
+  } catch (error) {
+    console.error('Error al obtener compañias:', error);
+    res.status(500).json({ error: 'Error al obtener compañias' });
+  }
 });
 // Define el endpoint para obtener monedas
-app.get('/api/obtenercompanias', (req, res) => {
+app.get('/api/obtenercompanias', async (req, res) => {
   const query = 'SELECT compania FROM companias'; // Cambia el nombre de la tabla si es diferente
 
-  connection.query(query, (error, results) => {
-    if (error) {
-      console.error('Error al obtener companias:', error);
-      res.status(500).json({ error: 'Error al obtener companias' });
-    } else {
-      res.status(200).json(results); // Envía los resultados como respuesta JSON
-    }
-  });
+  try {
+    const [results] = await pool.query(query);
+    res.status(200).json(results); // Envía los resultados como respuesta JSON
+  } catch (error) {
+    console.error('Error al obtener companias:', error);
+    res.status(500).json({ error: 'Error al obtener companias' });
+  }
 });
+
 //elimina la moneda
-app.delete('/api/eliminarcompania/:id', (req, res) => {
+app.delete('/api/eliminarcompania/:id', async (req, res) => {
   const { id } = req.params;
   const query = 'DELETE FROM companias WHERE idcompanias = ?';
 
-  connection.query(query, [id], (error, results) => {
-    if (error) {
-      console.error('Error al eliminar compañia:', error);
-      res.status(500).json({ error: 'Error al eliminar compañia' });
-    } else {
-      res.status(200).json({ message: 'Compañia eliminada correctamente' });
+  try {
+    const [results] = await pool.query(query, [id]);
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Compañia no encontrada' });
     }
-  });
+
+    res.status(200).json({ message: 'Compañia eliminada correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar compañia:', error);
+    res.status(500).json({ error: 'Error al eliminar compañia' });
+  }
 });
 
 //Endpoint para inserter una guia impo.
@@ -1351,23 +1333,17 @@ app.post('/api/insertguiaimpo', async (req, res) => {
   } = req.body;
 
   try {
-    // Consulta SQL para verificar si el número de guía ya existe
+
+    // Verificar si la guía ya existe
     const checkGuiaQuery = 'SELECT * FROM guiasimpo WHERE guia = ?';
+    const [existingGuia] = await pool.query(checkGuiaQuery, [ginroguia]);
 
-    // Verificamos si la guía ya existe
-    connection.query(checkGuiaQuery, [ginroguia], (err, results) => {
-      if (err) {
-        console.error('Error al verificar la guía:', err);
-        return res.status(500).json({ error: 'Error al verificar la guía' });
-      }
+    if (existingGuia.length > 0) {
+      return res.status(400).json({ message: 'Este número de guía ya existe' });
+    }
 
-      // Si ya existe la guía, retornamos un error con un mensaje específico
-      if (results.length > 0) {
-        return res.status(400).json({ message: 'Este número de guía ya existe' });
-      }
-
-      // Si la guía no existe, procedemos con la inserción
-      const insertGuiaQuery = `
+    // Si la guía no existe, procedemos con la inserción
+    const insertGuiaQuery = `
         INSERT INTO guiasimpo (
           nrovuelo, fechavuelo, origenvuelo, guia, emision, consignatario,
           origenguia, conexionguia, destinoguia, tipodepagoguia,
@@ -1379,48 +1355,41 @@ app.post('/api/insertguiaimpo', async (req, res) => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      // Ejecutar la consulta con los valores correspondientes
-      connection.query(insertGuiaQuery, [
-        vueloSeleccionado,
-        givuelofecha,
-        giorigenvuelo,
-        ginroguia,
-        gifechaemisionguia,
-        searchTerm,
-        origenguiaSeleccionado,
-        conexionguiaSeleccionado,
-        destinoguiaSeleccionado,
-        gitipodepagoguia,
-        gimercaderiaguia,
-        gipiezasguia,
-        gipesoguia,
-        gipesovolguia,
-        moneda,
-        giarbitrajeguia,
-        gitarifaguia,
-        gifleteoriginalguia,
-        gidcoriginalguia,
-        gidaoriginalguia,
-        gifleteguia,
-        giivas3guia,
-        giduecarrierguia,
-        gidueagentguia,
-        giverificacionguia,
-        gicollectfeeguia,
-        gicfivaguia,
-        giajusteguia,
-        gitotalguia,
-        gitotaldelaguia
-      ], (err, results) => {
-        if (err) {
-          console.error('Error al insertar la guía:', err);
-          return res.status(500).json({ error: 'Error al insertar la guía' });
-        }
+    // Ejecutar la consulta con los valores correspondientes
+    await pool.query(insertGuiaQuery, [
+      vueloSeleccionado,
+      givuelofecha,
+      giorigenvuelo,
+      ginroguia,
+      gifechaemisionguia,
+      searchTerm,
+      origenguiaSeleccionado,
+      conexionguiaSeleccionado,
+      destinoguiaSeleccionado,
+      gitipodepagoguia,
+      gimercaderiaguia,
+      gipiezasguia,
+      gipesoguia,
+      gipesovolguia,
+      moneda,
+      giarbitrajeguia,
+      gitarifaguia,
+      gifleteoriginalguia,
+      gidcoriginalguia,
+      gidaoriginalguia,
+      gifleteguia,
+      giivas3guia,
+      giduecarrierguia,
+      gidueagentguia,
+      giverificacionguia,
+      gicollectfeeguia,
+      gicfivaguia,
+      giajusteguia,
+      gitotalguia,
+      gitotaldelaguia
+    ]);
 
-        // Respuesta exitosa
-        res.status(200).json({ message: 'Guía insertada exitosamente' });
-      });
-    });
+    res.status(200).json({ message: 'Guía insertada exitosamente' });
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -1440,21 +1409,17 @@ app.post('/api/fetchguiasimpo', async (req, res) => {
       ORDER BY fechaingresada DESC
     `;
 
-    // Ejecutar la consulta para obtener las guías según los filtros
-    connection.query(fetchGuiasQuery, [vueloSeleccionado, givuelofecha], (err, results) => {
-      if (err) {
-        console.error('Error al obtener las guías:', err);
-        return res.status(500).json({ error: 'Error al obtener las guías' });
-      }
+    // Ejecutar la consulta usando pool
+    const [results] = await pool.query(fetchGuiasQuery, [vueloSeleccionado, givuelofecha]);
 
-      // Responder con las guías encontradas
-      res.status(200).json(results);
-    });
+    // Responder con las guías encontradas
+    res.status(200).json(results);
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
+
 //Endpoint que trae todas las guias de epo que coincidan con el vuelo y la fecha del mismo
 app.post('/api/fetchguiasexpo', async (req, res) => {
   console.log('Received request for /api/fetchguias');
@@ -1468,17 +1433,11 @@ app.post('/api/fetchguiasexpo', async (req, res) => {
       WHERE nrovuelo = ? AND fechavuelo = ?
       ORDER BY fechaingresada DESC
     `;
+    // Ejecutar la consulta usando pool
+    const [results] = await pool.query(fetchGuiasQuery, [vueloSeleccionado, gevuelofecha]);
 
-    // Ejecutar la consulta para obtener las guías según los filtros
-    connection.query(fetchGuiasQuery, [vueloSeleccionado, gevuelofecha], (err, results) => {
-      if (err) {
-        console.error('Error al obtener las guías:', err);
-        return res.status(500).json({ error: 'Error al obtener las guías' });
-      }
-
-      // Responder con las guías encontradas
-      res.status(200).json(results);
-    });
+    // Responder con las guías encontradas
+    res.status(200).json(results);
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -1502,20 +1461,15 @@ app.get('/api/obtenerguia/:guia', async (req, res) => {
       WHERE guia = ?
     `;
 
-    // Ejecutar la consulta para obtener los detalles de la guía seleccionada
-    connection.query(fetchGuiaQuery, [guia], (err, results) => {
-      if (err) {
-        console.error('Error al obtener la guía:', err);
-        return res.status(500).json({ error: 'Error al obtener la guía' });
-      }
 
-      // Si se encuentra la guía, enviamos los datos
-      if (results.length > 0) {
-        res.status(200).json(results[0]); // Enviamos el primer (y único) resultado
-      } else {
-        res.status(404).json({ message: 'Guía no encontrada' });
-      }
-    });
+    // Ejecutar la consulta usando pool
+    const [results] = await pool.query(fetchGuiaQuery, [guia]);
+
+    if (results.length > 0) {
+      res.status(200).json(results[0]); // Enviamos el primer resultado
+    } else {
+      res.status(404).json({ message: 'Guía no encontrada' });
+    }
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -1538,21 +1492,14 @@ app.get('/api/obtenerexpo/:guia', async (req, res) => {
       FROM guiasexpo
       WHERE guia = ?
     `;
+    // Ejecutar la consulta usando pool
+    const [results] = await pool.query(fetchGuiaQuery, [guia]);
 
-    // Ejecutar la consulta para obtener los detalles de la guía seleccionada
-    connection.query(fetchGuiaQuery, [guia], (err, results) => {
-      if (err) {
-        console.error('Error al obtener la guía:', err);
-        return res.status(500).json({ error: 'Error al obtener la guía' });
-      }
-
-      // Si se encuentra la guía, enviamos los datos
-      if (results.length > 0) {
-        res.status(200).json(results[0]); // Enviamos el primer (y único) resultado
-      } else {
-        res.status(404).json({ message: 'Guía no encontrada' });
-      }
-    });
+    if (results.length > 0) {
+      res.status(200).json(results[0]); // Enviamos el primer (y único) resultado
+    } else {
+      res.status(404).json({ message: 'Guía no encontrada' });
+    }
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -1608,24 +1555,18 @@ app.post('/api/modificarguia', async (req, res) => {
 
   try {
     // Ejecutar la consulta de actualización
-    connection.query(updateGuiaQuery, [
+    const [result] = await pool.query(updateGuiaQuery, [
       nrovuelo, fechavuelo, origenvuelo, emision, consignatario, origenguia,
       conexionguia, destinoguia, tipodepagoguia, mercaderia, piezas, peso, pesovolumetrico,
       moneda, arbitraje, tarifa, fleteoriginal, dcoriginal, daoriginal, flete, ivas3, duecarrier,
       dueagent, verificacion, collectfee, cfiva, ajuste, total, totalguia, guia
-    ], (err, result) => {
-      if (err) {
-        console.error('Error al actualizar la guía:', err);
-        return res.status(500).json({ error: 'Error al actualizar la guía' });
-      }
+    ]);
 
-      // Si se actualiza correctamente
-      if (result.affectedRows > 0) {
-        res.status(200).json({ message: 'Guía actualizada correctamente' });
-      } else {
-        res.status(404).json({ message: 'No se encontró la guía para actualizar' });
-      }
-    });
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: 'Guía actualizada correctamente' });
+    } else {
+      res.status(404).json({ message: 'No se encontró la guía para actualizar' });
+    }
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -1678,24 +1619,18 @@ app.post('/api/modificarguiaexpo', async (req, res) => {
 
   try {
     // Ejecutar la consulta de actualización
-    connection.query(updateGuiaQuery, [
+    const [result] = await pool.query(updateGuiaQuery, [
       nrovuelo, fechavuelo, origenvuelo, conexionvuelo, destinovuelo, empresavuelo,
       cass, agente, reserva, emision, tipodepago, piezas, pesobruto, pesotarifado,
       tarifaneta, tarifaventa, fleteneto, fleteawb, duecarrier, dueagent, dbf, gsa,
       security, cobrarpagar, agentecollect, total, guia
-    ], (err, result) => {
-      if (err) {
-        console.error('Error al actualizar la guía:', err);
-        return res.status(500).json({ error: 'Error al actualizar la guía' });
-      }
+    ]);
 
-      // Si se actualiza correctamente
-      if (result.affectedRows > 0) {
-        res.status(200).json({ message: 'Guía actualizada correctamente' });
-      } else {
-        res.status(404).json({ message: 'No se encontró la guía para actualizar' });
-      }
-    });
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: 'Guía actualizada correctamente' });
+    } else {
+      res.status(404).json({ message: 'No se encontró la guía para actualizar' });
+    }
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -1708,10 +1643,15 @@ app.delete('/api/eliminarGuia/:guia', async (req, res) => {
   console.log('Eliminando guia Impo', guia)
 
   try {
-    await connection.query('DELETE FROM guiasimpo WHERE idguia = ?', [guia]);
-    res.status(200).json({ message: 'Guía eliminada exitosamente' });
+    const [result] = await pool.query('DELETE FROM guiasimpo WHERE idguia = ?', [guia]);
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: 'Guía eliminada exitosamente' });
+    } else {
+      res.status(404).json({ message: 'No se encontró la guía para eliminar' });
+    }
   } catch (error) {
-    console.error(error);
+    console.error('Error al eliminar la guía:', error);
     res.status(500).json({ error: 'Hubo un error al eliminar la guía' });
   }
 });
@@ -1720,10 +1660,15 @@ app.delete('/api/eliminarGuiaExpo/:guiaAEliminar', async (req, res) => {
   const { guiaAEliminar } = req.params;
   console.log('Eliminando guia Expo', guiaAEliminar)
   try {
-    await connection.query('DELETE FROM guiasexpo WHERE idguiasexpo = ?', [guiaAEliminar]);
-    res.status(200).json({ message: 'Guía eliminada exitosamente' });
+    const [result] = await pool.query('DELETE FROM guiasexpo WHERE idguiasexpo = ?', [guiaAEliminar]);
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: 'Guía eliminada exitosamente' });
+    } else {
+      res.status(404).json({ message: 'No se encontró la guía para eliminar' });
+    }
   } catch (error) {
-    console.error(error);
+    console.error('Error al eliminar la guía:', error);
     res.status(500).json({ error: 'Hubo un error al eliminar la guía' });
   }
 });
@@ -1742,21 +1687,15 @@ app.get('/api/previewguias', async (req, res) => {
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
     `;
     // Ejecutar la consulta para obtener todas las guías
-    connection.query(fetchGuiasQuery, (err, results) => {
-      if (err) {
-        console.error('Error al obtener las guías:', err);
-        return res.status(500).json({ error: 'Error al obtener las guías' });
-      }
+    const [results] = await pool.query(fetchGuiasQuery);
 
-      // Enviar todas las guías obtenidas
-      res.status(200).json(results);
-    });
+    // Enviar todas las guías obtenidas
+    res.status(200).json(results);
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
-
 // Endpoint para obtener guías Expo
 app.get('/api/previewguiasexpo', async (req, res) => {
   console.log('Received request for /api/previewguiasexpo');
@@ -1772,15 +1711,10 @@ app.get('/api/previewguiasexpo', async (req, res) => {
       LEFT JOIN vuelos v ON e.nrovuelo = v.idVuelos
     `;
     // Ejecutar la consulta para obtener todas las guías expo
-    connection.query(fetchGuiasExpoQuery, (err, results) => {
-      if (err) {
-        console.error('Error al obtener las guías expo:', err);
-        return res.status(500).json({ error: 'Error al obtener las guías expo' });
-      }
+    const [results] = await pool.query(fetchGuiasExpoQuery);
 
-      // Enviar todas las guías expo obtenidas
-      res.status(200).json(results);
-    });
+    // Enviar todas las guías expo obtenidas
+    res.status(200).json(results);
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -1827,19 +1761,14 @@ app.post('/api/insertguiaexpo', async (req, res) => {
     const checkGuiaQuery = 'SELECT * FROM guiasexpo WHERE guia = ?';
 
     // Verificamos si la guía ya existe
-    connection.query(checkGuiaQuery, [genroguia], (err, results) => {
-      if (err) {
-        console.error('Error al verificar la guía:', err);
-        return res.status(500).json({ error: 'Error al verificar la guía' });
-      }
+    const [existing] = await pool.query(checkGuiaQuery, [genroguia]);
 
-      // Si ya existe la guía, retornamos un error con un mensaje específico
-      if (results.length > 0) {
-        return res.status(400).json({ message: 'Este número de guía ya existe' });
-      }
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Este número de guía ya existe' });
+    }
 
-      // Si la guía no existe, procedemos con la inserción
-      const insertGuiaQuery = `
+    // Si la guía no existe, procedemos con la inserción
+    const insertGuiaQuery = `
         INSERT INTO guiasexpo (
           nrovuelo, fechavuelo, origenvuelo, conexionvuelo, destinovuelo, empresavuelo, cass, agente, reserva, guia, emision, tipodepago, piezas, pesobruto, pesotarifado,
           tarifaneta, tarifaventa, fleteneto, fleteawb,
@@ -1849,68 +1778,60 @@ app.post('/api/insertguiaexpo', async (req, res) => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      // Ejecutar la consulta con los valores correspondientes
-      connection.query(insertGuiaQuery, [
-        vueloSeleccionado,
-        gevuelofecha,
-        origenVueloSeleccionado,
-        conexionVueloSeleccionado,
-        destinoVueloSeleccionado,
-        empresavuelo,
-        gecassvuelo,
-        searchTerm,
-        gereserva,
-        genroguia,
-        geemision,
-        getipodepagoguia,
-        gepiezasguia,
-        gepesobrutoguia,
-        gepesotarifadoguia,
-        getarifanetaguia,
-        getarifaventaguia,
-        gefletenetoguia,
-        gefleteawbguia,
-        geduecarrierguia,
-        gedueagentguia,
-        gedbfguia,
-        gegsaguia,
-        gesecurityguia,
-        gecobrarpagarguia,
-        geagentecollectguia,
-        getotalguia,
-      ], (err, results) => {
-        if (err) {
-          console.error('Error al insertar la guía:', err);
-          return res.status(500).json({ error: 'Error al insertar la guía' });
-        }
+    // Ejecutar la consulta con los valores correspondientes
+    await pool.query(insertGuiaQuery, [
+      vueloSeleccionado,
+      gevuelofecha,
+      origenVueloSeleccionado,
+      conexionVueloSeleccionado,
+      destinoVueloSeleccionado,
+      empresavuelo,
+      gecassvuelo,
+      searchTerm,
+      gereserva,
+      genroguia,
+      geemision,
+      getipodepagoguia,
+      gepiezasguia,
+      gepesobrutoguia,
+      gepesotarifadoguia,
+      getarifanetaguia,
+      getarifaventaguia,
+      gefletenetoguia,
+      gefleteawbguia,
+      geduecarrierguia,
+      gedueagentguia,
+      gedbfguia,
+      gegsaguia,
+      gesecurityguia,
+      gecobrarpagarguia,
+      geagentecollectguia,
+      getotalguia,
+    ]);
 
-        // Respuesta exitosa
-        res.status(200).json({ message: 'Guía insertada exitosamente' });
-      });
-    });
+    res.status(200).json({ message: 'Guía insertada exitosamente' });
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
 
-app.get('/api/obtenertipocambio', (req, res) => {
+app.get('/api/obtenertipocambio', async (req, res) => {
   console.log('Received request for /api/obtenertipocambio');
+  try {
 
-
-  const fetchTipoCambioQuery = `
+    const fetchTipoCambioQuery = `
   SELECT id, DATE_FORMAT(fecha, '%d/%m/%Y') AS fecha, tipo_cambio 
       FROM tipocambio ORDER BY tipocambio.fecha DESC
     `;
 
-  connection.query(fetchTipoCambioQuery, (err, results) => {
-    if (err) {
-      console.error('Error al obtener los tipos de cambio:', err);
-      return res.status(500).json({ error: 'Error al obtener los tipos de cambio' });
-    }
+    const [results] = await pool.query(fetchTipoCambioQuery);
 
     res.status(200).json(results);
-  });
+  } catch (error) {
+    console.error('Error al obtener los tipos de cambio:', error);
+    res.status(500).json({ error: 'Error al obtener los tipos de cambio' });
+  }
 });
 
 app.post('/api/agregartipocambio', async (req, res) => {
@@ -1930,18 +1851,13 @@ app.post('/api/agregartipocambio', async (req, res) => {
       ON DUPLICATE KEY UPDATE tipo_cambio = VALUES(tipo_cambio);
     `;
 
-    // Ejecutar la consulta para insertar o actualizar el tipo de cambio
-    connection.query(insertTipoCambioQuery, [fecha, tipo_cambio], (err, results) => {
-      if (err) {
-        console.error('Error al insertar el tipo de cambio:', err);
-        return res.status(500).json({ error: 'Error al insertar el tipo de cambio' });
-      }
+    // Ejecutar la consulta usando el pool
+    await pool.query(insertTipoCambioQuery, [fecha, tipo_cambio]);
 
-      res.status(200).json({ message: 'Tipo de cambio agregado/actualizado correctamente' });
-    });
+    res.status(200).json({ message: 'Tipo de cambio agregado/actualizado correctamente' });
   } catch (error) {
-    console.error('Error al procesar la solicitud:', error);
-    res.status(500).json({ error: 'Error al procesar la solicitud' });
+    console.error('Error al insertar el tipo de cambio:', error);
+    res.status(500).json({ error: 'Error al insertar el tipo de cambio' });
   }
 });
 
@@ -1966,37 +1882,26 @@ app.put('/api/modificartipocambio', async (req, res) => {
      WHERE Fecha = ?;
    `;
 
-    connection.query(checkFacturaQuery, [fechaConvertida], (err, results) => {
-      if (err) {
-        console.error('Error al verificar las facturas:', err);
-        return res.status(500).json({ error: 'Error al verificar las facturas' });
-      }
+    const [facturaResults] = await pool.query(checkFacturaQuery, [fechaConvertida]);
 
-      // Si hay una factura con la misma fecha, no permitir la modificación
-      if (results[0].facturaCount > 0) {
-        return res.status(450).json({ error: 'No se puede modificar el tipo de cambio, ya existe una factura con la misma fecha.' });
-      }
+    // Si hay una factura con la misma fecha, no permitir la modificación
+    if (facturaResults[0].facturaCount > 0) {
+      return res.status(450).json({ error: 'No se puede modificar el tipo de cambio, ya existe una factura con la misma fecha.' });
+    }
 
-      const updateTipoCambioQuery = `
+    const updateTipoCambioQuery = `
       UPDATE tipocambio
       SET  tipo_cambio = ?
       WHERE id = ?;
     `;
 
-      // Ejecutar la consulta para actualizar el tipo de cambio
-      connection.query(updateTipoCambioQuery, [tipo_cambio, id], (err, results) => {
-        if (err) {
-          console.error('Error al modificar el tipo de cambio:', err);
-          return res.status(500).json({ error: 'Error al modificar el tipo de cambio' });
-        }
+    const [updateResults] = await pool.query(updateTipoCambioQuery, [tipo_cambio, id]);
 
-        if (results.affectedRows === 0) {
-          return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
-        }
+    if (updateResults.affectedRows === 0) {
+      return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
+    }
 
-        res.status(200).json({ message: 'Tipo de cambio modificado correctamente' });
-      });
-    });
+    res.status(200).json({ message: 'Tipo de cambio modificado correctamente' });
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -2023,37 +1928,25 @@ app.delete('/api/eliminartipocambio', async (req, res) => {
      FROM facturas
      WHERE Fecha = ?;
    `;
+    const [facturaResults] = await pool.query(checkFacturaQuery, [fechaConvertida]);
 
-    connection.query(checkFacturaQuery, [fechaConvertida], (err, results) => {
-      if (err) {
-        console.error('Error al verificar las facturas:', err);
-        return res.status(500).json({ error: 'Error al verificar las facturas' });
-      }
+    if (facturaResults[0].facturaCount > 0) {
+      return res.status(450).json({
+        error: 'No se puede eliminar el tipo de cambio, ya que existe una factura con la misma fecha.'
+      });
+    }
 
-      // Si hay una factura con la misma fecha, no permitir la modificación
-      if (results[0].facturaCount > 0) {
-        return res.status(450).json({ error: 'No se puede eliminar el tipo de cambio, ya que existe una factura con la misma fecha.' });
-      }
-
-      const deleteTipoCambioQuery = `
+    const deleteTipoCambioQuery = `
       DELETE FROM tipocambio WHERE id = ?;
     `;
 
-      // Ejecutar la consulta para eliminar el tipo de cambio
-      connection.query(deleteTipoCambioQuery, [id], (err, results) => {
-        if (err) {
-          console.error('Error al eliminar el tipo de cambio:', err);
-          return res.status(500).json({ error: 'Error al eliminar el tipo de cambio' });
-        }
+    const [deleteResults] = await pool.query(deleteTipoCambioQuery, [id]);
 
-        // Verificar si se eliminó algún registro
-        if (results.affectedRows === 0) {
-          return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
-        }
+    if (deleteResults.affectedRows === 0) {
+      return res.status(404).json({ error: 'Tipo de cambio no encontrado' });
+    }
 
-        res.status(200).json({ message: 'Tipo de cambio eliminado correctamente' });
-      });
-    });
+    res.status(200).json({ message: 'Tipo de cambio eliminado correctamente' });
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
     res.status(500).json({ error: 'Error al procesar la solicitud' });
@@ -2061,26 +1954,27 @@ app.delete('/api/eliminartipocambio', async (req, res) => {
 });
 
 // Endpoint para obtener el tipo de cambio de la fecha actual
-app.get('/api/obtenertipocambioparacomprobante', (req, res) => {
+app.get('/api/obtenertipocambioparacomprobante', async (req, res) => {
   console.log('Received request for /api/obtenertipocambioparacomprobante');
   const query = 'SELECT tipo_cambio FROM tipocambio WHERE fecha = CURDATE()';
 
-  connection.query(query, (err, results) => {
-    if (err) {
-      console.log('Error en la consulta');
-      return res.status(500).json({ error: 'Error en la consulta' });
-    }
+  try {
+    const [results] = await pool.query(query);
 
     if (results.length === 0) {
       console.log('No hay tipo de cambio para la fecha actual');
       return res.status(400).json({ error: 'No hay tipo de cambio para la fecha actual' });
     }
+
     console.log(results[0].tipo_cambio);
     res.json({ tipo_cambio: results[0].tipo_cambio });
-  });
+  } catch (error) {
+    console.error('Error en la consulta:', error);
+    res.status(500).json({ error: 'Error en la consulta' });
+  }
 });
 
-app.get('/api/obtenerembarques', (req, res) => {
+app.get('/api/obtenerembarques', async (req, res) => {
   console.log('Received request for /api/obtenerembarques');
   const { tipoEmbarque, clienteId } = req.query; // Obtener los parámetros de la consulta
 
@@ -2116,12 +2010,9 @@ app.get('/api/obtenerembarques', (req, res) => {
     return res.status(400).json({ error: 'Tipo de embarque no válido' });
   }
 
-  // Ejecutar la consulta
-  connection.query(query, [clienteId], (err, results) => {
-    if (err) {
-      console.log('Error en la consulta:', err);
-      return res.status(500).json({ error: 'Error en la consulta' });
-    }
+  try {
+    // Ejecutar la consulta con el pool
+    const [results] = await pool.query(query, [clienteId]);
 
     if (results.length === 0) {
       console.log('No se encontraron embarques para el cliente y tipo de embarque');
@@ -2131,7 +2022,10 @@ app.get('/api/obtenerembarques', (req, res) => {
     // Si la consulta es exitosa, devolver los embarques
     console.log(results);
     res.json(results);
-  });
+  } catch (error) {
+    console.error('Error en la consulta:', error);
+    res.status(500).json({ error: 'Error en la consulta' });
+  }
 });
 
 app.post('/api/agregarconcepto', async (req, res) => {
@@ -2238,37 +2132,34 @@ app.post('/api/agregarconcepto', async (req, res) => {
     `;
     const values = [codigo, codigoGIA, descripcionDesdeFront, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria];
 
-    connection.query(query, values, (err, result) => {
-      if (err) {
-        console.log('Error en la inserción:', err);
-        return res.status(500).json({ error: 'Error al agregar el concepto a la base de datos' });
-      }
-
+    try {
+      const [result] = await pool.query(query, values);
       console.log('Concepto agregado con ID:', result.insertId);
       res.json({ message: 'Concepto agregado con éxito', id: result.insertId, codigoGia: codigoGIA });
-    });
+    } catch (err) {
+      console.log('Error en la inserción:', err);
+      return res.status(500).json({ error: 'Error al agregar el concepto a la base de datos' });
+    }
 
   } catch (error) {
     console.error('Error al enviar solicitud SOAP:', error.message);
     return res.status(500).json({ error: 'Error al enviar solicitud SOAP' });
   }
 });
-app.get('/api/previewconceptos', (req, res) => {
+app.get('/api/previewconceptos', async (req, res) => {
   console.log('Received request for /api/previewconceptos');
 
   const query = 'SELECT * FROM conceptos'; // Consulta para obtener todos los conceptos
-
-  connection.query(query, (err, results) => {
-    if (err) {
-      console.log('Error al obtener los conceptos:', err);
-      return res.status(500).json({ error: 'Error al obtener los conceptos' });
-    }
-
+  try {
+    const [results] = await pool.query(query);
     console.log('Conceptos obtenidos:', results);
     res.json(results); // Devuelve los conceptos como respuesta
-  });
+  } catch (err) {
+    console.log('Error al obtener los conceptos:', err);
+    res.status(500).json({ error: 'Error al obtener los conceptos' });
+  }
 });
-app.delete('/api/eliminarconcepto/:id', (req, res) => {
+app.delete('/api/eliminarconcepto/:id', async (req, res) => {
   const { id } = req.params; // Obtiene el id del concepto a eliminar
 
   // Asegúrate de que el ID sea un número válido antes de intentar eliminar
@@ -2278,11 +2169,8 @@ app.delete('/api/eliminarconcepto/:id', (req, res) => {
 
   const query = 'DELETE FROM conceptos WHERE idconcepto = ?';
 
-  connection.query(query, [id], (err, result) => {
-    if (err) {
-      console.log('Error al eliminar el concepto:', err);
-      return res.status(500).json({ error: 'Error al eliminar el concepto' });
-    }
+  try {
+    const [result] = await pool.query(query, [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Concepto no encontrado' });
@@ -2290,109 +2178,116 @@ app.delete('/api/eliminarconcepto/:id', (req, res) => {
 
     console.log('Concepto eliminado con ID:', id);
     res.json({ message: 'Concepto eliminado con éxito' });
-  });
+  } catch (err) {
+    console.log('Error al eliminar el concepto:', err);
+    res.status(500).json({ error: 'Error al eliminar el concepto' });
+  }
 });
-app.get('/api/buscarconcepto/:codigo', (req, res) => {
+
+app.get('/api/buscarconcepto/:codigo', async (req, res) => {
   const { codigo } = req.params;
   console.log('Código recibido en backend:', codigo);
   const query = 'SELECT * FROM conceptos WHERE codigo = ?';
 
-  connection.query(query, [codigo], (err, results) => {
-    if (err) {
-      console.error('Error al obtener el concepto:', err);
-      return res.status(500).json({ error: 'Error en la consulta' });
-    }
+  try {
+    const [results] = await pool.query(query, [codigo]);
 
     if (results.length === 0) {
       return res.status(404).json({ error: 'Concepto no encontrado' });
     }
 
     res.json(results[0]); // Devuelve el primer resultado encontrado
-  });
+  } catch (err) {
+    console.error('Error al obtener el concepto:', err);
+    res.status(500).json({ error: 'Error en la consulta' });
+  }
 });
 
 app.post('/api/insertfactura', async (req, res) => {
   console.log('Received request for /api/insertfactura');
+  let connection;
   let facturaCuentaAjenaId;
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
-  const {
-    IdCliente,
-    Nombre,
-    RazonSocial,
-    DireccionFiscal,
-    CodigoGIA,
-    Ciudad,
-    Pais,
-    RutCedula,
-    ComprobanteElectronico,
-    Comprobante,
-    Compania,
-    Electronico,
-    Moneda,
-    Fecha,
-    FechaVencimiento,
-    TipoIVA,
-    CASS,
-    TipoEmbarque,
-    TC,
-    Subtotal,
-    IVA,
-    Redondeo,
-    Total,
-    TotalCobrar,
-    DetalleFactura, // Lista de detalles para insertar
-    SubtotalCuentaAjena,
-    IVACuentaAjena,
-    TotalCuentaAjena,
-    RedondeoCuentaAjena,
-    TotalCobrarCuentaAjena,
-    EmbarquesSeleccionados
-  } = req.body; // Los datos de la factura enviados desde el frontend
-  console.log('Moneda en el back: ', Moneda);
-  if (Moneda === 'UYU') {
-    DetalleFactura.forEach(detalle => {
-      if (detalle.conceptos && Array.isArray(detalle.conceptos)) {
-        detalle.conceptos = detalle.conceptos.map(concepto => ({
-          ...concepto,
-          importe: parseFloat((concepto.importe * TC).toFixed(2))
-        }));
-      }
 
-      if (detalle.conceptos_cuentaajena && Array.isArray(detalle.conceptos_cuentaajena)) {
-        detalle.conceptos_cuentaajena = detalle.conceptos_cuentaajena.map(concepto => ({
-          ...concepto,
-          importe: parseFloat((concepto.importe * TC).toFixed(2))
-        }));
-      }
-    });
-  }
+  try {
+    // Obtener conexión del pool
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const {
+      IdCliente,
+      Nombre,
+      RazonSocial,
+      DireccionFiscal,
+      CodigoGIA,
+      Ciudad,
+      Pais,
+      RutCedula,
+      ComprobanteElectronico,
+      Comprobante,
+      Compania,
+      Electronico,
+      Moneda,
+      Fecha,
+      FechaVencimiento,
+      TipoIVA,
+      CASS,
+      TipoEmbarque,
+      TC,
+      Subtotal,
+      IVA,
+      Redondeo,
+      Total,
+      TotalCobrar,
+      DetalleFactura, // Lista de detalles para insertar
+      SubtotalCuentaAjena,
+      IVACuentaAjena,
+      TotalCuentaAjena,
+      RedondeoCuentaAjena,
+      TotalCobrarCuentaAjena,
+      EmbarquesSeleccionados
+    } = req.body; // Los datos de la factura enviados desde el frontend
+    console.log('Moneda en el back: ', Moneda);
+    if (Moneda === 'UYU') {
+      DetalleFactura.forEach(detalle => {
+        if (detalle.conceptos && Array.isArray(detalle.conceptos)) {
+          detalle.conceptos = detalle.conceptos.map(concepto => ({
+            ...concepto,
+            importe: parseFloat((concepto.importe * TC).toFixed(2))
+          }));
+        }
 
-  let comprobanteElectronicoFinal;
-
-  switch (ComprobanteElectronico.toLowerCase()) {
-    case 'efactura':
-      comprobanteElectronicoFinal = datosEmpresa.codEfac;
-      break;
-    case 'efacturaca':
-      comprobanteElectronicoFinal = datosEmpresa.codEfacCA;
-      break;
-    case 'eticket':
-      comprobanteElectronicoFinal = datosEmpresa.codETick;
-      break;
-    case 'eticketca':
-      comprobanteElectronicoFinal = datosEmpresa.codETickCA;
-      break;
-    default:
-      comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
-      break;
-  }
-
-  console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
-  // Iniciar la transacción
-  connection.beginTransaction((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al iniciar la transacción' });
+        if (detalle.conceptos_cuentaajena && Array.isArray(detalle.conceptos_cuentaajena)) {
+          detalle.conceptos_cuentaajena = detalle.conceptos_cuentaajena.map(concepto => ({
+            ...concepto,
+            importe: parseFloat((concepto.importe * TC).toFixed(2))
+          }));
+        }
+      });
     }
+
+    let comprobanteElectronicoFinal;
+
+    switch (ComprobanteElectronico.toLowerCase()) {
+      case 'efactura':
+        comprobanteElectronicoFinal = datosEmpresa.codEfac;
+        break;
+      case 'efacturaca':
+        comprobanteElectronicoFinal = datosEmpresa.codEfacCA;
+        break;
+      case 'eticket':
+        comprobanteElectronicoFinal = datosEmpresa.codETick;
+        break;
+      case 'eticketca':
+        comprobanteElectronicoFinal = datosEmpresa.codETickCA;
+        break;
+      default:
+        comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
+        break;
+    }
+
+    console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
+
+
 
     console.log("Datos recibidos en el backend:", JSON.stringify(req.body, null, 2));
     // Consulta para insertar la factura
@@ -2403,777 +2298,499 @@ app.post('/api/insertfactura', async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    connection.query(insertFacturaQuery, [
+    const [resultFactura] = await connection.query(insertFacturaQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, comprobanteElectronicoFinal,
       Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
-      Redondeo, Total, TotalCobrar, CodigoGIA, FechaVencimiento
-    ], (err, result) => {
-      if (err) {
-        return connection.rollback(() => {
-          console.error('Error al insertar la factura:', err);
-          res.status(501).json({ error: 'Error al insertar la factura principal en la Base de datos' });
-        });
+      Redondeo, Total, TotalCobrar, CodigoGIA, FechaVencimiento]);
+
+    const facturaId = resultFactura.insertId; // Obtener el ID de la factura insertada
+
+    console.log('Moneda antes de adenda: ', Moneda);
+
+    // Insertar detalles de la factura principal
+    const detallePromises = [];
+    for (const detalle of DetalleFactura) {
+      for (const concepto of detalle.conceptos) {
+        detallePromises.push(connection.query(
+          `INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [facturaId, concepto.tipo, concepto.guia, concepto.descripcion, concepto.moneda, concepto.importe, concepto.id_concepto]
+        ));
       }
-
-      const facturaId = result.insertId; // Obtener el ID de la factura insertada
-      console.log('Moneda antes de adenda: ', Moneda);
-      let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
-      const detalleFacturaPromises = [];
-      DetalleFactura.forEach((detalle) => {
-        // Insertar los detalles de la factura
-        detalle.conceptos.forEach((concepto) => {
-          detalleFacturaPromises.push(
-            new Promise((resolve, reject) => {
-              const insertDetalleQuery = `
-              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
-
-              connection.query(insertDetalleQuery, [
-                facturaId, concepto.tipo, concepto.guia, concepto.descripcion, concepto.moneda, concepto.importe, concepto.id_concepto
-              ], (err, result) => {
-                if (err) {
-                  return reject(err);
-                }
-                resolve(result);
-              });
-            })
-          );
-        });
-      });
-      // Si existen conceptos en 'conceptos_cuentaajena', crear una segunda factura
-      if (DetalleFactura.some(detalle => detalle.conceptos_cuentaajena && detalle.conceptos_cuentaajena.length > 0)) {
-        const insertFacturaCuentaAjenaQuery = `
+    }
+    // Si existen conceptos en 'conceptos_cuentaajena', crear una segunda factura
+    if (DetalleFactura.some(detalle => detalle.conceptos_cuentaajena && detalle.conceptos_cuentaajena.length > 0)) {
+      const insertFacturaCuentaAjenaQuery = `
     INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                           ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
                           CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia,fechaVencimiento)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-        connection.query(insertFacturaCuentaAjenaQuery, [
-          IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codEfacCA, // ComprobanteElectronico como 'efacturaca'
-          Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
-          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA, FechaVencimiento
-        ], (err, result) => {
-          if (err) {
-            return connection.rollback(() => {
-              console.error('Error al insertar la factura de cuenta ajena:', err);
-              res.status(500).json({ error: 'Error al insertar la factura de cuenta ajena' });
-            });
-          }
+      const [resultCuentaAjena] = await connection.query(insertFacturaCuentaAjenaQuery, [
+        IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codEfacCA, // ComprobanteElectronico como 'efacturaca'
+        Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
+        RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA, FechaVencimiento
+      ]);
 
-          facturaCuentaAjenaId = result.insertId; // ID de la factura de cuenta ajena
+      facturaCuentaAjenaId = resultCuentaAjena.insertId; // ID de la factura de cuenta ajena
 
-          // Insertar en cuenta corriente
-          const insertCuentaCorrienteQuery = `
-          INSERT INTO cuenta_corriente (IdCliente, IdFactura, TipoDocumento, NumeroDocumento, Moneda, Debe, Fecha)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-          `;
-
-          connection.query(insertCuentaCorrienteQuery, [
-            IdCliente, facturaCuentaAjenaId, 'Factura', facturaCuentaAjenaId, Moneda, TotalCobrarCuentaAjena, Fecha
-          ], (err, result) => {
-            if (err) {
-              return connection.rollback(() => {
-                console.error('Error al insertar en cuenta corriente:', err);
-                res.status(502).json({ error: 'Error al insertar en cuenta corriente' });
-              });
-            }
-
-            console.log('Factura de cuenta ajena registrada en cuenta corriente con éxito.');
-          });
-
-          // Insertar detalles de la factura de cuenta ajena
-          DetalleFactura.forEach((detalle) => {
-            if (detalle.conceptos_cuentaajena && detalle.conceptos_cuentaajena.length > 0) {
-              detalle.conceptos_cuentaajena.forEach((conceptoCuentaAjena) => {
-                detalleFacturaPromises.push(
-                  new Promise((resolve, reject) => {
-                    const insertDetalleQuery = `
-              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
-
-                    connection.query(insertDetalleQuery, [
-                      facturaCuentaAjenaId, conceptoCuentaAjena.tipo, conceptoCuentaAjena.guia,
-                      conceptoCuentaAjena.descripcion, conceptoCuentaAjena.moneda, conceptoCuentaAjena.importe, conceptoCuentaAjena.id_concepto
-                    ], (err, result) => {
-                      if (err) {
-                        return reject(err);
-                      }
-                      resolve(result);
-                    });
-                  })
-                );
-              });
-            }
-          });
-          console.log('EmbarquesSeleccionados:', EmbarquesSeleccionados);
-
-        })
-      }
-      EmbarquesSeleccionados.forEach((embarque) => {
-        console.log('EmbarquesSeleccionados:', EmbarquesSeleccionados);
-        let updateGuiaQuery = '';
-        let queryParams = [];
-        console.log('Embarque:', embarque);
-
-        // Verificar tipo de embarque
-        if (embarque.Tipo === 'IMPO') {
-          console.log(embarque.Tipo);
-          // Lógica para guiasimpo
-          updateGuiaQuery = `UPDATE guiasimpo SET idfactura = ?, idfacturacuentaajena = ?, facturada = 1 WHERE idguia = ?`;
-          queryParams = [facturaId, facturaCuentaAjenaId, embarque.idguia];
-          console.log('IMPO: Consulta y parámetros:', updateGuiaQuery, queryParams);
-        } else {
-          console.log('EXPO');
-          // Lógica para guiasexpo
-          updateGuiaQuery = `UPDATE guiasexpo SET idfactura = ?, facturada = 1 WHERE idguiasexpo = ?`;
-          queryParams = [facturaId, embarque.idguiasexpo];
-          console.log('EXPO: Consulta y parámetros:', updateGuiaQuery, queryParams);
+      // Insertar detalles de factura de cuenta ajena
+      for (const detalle of DetalleFactura) {
+        for (const concepto of detalle.conceptos_cuentaajena || []) {
+          detallePromises.push(connection.query(
+            `INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [facturaCuentaAjenaId, concepto.tipo, concepto.guia, concepto.descripcion, concepto.moneda, concepto.importe, concepto.id_concepto]
+          ));
         }
-
-        // Ejecutar consulta
-        connection.query(updateGuiaQuery, queryParams, (err, result) => {
-          if (err) {
-            return connection.rollback(() => {
-              console.error('Error al actualizar la guía:', err);
-              res.status(503).json({ error: 'No se pudo actualizar la guia a facturar' });
-            });
-          }
-        });
-      });
-      Promise.all(detalleFacturaPromises)
-        .then(() => {
-          // Insertar la cuenta corriente
-          const insertCuentaCorrienteQuery = `
-            INSERT INTO cuenta_corriente (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, 
-                                          Moneda, Debe)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-          `;
-
-          // Se envía TotalCobrar en "Debe" y NaN en "Haber"
-          connection.query(insertCuentaCorrienteQuery, [
-            IdCliente, facturaId, Fecha, 'Factura', Comprobante, Moneda, TotalCobrar
-          ], (err, result) => {
-            if (err) {
-              return connection.rollback(() => {
-                console.error('Error al insertar la cuenta corriente:', err);
-                res.status(502).json({ error: 'Error al insertar la cuenta corriente' });
-              });
-            }
-
-            // Commit de la transacción
-            connection.commit((err) => {
-              if (err) {
-                return connection.rollback(() => {
-                  console.error('Error al hacer commit de la transacción:', err);
-                  res.status(504).json({ error: 'Error al enviar la información a la bd' });
-                });
-              }
-              const detallesFactura = DetalleFactura.flatMap((detalle) => {
-                return detalle.conceptos.map((concepto) => {
-                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
-
-                  return {
-                    codItem: concepto.id_concepto.toString(), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
-                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
-                    nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
-                    cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
-                    unidadMedida: "UN", // Unidad de medida "UN"
-                    precioUnitario: concepto.importe.toFixed(2), // Precio unitario del concepto, formateado con 2 decimales
-                  };
-                });
-              });
-              const detallesCuentaAjena = DetalleFactura.flatMap((detalle) => {
-                return (Array.isArray(detalle.conceptos_cuentaajena) ? detalle.conceptos_cuentaajena : []).map((concepto) => {
-                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
-
-                  return {
-                    codItem: concepto.id_concepto.toString(), // Código del ítem
-                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1", // "5" si el importe es 0, si no "1"
-                    nombreItem: concepto.descripcion, // Descripción del concepto
-                    cantidad: "1", // Siempre "1"
-                    unidadMedida: "UN", // Unidad de medida
-                    precioUnitario: concepto.importe.toFixed(2), // Importe con 2 decimales como string
-                  };
-                });
-              });
-              let adendaCUENTAAJENA = generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena, Moneda);
-
-              const datos = {
-                fechaCFE: Fecha,
-                fechaVencimientoCFE: FechaVencimiento,
-                Moneda: Moneda,
-                detalleFactura: detallesFactura,
-                adendadoc: adenda,
-                datosEmpresa: datosEmpresa,
-                codigoClienteGIA: CodigoGIA
-              }
-              const datosEfacCuentaAjena = {
-                fechaCFE: Fecha,
-                fechaVencimientoCFE: FechaVencimiento,
-                Moneda: Moneda,
-                detalleFacturaCuentaAjena: detallesCuentaAjena,
-                adendadoc: adendaCUENTAAJENA,
-                datosEmpresa: datosEmpresa,
-                codigoClienteGIA: CodigoGIA
-              }
-              //detallesFactura.length
-              console.log('ESTOS SON LOS DATOS:', datos);
-              const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
-                return new Promise((resolve, reject) => {
-                  axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
-                    .then(response => {
-                      const resultados = response.data.resultados;
-                      const updateQuery = `
-          UPDATE facturas SET 
-            FechaCFE = ?, 
-            ComprobanteElectronico= ?,
-            TipoDocCFE = ?, 
-            SerieCFE = ?, 
-            NumeroCFE = ?, 
-            PdfBase64 = ?
-          WHERE Id = ?
-        `;
-                      const updateCuentaCorrienteQuery = `
-          UPDATE cuenta_corriente SET 
-            TipoDocumento = ?,
-            NumeroDocumento = ?,
-            Fecha = ?
-          WHERE IdFactura = ?
-        `;
-
-                      // Actualiza la factura principal
-                      const doc1 = resultados[0];
-
-                      const updateFacturaPrincipal = new Promise((resolve, reject) => {
-                        connection.query(updateQuery, [
-                          doc1.fechadocumento,
-                          doc1.tipodocumento,
-                          doc1.tipodocumento,
-                          doc1.seriedocumento,
-                          doc1.numerodocumento,
-                          doc1.pdfBase64,
-                          facturaId
-                        ], (err) => {
-                          if (err) return reject(err);
-                          connection.query(updateCuentaCorrienteQuery, [
-                            doc1.tipodocumento,
-                            doc1.numerodocumento,
-                            doc1.fechadocumento,
-                            facturaId
-                          ], (err) => {
-                            if (err) return reject(err);
-                            resolve();
-                          });
-                        });
-                      });
-
-                      const updateFacturaCuentaAjena = facturaCuentaAjenaId && resultados[1]
-                        ? new Promise((resolve, reject) => {
-                          const doc2 = resultados[1];
-                          connection.query(updateQuery, [
-                            doc2.fechadocumento,
-                            doc2.tipodocumento,
-                            doc2.tipodocumento,
-                            doc2.seriedocumento,
-                            doc2.numerodocumento,
-                            doc2.pdfBase64,
-                            facturaCuentaAjenaId
-                          ], (err) => {
-                            if (err) return reject(err);
-                            connection.query(updateCuentaCorrienteQuery, [
-                              doc2.tipodocumento,
-                              doc2.numerodocumento,
-                              doc2.fechadocumento,
-                              facturaCuentaAjenaId
-                            ], (err) => {
-                              if (err) return reject(err);
-                              resolve();
-                            });
-                          });
-                        })
-                        : Promise.resolve(); // No hay cuenta ajena, no hace nada
-
-                      Promise.all([updateFacturaPrincipal, updateFacturaCuentaAjena])
-                        .then(() => resolve(response.data))
-                        .catch(reject);
-                    })
-                    .catch(error => {
-                      console.error('Error en enviarFacturaSOAP:', error.response?.data || error.message || error);
-                      reject(error.response?.data || new Error('Error en SOAP'));
-                    });
-                });
-              };
-
-
-              (async () => {
-                try {
-                  const xml = generarXmlefacimpopp(datos);
-
-                  let xmlCuentaAjena = null;
-                  if (facturaCuentaAjenaId) {
-                    xmlCuentaAjena = generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjena);
-                  }
-
-                  const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
-
-                  res.status(200).json(resultadoSOAP);
-                } catch (error) {
-                  if (typeof error === 'object' && error !== null) {
-                    res.status(422).json(error);
-                  } else {
-                    res.status(422).json({ error: error.toString() });
-                  }
-                }
-              })();
-            });
-          });
-        })
-        .catch((err) => {
-          return connection.rollback(() => {
-            console.error('Error al insertar los detalles de la factura:', err);
-            res.status(500).json({ error: 'Error al insertar los detalles de la factura' });
-          });
-        });
-    });
-  });
-});
-app.post('/api/insertticket', async (req, res) => {
-  console.log('Received request for /api/insertticket');
-  let TicketCuentaAjenaId;
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
-  const {
-    IdCliente,
-    Nombre,
-    RazonSocial,
-    DireccionFiscal,
-    CodigoGIA,
-    Ciudad,
-    Pais,
-    RutCedula,
-    ComprobanteElectronico,
-    Comprobante,
-    Compania,
-    Electronico,
-    Moneda,
-    Fecha,
-    FechaVencimiento,
-    TipoIVA,
-    CASS,
-    TipoEmbarque,
-    TC,
-    Subtotal,
-    IVA,
-    Redondeo,
-    Total,
-    TotalCobrar,
-    DetalleFactura, // Lista de detalles para insertar
-    SubtotalCuentaAjena,
-    IVACuentaAjena,
-    TotalCuentaAjena,
-    RedondeoCuentaAjena,
-    TotalCobrarCuentaAjena,
-    EmbarquesSeleccionados
-  } = req.body; // Los datos de la factura enviados desde el frontend
-
-  let comprobanteElectronicoFinal;
-
-  switch (ComprobanteElectronico.toLowerCase()) {
-    case 'efactura':
-      comprobanteElectronicoFinal = datosEmpresa.codEfac;
-      break;
-    case 'efacturaca':
-      comprobanteElectronicoFinal = datosEmpresa.codEfacCA;
-      break;
-    case 'eticket':
-      comprobanteElectronicoFinal = datosEmpresa.codETick;
-      break;
-    case 'eticketca':
-      comprobanteElectronicoFinal = datosEmpresa.codETickCA;
-      break;
-    default:
-      comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
-      break;
-  }
-
-  console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
-  // Iniciar la transacción
-  connection.beginTransaction((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al iniciar la transacción' });
+      }
+      // Insertar en cuenta corriente factura cuenta ajena
+      await connection.query(
+        `INSERT INTO cuenta_corriente (IdCliente, IdFactura, TipoDocumento, NumeroDocumento, Moneda, Debe, Fecha)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [IdCliente, facturaCuentaAjenaId, 'Factura', facturaCuentaAjenaId, Moneda, TotalCobrarCuentaAjena, Fecha]
+      );
+    }
+    for (const embarque of EmbarquesSeleccionados) {
+      if (embarque.Tipo === 'IMPO') {
+        await connection.query(
+          `UPDATE guiasimpo SET idfactura = ?, idfacturacuentaajena = ?, facturada = 1 WHERE idguia = ?`,
+          [facturaId, facturaCuentaAjenaId, embarque.idguia]
+        );
+      } else {
+        await connection.query(
+          `UPDATE guiasexpo SET idfactura = ?, facturada = 1 WHERE idguiasexpo = ?`,
+          [facturaId, embarque.idguiasexpo]
+        );
+      }
     }
 
-    console.log("Datos recibidos en el backend:", JSON.stringify(req.body, null, 2));
-    // Consulta para insertar la factura
-    const insertFacturaQuery = `
+    // Esperar inserción de todos los detalles
+    await Promise.all(detallePromises);
+    // Insertar en cuenta corriente principal
+    await connection.query(
+      `INSERT INTO cuenta_corriente (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, Moneda, Debe)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [IdCliente, facturaId, Fecha, 'Factura', Comprobante, Moneda, TotalCobrar]
+    );
+
+    // Commit de la transacción
+    await connection.commit();
+
+    // Preparar datos SOAP
+    const adenda = generarAdenda(facturaId, TotalCobrar, Moneda);
+    const adendaCuentaAjena = facturaCuentaAjenaId ? generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena, Moneda) : null;
+
+    const detallesFactura = DetalleFactura.flatMap((detalle) => {
+      return detalle.conceptos.map((concepto) => {
+        const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+
+        return {
+          codItem: concepto.id_concepto.toString(), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
+          indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
+          nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
+          cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
+          unidadMedida: "UN", // Unidad de medida "UN"
+          precioUnitario: concepto.importe.toFixed(2), // Precio unitario del concepto, formateado con 2 decimales
+        };
+      });
+    });
+    const detallesCuentaAjena = DetalleFactura.flatMap((detalle) => {
+      return (Array.isArray(detalle.conceptos_cuentaajena) ? detalle.conceptos_cuentaajena : []).map((concepto) => {
+        const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+
+        return {
+          codItem: concepto.id_concepto.toString(), // Código del ítem
+          indicadorFacturacion: importeFormateado === 0 ? "5" : "1", // "5" si el importe es 0, si no "1"
+          nombreItem: concepto.descripcion, // Descripción del concepto
+          cantidad: "1", // Siempre "1"
+          unidadMedida: "UN", // Unidad de medida
+          precioUnitario: concepto.importe.toFixed(2), // Importe con 2 decimales como string
+        };
+      });
+    });
+
+    const datos = {
+      fechaCFE: Fecha,
+      fechaVencimientoCFE: FechaVencimiento,
+      Moneda: Moneda,
+      detalleFactura: detallesFactura,
+      adendadoc: adenda,
+      datosEmpresa: datosEmpresa,
+      codigoClienteGIA: CodigoGIA
+    }
+    const datosEfacCuentaAjena = {
+      fechaCFE: Fecha,
+      fechaVencimientoCFE: FechaVencimiento,
+      Moneda: Moneda,
+      detalleFacturaCuentaAjena: detallesCuentaAjena,
+      adendadoc: adendaCuentaAjena,
+      datosEmpresa: datosEmpresa,
+      codigoClienteGIA: CodigoGIA
+    };
+    const xml = generarXmlefacimpopp(datos);
+    const xmlCuentaAjena = facturaCuentaAjenaId ? generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjena) : null;
+
+    //detallesFactura.length
+    console.log('ESTOS SON LOS DATOS:', datos);
+    // --- Mantener tu versión SOAP casi igual ---
+    const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
+      return new Promise((resolve, reject) => {
+        axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
+          .then(response => {
+            const resultados = response.data.resultados;
+            const updateQuery = `
+              UPDATE facturas SET FechaCFE=?, ComprobanteElectronico=?, TipoDocCFE=?, SerieCFE=?, NumeroCFE=?, PdfBase64=? WHERE Id=?
+            `;
+            const updateCuentaCorrienteQuery = `
+              UPDATE cuenta_corriente SET TipoDocumento=?, NumeroDocumento=?, Fecha=? WHERE IdFactura=?
+            `;
+
+            const doc1 = resultados[0];
+            const updateFacturaPrincipal = new Promise((resolve, reject) => {
+              connection.query(updateQuery, [doc1.fechadocumento, doc1.tipodocumento, doc1.tipodocumento, doc1.seriedocumento, doc1.numerodocumento, doc1.pdfBase64, facturaId], (err) => {
+                if (err) return reject(err);
+                connection.query(updateCuentaCorrienteQuery, [doc1.tipodocumento, doc1.numerodocumento, doc1.fechadocumento, facturaId], (err) => err ? reject(err) : resolve());
+              });
+            });
+
+            const updateFacturaCuentaAjena = facturaCuentaAjenaId && resultados[1]
+              ? new Promise((resolve, reject) => {
+                const doc2 = resultados[1];
+                connection.query(updateQuery, [doc2.fechadocumento, doc2.tipodocumento, doc2.tipodocumento, doc2.seriedocumento, doc2.numerodocumento, doc2.pdfBase64, facturaCuentaAjenaId], (err) => {
+                  if (err) return reject(err);
+                  connection.query(updateCuentaCorrienteQuery, [doc2.tipodocumento, doc2.numerodocumento, doc2.fechadocumento, facturaCuentaAjenaId], (err) => err ? reject(err) : resolve());
+                });
+              })
+              : Promise.resolve();
+
+            Promise.all([updateFacturaPrincipal, updateFacturaCuentaAjena]).then(() => resolve(response.data)).catch(reject);
+          })
+          .catch(error => {
+            console.error('Error en enviarFacturaSOAP:', error.response?.data || error.message || error);
+            reject(error.response?.data || new Error('Error en SOAP'));
+          });
+      });
+    };
+
+    (async () => {
+      try {
+        const xml = generarXmlefacimpopp({/* tus datos para XML */ });
+        const xmlCuentaAjena = facturaCuentaAjenaId ? generarXmlefacCuentaAjenaimpopp({/* tus datos */ }) : null;
+        const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
+        res.status(200).json(resultadoSOAP);
+      } catch (error) {
+        res.status(422).json(error || { error: error.toString() });
+      }
+    })();
+
+  } catch (err) {
+    if (connection) await connection.rollback();
+    console.error('Error en /api/insertfactura:', err);
+    res.status(500).json({ error: err.message || err });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+app.post('/api/insertticket', async (req, res) => {
+  let connection;
+  let TicketCuentaAjenaId;
+
+  console.log('Received request for /api/insertticket');
+
+  try {
+    // Obtener conexión del pool y comenzar transacción
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const {
+      IdCliente,
+      Nombre,
+      RazonSocial,
+      DireccionFiscal,
+      CodigoGIA,
+      Ciudad,
+      Pais,
+      RutCedula,
+      ComprobanteElectronico,
+      Comprobante,
+      Compania,
+      Electronico,
+      Moneda,
+      Fecha,
+      FechaVencimiento,
+      TipoIVA,
+      CASS,
+      TipoEmbarque,
+      TC,
+      Subtotal,
+      IVA,
+      Redondeo,
+      Total,
+      TotalCobrar,
+      DetalleFactura,
+      SubtotalCuentaAjena,
+      IVACuentaAjena,
+      TotalCuentaAjena,
+      RedondeoCuentaAjena,
+      TotalCobrarCuentaAjena,
+      EmbarquesSeleccionados
+    } = req.body;
+
+    // Convertir comprobante
+    let comprobanteElectronicoFinal;
+    switch (ComprobanteElectronico.toLowerCase()) {
+      case 'efactura': comprobanteElectronicoFinal = datosEmpresa.codEfac; break;
+      case 'efacturaca': comprobanteElectronicoFinal = datosEmpresa.codEfacCA; break;
+      case 'eticket': comprobanteElectronicoFinal = datosEmpresa.codETick; break;
+      case 'eticketca': comprobanteElectronicoFinal = datosEmpresa.codETickCA; break;
+      default: comprobanteElectronicoFinal = ComprobanteElectronico; break;
+    }
+
+    console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
+
+    // Insertar ticket principal
+    const insertTicketQuery = `
       INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
                             ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
                             CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, fechaVencimiento)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    connection.query(insertFacturaQuery, [
+    const [resultTicket] = await connection.query(insertTicketQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, comprobanteElectronicoFinal,
       Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
       Redondeo, Total, TotalCobrar, CodigoGIA, FechaVencimiento
-    ], (err, result) => {
-      if (err) {
-        return connection.rollback(() => {
-          console.error('Error al insertar la factura:', err);
-          res.status(501).json({ error: 'Error al insertar la factura principal en la Base de datos' });
-        });
+    ]);
+
+    const ticketId = resultTicket.insertId;
+
+    // Función para insertar detalles en batches
+    const insertDetalles = async (facturaId, conceptos) => {
+      const batchSize = 50; // tamaño del batch
+      for (let i = 0; i < conceptos.length; i += batchSize) {
+        const batch = conceptos.slice(i, i + batchSize);
+        const values = batch.map(c => [facturaId, c.tipo, c.guia, c.descripcion, c.moneda, c.importe, c.id_concepto]);
+        const placeholders = batch.map(() => '(?, ?, ?, ?, ?, ?, ?)').join(',');
+        const query = `INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto) VALUES ${placeholders}`;
+        await connection.query(query, values.flat());
       }
+    };
 
-      const facturaId = result.insertId; // Obtener el ID de la factura insertada
-      let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
-      const detalleFacturaPromises = [];
-      DetalleFactura.forEach((detalle) => {
-        // Insertar los detalles de la factura
-        detalle.conceptos.forEach((concepto) => {
-          detalleFacturaPromises.push(
-            new Promise((resolve, reject) => {
-              const insertDetalleQuery = `
-              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
+    // Insertar detalles ticket principal
+    for (const detalle of DetalleFactura) {
+      await insertDetalles(ticketId, detalle.conceptos);
+    }
 
-              connection.query(insertDetalleQuery, [
-                facturaId, concepto.tipo, concepto.guia, concepto.descripcion, concepto.moneda, concepto.importe, concepto.id_concepto
-              ], (err, result) => {
-                if (err) {
-                  return reject(err);
-                }
-                resolve(result);
-              });
-            })
-          );
-        });
-      });
-      // Si existen conceptos en 'conceptos_cuentaajena', crear una segunda factura
-      if (DetalleFactura.some(detalle => detalle.conceptos_cuentaajena && detalle.conceptos_cuentaajena.length > 0)) {
-        const insertFacturaCuentaAjenaQuery = `
-    INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
-                          ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
-                          CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, fechaVencimiento)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+    // Si existen conceptos de cuenta ajena
+    if (DetalleFactura.some(detalle => detalle.conceptos_cuentaajena?.length > 0)) {
+      const insertTicketCuentaAjenaQuery = `
+        INSERT INTO facturas (IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, 
+                              ComprobanteElectronico, Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, 
+                              CASS, TipoEmbarque, TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, CodigoClienteGia, fechaVencimiento)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
 
-        connection.query(insertFacturaCuentaAjenaQuery, [
-          IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codETickCA,
-          Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, SubtotalCuentaAjena, IVACuentaAjena,
-          RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA, FechaVencimiento
-        ], (err, result) => {
-          if (err) {
-            return connection.rollback(() => {
-              console.error('Error al insertar la factura de cuenta ajena:', err);
-              res.status(500).json({ error: 'Error al insertar la factura de cuenta ajena' });
-            });
-          }
+      const [resultCuentaAjena] = await connection.query(insertTicketCuentaAjenaQuery, [
+        IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, datosEmpresa.codETickCA,
+        Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC,
+        SubtotalCuentaAjena, IVACuentaAjena, RedondeoCuentaAjena, TotalCuentaAjena, TotalCobrarCuentaAjena, CodigoGIA, FechaVencimiento
+      ]);
 
-          TicketCuentaAjenaId = result.insertId; // ID de la factura de cuenta ajena
+      TicketCuentaAjenaId = resultCuentaAjena.insertId;
 
-          // Insertar en cuenta corriente
-          const insertCuentaCorrienteQuery = `
-          INSERT INTO cuenta_corriente (IdCliente, IdFactura, TipoDocumento, NumeroDocumento, Moneda, Debe, Fecha)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-          `;
-
-          connection.query(insertCuentaCorrienteQuery, [
-            IdCliente, TicketCuentaAjenaId, 'Eticket Cuenta Ajena', TicketCuentaAjenaId, Moneda, TotalCobrarCuentaAjena, Fecha
-          ], (err, result) => {
-            if (err) {
-              return connection.rollback(() => {
-                console.error('Error al insertar en cuenta corriente:', err);
-                res.status(502).json({ error: 'Error al insertar en cuenta corriente' });
-              });
-            }
-
-            console.log('Factura de cuenta ajena registrada en cuenta corriente con éxito.');
-          });
-
-          // Insertar detalles de la factura de cuenta ajena
-          DetalleFactura.forEach((detalle) => {
-            if (detalle.conceptos_cuentaajena && detalle.conceptos_cuentaajena.length > 0) {
-              detalle.conceptos_cuentaajena.forEach((conceptoCuentaAjena) => {
-                detalleFacturaPromises.push(
-                  new Promise((resolve, reject) => {
-                    const insertDetalleQuery = `
-              INSERT INTO detalle_facturas (IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
-
-                    connection.query(insertDetalleQuery, [
-                      TicketCuentaAjenaId, conceptoCuentaAjena.tipo, conceptoCuentaAjena.guia,
-                      conceptoCuentaAjena.descripcion, conceptoCuentaAjena.moneda, conceptoCuentaAjena.importe, conceptoCuentaAjena.id_concepto
-                    ], (err, result) => {
-                      if (err) {
-                        return reject(err);
-                      }
-                      resolve(result);
-                    });
-                  })
-                );
-              });
-            }
-          });
-          console.log('EmbarquesSeleccionados:', EmbarquesSeleccionados);
-
-        })
-      }
-      EmbarquesSeleccionados.forEach((embarque) => {
-        console.log('EmbarquesSeleccionados:', EmbarquesSeleccionados);
-        let updateGuiaQuery = '';
-        let queryParams = [];
-        console.log('Embarque:', embarque);
-
-        // Verificar tipo de embarque
-        if (embarque.Tipo === 'IMPO') {
-          console.log(embarque.Tipo);
-          // Lógica para guiasimpo
-          updateGuiaQuery = `UPDATE guiasimpo SET idfactura = ?, idfacturacuentaajena = ?, facturada = 1 WHERE idguia = ?`;
-          queryParams = [facturaId, TicketCuentaAjenaId, embarque.idguia];
-          console.log('IMPO: Consulta y parámetros:', updateGuiaQuery, queryParams);
-        } else {
-          console.log('EXPO');
-          // Lógica para guiasexpo
-          updateGuiaQuery = `UPDATE guiasexpo SET idfactura = ?, facturada = 1 WHERE idguiasexpo = ?`;
-          queryParams = [facturaId, embarque.idguiasexpo];
-          console.log('EXPO: Consulta y parámetros:', updateGuiaQuery, queryParams);
+      // Insertar detalles ticket cuenta ajena
+      for (const detalle of DetalleFactura) {
+        if (detalle.conceptos_cuentaajena?.length > 0) {
+          await insertDetalles(TicketCuentaAjenaId, detalle.conceptos_cuentaajena);
         }
+      }
 
-        // Ejecutar consulta
-        connection.query(updateGuiaQuery, queryParams, (err, result) => {
-          if (err) {
-            return connection.rollback(() => {
-              console.error('Error al actualizar la guía:', err);
-              res.status(503).json({ error: 'No se pudo actualizar la guia a facturar' });
-            });
-          }
-        });
-      });
-      Promise.all(detalleFacturaPromises)
-        .then(() => {
-          // Insertar la cuenta corriente
-          const insertCuentaCorrienteQuery = `
-            INSERT INTO cuenta_corriente (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, 
-                                          Moneda, Debe)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+      // Insertar en cuenta corriente
+      await connection.query(
+        `INSERT INTO cuenta_corriente (IdCliente, IdFactura, TipoDocumento, NumeroDocumento, Moneda, Debe, Fecha)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [IdCliente, TicketCuentaAjenaId, 'Eticket Cuenta Ajena', TicketCuentaAjenaId, Moneda, TotalCobrarCuentaAjena, Fecha]
+      );
+    }
+
+    // Actualizar embarques
+    for (const embarque of EmbarquesSeleccionados) {
+      if (embarque.Tipo === 'IMPO') {
+        await connection.query(
+          `UPDATE guiasimpo SET idfactura = ?, idfacturacuentaajena = ?, facturada = 1 WHERE idguia = ?`,
+          [ticketId, TicketCuentaAjenaId, embarque.idguia]
+        );
+      } else {
+        await connection.query(
+          `UPDATE guiasexpo SET idfactura = ?, facturada = 1 WHERE idguiasexpo = ?`,
+          [ticketId, embarque.idguiasexpo]
+        );
+      }
+    }
+
+    // Insertar cuenta corriente principal
+    await connection.query(
+      `INSERT INTO cuenta_corriente (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, Moneda, Debe)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [IdCliente, ticketId, Fecha, 'Eticket', ticketId, Moneda, TotalCobrar]
+    );
+
+    // Commit de la transacción
+    await connection.commit();
+
+    // Generar datos para SOAP
+    const adenda = generarAdenda(ticketId, TotalCobrar, Moneda);
+    const adendaCuentaAjena = TicketCuentaAjenaId ? generarAdenda(TicketCuentaAjenaId, TotalCuentaAjena, Moneda) : null;
+
+    const detallesFactura = DetalleFactura.flatMap(d =>
+      d.conceptos.map(c => ({
+        codItem: c.id_concepto.toString(),
+        indicadorFacturacion: c.importe === 0 ? "5" : "1",
+        nombreItem: c.descripcion,
+        cantidad: "1",
+        unidadMedida: "UN",
+        precioUnitario: c.importe.toFixed(2)
+      }))
+    );
+
+    const detallesCuentaAjena = DetalleFactura.flatMap(d =>
+      d.conceptos_cuentaajena?.map(c => ({
+        codItem: c.id_concepto.toString(),
+        indicadorFacturacion: c.importe === 0 ? "5" : "1",
+        nombreItem: c.descripcion,
+        cantidad: "1",
+        unidadMedida: "UN",
+        precioUnitario: c.importe.toFixed(2)
+      })) || []
+    );
+
+    const datos = {
+      fechaCFE: Fecha,
+      fechaVencimientoCFE: FechaVencimiento,
+      Moneda,
+      detalleFactura: detallesFactura,
+      adendadoc: adenda,
+      datosEmpresa,
+      codigoClienteGIA: CodigoGIA,
+      tipoComprobante: datosEmpresa.codETick
+    };
+
+    const datosEfacCuentaAjena = {
+      fechaCFE: Fecha,
+      fechaVencimientoCFE: FechaVencimiento,
+      Moneda,
+      detalleFactura: detallesCuentaAjena,
+      adendadoc: adendaCuentaAjena,
+      datosEmpresa,
+      codigoClienteGIA: CodigoGIA,
+      tipoComprobante: datosEmpresa.codETickCA
+    };
+
+    // Enviar SOAP
+    const xml = generarXmlimpactarDocumento(datos);
+    const xmlCuentaAjena = generarXmlimpactarDocumento(datosEfacCuentaAjena);
+    console.log('XML TICKET GENERADO: ', xml, ' XML TICKETCA GENERADO: ', xmlCuentaAjena);
+
+    const resultadoSOAP = await new Promise((resolve, reject) => {
+      axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
+        .then(async response => {
+          const updateQuery = `
+            UPDATE facturas SET 
+              FechaCFE = ?, 
+              TipoDocCFE = ?, 
+              SerieCFE = ?, 
+              NumeroCFE = ?, 
+              PdfBase64 = ?
+            WHERE Id = ?
           `;
 
-          // Se envía TotalCobrar en "Debe" y NaN en "Haber"
-          connection.query(insertCuentaCorrienteQuery, [
-            IdCliente, facturaId, Fecha, 'Eticket', facturaId, Moneda, TotalCobrar
-          ], (err, result) => {
-            if (err) {
-              return connection.rollback(() => {
-                console.error('Error al insertar la cuenta corriente:', err);
-                res.status(502).json({ error: 'Error al insertar la cuenta corriente' });
-              });
-            }
+          const doc1 = response.data.resultados[0];
+          const doc2 = response.data.resultados[1];
 
-            // Commit de la transacción
-            connection.commit((err) => {
-              if (err) {
-                return connection.rollback(() => {
-                  console.error('Error al hacer commit de la transacción:', err);
-                  res.status(504).json({ error: 'Error al enviar la información a la bd' });
-                });
-              }
-              const detallesFactura = DetalleFactura.flatMap((detalle) => {
-                return detalle.conceptos.map((concepto) => {
-                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+          await connection.query(updateQuery, [
+            doc1.fechadocumento, doc1.tipodocumento, doc1.seriedocumento, doc1.numerodocumento, doc1.pdfBase64, ticketId
+          ]);
 
-                  return {
-                    codItem: concepto.id_concepto.toString(), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
-                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
-                    nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
-                    cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
-                    unidadMedida: "UN", // Unidad de medida "UN"
-                    precioUnitario: concepto.importe.toFixed(2), // Precio unitario del concepto, formateado con 2 decimales
-                  };
-                });
-              });
-              const detallesCuentaAjena = DetalleFactura.flatMap((detalle) => {
-                return detalle.conceptos_cuentaajena.map((concepto) => {
-                  const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+          if (TicketCuentaAjenaId) {
+            await connection.query(updateQuery, [
+              doc2.fechadocumento, doc2.tipodocumento, doc2.seriedocumento, doc2.numerodocumento, doc2.pdfBase64, TicketCuentaAjenaId
+            ]);
+          }
 
-                  return {
-                    codItem: concepto.id_concepto.toString(), // Código del ítem
-                    indicadorFacturacion: importeFormateado === 0 ? "5" : "1", // "5" si el importe es 0, si no "1"
-                    nombreItem: concepto.descripcion, // Descripción del concepto
-                    cantidad: "1", // Siempre "1"
-                    unidadMedida: "UN", // Unidad de medida
-                    precioUnitario: concepto.importe.toFixed(2), // Importe con 2 decimales como string
-                  };
-                });
-              });
-              let adendaCUENTAAJENA = generarAdenda(TicketCuentaAjenaId, TotalCuentaAjena, Moneda);
-
-              const datos = {
-                fechaCFE: Fecha,
-                fechaVencimientoCFE: FechaVencimiento,
-                Moneda: Moneda,
-                detalleFactura: detallesFactura,
-                adendadoc: adenda,
-                datosEmpresa: datosEmpresa,
-                codigoClienteGIA: CodigoGIA,
-                tipoComprobante: datosEmpresa.codETick
-              }
-              const datosEfacCuentaAjena = {
-                fechaCFE: Fecha,
-                fechaVencimientoCFE: FechaVencimiento,
-                Moneda: Moneda,
-                detalleFactura: detallesCuentaAjena,
-                adendadoc: adendaCUENTAAJENA,
-                datosEmpresa: datosEmpresa,
-                codigoClienteGIA: CodigoGIA,
-                tipoComprobante: datosEmpresa.codETickCA
-              }
-              //detallesFactura.length
-              console.log('ESTOS SON LOS DATOS:', datos);
-              const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
-                return new Promise((resolve, reject) => {
-                  axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
-                    .then(response => {
-                      const updateQuery = `
-          UPDATE facturas SET 
-            FechaCFE = ?, 
-            TipoDocCFE = ?, 
-            SerieCFE = ?, 
-            NumeroCFE = ?, 
-            PdfBase64 = ?
-          WHERE Id = ?
-        `;
-
-                      const doc1 = response.data.resultados[0];
-                      const doc2 = response.data.resultados[1];
-
-                      connection.query(updateQuery, [
-                        doc1.fechadocumento,
-                        doc1.tipodocumento,
-                        doc1.seriedocumento,
-                        doc1.numerodocumento,
-                        doc1.pdfBase64,
-                        facturaId
-                      ], (err) => {
-                        if (err) {
-                          console.error('Error al actualizar la primera factura:', err);
-                          return reject(new Error('Error al actualizar la primera factura'));
-                        }
-
-                        connection.query(updateQuery, [
-                          doc2.fechadocumento,
-                          doc2.tipodocumento,
-                          doc2.seriedocumento,
-                          doc2.numerodocumento,
-                          doc2.pdfBase64,
-                          TicketCuentaAjenaId
-                        ], (err2) => {
-                          if (err2) {
-                            console.error('Error al actualizar la segunda factura:', err2);
-                            return reject(new Error('Error al actualizar la segunda factura'));
-                          }
-
-                          resolve(response.data);
-                        });
-                      });
-                    })
-                    .catch(error => {
-                      console.error('Error en enviarFacturaSOAP:', error.response?.data || error.message || error);
-                      if (error.response && error.response.data) {
-                        reject(error.response.data);
-                      } else {
-                        reject(new Error('Error en SOAP'));
-                      }
-                    });
-                });
-              };
-
-
-              (async () => {
-                try {
-                  const xml = generarXmlimpactarDocumento(datos);
-                  const xmlCuentaAjena = generarXmlimpactarDocumento(datosEfacCuentaAjena);
-                  console.log('XML TICKET GENERADO: ', xml, ' XML TICKETCA GENERADO: ', xmlCuentaAjena);
-                  const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
-
-                  res.status(200).json(resultadoSOAP);
-
-                } catch (error) {
-                  if (typeof error === 'object' && error !== null) {
-                    res.status(422).json(error);
-                  } else {
-                    res.status(422).json({ error: error.toString() });
-                  }
-                }
-              })();
-            });
-          });
+          resolve(response.data);
         })
-        .catch((err) => {
-          return connection.rollback(() => {
-            console.error('Error al insertar los detalles de la factura:', err);
-            res.status(500).json({ error: 'Error al insertar los detalles de la factura' });
-          });
-        });
+        .catch(err => reject(err));
     });
-  });
+
+    res.status(200).json(resultadoSOAP);
+
+  } catch (err) {
+    if (connection) await connection.rollback();
+    console.error('Error en /api/insertticket:', err);
+    res.status(500).json({ error: err.message || err });
+  } finally {
+    if (connection) connection.release();
+  }
 });
 
 app.post('/api/insertfacturamanual', async (req, res) => {
-  console.log('Received request for /api/insertfactura');
-  const {
-    IdCliente,
-    Nombre,
-    codigoClienteGIA,
-    RazonSocial,
-    DireccionFiscal,
-    Ciudad,
-    Pais,
-    RutCedula,
-    ComprobanteElectronico,
-    Comprobante,
-    Electronico,
-    Moneda,
-    Fecha,
-    FechaVencimiento,
-    TipoIVA,
-    CASS,
-    TipoEmbarque,
-    TC,
-    Subtotal,
-    IVA,
-    Redondeo,
-    Total,
-    TotalCobrar,
-    DetalleFactura
-  } = req.body; // Los datos de la factura enviados desde el frontend
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
-  let tipoComprobante;
+  let connection;
+  try {
+    console.log('Received request for /api/insertfactura');
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-  switch (ComprobanteElectronico) {
-    case 'efactura':
-      tipoComprobante = datosEmpresa.codEfac;
-      break;
-    case 'eticket':
-      tipoComprobante = datosEmpresa.codETick;
-      break;
-    case 'efacturaca':
-      tipoComprobante = datosEmpresa.codEfacCA;
-      break;
-    case 'eticketca':
-      tipoComprobante = datosEmpresa.codETickCA;
-      break;
-    default:
-      return res.status(400).json({ error: 'Tipo de comprobante electrónico no reconocido' });
-  }
-  // Iniciar la transacción
-  connection.beginTransaction((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al iniciar la transacción' });
+    const {
+      IdCliente,
+      Nombre,
+      codigoClienteGIA,
+      RazonSocial,
+      DireccionFiscal,
+      Ciudad,
+      Pais,
+      RutCedula,
+      ComprobanteElectronico,
+      Comprobante,
+      Electronico,
+      Moneda,
+      Fecha,
+      FechaVencimiento,
+      TipoIVA,
+      CASS,
+      TipoEmbarque,
+      TC,
+      Subtotal,
+      IVA,
+      Redondeo,
+      Total,
+      TotalCobrar,
+      DetalleFactura
+    } = req.body; // Los datos de la factura enviados desde el frontend
+
+    const datosEmpresa = await obtenerDatosEmpresa(connection);
+
+    let tipoComprobante;
+
+    switch (ComprobanteElectronico) {
+      case 'efactura':
+        tipoComprobante = datosEmpresa.codEfac;
+        break;
+      case 'eticket':
+        tipoComprobante = datosEmpresa.codETick;
+        break;
+      case 'efacturaca':
+        tipoComprobante = datosEmpresa.codEfacCA;
+        break;
+      case 'eticketca':
+        tipoComprobante = datosEmpresa.codETickCA;
+        break;
+      default:
+        return res.status(400).json({ error: 'Tipo de comprobante electrónico no reconocido' });
     }
+
 
     console.log("Datos recibidos en el backend:", JSON.stringify(req.body, null, 2));
     // Consulta para insertar la factura
@@ -3184,128 +2801,104 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    connection.query(insertFacturaQuery, [
+    const [resultFactura] = await connection.query(insertFacturaQuery, [
       IdCliente, Nombre, RazonSocial, DireccionFiscal, Ciudad, Pais, RutCedula, tipoComprobante,
       Comprobante, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
       Redondeo, Total, TotalCobrar, codigoClienteGIA, 1, FechaVencimiento
-    ], (err, result) => {
-      if (err) {
-        return connection.rollback(() => {
-          console.error('Error al insertar la factura:', err);
-          res.status(500).json({ error: 'Error al insertar la factura' });
-        });
-      }
+    ]);
 
-      const facturaId = result.insertId; // Obtener el ID de la factura insertada
-      const detalleFacturaPromises = [];
-      if (Array.isArray(DetalleFactura)) {
-        DetalleFactura.forEach((concepto) => {
-          detalleFacturaPromises.push(
-            new Promise((resolve, reject) => {
-              const insertDetalleQuery = `
-                  INSERT INTO detalle_facturas_manuales (IdFactura, Codigo, Descripcion, Moneda, IVA, Importe, impuesto, codigoGIA)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                `;
-              connection.query(insertDetalleQuery, [
-                facturaId, concepto.codigo, concepto.descripcion, concepto.moneda, concepto.ivaCalculado, concepto.importe, concepto.impuesto, concepto.codigoGIA
-              ], (err, result) => {
-                if (err) {
-                  return reject(err);
-                }
-                resolve(result);
-              });
-            })
-          );
-        });
-      } else {
-        console.error('DetalleFactura no es un array:', DetalleFactura);
-        return res.status(400).json({ error: 'DetalleFactura no está bien formado' });
+    const facturaId = resultFactura.insertId;
+
+    // Insertar detalles en batches
+    const insertDetalles = async (facturaId, detalles) => {
+      const batchSize = 50;
+      for (let i = 0; i < detalles.length; i += batchSize) {
+        const batch = detalles.slice(i, i + batchSize);
+        const values = batch.map(d => [
+          facturaId, d.codigo, d.descripcion, d.moneda, d.ivaCalculado, d.importe, d.impuesto, d.codigoGIA
+        ]);
+        const placeholders = batch.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(',');
+        const query = `INSERT INTO detalle_facturas_manuales 
+          (IdFactura, Codigo, Descripcion, Moneda, IVA, Importe, impuesto, codigoGIA) 
+          VALUES ${placeholders}`;
+        await connection.query(query, values.flat());
       }
-      Promise.all(detalleFacturaPromises)
-        .then(() => {
-          // Insertar la cuenta corriente
-          const insertCuentaCorrienteQuery = `
+    };
+
+    if (!Array.isArray(DetalleFactura)) {
+      throw new Error('DetalleFactura no está bien formado');
+    }
+    await insertDetalles(facturaId, DetalleFactura);
+
+    const insertCuentaCorrienteQuery = `
             INSERT INTO cuenta_corriente (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, 
                                           Moneda, Debe)
             VALUES (?, ?, ?, ?, ?, ?, ?)
           `;
 
-          // Se envía TotalCobrar en "Debe" y NaN en "Haber"
-          connection.query(insertCuentaCorrienteQuery, [
-            IdCliente, facturaId, Fecha, 'Factura', Comprobante, Moneda, TotalCobrar
-          ], (err, result) => {
-            if (err) {
-              return connection.rollback(() => {
-                console.error('Error al insertar la cuenta corriente:', err);
-                res.status(500).json({ error: 'Error al insertar la cuenta corriente' });
-              });
-            }
+    await connection.query(insertCuentaCorrienteQuery, [
+      IdCliente, facturaId, Fecha, 'Factura', Comprobante, Moneda, TotalCobrar
+    ]);
 
-            // Commit de la transacción
-            connection.commit((err) => {
-              if (err) {
-                return connection.rollback(() => {
-                  console.error('Error al hacer commit de la transacción:', err);
-                  res.status(500).json({ error: 'Error al hacer commit de la transacción' });
-                });
-              }
-            });
-            let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
-            const datosParaXML = {
-              datosEmpresa: {
-                usuarioGfe: datosEmpresa.usuarioGfe, // Reemplazalo con tus valores reales
-                passwordGfe: datosEmpresa.passwordGfe,
-                codigoEmpresa: datosEmpresa.codigoEmpresa
-              },
-              tipoComprobante: tipoComprobante, // O usa un código como "101" si lo tenés mapeado
-              codigoClienteGIA: codigoClienteGIA || '', // Lo tenés que traer del cliente, si no venía del frontend
-              Moneda: Moneda,
-              fechaCFE: Fecha,
-              fechaVencimientoCFE: FechaVencimiento,
-              adendadoc: adenda, // o cualquier observación que uses
-              detalleFactura: DetalleFactura.map((item) => ({
-                codItem: item.codigoGIA,
-                nombreItem: item.descripcion,
-                cantidad: 1, // Podés cambiarlo si manejás cantidades reales
-                precioUnitario: parseFloat(item.importe) || 0.00
-              }))
-            };
+    // Commit de la transacción antes del SOAP
+    await connection.commit();
 
-            const xmlGenerado = generarXmlimpactarDocumento(datosParaXML);
-            console.log('XML generado para envío:', xmlGenerado);
-            const xmlBuffer = Buffer.from(xmlGenerado, 'utf-8');
+    let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
+    const datosParaXML = {
+      datosEmpresa: {
+        usuarioGfe: datosEmpresa.usuarioGfe, // Reemplazalo con tus valores reales
+        passwordGfe: datosEmpresa.passwordGfe,
+        codigoEmpresa: datosEmpresa.codigoEmpresa
+      },
+      tipoComprobante: tipoComprobante, // O usa un código como "101" si lo tenés mapeado
+      codigoClienteGIA: codigoClienteGIA || '', // Lo tenés que traer del cliente, si no venía del frontend
+      Moneda: Moneda,
+      fechaCFE: Fecha,
+      fechaVencimientoCFE: FechaVencimiento,
+      adendadoc: adenda, // o cualquier observación que uses
+      detalleFactura: DetalleFactura.map((item) => ({
+        codItem: item.codigoGIA,
+        nombreItem: item.descripcion,
+        cantidad: 1, // Podés cambiarlo si manejás cantidades reales
+        precioUnitario: parseFloat(item.importe) || 0.00
+      }))
+    };
 
-            // Headers SOAP
-            const headers = {
-              'Content-Type': 'text/xml;charset=utf-8',
-              'SOAPAction': '"agregarDocumentoFacturacion"',
-              'Accept-Encoding': 'gzip,deflate',
-              'Host': datosEmpresa.serverFacturacion,
-              'Connection': 'Keep-Alive',
-              'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
-            };
+    const xmlGenerado = generarXmlimpactarDocumento(datosParaXML);
+    console.log('XML generado para envío:', xmlGenerado);
+    const xmlBuffer = Buffer.from(xmlGenerado, 'utf-8');
 
-            const headersObtenerPdf = {
-              ...headers,
-              SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
-            };
+    // Headers SOAP
+    const headers = {
+      'Content-Type': 'text/xml;charset=utf-8',
+      'SOAPAction': '"agregarDocumentoFacturacion"',
+      'Accept-Encoding': 'gzip,deflate',
+      'Host': datosEmpresa.serverFacturacion,
+      'Connection': 'Keep-Alive',
+      'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+    };
 
-            // Helpers para parsear XML SOAP
-            const parseSOAP = async (xmlData) => {
-              const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
-              return await parser.parseStringPromise(xmlData);
-            };
+    const headersObtenerPdf = {
+      ...headers,
+      SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+    };
 
-            const parseInnerXML = async (escapedXml) => {
-              const rawXml = escapedXml
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&amp;/g, '&');
-              const innerParser = new xml2js.Parser({ explicitArray: false });
-              return await innerParser.parseStringPromise(rawXml);
-            };
+    // Helpers para parsear XML SOAP
+    const parseSOAP = async (xmlData) => {
+      const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+      return await parser.parseStringPromise(xmlData);
+    };
 
-            const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
+    const parseInnerXML = async (escapedXml) => {
+      const rawXml = escapedXml
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+      const innerParser = new xml2js.Parser({ explicitArray: false });
+      return await innerParser.parseStringPromise(rawXml);
+    };
+
+    const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
   <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
     <soapenv:Header/>
     <soapenv:Body>
@@ -3327,53 +2920,54 @@ app.post('/api/insertfacturamanual', async (req, res) => {
     </soapenv:Body>
   </soapenv:Envelope>
 `;
+    let datosDoc = null;
+    let pdfBase64 = null;
 
-            (async () => {
-              try {
-                // Paso 2: Impactar documento
-                const response = await axios.post(
-                  `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-                  xmlBuffer,
-                  { headers }
-                );
+    try {
+      // Paso 2: Impactar documento
+      const response = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xmlBuffer,
+        { headers }
+      );
 
-                const parsed = await parseSOAP(response.data);
-                const innerXml = parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado;
-                const result = await parseInnerXML(innerXml);
-                const resultado = result.agregarDocumentoFacturacionResultado;
+      const parsed = await parseSOAP(response.data);
+      const innerXml = parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado;
+      const result = await parseInnerXML(innerXml);
+      const resultado = result.agregarDocumentoFacturacionResultado;
 
-                if (resultado.resultado !== "1") {
-                  return res.status(422).json({
-                    success: false,
-                    message: 'Error al impactar el documento',
-                    descripcion: resultado.descripcion,
-                  });
-                }
+      if (resultado.resultado !== "1") {
+        return res.status(422).json({
+          success: false,
+          message: 'Error al impactar el documento',
+          descripcion: resultado.descripcion,
+        });
+      }
 
-                // Paso 3: Obtener PDF
-                const datosDoc = resultado.datos.documento;
+      // Paso 3: Obtener PDF
+      const datosDoc = resultado.datos.documento;
 
-                const xmlPdf = construirXmlObtenerPdf({
-                  fechaDocumento: datosDoc.fechaDocumento,
-                  tipoDocumento: datosDoc.tipoDocumento,
-                  serieDocumento: datosDoc.serieDocumento,
-                  numeroDocumento: datosDoc.numeroDocumento,
-                });
+      const xmlPdf = construirXmlObtenerPdf({
+        fechaDocumento: datosDoc.fechaDocumento,
+        tipoDocumento: datosDoc.tipoDocumento,
+        serieDocumento: datosDoc.serieDocumento,
+        numeroDocumento: datosDoc.numeroDocumento,
+      });
 
-                const pdfResponse = await axios.post(
-                  `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-                  xmlPdf,
-                  { headers: headersObtenerPdf }
-                );
+      const pdfResponse = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xmlPdf,
+        { headers: headersObtenerPdf }
+      );
 
-                const parsedPdf = await parseSOAP(pdfResponse.data);
-                const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
-                const innerPdf = await parseInnerXML(innerPdfXmlEscaped);
+      const parsedPdf = await parseSOAP(pdfResponse.data);
+      const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+      const innerPdf = await parseInnerXML(innerPdfXmlEscaped);
 
-                const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
+      const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
 
-                // Paso 4: Actualizar la factura con los datos del CFE
-                const updateQuery = `
+      // Paso 4: Actualizar la factura con los datos del CFE
+      const updateQuery = `
       UPDATE facturas SET 
         FechaCFE = ?, 
         TipoDocCFE = ?, 
@@ -3383,55 +2977,40 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       WHERE Id = ?
     `;
 
-                connection.query(updateQuery, [
-                  datosDoc.fechaDocumento,
-                  datosDoc.tipoDocumento,
-                  datosDoc.serieDocumento,
-                  datosDoc.numeroDocumento,
-                  pdfBase64,
-                  facturaId // << Asegurate que este valor esté bien definido
-                ], (err) => {
-                  if (err) {
-                    console.error('Error al actualizar la factura:', err);
-                    return res.status(500).json({
-                      success: false,
-                      message: 'Error al actualizar la factura en la base de datos'
-                    });
-                  }
-
-                  return res.status(200).json({
-                    success: true,
-                    message: `Factura ${facturaId} impactada y guardada correctamente`,
-                    documento: {
-                      fecha: datosDoc.fechaDocumento,
-                      tipo: datosDoc.tipoDocumento,
-                      serie: datosDoc.serieDocumento,
-                      numero: datosDoc.numeroDocumento,
-                      pdfBase64: pdfBase64
-                    }
-                  });
-                });
-              } catch (error) {
-                console.error('❌ Error al impactar el documento o recuperar el PDF:', error);
-                return res.status(500).json({
-                  success: false,
-                  message: 'Error interno al impactar documento o al recuperar el PDF',
-                });
-              }
-            })();
-          });
-        })
-        .catch((err) => {
-          return connection.rollback(() => {
-            console.error('Error al insertar los detalles de la factura:', err);
-            res.status(500).json({ error: 'Error al insertar los detalles de la factura' });
-          });
-        });
+      await connection.query(updateQuery, [
+        datosDoc.fechaDocumento,
+        datosDoc.tipoDocumento,
+        datosDoc.serieDocumento,
+        datosDoc.numeroDocumento,
+        pdfBase64,
+        facturaId // << Asegurate que este valor esté bien definido
+      ]);
+    } catch (soapError) {
+      console.error('Error SOAP:', soapError);
+      // opcional: podés decidir si hacer rollback aquí o solo loguearlo
+      throw soapError; // para que caiga al catch general y haga rollback
+    }
+    res.status(200).json({
+      success: true,
+      message: `Factura ${facturaId} impactada y guardada correctamente`,
+      documento: {
+        fecha: datosDoc.fechaDocumento,
+        tipo: datosDoc.tipoDocumento,
+        serie: datosDoc.serieDocumento,
+        numero: datosDoc.numeroDocumento,
+        pdfBase64: pdfBase64
+      }
     });
-  });
+  } catch (err) {
+    if (connection) await connection.rollback();
+    console.error('Error en /api/insertfacturamanual:', err);
+    res.status(500).json({ error: err.message || err });
+  } finally {
+    if (connection) connection.release();
+  }
 });
 
-app.get('/api/movimientos/:idCliente', (req, res) => {
+app.get('/api/movimientos/:idCliente', async (req, res) => {
   const { idCliente } = req.params;
   console.log(`Received request for /api/movimientos/${idCliente}`); // Log para depuración
 
@@ -3453,17 +3032,22 @@ app.get('/api/movimientos/:idCliente', (req, res) => {
     ORDER BY Fecha DESC;
   `;
 
-  connection.query(sql, [idCliente], (err, result) => {
-    if (err) {
-      console.error('Error al obtener movimientos:', err);
-      return res.status(500).json({ message: 'An error occurred while fetching movements.' });
+  try {
+    const [results] = await pool.query(sql, [idCliente]);
+
+    if (results.length === 0) {
+      console.log('No hay movimientos para este cliente');
+      return res.status(404).json({ message: 'No hay movimientos para este cliente' });
     }
 
-    res.status(200).json(result);
-  });
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error al obtener movimientos:', error);
+    res.status(500).json({ message: 'Error al obtener movimientos' });
+  }
 });
 
-app.get('/api/saldo/:idCliente', (req, res) => {
+app.get('/api/saldo/:idCliente', async (req, res) => {
   const { idCliente } = req.params;
   console.log(`Calculando saldo para el cliente ${idCliente}`);
 
@@ -3474,37 +3058,41 @@ app.get('/api/saldo/:idCliente', (req, res) => {
     AND Fecha <= CURDATE();
   `;
 
-  connection.query(sql, [idCliente], (err, result) => {
-    if (err) {
-      console.error('Error al calcular saldo:', err);
-      return res.status(500).json({ message: 'Error al calcular saldo.' });
-    }
+
+  try {
+    const [results] = await pool.query(sql, [idCliente]);
 
     // Si el resultado está vacío, retornar saldo 0
-    const saldo = result[0]?.Saldo || 0;
+    const saldo = results[0]?.Saldo || 0;
     res.status(200).json({ saldo });
-  });
+  } catch (error) {
+    console.error('Error al calcular saldo:', error);
+    res.status(500).json({ message: 'Error al calcular saldo.' });
+  }
 });
-app.get('/api/buscarfacturaporcomprobante/:comprobante', (req, res) => {
+
+app.get('/api/buscarfacturaporcomprobante/:comprobante', async (req, res) => {
   const { comprobante } = req.params;
   const sql = `SELECT * FROM facturas WHERE Id = ?`;
+  try {
+    const [results] = await pool.query(sql, [comprobante]);
 
-  connection.query(sql, [comprobante], (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error al buscar la factura.' });
-    }
-
-    if (result.length === 0) {
+    if (results.length === 0) {
       return res.status(404).json({ message: 'Factura no encontrada.' });
     }
 
+    const factura = results[0];
+
     // Comprobamos si la factura tiene un valor en el campo idrecibo
-    const factura = result[0];
     if (factura.idrecibo) {
-      return res.status(200).json({ message: 'Tiene Recibo.', factura: factura }); // Cambiar a 200 y enviar la factura
+      return res.status(200).json({ message: 'Tiene Recibo.', factura });
     }
-    res.status(200).json(result[0]); // Devuelve solo la primera coincidencia
-  });
+
+    res.status(200).json(factura); // Devuelve la factura
+  } catch (error) {
+    console.error('Error al buscar la factura:', error);
+    res.status(500).json({ message: 'Error al buscar la factura.' });
+  }
 });
 
 // Ruta para insertar un recibo
@@ -3526,19 +3114,11 @@ app.post('/api/insertrecibo', async (req, res) => {
     listadepagos
   } = req.body;
 
-  // Envolvé las queries en promesas para usar async/await
-  const queryAsync = (sql, params) => {
-    return new Promise((resolve, reject) => {
-      connection.query(sql, params, (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      });
-    });
-  };
+  let connection;
 
   try {
-    // 🔄 INICIAR TRANSACCIÓN
-    await queryAsync('START TRANSACTION');
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
     const datosEmpresa = await obtenerDatosEmpresa(connection);
     const formularioausar = datosEmpresa.ultimoFormularioRecibo + 1;
@@ -3549,7 +3129,7 @@ app.post('/api/insertrecibo', async (req, res) => {
       INSERT INTO recibos (nrorecibo, fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion, nroformulario)
       VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const resultInsert = await queryAsync(insertReciboQuery, [
+    const [resultInsert] = await connection.query(insertReciboQuery, [
       documentoausar, fecha, idcliente, nombrecliente, moneda, importe,
       formapago, razonsocial, rut, direccion, formularioausar
     ]);
@@ -3561,12 +3141,11 @@ app.post('/api/insertrecibo', async (req, res) => {
       SET ultimoFormularioRecibo = ?, ultimoDocumentoRecibo = ?, fechaModifica = CURRENT_DATE
       WHERE id = ?
     `;
-    await queryAsync(updateEmpresaQuery, [
+    await connection.query(updateEmpresaQuery, [
       formularioausar,
       documentoausar,
       datosEmpresa.id
     ]);
-
     // 🔸 INSERTAR PAGOS (si hay)
     if (Array.isArray(listadepagos) && listadepagos.length > 0) {
       const pagosValues = listadepagos.map(pago => [
@@ -3583,11 +3162,12 @@ app.post('/api/insertrecibo', async (req, res) => {
         INSERT INTO pagos (idrecibo, fecha, banco, nro_pago, moneda, importe, vencimiento)
         VALUES ?
       `;
-      await queryAsync(insertPagosQuery, [pagosValues]);
+      await connection.query(insertPagosQuery, [pagosValues]);
     }
 
-    // ✅ COMMIT si todo salió bien
-    await queryAsync('COMMIT');
+    //COMMIT si todo salió bien
+    await connection.commit();
+
 
     console.log('Recibo y pagos insertados correctamente');
     return res.status(200).json({
@@ -3599,140 +3179,126 @@ app.post('/api/insertrecibo', async (req, res) => {
   } catch (error) {
     console.error('❌ Error general en insertrecibo:', error);
 
-    // ❌ ROLLBACK si algo falla
-    try {
-      await queryAsync('ROLLBACK');
-      console.log('Rollback ejecutado correctamente');
-    } catch (rollbackError) {
-      console.error('Error durante el rollback:', rollbackError);
+    if (connection) {
+      try {
+        await connection.rollback();
+        console.log('Rollback ejecutado correctamente');
+      } catch (rollbackError) {
+        console.error('Error durante el rollback:', rollbackError);
+      }
     }
 
     return res.status(500).json({ error: 'Error general en insertrecibo', detalle: error.message });
+
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 
-app.post('/api/impactarrecibo', (req, res) => {
+app.post('/api/impactarrecibo', async (req, res) => {
   console.log('ImpactarRecibo endpoint alcanzado');
   const { idrecibo } = req.body;
   console.log('ID RECIBIDO:', idrecibo);
-  obtenerDatosEmpresa(connection).then((datosEmpresa) => {
+  try {
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
     // 1. Traer datos del recibo
-    connection.query('SELECT * FROM recibos WHERE idrecibo = ?', [idrecibo], (err, reciboRows) => {
-      if (err) return res.status(500).json({ error: 'Error al obtener recibo' });
-      const recibo = reciboRows[0];
-      if (!recibo) return res.status(404).json({ error: 'Recibo no encontrado' });
+    const [reciboRows] = await pool.query('SELECT * FROM recibos WHERE idrecibo = ?', [idrecibo]);
+    const recibo = reciboRows[0];
+    if (!recibo) return res.status(404).json({ error: 'Recibo no encontrado' });
 
-      // 2. Traer pagos
-      connection.query('SELECT * FROM pagos WHERE idrecibo = ?', [idrecibo], (err, pagos) => {
-        if (err) return res.status(500).json({ error: 'Error al obtener pagos' });
+    // 2. Traer pagos
+    const [pagos] = await pool.query('SELECT * FROM pagos WHERE idrecibo = ?', [idrecibo]);
 
-        // 3. Traer facturas asociadas
-        connection.query('SELECT * FROM facturas WHERE idrecibo = ?', [idrecibo], async (err, facturasAsociadas) => {
-          if (err) return res.status(500).json({ error: 'Error al obtener facturas asociadas' });
-          if (facturasAsociadas.length === 0) return res.status(400).json({ error: 'No hay facturas asociadas' });
+    // 3. Traer facturas asociadas
+    const [facturasAsociadas] = await pool.query('SELECT * FROM facturas WHERE idrecibo = ?', [idrecibo]);
+    if (facturasAsociadas.length === 0) return res.status(400).json({ error: 'No hay facturas asociadas' });
 
-          // 4. Armar el XML
-          const datosXml = {
-            datosEmpresa,
-            fechaCFE: formatFecha(recibo.fecha),
-            fechaVencimientoCFE: formatFecha(recibo.fecha),
-            adendadoc: generarMensaje(recibo.importe, recibo.moneda),
-            codigoClienteGIA: facturasAsociadas[0].CodigoClienteGia || '',
-            cancelaciones: facturasAsociadas.map(factura => ({
-              rubroAfectado: '113102',
-              tipoDocumentoAfectado: factura.TipoDocCFE,
-              comprobanteAfectado: factura.NumeroCFE,
-              vencimientoAfectado: formatFecha(factura.fechaVencimiento || factura.Fecha),
-              importe: factura.TotalCobrar
-            })),
-            formasPago: pagos.map(pago => ({
-              formaPago: recibo.formapago,
-              importe: pago.importe,
-              comprobante: pago.nro_pago,
-              vencimiento: formatFecha(pago.vencimiento)
-            })),
-            Moneda: recibo.moneda
-          };
+    // 4. Armar el XML
+    const datosXml = {
+      datosEmpresa,
+      fechaCFE: formatFecha(recibo.fecha),
+      fechaVencimientoCFE: formatFecha(recibo.fecha),
+      adendadoc: generarMensaje(recibo.importe, recibo.moneda),
+      codigoClienteGIA: facturasAsociadas[0].CodigoClienteGia || '',
+      cancelaciones: facturasAsociadas.map(factura => ({
+        rubroAfectado: '113102',
+        tipoDocumentoAfectado: factura.TipoDocCFE,
+        comprobanteAfectado: factura.NumeroCFE,
+        vencimientoAfectado: formatFecha(factura.fechaVencimiento || factura.Fecha),
+        importe: factura.TotalCobrar
+      })),
+      formasPago: pagos.map(pago => ({
+        formaPago: recibo.formapago,
+        importe: pago.importe,
+        comprobante: pago.nro_pago,
+        vencimiento: formatFecha(pago.vencimiento)
+      })),
+      Moneda: recibo.moneda
+    };
 
-          const xml = generarXmlRecibo(datosXml);
-          console.log('Impactando Recibo, XML: ', xml);
+    const xml = generarXmlRecibo(datosXml);
+    console.log('Impactando Recibo, XML: ', xml);
 
-          // 5. Enviar XML al WS
-          const headers = {
-            'Content-Type': 'text/xml;charset=utf-8',
-            'SOAPAction': '"agregarDocumentoFacturacion"',
-            'Accept-Encoding': 'gzip,deflate',
-            'Host': datosEmpresa.serverFacturacion,
-            'Connection': 'Keep-Alive',
-            'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
-          };
+    // 5. Enviar XML al WS
+    const headers = {
+      'Content-Type': 'text/xml;charset=utf-8',
+      'SOAPAction': '"agregarDocumentoFacturacion"',
+      'Accept-Encoding': 'gzip,deflate',
+      'Host': datosEmpresa.serverFacturacion,
+      'Connection': 'Keep-Alive',
+      'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
+    };
 
-          try {
-            const response = await axios.post(
-              `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-              xml,
-              { headers }
-            );
+    try {
+      const response = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xml,
+        { headers }
+      );
 
-            const parsed = await parseSOAP(response.data);
-            const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
-            const resultado = inner.agregarDocumentoFacturacionResultado;
+      const parsed = await parseSOAP(response.data);
+      const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+      const resultado = inner.agregarDocumentoFacturacionResultado;
 
-            if (resultado.resultado !== "1") {
-              return res.status(422).json({
-                success: false,
-                mensaje: 'Error en agregarDocumentoFacturacion',
-                errores: [{ descripcion: resultado.descripcion, resultado: resultado.resultado }],
-              });
-            }
+      if (resultado.resultado !== "1") {
+        return res.status(422).json({
+          success: false,
+          mensaje: 'Error en agregarDocumentoFacturacion',
+          errores: [{ descripcion: resultado.descripcion, resultado: resultado.resultado }],
+        });
+      }
 
-            // 🆕 Guardar datos del documento en la tabla recibos
-            const datosDoc = resultado?.datos?.documento;
-            if (datosDoc) {
-              const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
+      // 🆕 Guardar datos del documento en la tabla recibos
+      const datosDoc = resultado?.datos?.documento;
+      if (datosDoc) {
+        const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
 
-              const updateQuery = `
+        const updateQuery = `
                 UPDATE recibos
                 SET fechaDocumentoCFE = ?, tipoDocumentoCFE = ?, serieDocumentoCFE = ?, numeroDocumentoCFE = ?
                 WHERE idrecibo = ?
               `;
 
-              connection.query(
-                updateQuery,
-                [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idrecibo],
-                (err, result) => {
-                  if (err) {
-                    console.error('Error al actualizar recibo con datos del WS:', err);
-                    return res.status(500).json({ success: false, error: 'Error al guardar datos del documento' });
-                  }
+        await pool.query(updateQuery, [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idrecibo]);
+      }
 
-                  return res.status(200).json({
-                    success: true,
-                    message: 'Recibo impactado y datos del WS guardados correctamente',
-                    resultado
-                  });
-                }
-              );
-            } else {
-              // Si no hay datos del documento, igual devolvemos la respuesta
-              return res.status(200).json({
-                success: true,
-                message: 'Recibo impactado, pero sin datos del documento',
-                resultado
-              });
-            }
-          } catch (error) {
-            console.error('Error al enviar XML al WS:', error);
-            return res.status(500).json({ error: 'Error al impactar recibo con el WS' });
-          }
-        });
+      // ✅ Respuesta final
+      return res.status(200).json({
+        success: true,
+        message: 'Recibo impactado y datos del WS guardados correctamente',
+        resultado
       });
-    });
-  }).catch(err => {
-    console.error('Error al obtener datos de empresa:', err);
-    return res.status(500).json({ error: 'Error al obtener datos de empresa' });
-  });
+
+    } catch (error) {
+      console.error('Error al enviar XML al WS:', error);
+      return res.status(500).json({ error: 'Error al impactar recibo con el WS' });
+    }
+
+  } catch (err) {
+    console.error('Error en /api/impactarrecibo:', err);
+    return res.status(500).json({ error: 'Error general en impactar recibo', detalle: err.message });
+  }
 });
 
 // Función auxiliar para formatear fecha a YYYY-MM-DD
@@ -3754,7 +3320,7 @@ async function parseInnerXML(escapedXml) {
 }
 
 
-app.put('/api/actualizarFactura/:idFactura', (req, res) => {
+app.put('/api/actualizarFactura/:idFactura', async (req, res) => {
   const { idFactura } = req.params;
   const { idrecibo } = req.body;
 
@@ -3762,21 +3328,21 @@ app.put('/api/actualizarFactura/:idFactura', (req, res) => {
 
   const updateQuery = `UPDATE facturas SET idrecibo = ? WHERE Id = ?`;
 
-  connection.query(updateQuery, [idrecibo, idFactura], (err, result) => {
-    if (err) {
-      console.error('Error al actualizar la factura:', err);
-      return res.status(500).json({ error: 'Error al actualizar la factura' });
-    }
+  try {
+    const [result] = await pool.query(updateQuery, [idrecibo, idFactura]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'No se encontró la factura para actualizar' });
     }
 
     res.status(200).json({ message: 'Factura actualizada con éxito' });
-  });
+  } catch (err) {
+    console.error('Error al actualizar la factura:', err);
+    res.status(500).json({ error: 'Error al actualizar la factura' });
+  }
 });
 
-app.post('/api/insertarCuentaCorriente', (req, res) => {
+app.post('/api/insertarCuentaCorriente', async (req, res) => {
   const { idcliente, fecha, tipodocumento, numerorecibo, moneda, debe, haber } = req.body;
 
   // Mostrar en consola todos los valores recibidos
@@ -3794,13 +3360,16 @@ app.post('/api/insertarCuentaCorriente', (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
-  connection.query(insertQuery, [idcliente, fecha, tipodocumento, numerorecibo, moneda, debe, haber], (err, result) => {
-    if (err) {
-      console.error('Error al insertar en cuenta corriente:', err);
-      return res.status(500).json({ error: 'Error al insertar en cuenta corriente' });
-    }
-    res.status(200).json({ message: 'Recibo agregado a cuenta corriente' });
-  });
+  try {
+    const [result] = await pool.query(insertQuery, [
+      idcliente, fecha, tipodocumento, numerorecibo, moneda, debe, haber
+    ]);
+
+    res.status(200).json({ message: 'Recibo agregado a cuenta corriente', insertId: result.insertId });
+  } catch (err) {
+    console.error('Error al insertar en cuenta corriente:', err);
+    res.status(500).json({ error: 'Error al insertar en cuenta corriente' });
+  }
 });
 
 app.put('/api/actualizarRecibo/:idrecibo', async (req, res) => {
@@ -3820,17 +3389,12 @@ app.put('/api/actualizarRecibo/:idrecibo', async (req, res) => {
     listadepagos
   } = req.body;
 
-  const queryAsync = (sql, params) => {
-    return new Promise((resolve, reject) => {
-      connection.query(sql, params, (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      });
-    });
-  };
 
   try {
-    await queryAsync('START TRANSACTION');
+    // 🔄 Obtener conexión y comenzar transacción
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
 
     // 🔸 ACTUALIZAR RECIBO
     const updateReciboQuery = `
@@ -3839,13 +3403,13 @@ app.put('/api/actualizarRecibo/:idrecibo', async (req, res) => {
           formapago = ?, razonsocial = ?, rut = ?, direccion = ?
       WHERE idrecibo = ?
     `;
-    await queryAsync(updateReciboQuery, [
+    await connection.query(updateReciboQuery, [
       nrorecibo, fecha, idcliente, nombrecliente, moneda, importe,
       formapago, razonsocial, rut, direccion, idrecibo
     ]);
 
-    // 🔸 BORRAR PAGOS ANTERIORES y volver a insertarlos
-    await queryAsync(`DELETE FROM pagos WHERE idrecibo = ?`, [idrecibo]);
+    // 🔸 BORRAR PAGOS ANTERIORES
+    await connection.query(`DELETE FROM pagos WHERE idrecibo = ?`, [idrecibo]);
 
     if (Array.isArray(listadepagos) && listadepagos.length > 0) {
       const pagosValues = listadepagos.map(pago => [
@@ -3862,48 +3426,51 @@ app.put('/api/actualizarRecibo/:idrecibo', async (req, res) => {
         INSERT INTO pagos (idrecibo, fecha, banco, nro_pago, moneda, importe, vencimiento)
         VALUES ?
       `;
-      await queryAsync(insertPagosQuery, [pagosValues]);
+      await connection.query(insertPagosQuery, [pagosValues]);
     }
 
-    await queryAsync('COMMIT');
+    // ✅ Commit si todo salió bien
+    await connection.commit();
+    connection.release();
 
     res.status(200).json({ message: 'Recibo actualizado correctamente', idrecibo });
   } catch (error) {
     console.error('❌ Error al actualizar recibo:', error);
+
     try {
-      await queryAsync('ROLLBACK');
+      if (connection) await connection.rollback();
     } catch (rollbackError) {
       console.error('Error en rollback:', rollbackError);
     }
+
+    if (connection) connection.release();
     res.status(500).json({ error: 'Error al actualizar recibo', detalle: error.message });
   }
 });
 
-app.put('/api/actualizarCuentaCorriente/:nrorecibo', (req, res) => {
+app.put('/api/actualizarCuentaCorriente/:nrorecibo', async (req, res) => {
   const { nrorecibo } = req.params;
   const { idcliente, fecha, tipodocumento, moneda, debe, haber } = req.body;
-
-  const updateQuery = `
-    UPDATE cuenta_corriente
-    SET IdCliente = ?, Fecha = ?, TipoDocumento = ?, Moneda = ?, Debe = ?, Haber = ?
-    WHERE NumeroRecibo = ?
-  `;
-
-  connection.query(updateQuery, [idcliente, fecha, tipodocumento, moneda, debe, haber, nrorecibo], (err, result) => {
-    if (err) {
-      console.error('Error al actualizar en cuenta corriente:', err);
-      return res.status(500).json({ error: 'Error al actualizar en cuenta corriente' });
-    }
+  try {
+    const [result] = await pool.query(
+      `UPDATE cuenta_corriente
+       SET IdCliente = ?, Fecha = ?, TipoDocumento = ?, Moneda = ?, Debe = ?, Haber = ?
+       WHERE NumeroRecibo = ?`,
+      [idcliente, fecha, tipodocumento, moneda, debe, haber, nrorecibo]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'No se encontró el movimiento para actualizar' });
     }
 
     res.status(200).json({ message: 'Cuenta corriente actualizada correctamente' });
-  });
+  } catch (err) {
+    console.error('Error al actualizar cuenta corriente:', err);
+    res.status(500).json({ error: 'Error al actualizar en cuenta corriente' });
+  }
 });
 
-app.post('/api/obtenerFacturasdesdeRecibo', (req, res) => {
+app.post('/api/obtenerFacturasdesdeRecibo', async (req, res) => {
   const { ids } = req.body;
 
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -3919,14 +3486,13 @@ app.post('/api/obtenerFacturasdesdeRecibo', (req, res) => {
     WHERE Id IN (${placeholders})
   `;
 
-  connection.query(sql, ids, (err, results) => {
-    if (err) {
-      console.error('Error al obtener facturas:', err);
-      return res.status(500).json({ error: 'Error al obtener facturas.' });
-    }
-
+  try {
+    const [results] = await pool.query(sql, ids);
     res.status(200).json(results);
-  });
+  } catch (err) {
+    console.error('Error al obtener facturas:', err);
+    res.status(500).json({ error: 'Error al obtener facturas.' });
+  }
 });
 
 
@@ -4022,24 +3588,21 @@ app.post('/api/generarReciboPDF', async (req, res) => {
   WHERE idrecibo = ?
 `;
 
-    connection.query(updateQuery, [pdfBase64, idrecibo], (err, result) => {
-      if (err) {
-        console.error('Error al actualizar el PDF del recibo:', err);
-        return res.status(500).json({ error: 'Error al actualizar el PDF' });
-      }
+    await pool.query(updateQuery, [pdfBase64, idrecibo]);
 
-      // ✅ Enviar PDF como respuesta SOLO después de guardar en la DB
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=Recibo_${datosRecibo.ernumrecibo}.pdf`);
-      res.send(Buffer.from(pdfFinalBytes));
-    });
+
+    // ✅ Enviar PDF como respuesta SOLO después de guardar en la DB
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=Recibo_${datosRecibo.ernumrecibo}.pdf`);
+    res.send(Buffer.from(pdfFinalBytes));
   } catch (error) {
     console.error('Error al generar el PDF:', error);
     res.status(500).json({ error: 'Error al generar el PDF' });
   }
 });
+
 app.post('/cotizaciones-bcu', async (req, res) => {
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
   const fechaActual = new Date().toISOString().split('T')[0];
 
   const headersCotizacion = {
@@ -4159,7 +3722,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
 app.post('/pruebaws', async (req, res) => {
   const { xml, xmlCuentaAjena } = req.body;
 
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
   const headersAgregar = {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"agregarDocumentoFacturacion"',
@@ -4299,37 +3862,27 @@ app.post('/api/generar-excel-cuentacorriente', async (req, res) => {
   const fechaHasta = new Date(`${hasta}T00:00:00`);
 
   try {
-    const getMovimientos = () => {
-      return new Promise((resolve, reject) => {
-        connection.query(
-          `SELECT 
-            DATE_FORMAT(Fecha, '%d/%m/%Y') AS Fecha,
-            TipoDocumento, NumeroDocumento, NumeroRecibo, Moneda, Debe, Haber
-           FROM cuenta_corriente 
-           WHERE IdCliente = ? AND Fecha BETWEEN ? AND ? AND Moneda = ?
-           ORDER BY Fecha ASC`,
-          [numeroCliente, fechaDesde, fechaHasta, moneda],
-          (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-          }
-        );
-      });
+    const getMovimientos = async () => {
+      const sql = `
+        SELECT 
+          DATE_FORMAT(Fecha, '%d/%m/%Y') AS Fecha,
+          TipoDocumento, NumeroDocumento, NumeroRecibo, Moneda, Debe, Haber
+        FROM cuenta_corriente 
+        WHERE IdCliente = ? AND Fecha BETWEEN ? AND ? AND Moneda = ?
+        ORDER BY Fecha ASC
+      `;
+      const [rows] = await pool.query(sql, [numeroCliente, fechaDesde, fechaHasta, moneda]);
+      return rows;
     };
-
-    const getSaldoInicial = () => {
-      return new Promise((resolve, reject) => {
-        connection.query(
-          `SELECT IFNULL(SUM(Debe) - SUM(Haber), 0) AS Saldo
-           FROM cuenta_corriente 
-           WHERE IdCliente = ? AND Fecha <= ? AND Moneda = ?`,
-          [numeroCliente, fechaDesde, moneda],
-          (err, result) => {
-            if (err) reject(err);
-            else resolve(result[0]?.Saldo || 0);
-          }
-        );
-      });
+    // Función para obtener saldo inicial usando pool
+    const getSaldoInicial = async () => {
+      const sql = `
+        SELECT IFNULL(SUM(Debe) - SUM(Haber), 0) AS Saldo
+        FROM cuenta_corriente 
+        WHERE IdCliente = ? AND Fecha <= ? AND Moneda = ?
+      `;
+      const [rows] = await pool.query(sql, [numeroCliente, fechaDesde, moneda]);
+      return rows[0]?.Saldo || 0;
     };
 
     const movimientos = await getMovimientos();
@@ -4516,46 +4069,16 @@ WHERE IdCliente = ?
   `;
   try {
     // Promesa para obtener los movimientos
-    const getMovimientos = () => {
-      return new Promise((resolve, reject) => {
-        connection.query(sql, [numeroCliente, fechaDesde, fechaHasta, moneda], (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        });
-      });
-    };
-
-    // Promesa para obtener el saldo inicial
-    const getSaldoInicial = () => {
-      return new Promise((resolve, reject) => {
-        connection.query(sqlSaldoInicial, [numeroCliente, fechaDesde, moneda], (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        });
-      });
-    };
-
-    // Promesa para obtener el saldo final
-    const getSaldoFinal = () => {
-      return new Promise((resolve, reject) => {
-        connection.query(sqlSaldoFinal, [numeroCliente, fechaHasta, moneda], (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        });
-      });
-    };
-
-    // Obtener los resultados usando async/await
-    const resultMovimientos = await getMovimientos();
+    const [resultMovimientos] = await pool.query(sql, [numeroCliente, fechaDesde, fechaHasta, moneda]);
     console.log('Resultado de movimientos', resultMovimientos);
 
-    const resultSaldoInicial = await getSaldoInicial();
-    const resultSaldoFinal = await getSaldoFinal();
 
-    // Obtener saldo inicial y final
-    const saldoInicial = resultSaldoInicial[0]?.Saldo || 0;
-    console.log('Saldo inicial', resultSaldoInicial);
-    const saldoFinal = resultSaldoFinal[0]?.Saldo || 0;
+    const [resultSaldoInicialRows] = await pool.query(sqlSaldoInicial, [numeroCliente, fechaDesde, moneda]);
+    const [resultSaldoFinalRows] = await pool.query(sqlSaldoFinal, [numeroCliente, fechaHasta, moneda]);
+
+    const saldoInicial = resultSaldoInicialRows[0]?.Saldo || 0;
+    console.log('Saldo inicial', saldoInicial);
+    const saldoFinal = resultSaldoFinalRows[0]?.Saldo || 0;
 
     // Lógica para generar el PDF con pdf-lib
     const pdfDoc = await PDFDocument.create(); // Crear el documento PDF
@@ -4877,10 +4400,10 @@ WHERE IdCliente = ?
 });
 
 
-app.get('/api/obtenerguiasimpopendientes', (req, res) => {
+app.get('/api/obtenerguiasimpopendientes', async (req, res) => {
   const { cliente, desde, hasta, tipoPago } = req.query;
-
-  let query = `
+  try {
+    let query = `
     SELECT g.*, v.vuelo AS vuelo
 FROM guiasimpo g
 LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
@@ -4890,30 +4413,28 @@ AND g.emision <= ?
 AND g.facturada = 0
   `;
 
-  const params = [cliente, desde, hasta];
+    const params = [cliente, desde, hasta];
 
-  // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
-  if (tipoPago && tipoPago !== 'Cualquiera') {
-    query += ` AND tipodepagoguia = ?`;
-    params.push(tipoPago);
-  }
-
-  query += ` ORDER BY emision ASC`;
-
-  connection.query(query, params, (error, results) => {
-    if (error) {
-      console.error('Error al obtener guías impo:', error);
-      res.status(500).json({ error: 'Error al obtener guías impo' });
-    } else {
-      res.status(200).json(results);
+    // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
+    if (tipoPago && tipoPago !== 'Cualquiera') {
+      query += ` AND tipodepagoguia = ?`;
+      params.push(tipoPago);
     }
-  });
+
+    query += ` ORDER BY emision ASC`;
+    const [results] = await pool.query(query, params);
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error al obtener guías impo:', error);
+    res.status(500).json({ error: 'Error al obtener guías impo' });
+  }
 });
 
-app.get('/api/obtenerguiasexpopendientes', (req, res) => {
+app.get('/api/obtenerguiasexpopendientes', async (req, res) => {
   const { cliente, desde, hasta, tipoPago } = req.query;
-
-  let query = `
+  try {
+    let query = `
     SELECT g.*, v.vuelo AS vuelo
 FROM guiasexpo g
 LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
@@ -4923,77 +4444,67 @@ AND g.emision <= ?
 AND g.facturada = 0
   `;
 
-  const params = [cliente, desde, hasta];
+    const params = [cliente, desde, hasta];
 
-  // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
-  if (tipoPago && tipoPago !== 'Cualquiera') {
-    query += ` AND tipodepago = ?`;
-    params.push(tipoPago);
-  }
-
-  query += ` ORDER BY emision ASC`;
-
-  connection.query(query, params, (error, results) => {
-    if (error) {
-      console.error('Error al obtener guías impo:', error);
-      res.status(500).json({ error: 'Error al obtener guías impo' });
-    } else {
-      res.status(200).json(results);
+    // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
+    if (tipoPago && tipoPago !== 'Cualquiera') {
+      query += ` AND tipodepago = ?`;
+      params.push(tipoPago);
     }
-  });
+
+    query += ` ORDER BY emision ASC`;
+    const [results] = await pool.query(query, params);
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error al obtener guías expo:', error);
+    res.status(500).json({ error: 'Error al obtener guías expo' });
+  }
 });
 
-app.get('/api/obtenerModificarFactura', (req, res) => {
+app.get('/api/obtenerModificarFactura', async (req, res) => {
   const { id } = req.query;
 
   if (!id) {
     return res.status(400).json({ error: 'Falta el parámetro "id"' });
   }
 
-  // Primero buscamos la factura
-  connection.query('SELECT * FROM facturas WHERE Id = ?', [id], (error, facturaResults) => {
-    if (error) {
-      console.error('Error al obtener la factura:', error);
-      return res.status(500).json({ error: 'Error al obtener la factura' });
-    }
+  try {
+    // Buscar la factura
+    const [facturaResults] = await pool.query('SELECT * FROM facturas WHERE Id = ?', [id]);
 
     if (facturaResults.length === 0) {
       return res.status(404).json({ error: 'Factura no encontrada' });
     }
 
-    // Luego buscamos los detalles
-    connection.query(
+    // Buscar los detalles
+    const [detalleResults] = await pool.query(
       'SELECT * FROM detalle_facturas_manuales WHERE IdFactura = ?',
-      [id],
-      (error, detalleResults) => {
-        if (error) {
-          console.error('Error al obtener los detalles:', error);
-          return res.status(500).json({ error: 'Error al obtener los detalles de la factura' });
-        }
-
-        // Respuesta final
-        res.status(200).json({
-          factura: facturaResults[0],
-          detalles: detalleResults,
-        });
-      }
+      [id]
     );
-  });
+
+    // Respuesta final
+    res.status(200).json({
+      factura: facturaResults[0],
+      detalles: detalleResults,
+    });
+  } catch (error) {
+    console.error('Error al obtener la factura o sus detalles:', error);
+    res.status(500).json({ error: 'Error al obtener la factura o sus detalles' });
+  }
 });
+
 //Endpoint para traer todo el redibo y poder modificarlo
-app.get('/api/obtenerModificarRecibo', (req, res) => {
+app.get('/api/obtenerModificarRecibo', async (req, res) => {
   const { id } = req.query;
 
   if (!id) {
     return res.status(400).json({ error: 'Falta el parámetro "id"' });
   }
 
-  // 1️⃣ Buscar el recibo
-  connection.query('SELECT * FROM recibos WHERE idrecibo = ?', [id], (error, reciboResults) => {
-    if (error) {
-      console.error('Error al obtener el recibo:', error);
-      return res.status(500).json({ error: 'Error al obtener el recibo' });
-    }
+  try {
+    // 1️⃣ Buscar el recibo
+    const [reciboResults] = await pool.query('SELECT * FROM recibos WHERE idrecibo = ?', [id]);
 
     if (reciboResults.length === 0) {
       return res.status(404).json({ error: 'Recibo no encontrado' });
@@ -5003,30 +4514,17 @@ app.get('/api/obtenerModificarRecibo', (req, res) => {
     const idCliente = recibo.idcliente;
 
     // 2️⃣ Buscar los pagos asociados
-    connection.query('SELECT * FROM pagos WHERE idrecibo = ?', [id], (error, pagosResults) => {
-      if (error) {
-        console.error('Error al obtener los pagos:', error);
-        return res.status(500).json({ error: 'Error al obtener los pagos del recibo' });
-      }
+    const [pagosResults] = await pool.query('SELECT * FROM pagos WHERE idrecibo = ?', [id]);
 
-      // 3️⃣ Buscar datos del cliente
-      connection.query('SELECT * FROM clientes WHERE Id = ?', [idCliente], (error, clienteResults) => {
-        if (error) {
-          console.error('Error al obtener el cliente:', error);
-          return res.status(500).json({ error: 'Error al obtener los datos del cliente' });
-        }
+    // 3️⃣ Buscar datos del cliente
+    const [clienteResults] = await pool.query('SELECT * FROM clientes WHERE Id = ?', [idCliente]);
+    const cliente = clienteResults[0] || null;
 
-        const cliente = clienteResults[0] || null;
+    // 4️⃣ Buscar facturas asociadas
+    const [facturasAsociadasResults] = await pool.query('SELECT * FROM facturas WHERE idrecibo = ?', [id]);
 
-        // 4️⃣ Buscar facturas asociadas (idrecibo = id del recibo)
-        connection.query('SELECT * FROM facturas WHERE idrecibo = ?', [id], (error, facturasAsociadasResults) => {
-          if (error) {
-            console.error('Error al obtener las facturas asociadas:', error);
-            return res.status(500).json({ error: 'Error al obtener las facturas asociadas' });
-          }
-
-          // 5️⃣ Buscar movimientos de cuenta corriente del cliente
-          const sqlMovimientos = `
+    // 5️⃣ Buscar movimientos de cuenta corriente del cliente
+    const sqlMovimientos = `
             SELECT 
               IdMovimiento, 
               IdCliente, 
@@ -5044,44 +4542,34 @@ app.get('/api/obtenerModificarRecibo', (req, res) => {
             ORDER BY Fecha DESC
           `;
 
-          connection.query(sqlMovimientos, [idCliente], (errMovimientos, movimientosResults) => {
-            if (errMovimientos) {
-              console.error('Error al obtener movimientos:', errMovimientos);
-              return res.status(500).json({ error: 'Error al obtener movimientos del cliente' });
-            }
+    const [movimientosResults] = await pool.query(sqlMovimientos, [idCliente]);
 
-            // 6️⃣ Respuesta final
-            res.status(200).json({
-              recibo,
-              pagos: pagosResults,
-              cliente,
-              facturasAsociadas: facturasAsociadasResults,
-              movimientos: movimientosResults
-            });
-          });
-
-        });
-
-      });
-
+    // 6️⃣ Respuesta final
+    res.status(200).json({
+      recibo,
+      pagos: pagosResults,
+      cliente,
+      facturasAsociadas: facturasAsociadasResults,
+      movimientos: movimientosResults
     });
 
-  });
+  } catch (error) {
+    console.error('Error al obtener los datos del recibo:', error);
+    res.status(500).json({ error: 'Error al obtener los datos del recibo' });
+  }
 });
 // Obtener NC + documentos afectados
-app.get('/api/obtenerModificarNC', (req, res) => {
+app.get('/api/obtenerModificarNC', async (req, res) => {
   const { id } = req.query;
 
   if (!id) {
     return res.status(400).json({ error: 'Falta el parámetro "id"' });
   }
 
-  // Primero buscamos la NC
-  connection.query('SELECT * FROM nc WHERE idNC = ?', [id], (error, ncResults) => {
-    if (error) {
-      console.error('Error al obtener la NC:', error);
-      return res.status(500).json({ error: 'Error al obtener la NC' });
-    }
+
+  try {
+    // 1️⃣ Buscar la NC
+    const [ncResults] = await pool.query('SELECT * FROM nc WHERE idNC = ?', [id]);
 
     if (ncResults.length === 0) {
       return res.status(404).json({ error: 'Nota de crédito no encontrada' });
@@ -5089,66 +4577,55 @@ app.get('/api/obtenerModificarNC', (req, res) => {
 
     const nc = ncResults[0];
 
-    // Traer los datos del cliente
-    connection.query('SELECT * FROM clientes WHERE Id = ?', [nc.idCliente], (errCliente, clienteResults) => {
-      if (errCliente) {
-        console.error('Error al obtener el cliente:', errCliente);
-        return res.status(500).json({ error: 'Error al obtener el cliente' });
-      }
+    // 2️⃣ Traer los datos del cliente
+    const [clienteResults] = await pool.query('SELECT * FROM clientes WHERE Id = ?', [nc.idCliente]);
+    const cliente = clienteResults.length > 0 ? clienteResults[0] : null;
 
-      const cliente = clienteResults.length > 0 ? clienteResults[0] : null;
+    // 3️⃣ Procesar DocsAfectados (Ids de facturas)
+    let docsAfectados = [];
+    if (nc.DocsAfectados) {
+      docsAfectados = nc.DocsAfectados
+        .split(',')
+        .map(d => d.trim())
+        .filter(d => d !== '')
+        .map(Number);
+    }
 
-      // Procesar DocsAfectados (Ids de facturas)
-      let docsAfectados = [];
-      if (nc.DocsAfectados) {
-        docsAfectados = nc.DocsAfectados.split(",")
-          .map(d => d.trim())
-          .filter(d => d !== "")
-          .map(Number);
-      }
+    let facturasConFecha = [];
 
-      if (docsAfectados.length > 0) {
-        connection.query(
-          `SELECT * FROM facturas WHERE Id IN (?)`,
-          [docsAfectados],
-          (errFacturas, facturasResults) => {
-            if (errFacturas) {
-              console.error('Error al obtener facturas afectadas:', errFacturas);
-              return res.status(500).json({ error: 'Error al obtener facturas afectadas' });
-            }
+    if (docsAfectados.length > 0) {
+      const [facturasResults] = await pool.query(
+        `SELECT * FROM facturas WHERE Id IN (?)`,
+        [docsAfectados]
+      );
 
-            // Formatear la fecha
-            const facturasConFecha = facturasResults.map(f => {
-              let fechaFormateada = null;
-              if (f.Fecha) {
-                const fechaObj = new Date(f.Fecha);
-                const dia = String(fechaObj.getDate()).padStart(2, '0');
-                const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
-                const anio = fechaObj.getFullYear();
-                fechaFormateada = `${dia}/${mes}/${anio}`;
-              }
-              return { ...f, FechaFormateada: fechaFormateada };
-            });
+      facturasConFecha = facturasResults.map(f => {
+        let fechaFormateada = null;
+        if (f.Fecha) {
+          const fechaObj = new Date(f.Fecha);
+          const dia = String(fechaObj.getDate()).padStart(2, '0');
+          const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+          const anio = fechaObj.getFullYear();
+          fechaFormateada = `${dia}/${mes}/${anio}`;
+        }
+        return { ...f, FechaFormateada: fechaFormateada };
+      });
+    }
 
-            res.status(200).json({
-              nc,
-              cliente,
-              facturasAfectadas: facturasConFecha
-            });
-          }
-        );
-      } else {
-        res.status(200).json({
-          nc,
-          cliente,
-          facturasAfectadas: []
-        });
-      }
+    // 4️⃣ Respuesta final
+    res.status(200).json({
+      nc,
+      cliente,
+      facturasAfectadas: facturasConFecha
     });
-  });
+
+  } catch (error) {
+    console.error('Error al obtener la NC:', error);
+    res.status(500).json({ error: 'Error al obtener la NC' });
+  }
 });
 
-app.put('/api/modificarFacturaManual', (req, res) => {
+app.put('/api/modificarFacturaManual', async (req, res) => {
   const {
     Id,
     IdCliente,
@@ -5193,25 +4670,17 @@ app.put('/api/modificarFacturaManual', (req, res) => {
     TC, Subtotal, IVA, Redondeo, Total, TotalCobrar, fechaVencimiento,
     Id
   ];
+  try {
+    // 1️⃣ Actualizar factura
+    await pool.query(updateFacturaQuery, params);
 
-  connection.query(updateFacturaQuery, params, (err) => {
-    if (err) {
-      console.error('Error al actualizar la factura:', err);
-      return res.status(500).json({ error: 'Error al actualizar la factura' });
-    }
 
-    // Eliminar detalles anteriores
-    connection.query('DELETE FROM detalle_facturas_manuales WHERE IdFactura = ?', [Id], (err) => {
-      if (err) {
-        console.error('Error al eliminar detalles:', err);
-        return res.status(500).json({ error: 'Error al eliminar los detalles de la factura' });
-      }
+    // 2️⃣ Eliminar detalles anteriores
+    await pool.query('DELETE FROM detalle_facturas_manuales WHERE IdFactura = ?', [Id]);
 
-      if (!DetalleFactura || DetalleFactura.length === 0) {
-        return res.status(200).json({ success: true, message: 'Factura actualizada sin detalles' });
-      }
 
-      // Insertar nuevos detalles
+    // 3️⃣ Insertar nuevos detalles si existen
+    if (DetalleFactura && DetalleFactura.length > 0) {
       const insertQuery = `
         INSERT INTO detalle_facturas_manuales 
         (IdFactura, Codigo, Descripcion, Moneda, IVA, Importe, impuesto, codigoGIA)
@@ -5229,24 +4698,26 @@ app.put('/api/modificarFacturaManual', (req, res) => {
         d.codigoGIA
       ]);
 
-      connection.query(insertQuery, [values], (err) => {
-        if (err) {
-          console.error('Error al insertar los detalles:', err);
-          return res.status(500).json({ error: 'Error al insertar los detalles de la factura' });
-        }
 
-        res.status(200).json({ success: true, message: 'Factura y detalles actualizados correctamente' });
-      });
-    });
-  });
+
+      await pool.query(insertQuery, [values]);
+    }
+
+    res.status(200).json({ success: true, message: 'Factura y detalles actualizados correctamente' });
+
+  } catch (error) {
+    console.error('Error al modificar la factura:', error);
+    res.status(500).json({ error: 'Error al modificar la factura' });
+  }
 });
 
-app.get('/api/obtenerguiasimporeporte', (req, res) => {
+
+app.get('/api/obtenerguiasimporeporte', async (req, res) => {
   const { cliente, desde, hasta, tipoPago } = req.query;
 
   console.log("Generando reporte impo:", cliente, desde, hasta, tipoPago);
-
-  let query = `
+  try {
+    let query = `
     SELECT 
   g.*, 
   v.vuelo AS vuelo
@@ -5255,31 +4726,30 @@ LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
 WHERE g.emision >= ? AND g.emision <= ?
   `;
 
-  const params = [desde, hasta];
+    const params = [desde, hasta];
 
-  if (cliente && cliente.trim() !== '') {
-    query += ` AND g.consignatario LIKE ?`;
-    params.push(`%${cliente}%`);
-  }
-
-  if (tipoPago && tipoPago !== 'ALL' && tipoPago !== 'Cualquiera') {
-    query += ` AND g.tipodepagoguia = ?`;
-    params.push(tipoPago);
-  }
-
-  query += ` ORDER BY g.emision ASC`;
-
-  connection.query(query, params, (error, results) => {
-    if (error) {
-      console.error('Error al obtener guías impo:', error);
-      res.status(500).json({ error: 'Error al obtener guías impo' });
-    } else {
-      res.status(200).json(results);
+    if (cliente && cliente.trim() !== '') {
+      query += ` AND g.consignatario LIKE ?`;
+      params.push(`%${cliente}%`);
     }
-  });
+
+    if (tipoPago && tipoPago !== 'ALL' && tipoPago !== 'Cualquiera') {
+      query += ` AND g.tipodepagoguia = ?`;
+      params.push(tipoPago);
+    }
+
+    query += ` ORDER BY g.emision ASC`;
+
+
+    const [results] = await pool.query(query, params);
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error al obtener guías impo:', error);
+    res.status(500).json({ error: 'Error al obtener guías impo' });
+  }
 });
 
-app.get('/api/facturas-sin-cobrar', (req, res) => {
+app.get('/api/facturas-sin-cobrar', async (req, res) => {
   console.log('Received request for /api/facturas-sin-cobrar');
 
   const sqlList = `
@@ -5300,27 +4770,20 @@ app.get('/api/facturas-sin-cobrar', (req, res) => {
     WHERE idrecibo IS NULL
   `;
 
-  connection.query(sqlList, (err, facturas) => {
-    if (err) {
-      console.error('Error al obtener facturas sin cobrar:', err);
-      return res.status(500).json({ message: 'Ocurrió un error al obtener las facturas sin cobrar.' });
-    }
+  try {
+    const [facturas] = await pool.query(sqlList);
+    const [totalResult] = await pool.query(sqlTotal);
 
-    connection.query(sqlTotal, (err2, totalResult) => {
-      if (err2) {
-        console.error('Error al calcular total sin cobrar:', err2);
-        return res.status(500).json({ message: 'Ocurrió un error al calcular el total sin cobrar.' });
-      }
+    const totalSinCobrar = totalResult[0]?.totalSinCobrar || 0;
 
-      const totalSinCobrar = totalResult[0].totalSinCobrar || 0;
-
-      res.status(200).json({ facturas, totalSinCobrar });
-    });
-  });
+    res.status(200).json({ facturas, totalSinCobrar });
+  } catch (error) {
+    console.error('Error al obtener facturas sin cobrar:', error);
+    res.status(500).json({ message: 'Ocurrió un error al obtener las facturas sin cobrar.' });
+  }
 });
 
-
-app.get('/api/guias-sin-facturar', (req, res) => {
+app.get('/api/guias-sin-facturar', async (req, res) => {
   console.log('Received request for /api/guias-sin-facturar');
 
   const sql = `
@@ -5353,25 +4816,18 @@ app.get('/api/guias-sin-facturar', (req, res) => {
       (SELECT IFNULL(SUM(total), 0) FROM guiasexpo WHERE facturada = 0) AS total_sin_facturar
   `;
 
-  // Ejecutar ambas consultas en paralelo
-  connection.query(sql, (err, guias) => {
-    if (err) {
-      console.error('Error al obtener guías sin facturar:', err);
-      return res.status(500).json({ message: 'Error al obtener las guías sin facturar.' });
-    }
+  try {
+    const [guias] = await pool.query(sql);
+    const [totalResult] = await pool.query(totalSql);
 
-    connection.query(totalSql, (err2, totalResult) => {
-      if (err2) {
-        console.error('Error al calcular total sin facturar:', err2);
-        return res.status(500).json({ message: 'Error al calcular el total sin facturar.' });
-      }
-
-      res.status(200).json({
-        guias,
-        total_sin_facturar: totalResult[0].total_sin_facturar
-      });
+    res.status(200).json({
+      guias,
+      total_sin_facturar: totalResult[0]?.total_sin_facturar || 0
     });
-  });
+  } catch (error) {
+    console.error('Error al obtener guías sin facturar:', error);
+    res.status(500).json({ message: 'Error al obtener las guías sin facturar.' });
+  }
 });
 
 app.post('/api/impactardocumento', async (req, res) => {
@@ -5382,90 +4838,84 @@ app.post('/api/impactardocumento', async (req, res) => {
   try {
     const datosEmpresa = await obtenerDatosEmpresa(connection);
     const tablaDetalles = esManual === 1 ? 'detalle_facturas_manuales' : 'detalle_facturas';
+
     // Obtener detalles de la factura
-    const sql = `
-      SELECT *
-      FROM ${tablaDetalles}
-      WHERE IdFactura = ?
-    `;
+    const [resultados] = await pool.query(
+      `SELECT * FROM ${tablaDetalles} WHERE IdFactura = ?`,
+      [idFactura]
+    );
 
-    connection.query(sql, [idFactura], async (err, resultados) => {
-      if (err) {
-        console.error('❌ Error al obtener detalles de la factura:', err);
-        return res.status(500).json({ message: 'Error al obtener los detalles de la factura.' });
-      }
+    let adenda = generarAdenda(factura.factura.Id, factura.factura.Total, factura.factura.Moneda);
 
-      let adenda = generarAdenda(factura.factura.Id, factura.factura.Total, factura.factura.Moneda);
-
-      // Preparar detalles de la factura
-      const detallesFactura = resultados.map((concepto) => {
-        const importeFormateado = parseFloat(concepto.Importe.toFixed(2));
-        const codItem = esManual === 1
-          ? concepto.codigoGIA?.toString() || 'SIN_CODIGO'
-          : concepto.Id_concepto?.toString() || 'SIN_CODIGO';
-        return {
-          codItem: codItem,
-          indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
-          nombreItem: concepto.Descripcion,
-          cantidad: "1",
-          unidadMedida: "UN",
-          precioUnitario: importeFormateado.toFixed(2),
-        };
-      });
-
-      // Convertir fecha DD/MM/YYYY a YYYY-MM-DD
-      function convertirFechaAISO(fechaStr) {
-        console.log('Convirtiendo esta fecha', fechaStr)
-        const [dia, mes, anio] = fechaStr.split('/');
-        return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-      }
-
-      const datos = {
-        fechaCFE: convertirFechaAISO(factura.factura.Fecha),
-        fechaVencimientoCFE: convertirFechaAISO(factura.factura.fechaVencimiento),
-        Moneda: factura.factura.Moneda,
-        detalleFactura: detallesFactura,
-        adendadoc: adenda,
-        datosEmpresa: datosEmpresa,
-        codigoClienteGIA: factura.factura.CodigoClienteGia,
-        tipoComprobante: factura.factura.ComprobanteElectronico
+    // Preparar detalles de la factura
+    const detallesFactura = resultados.map((concepto) => {
+      const importeFormateado = parseFloat(concepto.Importe.toFixed(2));
+      const codItem = esManual === 1
+        ? concepto.codigoGIA?.toString() || 'SIN_CODIGO'
+        : concepto.Id_concepto?.toString() || 'SIN_CODIGO';
+      return {
+        codItem: codItem,
+        indicadorFacturacion: importeFormateado === 0 ? "5" : "1",
+        nombreItem: concepto.Descripcion,
+        cantidad: "1",
+        unidadMedida: "UN",
+        precioUnitario: importeFormateado.toFixed(2),
       };
+    });
 
-      const xml = generarXmlimpactarDocumento(datos);
-      const xmlBuffer = Buffer.from(xml, 'utf-8');
+    // Convertir fecha DD/MM/YYYY a YYYY-MM-DD
+    function convertirFechaAISO(fechaStr) {
+      console.log('Convirtiendo esta fecha', fechaStr)
+      const [dia, mes, anio] = fechaStr.split('/');
+      return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    }
 
-      // Headers SOAP
-      const headers = {
-        'Content-Type': 'text/xml;charset=utf-8',
-        'SOAPAction': '"agregarDocumentoFacturacion"',
-        'Accept-Encoding': 'gzip,deflate',
-        'Host': datosEmpresa.serverFacturacion,
-        'Connection': 'Keep-Alive',
-        'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
-      };
+    const datos = {
+      fechaCFE: convertirFechaAISO(factura.factura.Fecha),
+      fechaVencimientoCFE: convertirFechaAISO(factura.factura.fechaVencimiento),
+      Moneda: factura.factura.Moneda,
+      detalleFactura: detallesFactura,
+      adendadoc: adenda,
+      datosEmpresa: datosEmpresa,
+      codigoClienteGIA: factura.factura.CodigoClienteGia,
+      tipoComprobante: factura.factura.ComprobanteElectronico
+    };
 
-      const headersObtenerPdf = {
-        ...headers,
-        SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
-      };
+    const xml = generarXmlimpactarDocumento(datos);
+    const xmlBuffer = Buffer.from(xml, 'utf-8');
 
-      // Helpers para parsear XML SOAP
-      const parseSOAP = async (xmlData) => {
-        const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
-        return await parser.parseStringPromise(xmlData);
-      };
+    // Headers SOAP
+    const headers = {
+      'Content-Type': 'text/xml;charset=utf-8',
+      'SOAPAction': '"agregarDocumentoFacturacion"',
+      'Accept-Encoding': 'gzip,deflate',
+      'Host': datosEmpresa.serverFacturacion,
+      'Connection': 'Keep-Alive',
+      'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+    };
 
-      const parseInnerXML = async (escapedXml) => {
-        const rawXml = escapedXml
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&');
-        const innerParser = new xml2js.Parser({ explicitArray: false });
-        return await innerParser.parseStringPromise(rawXml);
-      };
+    const headersObtenerPdf = {
+      ...headers,
+      SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+    };
 
-      // Construir XML para obtener PDF
-      const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
+    // Helpers para parsear XML SOAP
+    const parseSOAP = async (xmlData) => {
+      const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+      return await parser.parseStringPromise(xmlData);
+    };
+
+    const parseInnerXML = async (escapedXml) => {
+      const rawXml = escapedXml
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+      const innerParser = new xml2js.Parser({ explicitArray: false });
+      return await innerParser.parseStringPromise(rawXml);
+    };
+
+    // Construir XML para obtener PDF
+    const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
           <soapenv:Header/>
           <soapenv:Body>
@@ -5488,107 +4938,83 @@ app.post('/api/impactardocumento', async (req, res) => {
         </soapenv:Envelope>
       `;
 
-      try {
-        // Paso 1: Impactar documento
-        const response = await axios.post(
-          `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-          xmlBuffer,
-          { headers }
-        );
+    // Paso 1: Impactar documento
+    const response = await axios.post(
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      xmlBuffer,
+      { headers }
+    );
 
-        const parsed = await parseSOAP(response.data);
-        const innerXml = parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado;
-        const result = await parseInnerXML(innerXml);
-        const resultado = result.agregarDocumentoFacturacionResultado;
+    const parsed = await parseSOAP(response.data);
+    const innerXml = parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado;
+    const result = await parseInnerXML(innerXml);
+    const resultado = result.agregarDocumentoFacturacionResultado;
 
-        if (resultado.resultado !== "1") {
-          return res.status(422).json({
-            success: false,
-            message: 'Error al impactar el documento',
-            descripcion: resultado.descripcion,
-          });
-        }
+    if (resultado.resultado !== "1") {
+      return res.status(422).json({
+        success: false,
+        message: 'Error al impactar el documento',
+        descripcion: resultado.descripcion,
+      });
+    }
 
-        const datosDoc = resultado.datos.documento;
+    const datosDoc = resultado.datos.documento;
 
-        // Paso 2: Obtener PDF
-        const xmlPdf = construirXmlObtenerPdf({
-          fechaDocumento: datosDoc.fechaDocumento,
-          tipoDocumento: datosDoc.tipoDocumento,
-          serieDocumento: datosDoc.serieDocumento,
-          numeroDocumento: datosDoc.numeroDocumento,
-        });
+    // Paso 2: Obtener PDF
+    const xmlPdf = construirXmlObtenerPdf({
+      fechaDocumento: datosDoc.fechaDocumento,
+      tipoDocumento: datosDoc.tipoDocumento,
+      serieDocumento: datosDoc.serieDocumento,
+      numeroDocumento: datosDoc.numeroDocumento,
+    });
 
-        const pdfResponse = await axios.post(
-          `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-          xmlPdf,
-          { headers: headersObtenerPdf }
-        );
+    const pdfResponse = await axios.post(
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      xmlPdf,
+      { headers: headersObtenerPdf }
+    );
 
-        const parsedPdf = await parseSOAP(pdfResponse.data);
-        const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
-        const innerPdf = await parseInnerXML(innerPdfXmlEscaped);
+    const parsedPdf = await parseSOAP(pdfResponse.data);
+    const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+    const innerPdf = await parseInnerXML(innerPdfXmlEscaped);
 
-        const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
+    const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
 
-        const updateQuery = `
-  UPDATE facturas SET 
-    FechaCFE = ?, 
-    TipoDocCFE = ?, 
-    SerieCFE = ?, 
-    NumeroCFE = ?, 
-    PdfBase64 = ?
-  WHERE Id = ?
-`;
+    // Actualizar factura en DB usando pool
+    await pool.query(
+      `
+      UPDATE facturas SET 
+        FechaCFE = ?, 
+        TipoDocCFE = ?, 
+        SerieCFE = ?, 
+        NumeroCFE = ?, 
+        PdfBase64 = ?
+      WHERE Id = ?
+      `,
+      [datosDoc.fechaDocumento, datosDoc.tipoDocumento, datosDoc.serieDocumento, datosDoc.numeroDocumento, pdfBase64, idFactura]
+    );
 
-        connection.query(updateQuery, [
-          datosDoc.fechaDocumento,
-          datosDoc.tipoDocumento,
-          datosDoc.serieDocumento,
-          datosDoc.numeroDocumento,
-          pdfBase64,
-          idFactura
-        ], (err) => {
-          if (err) {
-            console.error('Error al actualizar la factura:', err);
-            return res.status(500).json({
-              success: false,
-              message: 'Error al actualizar la factura en la base de datos'
-            });
-          }
 
-          return res.status(200).json({
-            success: true,
-            message: `Factura ${idFactura} impactada y guardada correctamente`,
-            documento: {
-              fecha: datosDoc.fechaDocumento,
-              tipo: datosDoc.tipoDocumento,
-              serie: datosDoc.serieDocumento,
-              numero: datosDoc.numeroDocumento,
-              pdfBase64: pdfBase64
-            }
-          });
-        });
-
-      } catch (error) {
-        console.error('❌ Error al impactar el documento o recuperar el PDF:', error);
-        return res.status(500).json({
-          success: false,
-          message: 'Error interno al impactar documento o al recuperar el PDF',
-        });
+    return res.status(200).json({
+      success: true,
+      message: `Factura ${idFactura} impactada y guardada correctamente`,
+      documento: {
+        fecha: datosDoc.fechaDocumento,
+        tipo: datosDoc.tipoDocumento,
+        serie: datosDoc.serieDocumento,
+        numero: datosDoc.numeroDocumento,
+        pdfBase64: pdfBase64
       }
     });
 
   } catch (error) {
-    console.error('❌ Error al obtener datos de la empresa:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error interno al obtener datos de la empresa',
-    });
+    console.error('❌ Error en impactar documento:', error);
+    return res.status(500).json({ success: false, message: 'Error interno al impactar documento o actualizar base de datos' });
   }
 });
 
-app.post('/api/actualizarcorrelatividad', (req, res) => {
+
+app.post('/api/actualizarcorrelatividad', async (req, res) => {
   const { campo, valor } = req.body;
 
   const camposPermitidos = ['ultimoFormularioRecibo', 'ultimoDocumentoRecibo'];
@@ -5599,37 +5025,36 @@ app.post('/api/actualizarcorrelatividad', (req, res) => {
 
   const sql = `UPDATE datos_empresa SET ${campo} = ? WHERE id = 1`; // ajusta el WHERE si lo necesitas dinámico
 
-  connection.query(sql, [valor], (err, result) => {
-    if (err) {
-      console.error('Error al actualizar:', err);
-      return res.status(500).json({ error: 'Error al actualizar el dato' });
-    }
+  try {
+    const [result] = await pool.query(sql, [valor]);
     res.status(200).json({ message: `Campo ${campo} actualizado correctamente` });
-  });
+  } catch (err) {
+    console.error('Error al actualizar:', err);
+    res.status(500).json({ error: 'Error al actualizar el dato' });
+  }
 });
-app.get('/api/obtenercorrelatividad', (req, res) => {
+app.get('/api/obtenercorrelatividad', async (req, res) => {
   const sql = `
     SELECT ultimoFormularioRecibo, ultimoDocumentoRecibo
     FROM datos_empresa
     WHERE id = 1
     LIMIT 1
   `;
-
-  connection.query(sql, (err, rows) => {
-    if (err) {
-      console.error('Error al consultar correlatividad:', err);
-      return res.status(500).json({ error: 'Error al obtener datos' });
-    }
+  try {
+    const [rows] = await pool.query(sql);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Sin datos de correlatividad' });
     }
 
     res.json(rows[0]); // { ultimoFormularioRecibo: 123, ultimoDocumentoRecibo: 456 }
-  });
+  } catch (err) {
+    console.error('Error al consultar correlatividad:', err);
+    res.status(500).json({ error: 'Error al obtener datos' });
+  }
 });
 
-app.get('/api/obtenercorrelatividadtabla', (req, res) => {
+app.get('/api/obtenercorrelatividadtabla', async (req, res) => {
   const query = `
     SELECT 
       nroformulario AS ccformulario, 
@@ -5644,16 +5069,15 @@ app.get('/api/obtenercorrelatividadtabla', (req, res) => {
     ORDER BY nroformulario DESC
   `;
 
-  connection.query(query, (err, result) => {
-    if (err) {
-      console.error('Error al obtener datos de correlatividad:', err);
-      return res.status(500).json({ error: 'Error al obtener datos de correlatividad' });
-    }
-
+  try {
+    const [result] = await pool.query(query);
     res.json(result);
-  });
+  } catch (err) {
+    console.error('Error al obtener datos de correlatividad:', err);
+    res.status(500).json({ error: 'Error al obtener datos de correlatividad' });
+  }
 });
-app.get('/api/historialfacturacionnc/:idCliente', (req, res) => {
+app.get('/api/historialfacturacionnc/:idCliente', async (req, res) => {
   const { idCliente } = req.params;
   console.log('Endpoint historialfacturacionnc ejecutandose');
   const sql = `
@@ -5667,32 +5091,29 @@ app.get('/api/historialfacturacionnc/:idCliente', (req, res) => {
   ORDER BY Fecha DESC
 `;
 
-  connection.query(sql, [idCliente], (err, results) => {
-    if (err) {
-      console.error('Error obteniendo facturas:', err);
-      return res.status(500).json({ error: 'Error en el servidor' });
-    }
+  try {
+    const [results] = await pool.query(sql, [idCliente]);
     res.json(results);
-  });
+  } catch (err) {
+    console.error('Error obteniendo facturas:', err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
 });
 
-app.post('/api/insertarNC', (req, res) => {
+app.post('/api/insertarNC', async (req, res) => {
   const { idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda } = req.body;
 
   if (!idCliente || !fecha || !DocsAfectados || !ImporteTotal) {
     return res.status(400).json({ message: 'Faltan datos obligatorios' });
   }
-
-  const sqlInsert = `
+  try {
+    const sqlInsert = `
     INSERT INTO nc (idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
-  connection.query(sqlInsert, [idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda], (err, result) => {
-    if (err) {
-      console.error('Error insertando N/C:', err);
-      return res.status(500).json({ message: 'Error insertando N/C' });
-    }
+    const [result] = await pool.query(sqlInsert, [idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda]);
+    const idNC = result.insertId;
 
     const idsFacturas = DocsAfectados.split(',').map(id => id.trim()).filter(id => id.length > 0);
 
@@ -5700,364 +5121,271 @@ app.post('/api/insertarNC', (req, res) => {
       return res.json({ message: 'N/C insertada correctamente, no se actualizaron facturas', idNC: result.insertId });
     }
 
-    const sqlUpdate = `
-      UPDATE facturas
-      SET tieneNC = 1
-      WHERE Id IN (?)
-    `;
 
-    connection.query(sqlUpdate, [idsFacturas], (err2) => {
-      if (err2) {
-        console.error('Error actualizando facturas tieneNC:', err2);
-        return res.status(500).json({ message: 'Error actualizando facturas' });
-      }
+    const sqlUpdate = `UPDATE facturas SET tieneNC = 1 WHERE Id IN (?)`;
+    await pool.query(sqlUpdate, [idsFacturas]);
 
-      // Consultar facturas para obtener Moneda y TotalCobrar para movimientos en cuenta_corriente
-      const sqlSelectFacturas = `
-        SELECT Id, Moneda, TotalCobrar
-        FROM facturas
-        WHERE Id IN (?)
-      `;
+    // Consultar facturas para obtener Moneda y TotalCobrar para movimientos en cuenta_corriente
 
-      connection.query(sqlSelectFacturas, [idsFacturas], (err3, facturas) => {
-        if (err3) {
-          console.error('Error consultando facturas:', err3);
-          return res.status(500).json({ message: 'Error consultando facturas' });
-        }
+    const sqlSelectFacturas = `SELECT Id, Moneda, TotalCobrar FROM facturas WHERE Id IN (?)`;
+    const [facturas] = await pool.query(sqlSelectFacturas, [idsFacturas]);
 
-        if (facturas.length === 0) {
-          return res.json({ message: 'N/C insertada y facturas actualizadas, pero no se encontraron facturas para cuenta corriente', idNC: result.insertId });
-        }
+    if (facturas.length === 0) {
+      return res.json({
+        message: 'N/C insertada y facturas actualizadas, pero no se encontraron facturas para cuenta corriente',
+        idNC
+      });
+    }
 
-        // Preparar array para insert masivo en cuenta_corriente
-        const movimientos = facturas.map(f => [
-          idCliente,            // IdCliente
-          f.Id,                 // IdFactura
-          fecha.split(' ')[0],  // Fecha (solo fecha)
-          'NC',                 // TipoDocumento
-          result.insertId.toString(), // NumeroDocumento (id de la NC insertada)
-          '',                   // NumeroRecibo (vacío)
-          f.Moneda,             // Moneda
-          0,                    // Debe
-          f.TotalCobrar || 0    // Haber (monto)
-        ]);
+    // Preparar array para insert masivo en cuenta_corriente
+    const movimientos = facturas.map(f => [
+      idCliente,            // IdCliente
+      f.Id,                 // IdFactura
+      fecha.split(' ')[0],  // Fecha (solo fecha)
+      'NC',                 // TipoDocumento
+      result.insertId.toString(), // NumeroDocumento (id de la NC insertada)
+      '',                   // NumeroRecibo (vacío)
+      f.Moneda,             // Moneda
+      0,                    // Debe
+      f.TotalCobrar || 0    // Haber (monto)
+    ]);
 
-        const sqlInsertMovimientos = `
+    const sqlInsertMovimientos = `
           INSERT INTO cuenta_corriente
           (IdCliente, IdFactura, Fecha, TipoDocumento, NumeroDocumento, NumeroRecibo, Moneda, Debe, Haber)
           VALUES ?
         `;
+    await pool.query(sqlInsertMovimientos, [movimientos]);
 
-        connection.query(sqlInsertMovimientos, [movimientos], async (err4) => {
-          if (err4) {
-            console.error('Error insertando movimientos en cuenta corriente:', err4);
-            return res.status(500).json({ message: 'Error insertando movimientos en cuenta corriente' });
-          }
+    const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC });
 
-          try {
-            const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC: result.insertId });
-
-            return res.json({
-              message: 'N/C insertada correctamente, facturas y cuenta corriente actualizadas',
-              idNC: result.insertId,
-              wsResultado: impactarResponse.data.resultado
-            });
-          } catch (errImpactar) {
-            console.error('Error impactando NC:', errImpactar);
-            return res.status(500).json({ message: 'Error impactando NC', error: errImpactar.message });
-          }
-        });
-      });
+    return res.json({
+      message: 'N/C insertada correctamente, facturas y cuenta corriente actualizadas',
+      idNC,
+      wsResultado: impactarResponse.data.resultado
     });
-  });
+
+  } catch (err) {
+    console.error('Error procesando N/C:', err);
+    return res.status(500).json({ message: 'Error procesando N/C', error: err.message });
+  }
 });
 
 
-app.post('/api/impactarnc', (req, res) => {
+app.post('/api/impactarnc', async (req, res) => {
   console.log('ImpactarNC endpoint alcanzado');
   const { idNC } = req.body;
   console.log('ID N/C RECIBIDO:', idNC);
-
-  obtenerDatosEmpresa(connection).then((datosEmpresa) => {
+  try {
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
     // 1. Traer datos de la NC
-    connection.query('SELECT * FROM nc WHERE idNC = ?', [idNC], (err, ncRows) => {
-      if (err) return res.status(500).json({ error: 'Error al obtener N/C' });
-      const nc = ncRows[0];
-      if (!nc) return res.status(404).json({ error: 'N/C no encontrada' });
+    const [ncRows] = await pool.query('SELECT * FROM nc WHERE idNC = ?', [idNC]);
+    const nc = ncRows[0];
+    if (!nc) return res.status(404).json({ error: 'N/C no encontrada' });
 
-      // 2. Obtener facturas asociadas
-      const idsFacturas = nc.DocsAfectados.split(',').map(id => id.trim()).filter(id => id.length > 0);
-      if (idsFacturas.length === 0) return res.status(400).json({ error: 'La N/C no tiene facturas asociadas' });
+    // 2. Obtener facturas asociadas
+    const idsFacturas = nc.DocsAfectados.split(',').map(id => id.trim()).filter(id => id.length > 0);
+    if (idsFacturas.length === 0) return res.status(400).json({ error: 'La N/C no tiene facturas asociadas' });
 
-      connection.query(`SELECT * FROM facturas WHERE Id IN (?)`, [idsFacturas], async (err2, facturas) => {
-        if (err2) return res.status(500).json({ error: 'Error al obtener facturas asociadas' });
-        if (facturas.length === 0) return res.status(400).json({ error: 'No se encontraron facturas asociadas' });
 
-        // 3. Preparar datos para XML
-        const datosXml = {
-          datosEmpresa,
-          fechaCFE: formatFecha(nc.fecha),
-          fechaVencimientoCFE: formatFecha(nc.fecha),
-          adendadoc: `NC por ${facturas.length} factura(s)`,
-          codigoClienteGIA: nc.CodigoClienteGIA,
-          precioUnitario: nc.ImporteTotal, // Monto total
-          Moneda: facturas[0].Moneda,
-          tipoComprobante:
-            facturas.length > 0
-              ? (facturas[0].TipoDocCFE === 'TCD'
-                ? 'NTT' // Codigo Nota para eticket
-                : facturas[0].TipoDocCFE === 'TCA'
-                  ? 'NRA'//Codigo Nota para eticket CA
-                  : facturas[0].TipoDocCFE === 'FCD'
-                    ? 'NCT'//Codigo Nota para Efactura 
-                    : facturas[0].TipoDocCFE === 'FCA'
-                      ? 'NCA' //Codigo Nota para Efactura CA
-                      : 'NCT')
-              : 'NCT',
-          cancelaciones: facturas.map(factura => ({
-            rubroAfectado: '113102',
-            tipoDocumentoAfectado: factura.TipoDocCFE,
-            comprobanteAfectado: factura.NumeroCFE,
-            vencimientoAfectado: formatFecha(factura.FechaVencimiento || factura.Fecha),
-            importe: factura.TotalCobrar
-          }))
-        };
+    const [facturas] = await pool.query('SELECT * FROM facturas WHERE Id IN (?)', [idsFacturas]);
+    if (facturas.length === 0) return res.status(400).json({ error: 'No se encontraron facturas asociadas' });
 
-        const xml = generarXmlNC(datosXml);
-        console.log('Impactando N/C, XML: ', xml);
+    // 3. Preparar datos para XML
+    const datosXml = {
+      datosEmpresa,
+      fechaCFE: formatFecha(nc.fecha),
+      fechaVencimientoCFE: formatFecha(nc.fecha),
+      adendadoc: `NC por ${facturas.length} factura(s)`,
+      codigoClienteGIA: nc.CodigoClienteGIA,
+      precioUnitario: nc.ImporteTotal, // Monto total
+      Moneda: facturas[0].Moneda,
+      tipoComprobante:
+        facturas.length > 0
+          ? (facturas[0].TipoDocCFE === 'TCD'
+            ? 'NTT' // Codigo Nota para eticket
+            : facturas[0].TipoDocCFE === 'TCA'
+              ? 'NRA'//Codigo Nota para eticket CA
+              : facturas[0].TipoDocCFE === 'FCD'
+                ? 'NCT'//Codigo Nota para Efactura 
+                : facturas[0].TipoDocCFE === 'FCA'
+                  ? 'NCA' //Codigo Nota para Efactura CA
+                  : 'NCT')
+          : 'NCT',
+      cancelaciones: facturas.map(factura => ({
+        rubroAfectado: '113102',
+        tipoDocumentoAfectado: factura.TipoDocCFE,
+        comprobanteAfectado: factura.NumeroCFE,
+        vencimientoAfectado: formatFecha(factura.FechaVencimiento || factura.Fecha),
+        importe: factura.TotalCobrar
+      }))
+    };
 
-        // 4. Enviar XML al WS
-        const headers = {
-          'Content-Type': 'text/xml;charset=utf-8',
-          'SOAPAction': '"agregarDocumentoFacturacion"',
-          'Accept-Encoding': 'gzip,deflate',
-          'Host': datosEmpresa.serverFacturacion,
-          'Connection': 'Keep-Alive',
-          'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
-        };
+    const xml = generarXmlNC(datosXml);
+    console.log('Impactando N/C, XML: ', xml);
 
-        try {
-          const response = await axios.post(
-            `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-            xml,
-            { headers }
-          );
+    // 4. Enviar XML al WS
+    const headers = {
+      'Content-Type': 'text/xml;charset=utf-8',
+      'SOAPAction': '"agregarDocumentoFacturacion"',
+      'Accept-Encoding': 'gzip,deflate',
+      'Host': datosEmpresa.serverFacturacion,
+      'Connection': 'Keep-Alive',
+      'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
+    };
 
-          const parsed = await parseSOAP(response.data);
-          const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
-          const resultado = inner.agregarDocumentoFacturacionResultado;
+    const response = await axios.post(
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      xml,
+      { headers }
+    );
 
-          if (resultado.resultado !== "1") {
+    const parsed = await parseSOAP(response.data);
+    const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+    const resultado = inner.agregarDocumentoFacturacionResultado;
 
-            return res.status(200).json({
-              success: false,
-              message: resultado.descripcion,
-              resultado
-            });
-          }
+    if (resultado.resultado !== "1") {
 
-          // 5. Guardar datos del documento en la tabla NC
-          const datosDoc = resultado?.datos?.documento;
-          if (datosDoc) {
-            const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
+      return res.status(200).json({
+        success: false,
+        message: resultado.descripcion,
+        resultado
+      });
+    }
 
-            const updateQuery = `
+    // 5. Guardar datos del documento en la tabla NC
+    const datosDoc = resultado?.datos?.documento;
+    if (datosDoc) {
+      const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
+
+      const updateQuery = `
               UPDATE nc
               SET fecha = ?, TipoDocumento = ?, Serie = ?, NumeroCFE = ?
               WHERE idNC = ?
             `;
 
-            connection.query(
-              updateQuery,
-              [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idNC],
-              (err, result) => {
-                if (err) {
-                  console.error('Error al actualizar N/C con datos del WS:', err);
-                  return res.status(500).json({ success: false, error: 'Error al guardar datos del documento' });
-                }
+      await pool.query(updateQuery, [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idNC]);
 
-                return res.status(200).json({
-                  success: true,
-                  message: 'N/C impactada y datos del WS guardados correctamente',
-                  resultado
-                });
-              }
-            );
-          } else {
-            return res.status(200).json({
-              success: true,
-              message: resultado.descripcion,
-              resultado
-            });
-          }
-        } catch (error) {
-          console.error('Error al enviar XML al WS:', error);
-          return res.status(500).json({ error: 'Error al impactar N/C con el WS' });
-        }
+      return res.status(200).json({
+        success: true,
+        message: 'N/C impactada y datos del WS guardados correctamente',
+        resultado
       });
-    });
-  }).catch(err => {
-    console.error('Error al obtener datos de empresa:', err);
-    return res.status(500).json({ error: 'Error al obtener datos de empresa' });
-  });
+    } else {
+      return res.status(200).json({
+        success: true,
+        message: resultado.descripcion,
+        resultado
+      });
+    }
+
+  } catch (err) {
+    console.error('Error al impactar N/C:', err);
+    return res.status(500).json({ error: 'Error al impactar N/C', details: err.message });
+  }
 });
 
-app.post('/api/eliminarNC', (req, res) => {
+app.post('/api/eliminarNC', async (req, res) => {
   const { idNC } = req.body;
 
   if (!idNC) {
     return res.status(400).json({ message: 'Falta el idNC' });
   }
 
-  // 1. Obtener la NC y sus facturas asociadas
-  connection.query('SELECT DocsAfectados FROM nc WHERE idNC = ?', [idNC], (err, ncRows) => {
-    if (err) {
-      console.error('Error obteniendo N/C:', err);
-      return res.status(500).json({ message: 'Error obteniendo N/C' });
-    }
-
+  try {
+    // 1️⃣ Obtener la NC y sus facturas asociadas
+    const [ncRows] = await pool.query('SELECT DocsAfectados FROM nc WHERE idNC = ?', [idNC]);
     if (ncRows.length === 0) {
       return res.status(404).json({ message: 'N/C no encontrada' });
     }
 
     const idsFacturas = ncRows[0].DocsAfectados.split(',').map(id => id.trim()).filter(id => id.length > 0);
 
-    // 2. Actualizar facturas para desmarcar tieneNC
     if (idsFacturas.length > 0) {
-      connection.query(
-        'UPDATE facturas SET tieneNC = 0 WHERE Id IN (?)',
-        [idsFacturas],
-        (err2) => {
-          if (err2) {
-            console.error('Error actualizando facturas:', err2);
-            return res.status(500).json({ message: 'Error actualizando facturas' });
-          }
+      // 2️⃣ Actualizar facturas para desmarcar tieneNC
+      await pool.query('UPDATE facturas SET tieneNC = 0 WHERE Id IN (?)', [idsFacturas]);
 
-          // 3. Borrar movimientos de cuenta_corriente asociados
-          connection.query(
-            'DELETE FROM cuenta_corriente WHERE TipoDocumento = "NC" AND NumeroDocumento = ?',
-            [idNC],
-            (err3) => {
-              if (err3) {
-                console.error('Error borrando movimientos:', err3);
-                return res.status(500).json({ message: 'Error borrando movimientos' });
-              }
+      // 3️⃣ Borrar movimientos de cuenta_corriente asociados
+      await pool.query('DELETE FROM cuenta_corriente WHERE TipoDocumento = "NC" AND NumeroDocumento = ?', [idNC]);
 
-              // 4. Borrar la NC
-              connection.query(
-                'DELETE FROM nc WHERE idNC = ?',
-                [idNC],
-                (err4) => {
-                  if (err4) {
-                    console.error('Error borrando N/C:', err4);
-                    return res.status(500).json({ message: 'Error borrando N/C' });
-                  }
+      // 4️⃣ Borrar la NC
+      await pool.query('DELETE FROM nc WHERE idNC = ?', [idNC]);
 
-                  return res.json({ message: 'N/C eliminada correctamente' });
-                }
-              );
-            }
-          );
-        }
-      );
+      return res.json({ message: 'N/C eliminada correctamente' });
     } else {
       // Si no hay facturas asociadas, solo borrar la NC
-      connection.query('DELETE FROM nc WHERE idNC = ?', [idNC], (err) => {
-        if (err) return res.status(500).json({ message: 'Error borrando N/C' });
-        return res.json({ message: 'N/C eliminada correctamente' });
-      });
+      await pool.query('DELETE FROM nc WHERE idNC = ?', [idNC]);
+      return res.json({ message: 'N/C eliminada correctamente' });
     }
-  });
+  } catch (err) {
+    console.error('Error eliminando N/C:', err);
+    return res.status(500).json({ message: 'Error eliminando N/C', error: err.message });
+  }
 });
 
-app.post('/api/reimpactarnc', (req, res) => {
+app.post('/api/reimpactarnc', async (req, res) => {
   const { idNC, idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda } = req.body;
 
   if (!idNC || !idCliente || !fecha || !DocsAfectados || !ImporteTotal) {
     return res.status(400).json({ message: 'Faltan datos obligatorios para reimpactar N/C' });
   }
-
-  // 1. Actualizar la NC con los datos modificados
-  const sqlUpdateNC = `
+  try {
+    // 1. Actualizar la NC con los datos modificados
+    const sqlUpdateNC = `
     UPDATE nc 
     SET idCliente = ?, fecha = ?, DocsAfectados = ?, CFEsAfectados = ?, 
         ImporteTotal = ?, CodigoClienteGIA = ?, Moneda = ?
     WHERE idNC = ?
   `;
 
-  connection.query(
-    sqlUpdateNC,
-    [idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda, idNC],
-    async (err, result) => {
-      if (err) {
-        console.error('Error actualizando N/C antes de reimpactar:', err);
-        return res.status(500).json({ message: 'Error actualizando N/C' });
-      }
+    await pool.query(sqlUpdateNC, [idCliente, fecha, DocsAfectados, CFEsAfectados, ImporteTotal, CodigoClienteGIA, Moneda, idNC]);
 
-      console.log(`N/C ${idNC} actualizada correctamente, procediendo a impactar al WS...`);
+    console.log(`N/C ${idNC} actualizada correctamente, procediendo a impactar al WS...`);
 
-      try {
-        // 2. Llamar al endpoint de impactar, reutilizando la lógica ya existente
-        const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC });
+    // 2️⃣ Llamar al endpoint de impactar, reutilizando la lógica ya existente
+    const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC });
 
-        return res.json({
-          message: 'N/C actualizada y reimpactada correctamente',
-          idNC,
-          wsResultado: impactarResponse.data
-        });
-      } catch (errImpactar) {
-        console.error('Error reimpactando N/C:', errImpactar);
-        return res.status(500).json({ message: 'Error al reimpactar N/C', error: errImpactar.message });
-      }
-    }
-  );
+    return res.json({
+      message: 'N/C actualizada y reimpactada correctamente',
+      idNC,
+      wsResultado: impactarResponse.data
+    });
+
+  } catch (err) {
+    console.error('Error reimpactando N/C:', err);
+    return res.status(500).json({ message: 'Error al reimpactar N/C', error: err.message });
+  }
 });
 
-app.delete("/api/eliminarRecibo/:id", (req, res) => {
+app.delete("/api/eliminarRecibo/:id", async (req, res) => {
   const { id } = req.params;
 
   console.log('Recibo a Eliminar:', id);
-
-  // 1. Obtener info del recibo (para validar)
-  connection.query("SELECT * FROM recibos WHERE idrecibo = ?", [id], (err, recibo) => {
-    if (err) {
-      console.error("Error consultando recibo:", err);
-      return res.status(500).json({ mensaje: "Error consultando recibo" });
-    }
-
+  try {
+    // 1. Obtener info del recibo (para validar)
+    const [recibo] = await pool.query("SELECT * FROM recibos WHERE idrecibo = ?", [id]);
     if (recibo.length === 0) {
       return res.status(404).json({ mensaje: "Recibo no encontrado" });
     }
 
     const nrorecibo = recibo[0].nrorecibo;
 
-    // 2. Eliminar movimientos de cuenta_corriente asociados al recibo
-    connection.query("DELETE FROM cuenta_corriente WHERE NumeroRecibo = ?", [String(nrorecibo)], (err) => {
-      if (err) {
-        console.error("Error eliminando cuenta_corriente:", err);
-        return res.status(500).json({ mensaje: "Error eliminando movimientos de cuenta corriente" });
-      }
+    // Eliminar movimientos de cuenta_corriente asociados al recibo
+    await pool.query("DELETE FROM cuenta_corriente WHERE NumeroRecibo = ?", [String(nrorecibo)]);
 
-      // 3. Desasociar facturas
-      connection.query("UPDATE facturas SET idrecibo = NULL WHERE idrecibo = ?", [id], (err) => {
-        if (err) {
-          console.error("Error desasociando facturas:", err);
-          return res.status(500).json({ mensaje: "Error actualizando facturas" });
-        }
+    // Desasociar facturas
+    await pool.query("UPDATE facturas SET idrecibo = NULL WHERE idrecibo = ?", [id]);
 
-        // 4. Eliminar el recibo
-        connection.query("DELETE FROM recibos WHERE idrecibo = ?", [id], (err) => {
-          if (err) {
-            console.error("Error eliminando recibo:", err);
-            return res.status(500).json({ mensaje: "Error eliminando recibo" });
-          }
+    //  Eliminar el recibo
+    await pool.query("DELETE FROM recibos WHERE idrecibo = ?", [id]);
 
-          console.log(`Recibo ${id} eliminado correctamente`);
-          return res.json({ mensaje: "Recibo eliminado correctamente", idrecibo: id });
-        });
-      });
-    });
-  });
+    console.log(`Recibo ${id} eliminado correctamente`);
+    return res.json({ mensaje: "Recibo eliminado correctamente", idrecibo: id });
+
+  } catch (err) {
+    console.error("Error eliminando recibo:", err);
+    return res.status(500).json({ mensaje: "Error eliminando recibo", error: err.message });
+  }
 });
 
 const PORT = process.env.PORT; // SIN valor por defecto
