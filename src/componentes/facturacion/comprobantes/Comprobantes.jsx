@@ -420,28 +420,21 @@ const Comprobantes = ({ isLoggedIn }) => {
 
   }, [embarquesSeleccionados]);  // El efecto se ejecutará cada vez que cambie `embarquesSeleccionados`
   const calcularTotal = () => {
-    // Calcular el total sumando todos los importes de los conceptos
+    // forzamos a número cada importe para evitar concatenaciones
     const total = guiasconconceptos.reduce((suma, guia) => {
-      return (
-        suma +
-        guia.conceptos.reduce((subtotal, concepto) => subtotal + concepto.importe, 0)
-      );
+      const sumaGuia = guia.conceptos.reduce((subtotal, concepto) => {
+        return subtotal + (Number(concepto.importe) || 0);
+      }, 0);
+      return suma + sumaGuia;
     }, 0);
 
-    // Calcular el redondeo hacia arriba
-
     const totalNum = Number(total) || 0;
-
     const ecivaNum = Number(eciva) || 0;
-
-    // Calcular el total a cobrar sumando el redondeo
     const totalACobrar = totalNum + ecivaNum;
 
-    // Actualizar los estados correspondientes
-    setEcTotal((total + ecivaNum).toFixed(2)); // Total formateado a dos decimales
-    // Redondeo formateado a dos decimales
-    setEcTotalACobrar(totalACobrar.toFixed(2)); // Total a cobrar formateado a dos decimales
-    setEcsubtotal(total.toFixed(2));
+    setEcTotal((totalNum + ecivaNum).toFixed(2));
+    setEcTotalACobrar(totalACobrar.toFixed(2));
+    setEcsubtotal(totalNum.toFixed(2));
   };
   useEffect(() => {
     calcularTotal();
@@ -679,8 +672,8 @@ const Comprobantes = ({ isLoggedIn }) => {
         console.log('Factura Agregada (eFactura):', response.data);
 
       } else if (datosFormulario.ComprobanteElectronico === "eticket" || datosFormulario.ComprobanteElectronico === "eticketca") {
-        // Caso ETICKET (puede ser el mismo endpoint o uno diferente si aplica)
-        response = await axios.post(`${backURL}/api/insertticket`, datosFormulario); // puedes usar otro endpoint si es necesario
+  
+        response = await axios.post(`${backURL}/api/insertticket`, datosFormulario); 
         console.log('Factura Agregada (eTicket):', response.data);
 
       } else {

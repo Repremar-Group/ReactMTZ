@@ -424,7 +424,7 @@ app.get('/api/previewrecibos', async (req, res) => {
 // Ruta para insertar un cliente y su cuenta corriente
 app.post('/api/insertclientes', async (req, res) => {
   console.log('Received request for /api/insertclientes');
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
   console.log('Datos de la empresa desde el back', datosEmpresa);
   const {
     Nombre,
@@ -577,7 +577,7 @@ app.post('/api/insertclientes', async (req, res) => {
 // Endpoint para actualizar un cliente
 app.put('/api/actualizarcliente/:id', async (req, res) => {
   const id = req.params.id; // Obtener el ID del cliente de la URL
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
   const {
     nombre,
     rut,
@@ -716,7 +716,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
 app.delete('/api/deleteclientes', async (req, res) => {
   console.log('Received request for /api/deleteclientes');
   const { Id, CodigoGIA } = req.body; // Se requiere el código GIA además del Id
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
   if (!CodigoGIA || !Id) {
     return res.status(400).json({ error: 'Se requiere Id y CodigoGIA del cliente' });
   }
@@ -2030,7 +2030,7 @@ app.get('/api/obtenerembarques', async (req, res) => {
 
 app.post('/api/agregarconcepto', async (req, res) => {
   console.log('Received request for /api/agregarconcepto');
-  const datosEmpresa = await obtenerDatosEmpresa(connection);
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
 
   const { codigo, codigoGIA, descripcionDesdeFront, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria } = req.body;
   console.log(codigo, codigoGIA, descripcionDesdeFront, selectedIva, unidadPrincipal, selectedClasificacion, selectedCategoria)
@@ -2212,7 +2212,7 @@ app.post('/api/insertfactura', async (req, res) => {
     // Obtener conexión del pool
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
     const {
       IdCliente,
       Nombre,
@@ -2246,6 +2246,7 @@ app.post('/api/insertfactura', async (req, res) => {
       TotalCobrarCuentaAjena,
       EmbarquesSeleccionados
     } = req.body; // Los datos de la factura enviados desde el frontend
+    console.log(JSON.stringify(req.body, null, 2));
     console.log('Moneda en el back: ', Moneda);
     if (Moneda === 'UYU') {
       DetalleFactura.forEach(detalle => {
@@ -2375,8 +2376,6 @@ app.post('/api/insertfactura', async (req, res) => {
       [IdCliente, facturaId, Fecha, 'Factura', Comprobante, Moneda, TotalCobrar]
     );
 
-    // Commit de la transacción
-    await connection.commit();
 
     // Preparar datos SOAP
     const adenda = generarAdenda(facturaId, TotalCobrar, Moneda);
@@ -2384,7 +2383,8 @@ app.post('/api/insertfactura', async (req, res) => {
 
     const detallesFactura = DetalleFactura.flatMap((detalle) => {
       return detalle.conceptos.map((concepto) => {
-        const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+        const importeNumerico = parseFloat(concepto.importe) || 0; // convierte a número o 0 si no es válido
+        const importeFormateado = parseFloat(importeNumerico.toFixed(2));
 
         return {
           codItem: concepto.id_concepto.toString(), // Asignamos el codItem como el id del concepto, formateado con ceros a la izquierda
@@ -2392,13 +2392,15 @@ app.post('/api/insertfactura', async (req, res) => {
           nombreItem: concepto.descripcion, // Usamos la descripción como el nombre del item
           cantidad: "1", // Asignamos la cantidad como "1", ya que no se especifica en los datos
           unidadMedida: "UN", // Unidad de medida "UN"
-          precioUnitario: concepto.importe.toFixed(2), // Precio unitario del concepto, formateado con 2 decimales
+          precioUnitario: importeFormateado.toFixed(2), // Precio unitario del concepto, formateado con 2 decimales
         };
       });
     });
     const detallesCuentaAjena = DetalleFactura.flatMap((detalle) => {
       return (Array.isArray(detalle.conceptos_cuentaajena) ? detalle.conceptos_cuentaajena : []).map((concepto) => {
-        const importeFormateado = parseFloat(concepto.importe.toFixed(2));
+        const importeNumerico = parseFloat(concepto.importe) || 0; // convierte a número o 0 si no es válido
+        const importeFormateado = parseFloat(importeNumerico.toFixed(2));
+
 
         return {
           codItem: concepto.id_concepto.toString(), // Código del ítem
@@ -2406,7 +2408,7 @@ app.post('/api/insertfactura', async (req, res) => {
           nombreItem: concepto.descripcion, // Descripción del concepto
           cantidad: "1", // Siempre "1"
           unidadMedida: "UN", // Unidad de medida
-          precioUnitario: concepto.importe.toFixed(2), // Importe con 2 decimales como string
+          precioUnitario: importeFormateado.toFixed(2), // Importe con 2 decimales como string
         };
       });
     });
@@ -2429,61 +2431,56 @@ app.post('/api/insertfactura', async (req, res) => {
       datosEmpresa: datosEmpresa,
       codigoClienteGIA: CodigoGIA
     };
+
+    console.log('ESTOS SON LOS DATOS:', datos);
+
+    // Generar los XMLs
     const xml = generarXmlefacimpopp(datos);
     const xmlCuentaAjena = facturaCuentaAjenaId ? generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjena) : null;
+    console.log('Procesando FacuturaSoap');
+    // Llamada directa a la función SOAP
+    const resultadoSOAP = await procesarFacturaSOAP(xml, xmlCuentaAjena);
+    console.log('Resultado FacuturaSoap', resultadoSOAP);
+    // Actualizar base de datos con resultados
+    const updateQuery = `
+    UPDATE facturas SET FechaCFE=?, ComprobanteElectronico=?, TipoDocCFE=?, SerieCFE=?, NumeroCFE=?, PdfBase64=? WHERE Id=?
+  `;
+    const updateCuentaCorrienteQuery = `
+    UPDATE cuenta_corriente SET TipoDocumento=?, NumeroDocumento=?, Fecha=? WHERE IdFactura=?
+  `;
 
-    //detallesFactura.length
-    console.log('ESTOS SON LOS DATOS:', datos);
-    // --- Mantener tu versión SOAP casi igual ---
-    const enviarFacturaSOAP = async (xml, xmlCuentaAjena) => {
-      return new Promise((resolve, reject) => {
-        axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
-          .then(response => {
-            const resultados = response.data.resultados;
-            const updateQuery = `
-              UPDATE facturas SET FechaCFE=?, ComprobanteElectronico=?, TipoDocCFE=?, SerieCFE=?, NumeroCFE=?, PdfBase64=? WHERE Id=?
-            `;
-            const updateCuentaCorrienteQuery = `
-              UPDATE cuenta_corriente SET TipoDocumento=?, NumeroDocumento=?, Fecha=? WHERE IdFactura=?
-            `;
+    // Factura principal
+    if (resultadoSOAP[0]) {
+      const doc1 = resultadoSOAP[0];
+      await connection.query(updateQuery, [
+        doc1.fechadocumento, doc1.tipodocumento, doc1.tipodocumento,
+        doc1.seriedocumento, doc1.numerodocumento, doc1.pdfBase64, facturaId
+      ]);
+      await connection.query(updateCuentaCorrienteQuery, [
+        doc1.tipodocumento, doc1.numerodocumento, doc1.fechadocumento, facturaId
+      ]);
+    }
 
-            const doc1 = resultados[0];
-            const updateFacturaPrincipal = new Promise((resolve, reject) => {
-              connection.query(updateQuery, [doc1.fechadocumento, doc1.tipodocumento, doc1.tipodocumento, doc1.seriedocumento, doc1.numerodocumento, doc1.pdfBase64, facturaId], (err) => {
-                if (err) return reject(err);
-                connection.query(updateCuentaCorrienteQuery, [doc1.tipodocumento, doc1.numerodocumento, doc1.fechadocumento, facturaId], (err) => err ? reject(err) : resolve());
-              });
-            });
+    // Factura cuenta ajena
+    if (facturaCuentaAjenaId && resultadoSOAP[1]) {
+      const doc2 = resultadoSOAP[1];
+      await connection.query(updateQuery, [
+        doc2.fechadocumento, doc2.tipodocumento, doc2.tipodocumento,
+        doc2.seriedocumento, doc2.numerodocumento, doc2.pdfBase64, facturaCuentaAjenaId
+      ]);
+      await connection.query(updateCuentaCorrienteQuery, [
+        doc2.tipodocumento, doc2.numerodocumento, doc2.fechadocumento, facturaCuentaAjenaId
+      ]);
+    }
 
-            const updateFacturaCuentaAjena = facturaCuentaAjenaId && resultados[1]
-              ? new Promise((resolve, reject) => {
-                const doc2 = resultados[1];
-                connection.query(updateQuery, [doc2.fechadocumento, doc2.tipodocumento, doc2.tipodocumento, doc2.seriedocumento, doc2.numerodocumento, doc2.pdfBase64, facturaCuentaAjenaId], (err) => {
-                  if (err) return reject(err);
-                  connection.query(updateCuentaCorrienteQuery, [doc2.tipodocumento, doc2.numerodocumento, doc2.fechadocumento, facturaCuentaAjenaId], (err) => err ? reject(err) : resolve());
-                });
-              })
-              : Promise.resolve();
-
-            Promise.all([updateFacturaPrincipal, updateFacturaCuentaAjena]).then(() => resolve(response.data)).catch(reject);
-          })
-          .catch(error => {
-            console.error('Error en enviarFacturaSOAP:', error.response?.data || error.message || error);
-            reject(error.response?.data || new Error('Error en SOAP'));
-          });
-      });
-    };
-
-    (async () => {
-      try {
-        const xml = generarXmlefacimpopp({/* tus datos para XML */ });
-        const xmlCuentaAjena = facturaCuentaAjenaId ? generarXmlefacCuentaAjenaimpopp({/* tus datos */ }) : null;
-        const resultadoSOAP = await enviarFacturaSOAP(xml, xmlCuentaAjena);
-        res.status(200).json(resultadoSOAP);
-      } catch (error) {
-        res.status(422).json(error || { error: error.toString() });
-      }
-    })();
+    console.log('Resultado SOAP recibido:', JSON.stringify(resultadoSOAP, null, 2));
+    await connection.commit();
+    res.status(200).json({
+      success: true,
+      resultados: resultadoSOAP,
+      facturaId,
+      facturaCuentaAjenaId
+    });
 
   } catch (err) {
     if (connection) await connection.rollback();
@@ -2493,6 +2490,7 @@ app.post('/api/insertfactura', async (req, res) => {
     if (connection) connection.release();
   }
 });
+
 app.post('/api/insertticket', async (req, res) => {
   let connection;
   let TicketCuentaAjenaId;
@@ -2504,7 +2502,7 @@ app.post('/api/insertticket', async (req, res) => {
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
     const {
       IdCliente,
       Nombre,
@@ -2646,27 +2644,33 @@ app.post('/api/insertticket', async (req, res) => {
     const adendaCuentaAjena = TicketCuentaAjenaId ? generarAdenda(TicketCuentaAjenaId, TotalCuentaAjena, Moneda) : null;
 
     const detallesFactura = DetalleFactura.flatMap(d =>
-      d.conceptos.map(c => ({
-        codItem: c.id_concepto.toString(),
-        indicadorFacturacion: c.importe === 0 ? "5" : "1",
-        nombreItem: c.descripcion,
-        cantidad: "1",
-        unidadMedida: "UN",
-        precioUnitario: c.importe.toFixed(2)
-      }))
+      d.conceptos.map(c => {
+        const importeNumerico = parseFloat(c.importe) || 0; // convierte a número o 0 si no es válido
+        const importeFormateado = importeNumerico.toFixed(2); // string con 2 decimales
+        return {
+          codItem: c.id_concepto.toString(),
+          indicadorFacturacion: importeNumerico === 0 ? "5" : "1",
+          nombreItem: c.descripcion,
+          cantidad: "1",
+          unidadMedida: "UN",
+          precioUnitario: importeFormateado
+        };
+      })
     );
-
     const detallesCuentaAjena = DetalleFactura.flatMap(d =>
-      d.conceptos_cuentaajena?.map(c => ({
-        codItem: c.id_concepto.toString(),
-        indicadorFacturacion: c.importe === 0 ? "5" : "1",
-        nombreItem: c.descripcion,
-        cantidad: "1",
-        unidadMedida: "UN",
-        precioUnitario: c.importe.toFixed(2)
-      })) || []
+      (d.conceptos_cuentaajena || []).map(c => {
+        const importeNumerico = parseFloat(c.importe) || 0; // convierte a número o 0 si no es válido
+        const importeFormateado = importeNumerico.toFixed(2); // string con 2 decimales
+        return {
+          codItem: c.id_concepto.toString(),
+          indicadorFacturacion: importeNumerico === 0 ? "5" : "1",
+          nombreItem: c.descripcion,
+          cantidad: "1",
+          unidadMedida: "UN",
+          precioUnitario: importeFormateado
+        };
+      })
     );
-
     const datos = {
       fechaCFE: Fecha,
       fechaVencimientoCFE: FechaVencimiento,
@@ -2770,7 +2774,7 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       DetalleFactura
     } = req.body; // Los datos de la factura enviados desde el frontend
 
-    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
 
     let tipoComprobante;
 
@@ -3120,7 +3124,7 @@ app.post('/api/insertrecibo', async (req, res) => {
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
     const formularioausar = datosEmpresa.ultimoFormularioRecibo + 1;
     const documentoausar = datosEmpresa.ultimoDocumentoRecibo + 1;
 
@@ -3721,8 +3725,152 @@ app.post('/cotizaciones-bcu', async (req, res) => {
 });
 app.post('/pruebaws', async (req, res) => {
   const { xml, xmlCuentaAjena } = req.body;
+  console.log('Recibido en /pruebaws:', { xmlLength: xml?.length, xmlCuentaAjenaLength: xmlCuentaAjena?.length });
 
   const datosEmpresa = await obtenerDatosEmpresa(pool);
+  const headersAgregar = {
+    'Content-Type': 'text/xml;charset=utf-8',
+    'SOAPAction': '"agregarDocumentoFacturacion"',
+    'Accept-Encoding': 'gzip,deflate',
+    'Host': `${datosEmpresa.serverFacturacion}`,
+    'Connection': 'Keep-Alive',
+    'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
+  };
+
+  const headersObtenerPdf = {
+    ...headersAgregar,
+    SOAPAction: '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+  };
+
+  const parseSOAP = async (xmlData) => {
+    console.log('Parseando SOAP, longitud:', xmlData?.length);
+    const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+    return await parser.parseStringPromise(xmlData);
+  };
+
+  const parseInnerXML = async (escapedXml) => {
+    console.log('Parseando Inner XML');
+    const rawXml = escapedXml.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const innerParser = new xml2js.Parser({ explicitArray: false });
+    return await innerParser.parseStringPromise(rawXml);
+  };
+
+  const construirXmlObtenerPdf = ({ fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento }) => `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+      <soapenv:Header/>
+      <soapenv:Body>
+        <soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+          <xmlParametros><![CDATA[
+            <obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+              <usuario>${datosEmpresa.usuarioGfe}</usuario>
+              <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+              <empresa>${datosEmpresa.codigoEmpresa}</empresa>
+              <documento>
+                <fechaDocumento>${fechaDocumento}</fechaDocumento>
+                <tipoDocumento>${tipoDocumento}</tipoDocumento>
+                <serieDocumento>${serieDocumento}</serieDocumento>
+                <numeroDocumento>${numeroDocumento}</numeroDocumento>
+              </documento>
+            </obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+          ]]></xmlParametros>
+        </soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+      </soapenv:Body>
+    </soapenv:Envelope>
+  `;
+
+  try {
+    const resultados = [];
+
+    // Proceso principal
+    const procesarXML = async (xmlData) => {
+      console.log('Procesando XML...');
+      const xmlBuffer = Buffer.from(xmlData, 'utf-8');
+
+      // 1. Enviar SOAP agregarDocumentoFacturacion
+      const response = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xmlBuffer,
+        { headers: headersAgregar }
+      );
+      console.log('Respuesta SOAP agregarDocumentoFacturacion recibida:', response.data);
+
+      // 2. Parsear respuesta
+      const parsed = await parseSOAP(response.data);
+      console.log('Parsed SOAP:', parsed);
+      const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+      console.log('Inner XML parseado:', inner);
+      const resultado = inner.agregarDocumentoFacturacionResultado;
+      console.log('Resultado agregado:', resultado);
+
+      // 3. Validar resultado
+      if (resultado.resultado !== "1") {
+        throw {
+          success: false,
+          mensaje: 'Error en agregarDocumentoFacturacion',
+          errores: [{ descripcion: resultado.descripcion, resultado: resultado.resultado }],
+        };
+      }
+
+      // 4. Construir XML para obtener PDF
+      const xmlPdf = construirXmlObtenerPdf({
+        fechaDocumento: resultado.datos.documento.fechaDocumento,
+        tipoDocumento: resultado.datos.documento.tipoDocumento,
+        serieDocumento: resultado.datos.documento.serieDocumento,
+        numeroDocumento: resultado.datos.documento.numeroDocumento,
+      });
+
+      // 5. Pedir PDF
+      const pdfResponse = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xmlPdf,
+        { headers: headersObtenerPdf }
+      );
+      console.log('Respuesta SOAP obtener PDF recibida:', pdfResponse.data);
+
+      const parsedPdf = await parseSOAP(pdfResponse.data);
+      const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+      const innerPdfXml = innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+      const innerPdf = await parseInnerXML(innerPdfXml);
+      console.log('Inner PDF parseado:', innerPdf);
+      const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
+
+      return {
+        resultado: resultado.resultado,
+        descripcion: resultado.descripcion,
+        fechadocumento: resultado.datos.documento.fechaDocumento,
+        tipodocumento: resultado.datos.documento.tipoDocumento,
+        seriedocumento: resultado.datos.documento.serieDocumento,
+        numerodocumento: resultado.datos.documento.numeroDocumento,
+        pdfBase64,
+      };
+    };
+
+    // Procesar factura principal
+    const resultado1 = await procesarXML(xml);
+    resultados.push(resultado1);
+
+    // Procesar cuenta ajena solo si existe
+    if (xmlCuentaAjena) {
+      const resultado2 = await procesarXML(xmlCuentaAjena);
+      resultados.push(resultado2);
+    }
+    console.log('Resultados finales a enviar:', resultados);
+    return res.status(200).json({
+      success: true,
+      resultados,
+    });
+
+  } catch (error) {
+    console.error('Error procesando SOAP:', error);
+    if (error && error.errores) {
+      return res.status(422).json(error);
+    }
+    return res.status(500).send('Error al enviar las facturas');
+  }
+});
+async function procesarFacturaSOAP(xml, xmlCuentaAjena) {
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
+
   const headersAgregar = {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"agregarDocumentoFacturacion"',
@@ -3771,90 +3919,59 @@ app.post('/pruebaws', async (req, res) => {
     </soapenv:Envelope>
   `;
 
-  try {
-    const resultados = [];
+  const procesarXML = async (xmlData) => {
+    const xmlBuffer = Buffer.from(xmlData, 'utf-8');
 
-    // Proceso principal
-    const procesarXML = async (xmlData) => {
-      const xmlBuffer = Buffer.from(xmlData, 'utf-8');
+    // 1. Enviar SOAP agregarDocumentoFacturacion
+    const response = await axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlBuffer, { headers: headersAgregar });
+    const parsed = await parseSOAP(response.data);
+    const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+    const resultado = inner.agregarDocumentoFacturacionResultado;
 
-      // 1. Enviar SOAP agregarDocumentoFacturacion
-      const response = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-        xmlBuffer,
-        { headers: headersAgregar }
-      );
-
-      // 2. Parsear respuesta
-      const parsed = await parseSOAP(response.data);
-      const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
-      const resultado = inner.agregarDocumentoFacturacionResultado;
-
-      // 3. Validar resultado
-      if (resultado.resultado !== "1") {
-        throw {
-          success: false,
-          mensaje: 'Error en agregarDocumentoFacturacion',
-          errores: [{ descripcion: resultado.descripcion, resultado: resultado.resultado }],
-        };
-      }
-
-      // 4. Construir XML para obtener PDF
-      const xmlPdf = construirXmlObtenerPdf({
-        fechaDocumento: resultado.datos.documento.fechaDocumento,
-        tipoDocumento: resultado.datos.documento.tipoDocumento,
-        serieDocumento: resultado.datos.documento.serieDocumento,
-        numeroDocumento: resultado.datos.documento.numeroDocumento,
-      });
-
-      // 5. Pedir PDF
-      const pdfResponse = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-        xmlPdf,
-        { headers: headersObtenerPdf }
-      );
-
-      const parsedPdf = await parseSOAP(pdfResponse.data);
-      const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
-      const innerPdfXml = innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-      const innerPdf = await parseInnerXML(innerPdfXml);
-
-      const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
-
-      return {
-        resultado: resultado.resultado,
-        descripcion: resultado.descripcion,
-        fechadocumento: resultado.datos.documento.fechaDocumento,
-        tipodocumento: resultado.datos.documento.tipoDocumento,
-        seriedocumento: resultado.datos.documento.serieDocumento,
-        numerodocumento: resultado.datos.documento.numeroDocumento,
-        pdfBase64,
-      };
-    };
-
-    // Procesar factura principal
-    const resultado1 = await procesarXML(xml);
-    resultados.push(resultado1);
-
-    // Procesar cuenta ajena solo si existe
-    if (xmlCuentaAjena) {
-      const resultado2 = await procesarXML(xmlCuentaAjena);
-      resultados.push(resultado2);
+    if (resultado.resultado !== "1") {
+      throw { success: false, mensaje: 'Error en agregarDocumentoFacturacion', errores: [{ descripcion: resultado.descripcion, resultado: resultado.resultado }] };
     }
 
-    return res.status(200).json({
-      success: true,
-      resultados,
+    // 2. Construir XML para obtener PDF
+    const xmlPdf = construirXmlObtenerPdf({
+      fechaDocumento: resultado.datos.documento.fechaDocumento,
+      tipoDocumento: resultado.datos.documento.tipoDocumento,
+      serieDocumento: resultado.datos.documento.serieDocumento,
+      numeroDocumento: resultado.datos.documento.numeroDocumento,
     });
 
-  } catch (error) {
-    console.error('Error procesando SOAP:', error);
-    if (error && error.errores) {
-      return res.status(422).json(error);
-    }
-    return res.status(500).send('Error al enviar las facturas');
+    // 3. Pedir PDF
+    const pdfResponse = await axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf, { headers: headersObtenerPdf });
+    const parsedPdf = await parseSOAP(pdfResponse.data);
+    const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+    const innerPdf = await parseInnerXML(innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));
+    const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
+
+    return {
+      resultado: resultado.resultado,
+      descripcion: resultado.descripcion,
+      fechadocumento: resultado.datos.documento.fechaDocumento,
+      tipodocumento: resultado.datos.documento.tipoDocumento,
+      seriedocumento: resultado.datos.documento.serieDocumento,
+      numerodocumento: resultado.datos.documento.numeroDocumento,
+      pdfBase64,
+    };
+  };
+
+  const resultados = [];
+
+  // Procesar factura principal
+  const resultado1 = await procesarXML(xml);
+  resultados.push(resultado1);
+
+  // Procesar cuenta ajena si existe
+  if (xmlCuentaAjena) {
+    const resultado2 = await procesarXML(xmlCuentaAjena);
+    resultados.push(resultado2);
   }
-});
+
+  return resultados;
+}
 
 app.post('/api/generar-excel-cuentacorriente', async (req, res) => {
   const { desde, hasta, cliente, numeroCliente, moneda } = req.body;
@@ -4836,7 +4953,7 @@ app.post('/api/impactardocumento', async (req, res) => {
   const esManual = factura.factura.esManual;
   console.log('Impactando Documento en el back Factura: ', factura, ' idFactura: ', idFactura);
   try {
-    const datosEmpresa = await obtenerDatosEmpresa(connection);
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
     const tablaDetalles = esManual === 1 ? 'detalle_facturas_manuales' : 'detalle_facturas';
 
     // Obtener detalles de la factura
