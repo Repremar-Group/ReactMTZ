@@ -3,11 +3,11 @@ import Swal from 'sweetalert2';
 import './modales.css';
 
 const ModalAlerta = ({ isOpen, message, onConfirm = () => {}, onCancel = () => {}, type = 'alert' }) => {
-  const [isAlertShown, setIsAlertShown] = React.useState(false);
+  const hasOpened = React.useRef(false);
 
   React.useEffect(() => {
-    if (isOpen && !isAlertShown) {
-      setIsAlertShown(true);
+    if (isOpen && !hasOpened.current) {
+      hasOpened.current = true;
 
       Swal.fire({
         title: message,
@@ -22,20 +22,18 @@ const ModalAlerta = ({ isOpen, message, onConfirm = () => {}, onCancel = () => {
         },
         scrollbarPadding: false,
       }).then((result) => {
-        if (result.isConfirmed) {
-          onConfirm();
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          onCancel();
-        }
-
         setTimeout(() => {
-          setIsAlertShown(false); // Resetea el estado después de un pequeño delay para evitar reactivaciones no deseadas
-        }, 100);
+          if (result.isConfirmed) {
+            onConfirm();
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            onCancel();
+          }
+          hasOpened.current = false; // reseteamos para permitir futuras aperturas
+        }, 50);
       });
     }
-  }, [isOpen, isAlertShown, message, type, onConfirm, onCancel]);
+  }, [isOpen, message, type, onConfirm, onCancel]);
 
   return null;
 };
-
 export default ModalAlerta;

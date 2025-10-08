@@ -1428,7 +1428,7 @@ app.post('/api/fetchguiasexpo', async (req, res) => {
 
   try {
     const fetchGuiasQuery = `
-      SELECT guia, agente, total, tipodepago
+      SELECT idguiasexpo, guia, agente, total, tipodepago, facturada
       FROM guiasexpo
       WHERE nrovuelo = ? AND fechavuelo = ?
       ORDER BY fechaingresada DESC

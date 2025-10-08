@@ -14,8 +14,8 @@ const Guiasexpo = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
   const [genroembarque, setGeNroEmbarque] = useState('');
   const [geagente, setGeAgente] = useState('');
-  const [gereserva, setGeReserva] = useState('');
   const [genroguia, setGeNroGuia] = useState('');
+  const [gereserva, setGeReserva] = useState('');
   const [geemision, setGeEmision] = useState('');
   const [getipodepagoguia, setGeTipoDePagoGuia] = useState('');
   const [genrovuelo, setGeNroVuelo] = useState('');
@@ -61,16 +61,22 @@ const Guiasexpo = ({ isLoggedIn }) => {
 
   //Funcion para modal de eliminar
   const openModalConfirmDelete = (guia) => {
-    console.log(guia)
-    setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
-    setModalType('confirm');
-    setIsModalOpenEliminar(true);
-    setGuiaAEliminar(guia);
+    if (guia.facturada != 1) {
+      console.log(guia)
+      setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
+      setModalType('confirm');
+      setIsModalOpenEliminar(true);
+      setGuiaAEliminar(guia);
+    }else{
+      toast.error("No se puede eliminar una guia facturada.")
+    }
+
   };
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await axios.delete(`${backURL}/api/eliminarGuiaExpo/${guiaAEliminar.guia}`); // Realiza la solicitud DELETE
+      console.log("Eliminando la guia", guiaAEliminar)
+      const response = await axios.delete(`${backURL}/api/eliminarGuiaExpo/${guiaAEliminar.idguiasexpo}`); // Realiza la solicitud DELETE
       if (response.status === 200) {
         console.log('Guía eliminada:', guiaAEliminar);
         toast.success('Guía eliminada exitosamente');
@@ -147,7 +153,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
     setGuiaSeleccionada(null);
     fetchGuias();
   };
-   const closeModalModificarSinRecarga = () => {
+  const closeModalModificarSinRecarga = () => {
     setIsModalOpenModificar(false);
     setGuiaSeleccionada(null);
   };
@@ -280,63 +286,37 @@ const Guiasexpo = ({ isLoggedIn }) => {
   ];
 
 
-  const TablaPagos = ({ pago }) => (
-    <table className='tabla-pago-guias-expo' >
-      <thead>
-        <tr>
-          <th>Cheque</th>
-          <th>Banco</th>
-          <th>Moneda</th>
-          <th>Importe</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {pago.map((pago, index) => (
-          <tr key={index}>
-            <td>{pago.cheque}</td>
-            <td>{pago.banco}</td>
-            <td>{pago.moneda}</td>
-            <td>{pago.importe}</td>
-            <td>
-              <button type="button" className="action-button"  >✏️</button>
-              <button type="button" className="action-button"  >❌</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
 
   const TablaEmbarques = ({ tablaguias }) => (
-    <table className='tabla-embarques' >
-      <thead>
-        <tr>
-          <th>Guia</th>
-          <th>Cliente</th>
-          <th>Total</th>
-          <th>Tipo</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {tablaguias.map((embarque, index) => (
-          <tr key={index}>
-            <td>{embarque.guia}</td>
-            <td>{embarque.agente}</td>
-            <td>{embarque.total}</td>
-            <td>{embarque.tipodepago}</td>
-            <td>
-              <button type="button" className="action-button" onClick={() => openModalVer(embarque.guia)}  >🔍</button>
-              <button type="button" className="action-button" onClick={() => openModalModificar(embarque.guia)}>✏️</button>
-              <button type="button" className="action-button" onClick={() => openModalConfirmDelete(embarque)}>❌</button>
-            </td>
+    <div className='contenedor-tabla-embarquesexpo'>
+      <table className='tabla-embarques' >
+        <thead>
+          <tr>
+            <th>Guia</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Tipo</th>
+            <th>Acciones</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {tablaguias.map((embarque, index) => (
+            <tr key={index}>
+              <td>{embarque.guia}</td>
+              <td>{embarque.agente}</td>
+              <td>{embarque.total}</td>
+              <td>{embarque.tipodepago}</td>
+              <td>
+                <button type="button" className="action-button" onClick={() => openModalVer(embarque.guia)}  >🔍</button>
+                <button type="button" className="action-button" onClick={() => openModalModificar(embarque.guia)}>✏️</button>
+                <button type="button" className="action-button" onClick={() => openModalConfirmDelete(embarque)}>❌</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-
 
 
   const [ecfecha, setEcFecha] = useState('');
@@ -594,7 +574,6 @@ const Guiasexpo = ({ isLoggedIn }) => {
         toast.success('Guia Ingresada Con Exito');
       }
       setSearchTerm('');
-      setGeReserva('');
       setGeNroGuia('');
       setGeEmision('');
       setGeTipoDePagoGuia('');
@@ -642,360 +621,356 @@ const Guiasexpo = ({ isLoggedIn }) => {
       )}
       <form onSubmit={handleSubmitAgregarGuiaExpo} className='formulario-estandar'>
 
-        <div className='primeracolumnaguiasimpo'>
-          <div className='div-datos-comprobante'>
-            <h3 className='subtitulo-estandar'>Datos del Vuelo</h3>
+        <div className='primeracolumnaguiasexpo'>
+          <div class="columna-formulario">
+            <div className='div-datos-comprobante'>
+              <h3 className='subtitulo-estandar'>Datos del Vuelo</h3>
 
-            <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="genrovuelo">Nro.Vuelo:</label>
-                <select
-                  id="Vuelo"
-                  required
-                  value={vueloSeleccionado ? vueloSeleccionado.vuelo : ''}
-                  onChange={handleSelectVuelo}
-                  onClick={() => {
-                    if (!isFetchedVuelos) fetchVuelos();
-                  }}
-                >
-                  <option value="">Seleccione un Vuelo</option>
-                  {vuelos.map((vuelo, index) => (
-                    <option key={index} value={vuelo.vuelo}>
-                      {vuelo.vuelo}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="gevuelofecha">Fecha:</label>
-                <input
-                  type="date"
-                  id="gevuelofecha"
-                  value={gevuelofecha}
-                  onChange={(e) => setGeVueloFecha(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="georigenvuelo">Origen:</label>
-                <select
-                  id="georigenvuelo"
-                  value={origenVueloSeleccionado}
-                  onChange={(e) => setOrigenVueloSeleccionado(e.target.value)}
-                  onClick={() => {
-                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchCiudades una vez
-                  }}
-                  required
-                >
-                  <option value="MVD">MVD</option>
-                  {ciudades.map((ciudad, index) => (
-                    <option key={index} value={ciudad.ciudad}>
-                      {ciudad.ciudad}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="geconexionvuelo">Conexion:</label>
-                <select
-                  id="ciudad"
-                  value={conexionVueloSeleccionado}
-                  onChange={(e) => setConexionVueloSeleccionado(e.target.value)}
-                  onClick={() => {
-                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
-                  }}
-                >
-                  <option value="">Seleccione una Conexion</option>
-                  {ciudades.map((ciudad, index) => (
-                    <option key={index} value={ciudad.ciudad}>
-                      {ciudad.ciudad}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="gedestinovuelo">Destino:</label>
-                <select
-                  id="ciudad"
-                  required
-                  value={destinoVueloSeleccionado}
-                  onChange={(e) => setDestinoVueloSeleccionado(e.target.value)}
-                  onClick={() => {
-                    if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
-                  }}
-                >
-                  <option value="">Seleccione un Destino</option>
-                  {ciudades.map((ciudad, index) => (
-                    <option key={index} value={ciudad.ciudad}>
-                      {ciudad.ciudad}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <div className='div-primerrenglon-datos-comprobante'>
+                <div>
+                  <label htmlFor="genrovuelo">Nro.Vuelo:</label>
+                  <select
+                    id="Vuelo"
+                    required
+                    value={vueloSeleccionado ? vueloSeleccionado.vuelo : ''}
+                    onChange={handleSelectVuelo}
+                    onClick={() => {
+                      if (!isFetchedVuelos) fetchVuelos();
+                    }}
+                  >
+                    <option value="">Seleccione un Vuelo</option>
+                    {vuelos.map((vuelo, index) => (
+                      <option key={index} value={vuelo.vuelo}>
+                        {vuelo.vuelo}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="gevuelofecha">Fecha:</label>
+                  <input
+                    type="date"
+                    id="gevuelofecha"
+                    value={gevuelofecha}
+                    onChange={(e) => setGeVueloFecha(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="georigenvuelo">Origen:</label>
+                  <select
+                    id="georigenvuelo"
+                    value={origenVueloSeleccionado}
+                    onChange={(e) => setOrigenVueloSeleccionado(e.target.value)}
+                    onClick={() => {
+                      if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchCiudades una vez
+                    }}
+                    required
+                  >
+                    <option value="MVD">MVD</option>
+                    {ciudades.map((ciudad, index) => (
+                      <option key={index} value={ciudad.ciudad}>
+                        {ciudad.ciudad}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="geconexionvuelo">Conexion:</label>
+                  <select
+                    id="ciudad"
+                    value={conexionVueloSeleccionado}
+                    onChange={(e) => setConexionVueloSeleccionado(e.target.value)}
+                    onClick={() => {
+                      if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                    }}
+                  >
+                    <option value="">Seleccione una Conexion</option>
+                    {ciudades.map((ciudad, index) => (
+                      <option key={index} value={ciudad.ciudad}>
+                        {ciudad.ciudad}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="gedestinovuelo">Destino:</label>
+                  <select
+                    id="ciudad"
+                    required
+                    value={destinoVueloSeleccionado}
+                    onChange={(e) => setDestinoVueloSeleccionado(e.target.value)}
+                    onClick={() => {
+                      if (!isFetchedCiudades) fetchCiudades(); // Solo llama a fetchMonedas una vez
+                    }}
+                  >
+                    <option value="">Seleccione un Destino</option>
+                    {ciudades.map((ciudad, index) => (
+                      <option key={index} value={ciudad.ciudad}>
+                        {ciudad.ciudad}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div>
-                <label htmlFor="geempresavuelo">Empresa:</label>
-                <input
-                  type="text"
-                  id="geempresavuelo"
-                  value={vueloSeleccionado ? vueloSeleccionado.compania : ''}
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="gecassvuelo">Cass:</label>
-                <select
-                  id="gecassvuelo"
-                  value={gecassvuelo}
-                  onChange={(e) => setGecassVuelo(e.target.value)}
-                  required
-                >
-                  <option value="">Seleccione una Opcion</option>
-                  <option value="S">Si</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className='para generar espacio'>
-          </div>
-
-          <div className='div-datos-comprobante'>
-            <h3 className='subtitulo-estandar'>Datos del Embarque</h3>
-
-            <div className='div-primerrenglon-datos-comprobante'>
-
-              <div>
-                <label htmlFor="geagente">Agente:</label>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Buscar Agente"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="gereserva">Reserva:</label>
-                <input
-                  type="text"
-                  id="gereserva"
-                  value={gereserva}
-                  onChange={(e) => setGeReserva(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="genroguia">Guia:</label>
-                <input
-                  type="text"
-                  id="genroguia"
-                  value={genroguia}
-                  onChange={(e) => setGeNroGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="geemision">Emisión:</label>
-                <input
-                  type="date"
-                  id="geemision"
-                  value={geemision}
-                  onChange={(e) => setGeEmision(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="getipodepagoguia">Tipo de Pago:</label>
-                <select
-                  id="getipodepagoguia"
-                  value={getipodepagoguia}
-                  onChange={(e) => setGeTipoDePagoGuia(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona una Tipo</option>
-                  <option value="P">PREPAID</option>
-                  <option value="C">COLLECT</option>
-                </select>
+                <div>
+                  <label htmlFor="geempresavuelo">Empresa:</label>
+                  <input
+                    type="text"
+                    id="geempresavuelo"
+                    value={vueloSeleccionado ? vueloSeleccionado.compania : ''}
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gecassvuelo">Cass:</label>
+                  <select
+                    id="gecassvuelo"
+                    value={gecassvuelo}
+                    onChange={(e) => setGecassVuelo(e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccione una Opcion</option>
+                    <option value="S">Si</option>
+                    <option value="N">No</option>
+                  </select>
+                </div>
               </div>
             </div>
 
 
-            <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="gepiezasguia">Piezas:</label>
-                <input
-                  type="number"
-                  id="gepiezasguia"
-                  value={gepiezasguia}
-                  onChange={(e) => setGePiezasGuia(e.target.value)}
-                  required
-                />
+            <div className='div-datos-comprobante'>
+              <h3 className='subtitulo-estandar'>Datos del Embarque</h3>
+
+              <div className='div-primerrenglon-datos-comprobante'>
+
+                <div>
+                  <label htmlFor="geagente">Agente:</label>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Buscar Agente"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gereserva">Reserva:</label>
+                  <input
+                    type="text"
+                    id="gereserva"
+                    value={gereserva}
+                    onChange={(e) => setGeReserva(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="genroguia">Guia:</label>
+                  <input
+                    type="text"
+                    id="genroguia"
+                    value={genroguia}
+                    onChange={(e) => setGeNroGuia(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="geemision">Emisión:</label>
+                  <input
+                    type="date"
+                    id="geemision"
+                    value={geemision}
+                    onChange={(e) => setGeEmision(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="getipodepagoguia">Tipo de Pago:</label>
+                  <select
+                    id="getipodepagoguia"
+                    value={getipodepagoguia}
+                    onChange={(e) => setGeTipoDePagoGuia(e.target.value)}
+                    required
+                  >
+                    <option value="">Selecciona una Tipo</option>
+                    <option value="P">PREPAID</option>
+                    <option value="C">COLLECT</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label htmlFor="gepesobrutoguia">Peso Bruto:</label>
-                <input
-                  type="number"
-                  id="gepesobrutoguia"
-                  value={gepesobrutoguia}
-                  onChange={(e) => setGePesoBrutoGuia(e.target.value)}
-                  required
-                />
+
+
+              <div className='div-primerrenglon-datos-comprobante'>
+                <div>
+                  <label htmlFor="gepiezasguia">Piezas:</label>
+                  <input
+                    type="number"
+                    id="gepiezasguia"
+                    value={gepiezasguia}
+                    onChange={(e) => setGePiezasGuia(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gepesobrutoguia">Peso Bruto:</label>
+                  <input
+                    type="number"
+                    id="gepesobrutoguia"
+                    value={gepesobrutoguia}
+                    onChange={(e) => setGePesoBrutoGuia(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gepesotarifadoguia">Peso Tarifado:</label>
+                  <input
+                    type="number"
+                    id="gepesotarifadoguia"
+                    value={gepesotarifadoguia}
+                    onChange={(e) => setGePesoTarifadoGuia(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-              <div>
-                <label htmlFor="gepesotarifadoguia">Peso Tarifado:</label>
-                <input
-                  type="number"
-                  id="gepesotarifadoguia"
-                  value={gepesotarifadoguia}
-                  onChange={(e) => setGePesoTarifadoGuia(e.target.value)}
-                  required
-                />
+
+              <div className='div-primerrenglon-datos-comprobante'>
+                <div>
+                  <label htmlFor="getarifanetaguia">Tarifa Neta:</label>
+                  <input
+                    type="number"
+                    id="getarifanetaguia"
+                    value={getarifanetaguia}
+                    onChange={(e) => setGeTarifaNetaGuia(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="getarifaventaguia">Tarifa Venta:</label>
+                  <input
+                    type="number"
+                    id="getarifaventaguia"
+                    value={getarifaventaguia}
+                    onChange={(e) => setGeTarifaVentaGuia(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gefletenetoguia">Flete Neto:</label>
+                  <input
+                    type="text"
+                    id="gefletenetoguia"
+                    value={gefletenetoguia}
+                    onChange={(e) => setGeFleteNetoGuia(e.target.value)}
+                    required
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gefleteawbguia">Flete AWB:</label>
+                  <input
+                    type="text"
+                    id="gefleteawbguia"
+                    value={gefleteawbguia}
+                    onChange={(e) => setGeFleteAwbGuia(e.target.value)}
+                    required
+                    readOnly
+                  />
+                </div>
               </div>
-              <div></div>
+
+
+              <div className='div-primerrenglon-datos-comprobante'>
+                <div>
+                  <label htmlFor="geduecarrierguia">Due Carrier:</label>
+                  <input
+                    type="number"
+                    id="geduecarrierguia"
+                    value={geduecarrierguia}
+                    onChange={(e) => setGeDueCarrierGuia(e.target.value)}
+
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gedueagentguia">Due Agent:</label>
+                  <input
+                    type="number"
+                    id="gedueagentguia"
+                    value={gedueagentguia}
+                    onChange={(e) => setGeDueAgentGuia(e.target.value)}
+                    readOnly={getipodepagoguia === 'P'}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gedbfguia">DBF:</label>
+                  <input
+                    type="text"
+                    id="gedbfguia"
+                    value={gedbfguia}
+                    onChange={(e) => setGeDbfGuia(e.target.value)}
+                    required
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gegsaguia">GSA:</label>
+                  <input
+                    type="text"
+                    id="gegsaguia"
+                    value={gegsaguia}
+                    onChange={(e) => setGeGsaGuia(e.target.value)}
+                    required
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gesecurityguia">Security:</label>
+                  <input
+                    type="number"
+                    id="gesecurityguia"
+                    value={gesecurityguia}
+                    onChange={(e) => setGeSecurityGuia(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className='div-primerrenglon-datos-comprobante'>
+                <div>
+                  <label htmlFor="gecobrarpagarguia">Cobrar/Pagar:</label>
+                  <input
+                    type="number"
+                    id="gecobrarpagarguia"
+                    value={gecobrarpagarguia}
+                    onChange={(e) => setGeCobrarPagarGuia(e.target.value)}
+                    required
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label htmlFor="geagentecollectguia">Agente Collect:</label>
+                  <input
+                    type="number"
+                    id="geagentecollectguia"
+                    value={geagentecollectguia}
+                    onChange={(e) => setGeAgenteCollectGuia(e.target.value)}
+                    required
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label htmlFor="getotalguia">Total de la Guia:</label>
+                  <input
+                    type="text"
+                    id="getotalguia"
+                    value={getotalguia}
+                    onChange={(e) => setGeTotalGuia(e.target.value)}
+                    required
+                    readOnly
+                  />
+                </div>
+              </div>
+
             </div>
-
-            <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="getarifanetaguia">Tarifa Neta:</label>
-                <input
-                  type="number"
-                  id="getarifanetaguia"
-                  value={getarifanetaguia}
-                  onChange={(e) => setGeTarifaNetaGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="getarifaventaguia">Tarifa Venta:</label>
-                <input
-                  type="number"
-                  id="getarifaventaguia"
-                  value={getarifaventaguia}
-                  onChange={(e) => setGeTarifaVentaGuia(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="gefletenetoguia">Flete Neto:</label>
-                <input
-                  type="text"
-                  id="gefletenetoguia"
-                  value={gefletenetoguia}
-                  onChange={(e) => setGeFleteNetoGuia(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="gefleteawbguia">Flete AWB:</label>
-                <input
-                  type="text"
-                  id="gefleteawbguia"
-                  value={gefleteawbguia}
-                  onChange={(e) => setGeFleteAwbGuia(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-
-              <div></div>
-            </div>
-
-
-            <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="geduecarrierguia">Due Carrier:</label>
-                <input
-                  type="number"
-                  id="geduecarrierguia"
-                  value={geduecarrierguia}
-                  onChange={(e) => setGeDueCarrierGuia(e.target.value)}
-
-                />
-              </div>
-              <div>
-                <label htmlFor="gedueagentguia">Due Agent:</label>
-                <input
-                  type="number"
-                  id="gedueagentguia"
-                  value={gedueagentguia}
-                  onChange={(e) => setGeDueAgentGuia(e.target.value)}
-                  readOnly={getipodepagoguia === 'P'}
-                />
-              </div>
-              <div>
-                <label htmlFor="gedbfguia">DBF:</label>
-                <input
-                  type="text"
-                  id="gedbfguia"
-                  value={gedbfguia}
-                  onChange={(e) => setGeDbfGuia(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="gegsaguia">GSA:</label>
-                <input
-                  type="text"
-                  id="gegsaguia"
-                  value={gegsaguia}
-                  onChange={(e) => setGeGsaGuia(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="gesecurityguia">Security:</label>
-                <input
-                  type="number"
-                  id="gesecurityguia"
-                  value={gesecurityguia}
-                  onChange={(e) => setGeSecurityGuia(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className='div-primerrenglon-datos-comprobante'>
-              <div>
-                <label htmlFor="gecobrarpagarguia">Cobrar/Pagar:</label>
-                <input
-                  type="number"
-                  id="gecobrarpagarguia"
-                  value={gecobrarpagarguia}
-                  onChange={(e) => setGeCobrarPagarGuia(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="geagentecollectguia">Agente Collect:</label>
-                <input
-                  type="number"
-                  id="geagentecollectguia"
-                  value={geagentecollectguia}
-                  onChange={(e) => setGeAgenteCollectGuia(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="getotalguia">Total de la Guia:</label>
-                <input
-                  type="text"
-                  id="getotalguia"
-                  value={getotalguia}
-                  onChange={(e) => setGeTotalGuia(e.target.value)}
-                  required
-                  readOnly
-                />
-              </div>
-            </div>
-
           </div>
           <div>
             <h3 className='subtitulo-estandar'>Embarques del Vuelo</h3>
