@@ -27,11 +27,16 @@ const PreviewGuias = () => {
 
     //Funcion para modal de eliminar
     const openModalConfirmDelete = (guia) => {
+        if(guia.facturada != 1) {
         console.log(guia)
         setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
         setModalType('confirm');
         setIsModalOpen(true);
         setGuiaAEliminar(guia);
+        }else{
+            toast.error("No se puede eliminar una guia facturada.")
+        }
+
     };
     const handleConfirmDelete = async () => {
         try {

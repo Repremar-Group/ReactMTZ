@@ -146,7 +146,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     if (selectedCliente?.Id) {
       // Realiza ambas solicitudes en paralelo
       Promise.all([
-        axios.get(`${backURL}/api/movimientos/${selectedCliente.Id}`),
+        axios.get(`${backURL}/api/historialfac/${selectedCliente.Id}`),
         axios.get(`${backURL}/api/saldo/${selectedCliente.Id}`)
       ])
         .then(([movimientosRes, saldoRes]) => {
@@ -235,40 +235,40 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
 
 
-  const TablaMovimientos = ({ datos }) => (
-    <div className='contenedor-tabla-cuentacorriente'>
-      <table className='tabla-cuentaco' >
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Documento</th>
-            <th>Recibo</th>
-            <th>Debe</th>
-            <th>Haber</th>
+const TablaMovimientos = ({ datos }) => (
+  <div className="contenedor-tabla-cuentacorriente">
+    <table className="tabla-cuentaco">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Documento</th>
+          <th>Recibo</th>
+          <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        {datos.map((factura, index) => (
+          <tr
+            key={index}
+            onDoubleClick={() => {
+              if (factura.Id) {
+                buscarFactura(factura.Id);
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+          >
+            <td>{factura.FechaCFEFormateada || factura.Fecha}</td>
+            <td>{factura.TipoDocCFE || factura.ComprobanteElectronico}</td>
+            <td>{factura.NumeroCFE}</td>
+            <td>{factura.idrecibo || '-'}</td>
+            <td>{factura.TotalCobrar}</td>
           </tr>
-        </thead>
-        <tbody>
-          {datos.map((movimiento, index) => (
-            <tr key={index}
-              onDoubleClick={() => {
-                if (movimiento.IdFactura) {
-                  buscarFactura(movimiento.IdFactura);
-                }
-              }}
-              style={{ cursor: 'pointer' }}>
-              <td>{movimiento.Fecha}</td>
-              <td>{movimiento.TipoDocumento === 'Factura' ? 'F' : movimiento.TipoDocumento === 'Recibo' ? 'R' : movimiento.TipoDocumento}</td>
-              <td>{movimiento.IdFactura}</td>
-              <td>{movimiento.NumeroRecibo}</td>
-              <td>{movimiento.Debe}</td>
-              <td>{movimiento.Haber}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
   useEffect(() => {
     const erfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD

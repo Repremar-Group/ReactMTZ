@@ -7,6 +7,7 @@ import ModalModificarGuiaImpo from '../../modales/ModalModificarGuiaImpo';
 import ModalVerGuiaImpo from '../../modales/ModalVerGuiaImpo';
 import { convertirADecimal, convertirAComa } from '../../funcionesgenerales';
 import { ToastContainer, toast } from 'react-toastify';
+import ModalAlerta from '../../modales/Alertas';
 
 const Guiasimpo = ({ isLoggedIn }) => {
   const backURL = import.meta.env.VITE_BACK_URL;
@@ -67,7 +68,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
     setGuiaSeleccionada(null);
     fetchGuias();
   };
-   const closeModalModificarSinRECARGA = () => {
+  const closeModalModificarSinRECARGA = () => {
     setIsModalOpenModificar(false);
     setGuiaSeleccionada(null);
   };
@@ -190,33 +191,87 @@ const Guiasimpo = ({ isLoggedIn }) => {
   };
 
 
+  //Estados para las alertas
+  const [isModalOpenEliminar, setIsModalOpenEliminar] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalType, setModalType] = useState('alert'); // 'alert' o 'confirm'
+  const [guiaAEliminar, setGuiaAEliminar] = useState([]);
+  //Funcion para modal de eliminar
+  const openModalConfirmDelete = (guia) => {
+    if (guia.facturada != 1) {
+      console.log("Valor de guia facturada:", guia.facturada)
+      console.log(guia)
+      setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
+      setModalType('confirm');
+      setIsModalOpenEliminar(true);
+      setGuiaAEliminar(guia);
+    } else {
+      toast.error("No se puede eliminar una guia facturada.")
+    }
+
+  };
+  const handleConfirmDelete = async () => {
+    try {
+      console.log("Eliminando la guia", guiaAEliminar)
+      const response = await axios.delete(`${backURL}/api/eliminarGuia/${guiaAEliminar.idguia}`); // Realiza la solicitud DELETE
+      if (response.status === 200) {
+        console.log('Guía eliminada:', guiaAEliminar);
+        toast.success('Guía eliminada exitosamente');
+        fetchGuias();
+        closeModalEliminar();
+      }
+    } catch (error) {
+      console.error('Error eliminando la guía:', error);
+      toast.error('No se pudo eliminar la guía, por favor intenta nuevamente.');
+    }
+  };
+  const handleCancel = () => {
+    closeModalEliminar();
+  };
+
+  const closeModalEliminar = () => {
+    setIsModalOpenEliminar(false);
+    setModalMessage('');
+    setModalType('alert');
+    setGuiaAEliminar([]);
+  };
+  useEffect(() => {
+    if (!isModalOpenEliminar) {
+      setModalMessage('');
+      setGuiaAEliminar(null);
+    }
+  }, [isModalOpenEliminar]);
+
+
   const TablaEmbarques = ({ tablaguias }) => (
-    <table className='tabla-embarques' >
-      <thead>
-        <tr>
-          <th>Guia</th>
-          <th>Cliente</th>
-          <th>Total</th>
-          <th>Tipo</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {tablaguias.map((embarque, index) => (
-          <tr key={index}>
-            <td>{embarque.guia}</td>
-            <td>{embarque.consignatario}</td>
-            <td>{embarque.total}</td>
-            <td>{embarque.tipodepagoguia}</td>
-            <td>
-              <button type="button" className="action-button" onClick={() => openModalVer(embarque.guia)}  >🔍</button>
-              <button type="button" className="action-button" onClick={() => openModalModificar(embarque.guia)}>✏️</button>
-              <button type="button" className="action-button"  >❌</button>
-            </td>
+    <div className='contenedor-tabla-embarquesexpo'>
+      <table className='tabla-embarques' >
+        <thead>
+          <tr>
+            <th>Guia</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Tipo</th>
+            <th>Acciones</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {tablaguias.map((embarque, index) => (
+            <tr key={index}>
+              <td>{embarque.guia}</td>
+              <td>{embarque.consignatario}</td>
+              <td>{embarque.total}</td>
+              <td>{embarque.tipodepagoguia}</td>
+              <td>
+                <button type="button" className="action-button" onClick={() => openModalVer(embarque.guia)}  >🔍</button>
+                <button type="button" className="action-button" onClick={() => openModalModificar(embarque.guia)}>✏️</button>
+                <button type="button" className="action-button" onClick={() => openModalConfirmDelete(embarque)} >❌</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 
 
@@ -445,10 +500,10 @@ const Guiasimpo = ({ isLoggedIn }) => {
     givuelofecha
   ]);
   useEffect(() => {
-  if (gimonedaSeleccionada === 'USD') {
-    setGiArbitrajeGuia('1');
-  }
-}, [gimonedaSeleccionada]);
+    if (gimonedaSeleccionada === 'USD') {
+      setGiArbitrajeGuia('1');
+    }
+  }, [gimonedaSeleccionada]);
 
   const [loading, setLoading] = useState(false);
   // Función para manejar el envío del formulario
@@ -536,16 +591,17 @@ const Guiasimpo = ({ isLoggedIn }) => {
     <div className="EmitirComprobante-container">
 
       <h2 className='titulo-estandar'>Embarques de Importación</h2>
-        <div className='contenedorformularioimpo'>
-          {loading && (
-            <div className="loading-overlay">
-              {/* El spinner se muestra cuando loading es true */}
-              <div className="loading-spinner"></div>
-            </div>
-          )}
-          <form onSubmit={handleSubmitAgregarGuiaImpo} className='formulario-estandar'>
+      <div className='contenedorformularioimpo'>
+        {loading && (
+          <div className="loading-overlay">
+            {/* El spinner se muestra cuando loading es true */}
+            <div className="loading-spinner"></div>
+          </div>
+        )}
+        <form onSubmit={handleSubmitAgregarGuiaImpo} className='formulario-estandar'>
 
-            <div className='primeracolumnaguiasimpo'>
+          <div className='primeracolumnaguiasexpo'>
+            <div class="columna-formulario">
               <div className='div-datos-comprobante'>
                 <h3 className='subtitulo-estandar'>Datos del Vuelo</h3>
 
@@ -611,15 +667,11 @@ const Guiasimpo = ({ isLoggedIn }) => {
                 </div>
               </div>
 
-              <div>
-
-              </div>
-
               <div className='div-datos-comprobante'>
                 <h3 className='subtitulo-estandar'>Datos del Embarque</h3>
 
                 <div className='div-primerrenglon-datos-comprobante'>
-                
+
                   <div>
                     <label htmlFor="ginroguia">Guia:</label>
                     <input
@@ -770,7 +822,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
                     />
                   </div>
 
-                  <div></div>
+                  
                 </div>
 
 
@@ -941,7 +993,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
                       required
                     />
                   </div>
-                  <div></div>
+                 
                 </div>
 
 
@@ -972,52 +1024,52 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
 
               </div>
-
-              <div>
-                <h3 className='subtitulo-estandar'>Embarques del Vuelo</h3>
-                <div className='div-primerrenglon-datos-comprobante'>
-                  <div>
-                    <label htmlFor="ginrovueloembarques">Nro.Vuelo:</label>
-                    <input
-                      type="text"
-                      id="ginrovueloembarques"
-                      value={ginrovueloembarques}
-                      onChange={(e) => setGiNroVueloEmbarques(e.target.value)}
-                      required
-                      readOnly
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="gifechaembarques">Fecha del Vuelo:</label>
-                    <input
-                      type="date"
-                      id="gifechaembarques"
-                      value={gifechaembarques}
-                      onChange={(e) => setGiFechaEmbarques(e.target.value)}
-                      required
-                      readOnly
-                    />
-                  </div>
+            </div>
+            <div>
+              <h3 className='subtitulo-estandar'>Embarques del Vuelo</h3>
+              <div className='div-primerrenglon-datos-comprobante'>
+                <div>
+                  <label htmlFor="ginrovueloembarques">Nro.Vuelo:</label>
+                  <input
+                    type="text"
+                    id="ginrovueloembarques"
+                    value={ginrovueloembarques}
+                    onChange={(e) => setGiNroVueloEmbarques(e.target.value)}
+                    required
+                    readOnly
+                  />
                 </div>
-                <div className='contenedor-tabla-embarques'style={{ marginTop: '15px' }}>
-                  <TablaEmbarques tablaguias={tablaguias} />
+                <div>
+                  <label htmlFor="gifechaembarques">Fecha del Vuelo:</label>
+                  <input
+                    type="date"
+                    id="gifechaembarques"
+                    value={gifechaembarques}
+                    onChange={(e) => setGiFechaEmbarques(e.target.value)}
+                    required
+                    readOnly
+                  />
                 </div>
-
+              </div>
+              <div className='contenedor-tabla-embarques' style={{ marginTop: '15px' }}>
+                <TablaEmbarques tablaguias={tablaguias} />
               </div>
 
-
             </div>
 
 
+          </div>
 
-            <div className='botonesemitircomprobante' style={{ marginTop: '10px' }}>
-              <button type="submit" className='btn-estandar'>Agregar Guia</button>
 
-              <Link to="/home"><button className="btn-estandar">Volver</button></Link>
-            </div>
 
-          </form>
-        </div>
+          <div className='botonesemitircomprobante' style={{ marginTop: '10px' }}>
+            <button type="submit" className='btn-estandar'>Agregar Guia</button>
+
+            <Link to="/home"><button className="btn-estandar">Volver</button></Link>
+          </div>
+
+        </form>
+      </div>
       {/* Modal para modificar */}
       <ModalModificarGuiaImpo
         isOpen={isModalOpenModificar}
@@ -1029,6 +1081,13 @@ const Guiasimpo = ({ isLoggedIn }) => {
         isOpen={isModalOpenVer}
         closeModal={closeModalVer}
         guia={guiaSeleccionada}
+      />
+      <ModalAlerta
+        isOpen={isModalOpenEliminar}
+        message={modalMessage}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancel}
+        type={modalType}
       />
       {/* Modal de búsqueda de clientes */}
       <ModalBusquedaClientes

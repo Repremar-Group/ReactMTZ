@@ -1403,7 +1403,7 @@ app.post('/api/fetchguiasimpo', async (req, res) => {
 
   try {
     const fetchGuiasQuery = `
-      SELECT guia, consignatario, total, tipodepagoguia
+      SELECT idguia, guia, consignatario, total, tipodepagoguia, facturada
       FROM guiasimpo
       WHERE nrovuelo = ? AND fechavuelo = ?
       ORDER BY fechaingresada DESC
@@ -3050,7 +3050,35 @@ app.get('/api/movimientos/:idCliente', async (req, res) => {
     res.status(500).json({ message: 'Error al obtener movimientos' });
   }
 });
+app.get('/api/historialfac/:idCliente', async (req, res) => {
+  const { idCliente } = req.params;
+  console.log(`Received request for /api/historialfac/${idCliente}`);
 
+const sql = `
+  SELECT 
+    *,
+    DATE_FORMAT(FechaCFE, '%d/%m/%Y') AS FechaCFEFormateada
+  FROM facturas
+  WHERE IdCliente = ?
+    AND NumeroCFE IS NOT NULL
+    AND NumeroCFE != 0
+  ORDER BY FechaCFE DESC;
+`;
+
+  try {
+    const [results] = await pool.query(sql, [idCliente]);
+
+    if (results.length === 0) {
+      console.log('No hay facturas emitidas para este cliente');
+      return res.status(404).json({ message: 'No hay facturas emitidas para este cliente' });
+    }
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error al obtener historial de facturación:', error);
+    res.status(500).json({ message: 'Error al obtener historial de facturación' });
+  }
+});
 app.get('/api/saldo/:idCliente', async (req, res) => {
   const { idCliente } = req.params;
   console.log(`Calculando saldo para el cliente ${idCliente}`);
@@ -4034,7 +4062,7 @@ app.post('/api/generar-excel-cuentacorriente', async (req, res) => {
       [`Desde: ${desde}`],
       [`Hasta: ${hasta}`],
       [`Moneda: ${moneda}`],
-      [`Saldo Inicial: ${saldoInicial.toFixed(2)}`]
+      [`Saldo Inicial: ${(Number(saldoInicial) || 0).toFixed(2)}`]
     ];
 
     const infoStartRow = sheet.lastRow.number + 1;
@@ -4311,7 +4339,7 @@ WHERE IdCliente = ?
 
     // Calcular las posiciones de cada texto en el eje X
     const saldoLabel = 'Saldo Inicial:';
-    const saldoValue = saldoInicial.toFixed(2);
+    const saldoValue = (Number(saldoInicial) || 0).toFixed(2);
 
     // Ajusta el espacio entre ambos textos en el eje X
     const saldoLabelX = saldoBoxX + 5;  // Un pequeño margen a la izquierda
@@ -4387,7 +4415,7 @@ WHERE IdCliente = ?
 
 
     function drawTable(resultMovimientos) {
-      let saldoAcumulado = parseFloat(resultSaldoInicial[0]?.Saldo);  // Inicializar el saldo acumulado
+      let saldoAcumulado = parseFloat(saldoInicial);  // Inicializar el saldo acumulado
       // Definir un umbral para cuando cambiar de página
       const pageHeight = 800;  // Altura de la página
       const rowHeight = 20;    // Altura de cada fila
@@ -4476,8 +4504,13 @@ WHERE IdCliente = ?
         currentPage.drawText(movimiento.Moneda, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + 5, y: currentY + 5, size: 8, font: helveticaFont });
 
         // Comprobar si 'Debe' y 'Haber' son números válidos antes de dibujar
-        const debeValue = (movimiento.Debe !== 0.00 && movimiento.Debe !== undefined) ? movimiento.Debe.toFixed(2) : '0.00';
-        const haberValue = (movimiento.Haber !== null && movimiento.Haber !== undefined) ? movimiento.Haber.toFixed(2) : '0.00';
+      const debeValue = (movimiento.Debe != null)
+  ? Number(movimiento.Debe).toFixed(2)
+  : '0.00';
+
+const haberValue = (movimiento.Haber != null)
+  ? Number(movimiento.Haber).toFixed(2)
+  : '0.00';
 
         // Dibujar los valores de "Debe" y "Haber"
         currentPage.drawText(debeValue, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + columnWidths[4] + 5, y: currentY + 5, size: 8, font: helveticaFont });
@@ -4966,7 +4999,8 @@ app.post('/api/impactardocumento', async (req, res) => {
 
     // Preparar detalles de la factura
     const detallesFactura = resultados.map((concepto) => {
-      const importeFormateado = parseFloat(concepto.Importe.toFixed(2));
+      const importe = Number(concepto.Importe) || 0;
+      const importeFormateado = parseFloat(importe.toFixed(2));
       const codItem = esManual === 1
         ? concepto.codigoGIA?.toString() || 'SIN_CODIGO'
         : concepto.Id_concepto?.toString() || 'SIN_CODIGO';
