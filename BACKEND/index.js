@@ -1403,7 +1403,7 @@ app.post('/api/fetchguiasimpo', async (req, res) => {
 
   try {
     const fetchGuiasQuery = `
-      SELECT idguia, guia, consignatario, total, tipodepagoguia, facturada
+      SELECT idguia, guia, consignatario, total,totalguia, tipodepagoguia, facturada
       FROM guiasimpo
       WHERE nrovuelo = ? AND fechavuelo = ?
       ORDER BY fechaingresada DESC
@@ -1428,7 +1428,7 @@ app.post('/api/fetchguiasexpo', async (req, res) => {
 
   try {
     const fetchGuiasQuery = `
-      SELECT idguiasexpo, guia, agente, total, tipodepago, facturada
+      SELECT idguiasexpo, guia, agente, total,cobrarpagar, tipodepago, facturada
       FROM guiasexpo
       WHERE nrovuelo = ? AND fechavuelo = ?
       ORDER BY fechaingresada DESC
@@ -3533,8 +3533,9 @@ app.post('/api/generarReciboPDF', async (req, res) => {
   try {
     const datosRecibo = req.body;
     const idrecibo = req.body.idrecibo;
+    const numrecibo = req.body.numrecibo;
     console.log("Datos recibidos:", datosRecibo);
-    const fecha = datosRecibo.erfecharecibo; // Suponiendo que tiene el formato "2025-02-18"
+    const fecha = datosRecibo.erfecharecibo; 
     const [year, month, day] = fecha.split('-'); // Divide la fecha en partes
 
     // Cargar el PDF base
@@ -3547,7 +3548,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     const primeraPagina = pages[0];
 
     // Insertar los datos estaticos del recibo
-    primeraPagina.drawText(`Recibo N°: ${datosRecibo.ernumrecibo}`, { x: 460, y: 760, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`Recibo N°: ${numrecibo}`, { x: 460, y: 760, size: 12, color: rgb(0, 0, 0) });
     primeraPagina.drawText(`${datosRecibo.errut}`, { x: 310, y: 760, size: 12, color: rgb(0, 0, 0) });
     primeraPagina.drawText(`${day}`, { x: 470, y: 700, size: 12, color: rgb(0, 0, 0) });
     primeraPagina.drawText(`${month}`, { x: 510, y: 700, size: 12, color: rgb(0, 0, 0) });

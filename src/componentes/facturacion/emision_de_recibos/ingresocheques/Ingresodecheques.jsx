@@ -124,7 +124,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         setIcSaldoDelCheque((totalImportes - totalfacturas).toFixed(2));
     }, [iclistadecheques]); // Se ejecuta solo una vez al montar el componente
 
-    const descargarPDF = async (datosRecibo, idrecibo) => {
+    const descargarPDF = async (datosRecibo, idrecibo, numrecibo) => {
         try {
             const response = await fetch(`${backURL}/api/generarReciboPDF`, {
                 method: 'POST',
@@ -133,7 +133,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 },
                 body: JSON.stringify({
                     ...datosRecibo,
-                    idrecibo: idrecibo
+                    idrecibo: idrecibo,
+                    numrecibo: numrecibo
                 })
             });
 
@@ -243,7 +244,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 }
 
 
-                await descargarPDF(datosRecibo, idrecibo);
+                await descargarPDF(datosRecibo, idrecibo, numrecibo);
 
             } catch (error) {
                 console.error('Error al guardar el recibo:', error);
@@ -393,7 +394,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                 </div>
                                 <div className='contenedorbotonconfirmarcheque'>
                                     <br />
-                                    <button type="button" disabled={icsaldodeldocumento === 0} onClick={handleAgregarChequeCargado} className='btn-confirmarcheque'>Confirmar</button>
+                                    <button type="button" disabled={icsaldodeldocumento === 0} onClick={handleAgregarChequeCargado} className='btn-confirmarcheque'>Registrar Pago</button>
                                 </div>
 
                             </div>
@@ -504,9 +505,10 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
 
                     <div className='botonesagregarcheque'>
-                        <button type="submit" className='btn-estandar'>Confirmar</button>
+                        <button type="submit" className='btn-estandar'>Confirmar
+                        </button>
 
-                        <Link to="/home"><button className="btn-estandar">Volver</button></Link>
+                       <button className="btn-estandar"  onClick={closeModal} >Volver </button>
                     </div>
 
 

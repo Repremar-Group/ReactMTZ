@@ -54,6 +54,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   const [isSelectEnabled, setIsSelectEnabled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saldoSelectedCliente, setSaldoSelectedCliente] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   // Manejo del input de búsqueda
   const handleInputChange = (e) => setSearchTerm(e.target.value);
@@ -144,6 +145,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   useEffect(() => {
 
     if (selectedCliente?.Id) {
+      setLoading(true);
       // Realiza ambas solicitudes en paralelo
       Promise.all([
         axios.get(`${backURL}/api/historialfac/${selectedCliente.Id}`),
@@ -154,6 +156,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           console.log('Saldo recibido:', saldoRes.data.saldo);
 
           setMovimientos(movimientosRes.data);
+          setErFacturasAsociadas([]);
           setSaldoSelectedCliente(saldoRes.data.saldo); // Guarda el saldo en el estado
           //Actualizo todos los campos del formulario 
           setErID(selectedCliente.Id);
@@ -161,7 +164,8 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           setErRut(selectedCliente.Rut);
           setErDireccion(selectedCliente.Direccion);
         })
-        .catch(error => console.error('Error al obtener datos:', error));
+        .catch(error => console.error('Error al obtener datos:', error))
+        .finally(() => setLoading(false));
     }
   }, [selectedCliente]);
 
@@ -235,8 +239,14 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
 
 
-const TablaMovimientos = ({ datos }) => (
+const TablaMovimientos = ({ datos, loading }) => (
   <div className="contenedor-tabla-cuentacorriente">
+    
+    {loading && (
+      <div className="loading-overlay">
+        <div className="loading-spinner"></div>
+      </div>
+    )}
     <table className="tabla-cuentaco">
       <thead>
         <tr>
@@ -552,7 +562,7 @@ const TablaMovimientos = ({ datos }) => (
 
           <div className='div-ercuentacorriente'>
             <h3 className='Titulos-formularios-ingreso-recibos'>Cuenta Corriente</h3>
-            <TablaMovimientos datos={movimientos} />
+            <TablaMovimientos datos={movimientos} loading={loading}/>
             <div>
               <label htmlFor="Saldo"><strong>Saldo: </strong> {saldoSelectedCliente ?? '0.00'}</label>
             </div>

@@ -67,7 +67,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
       setModalType('confirm');
       setIsModalOpenEliminar(true);
       setGuiaAEliminar(guia);
-    }else{
+    } else {
       toast.error("No se puede eliminar una guia facturada.")
     }
 
@@ -295,6 +295,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
             <th>Guia</th>
             <th>Cliente</th>
             <th>Total</th>
+            <th>Total/Guia</th>
             <th>Tipo</th>
             <th>Acciones</th>
           </tr>
@@ -304,6 +305,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
             <tr key={index}>
               <td>{embarque.guia}</td>
               <td>{embarque.agente}</td>
+              <td>{embarque.cobrarpagar}</td>
               <td>{embarque.total}</td>
               <td>{embarque.tipodepago}</td>
               <td>
@@ -532,7 +534,13 @@ const Guiasexpo = ({ isLoggedIn }) => {
   const [loading, setLoading] = useState(false);
   const handleSubmitAgregarGuiaExpo = async (e) => {
     e.preventDefault();
-    // Datos que enviarás al endpoint
+    const guiaRegex = /^\d{3}-\d{8}$/;
+
+    if (!guiaRegex.test(genroguia)) {
+      toast.error('El número de guía debe tener el formato 000-00000000');
+      return; // Detiene el envío si no cumple
+    }
+
     // Activar el spinner
     setLoading(true);
 

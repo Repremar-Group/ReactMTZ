@@ -251,6 +251,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
             <th>Guia</th>
             <th>Cliente</th>
             <th>Total</th>
+            <th>Total/Guia</th>
             <th>Tipo</th>
             <th>Acciones</th>
           </tr>
@@ -261,6 +262,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
               <td>{embarque.guia}</td>
               <td>{embarque.consignatario}</td>
               <td>{embarque.total}</td>
+              <td>{embarque.totalguia}</td>
               <td>{embarque.tipodepagoguia}</td>
               <td>
                 <button type="button" className="action-button" onClick={() => openModalVer(embarque.guia)}  >🔍</button>
@@ -509,7 +511,13 @@ const Guiasimpo = ({ isLoggedIn }) => {
   // Función para manejar el envío del formulario
   const handleSubmitAgregarGuiaImpo = async (e) => {
     e.preventDefault();
-    // Datos que enviarás al endpoint
+      const guiaRegex = /^\d{3}-\d{8}$/;
+    
+        if (!guiaRegex.test(ginroguia)) {
+          toast.error('El número de guía debe tener el formato 000-00000000');
+          return; // Detiene el envío si no cumple
+        }
+
     // Activar el spinner
     setLoading(true);
 

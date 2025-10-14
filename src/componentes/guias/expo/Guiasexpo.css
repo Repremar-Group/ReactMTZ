@@ -60,7 +60,7 @@ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .tabla-embarques td {
-  padding: 8px 15px;
+  padding: 8px 10px;
   text-align: left;
   color: #333;
   background-color: inherit;
@@ -209,13 +209,13 @@ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Define anchos para las columnas */
-.tabla-embarques-expo th:nth-child(1),
-.tabla-embarques-expo td:nth-child(1) {
+.tabla-embarques th:nth-child(1),
+.tabla-embarques td:nth-child(1) {
     width: 10%; 
 }
 
-.ttabla-embarques-expo th:nth-child(2),
-.tabla-embarques-expo td:nth-child(2) {
+.tabla-embarques th:nth-child(2),
+.tabla-embarques td:nth-child(2) {
     width: 20%; 
 }
 

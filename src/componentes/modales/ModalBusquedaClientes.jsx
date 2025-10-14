@@ -9,7 +9,8 @@ const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSel
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2 className='titulo-estandar'>Resultados de Búsqueda</h2>
         {filteredClientes.length > 0 ? (
-          <table className='tabla-clientesbusqueda'>
+          <div className='contenedortabla_clientesbusqueda'>
+          <table className='tabla-clientesbusquedareal'>
             <thead>
               <tr>
                 <th>ID</th>
@@ -29,6 +30,7 @@ const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSel
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <div>
             <p className='p_modaltraerclientes'>No se encontraron clientes.</p>

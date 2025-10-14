@@ -118,7 +118,7 @@ const Home = ({ isLoggedIn }) => {
                 const guiasData = guiasRes.data;
                 const facturasData = facturasRes.data.facturas;
                 const cierreData = cierreRes.data;
-                console.log('Datos del backend: Guias: ', guiasData.guias.length, 'Facturas: ',facturasData.length );
+                console.log('Datos del backend: Guias: ', guiasData.guias.length, 'Facturas: ', facturasData.length);
 
                 setGuiasSinFacturar(guiasData.guias);
                 setFacturasSinCobrar(facturasData);
@@ -142,8 +142,13 @@ const Home = ({ isLoggedIn }) => {
                         facturas: facturasData.length
                     });
                 }
-                console.log('Datos para Graficas', formateado);
-                setData(formateado);
+                const ultimos7Dias = formateado
+                    .sort((a, b) => new Date(b.fecha.split('/').reverse().join('-')) - new Date(a.fecha.split('/').reverse().join('-'))) // ordenar por fecha descendente
+                    .slice(0, 7)
+                    .reverse(); 
+
+                console.log('Datos para Graficas (últimos 7 días):', ultimos7Dias);
+                setData(ultimos7Dias);
             } catch (err) {
                 console.error('Error al obtener datos:', err);
             }
@@ -253,7 +258,7 @@ const Home = ({ isLoggedIn }) => {
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
-                    
+
                 </div>
 
                 <div className="graph-box" style={{ width: '100%', maxWidth: '775px', height: 370 }}>

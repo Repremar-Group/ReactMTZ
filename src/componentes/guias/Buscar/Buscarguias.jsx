@@ -27,13 +27,13 @@ const PreviewGuias = () => {
 
     //Funcion para modal de eliminar
     const openModalConfirmDelete = (guia) => {
-        if(guia.facturada != 1) {
-        console.log(guia)
-        setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
-        setModalType('confirm');
-        setIsModalOpen(true);
-        setGuiaAEliminar(guia);
-        }else{
+        if (guia.facturada != 1) {
+            console.log(guia)
+            setModalMessage('Estás seguro de eliminar la guia ' + guia.guia);
+            setModalType('confirm');
+            setIsModalOpen(true);
+            setGuiaAEliminar(guia);
+        } else {
             toast.error("No se puede eliminar una guia facturada.")
         }
 
@@ -130,10 +130,10 @@ const PreviewGuias = () => {
         setGuiaSeleccionada(null);
         fetchGuias();
     };
-      const closeModalModificarSinRecarga = () => {
+    const closeModalModificarSinRecarga = () => {
         setIsModalOpenModificar(false);
         setGuiaSeleccionada(null);
-        
+
     };
 
 
@@ -151,7 +151,7 @@ const PreviewGuias = () => {
     const closeModalModificarExposinrecarga = () => {
         setIsModalOpenModificarExpo(false);
         setGuiaSeleccionada(null);
-        
+
     };
     //Estados para el modal de ver 
     const [isModalOpenVer, setIsModalOpenVer] = useState(false);
@@ -235,6 +235,7 @@ const PreviewGuias = () => {
                                     <th>Destino</th>
                                     <th>Tipo</th>
                                     <th>Monto</th>
+                                    <th>Total / Guia</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -246,7 +247,19 @@ const PreviewGuias = () => {
                                         <td>{row.consignatario || row.agente}</td>
                                         <td>{row.destinoguia || '-'}</td>
                                         <td>{row.tipo || '-'}</td>
-                                        <td>{(row.moneda ? row.total + " " + row.moneda : row.total)}</td>
+                                        <td>
+                                            {row.moneda
+                                                ? (row.idguiasexpo ? row.cobrarpagar : row.total) + " " + row.moneda
+                                                : (row.idguiasexpo ? row.cobrarpagar : row.total)
+                                            }
+                                        </td>
+
+                                        <td>
+                                            {row.moneda
+                                                ? (row.idguiasexpo ? row.total : row.totalguia) + " " + row.moneda
+                                                : (row.idguiasexpo ? row.total : row.totalguia)
+                                            }
+                                        </td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
                                                 <button disabled className="buscarfacturas-submenu-toggle">☰</button>
@@ -271,7 +284,7 @@ const PreviewGuias = () => {
             <ModalModificarGuiaImpo
                 isOpen={isModalOpenModificar}
                 closeModal={closeModalModificar}
-                closeModalSinrecarga= {closeModalModificarSinRecarga}
+                closeModalSinrecarga={closeModalModificarSinRecarga}
                 guia={guiaSeleccionada}
             />
             <ModalVerGuiaImpo
@@ -295,7 +308,7 @@ const PreviewGuias = () => {
             <ModalModificarGuiaExpo
                 isOpen={isModalOpenModificarExpo}
                 closeModal={closeModalModificarExpo}
-                closeModalSinrecarga= {closeModalModificarExposinrecarga}
+                closeModalSinrecarga={closeModalModificarExposinrecarga}
                 guia={guiaSeleccionada}
             />
 
