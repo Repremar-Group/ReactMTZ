@@ -33,17 +33,83 @@ const Reportesexpo = ({ isLoggedIn }) => {
   const closeModal = () => setIsModalOpen(false);
 
   // Envío del formulario
-  const handleSubmitReporteExpo = (e) => {
+  const handleSubmitReporteExpo = async (e) => {
     e.preventDefault();
-    console.log({
+    try {
+      const params = {
+        desde,
+        hasta,
+        cliente: selectedCliente ? selectedCliente.RazonSocial : "",
+        tipoPago,
+      };
+
+      // ⚙️ Llamamos al endpoint que genera el Excel
+      const response = await axios.get(`${backURL}/api/reportedeembarqueguiasexpo`, {
+        params,
+        responseType: "blob", // Muy importante para recibir binarios
+      });
+
+      // 🧩 Crear un link temporal para forzar la descarga
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // 📁 Nombre del archivo
+      link.setAttribute(
+        "download",
+        `Reporte_Embarque_${params.desde}_a_${params.hasta}.xlsx`
+      );
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // ✅ (opcional) Mensaje visual o log
+      console.log("Excel descargado correctamente");
+    } catch (error) {
+      console.error("Error al descargar Excel:", error);
+      setError("Error al generar o descargar el reporte");
+    }
+  };
+const handlepdfReporteExpo = async (e) => {
+  e.preventDefault();
+  try {
+    const params = {
       desde,
       hasta,
-      cliente: selectedCliente ? selectedCliente.RazonSocial : '', // Muestra el cliente seleccionado
-      numeroCliente,
+      cliente: selectedCliente ? selectedCliente.RazonSocial : "",
       tipoPago,
-    });
-  };
+    };
 
+    // ⚙️ Llamada al endpoint que genera el PDF
+    const response = await axios.get(`${backURL}/api/reportedeembarque/pdf`, {
+      params,
+      responseType: "arraybuffer", // 👈 importante para PDF binario
+    });
+
+    // 🧩 Crear un Blob con tipo PDF
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+
+    // 📁 Crear link temporal para descarga
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `Reporte_Embarque_${params.desde}_a_${params.hasta}.pdf`
+    );
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // ✅ Log opcional
+    console.log("PDF descargado correctamente");
+  } catch (error) {
+    console.error("Error al descargar PDF:", error);
+    setError("Error al generar o descargar el reporte PDF");
+  }
+};
 
   // Búsqueda de clientes al presionar Enter
   const handleKeyPress = async (e) => {
@@ -104,7 +170,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
               id="numeroCliente"
               value={numeroCliente}
               onChange={(e) => setNumeroCliente(e.target.value)}
-              required
+
             />
           </div>
           <div>
@@ -113,18 +179,17 @@ const Reportesexpo = ({ isLoggedIn }) => {
               id="tipoPago"
               value={tipoPago}
               onChange={(e) => setTipoPago(e.target.value)}
-              required
+
             >
-              <option value="">Selecciona un tipo de Comprobante</option>
-              <option value="efactura">E-Factura</option>
-              <option value="eticket">E-Ticket</option>
-              <option value="efacturaca">E-Factura Cuenta Ajena</option>
-              <option value="eticketca">E-Ticket Cuenta Ajena</option>
+              <option value="">Selecciona un tipo de pago</option>
+              <option value="pp">PREPAID</option>
+              <option value="cc">COLLECT</option>
             </select>
           </div>
         </div>
-
-        <button type="submit">Generar Reporte</button>
+        <button type="button" onClick={handlepdfReporteExpo} >Generar PDF</button>
+        <br />
+        <button type="submit">Generar Excel</button>
       </form>
 
       {/* Modal de búsqueda de clientes */}

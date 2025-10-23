@@ -296,12 +296,27 @@ const EmitirNC = ({ isLoggedIn }) => {
         console.log("Datos que voy a enviar:", datosNC);
         axios.post(`${backURL}/api/insertarNC`, datosNC)
           .then((response) => {
+            // Mostrar mensaje de éxito
             Swal.fire({
               icon: 'success',
               title: response.data.wsResultado?.descripcion || 'N/C generada correctamente',
               color: '#0a2d54',
               confirmButtonColor: '#0a2d54'
-            }).then(() => window.location.reload());
+            }).then(() => {
+              // Si llegó el PDF, generar descarga automática
+              if (response.data.pdfBase64) {
+                const pdfLink = document.createElement('a');
+                pdfLink.href = `data:application/pdf;base64,${response.data.pdfBase64}`;
+                const numeroNC = response.data.wsResultado?.datos?.documento?.numeroDocumento || 'NC';
+                pdfLink.download = `NC_${numeroNC}.pdf`;
+                document.body.appendChild(pdfLink);
+                pdfLink.click();
+                document.body.removeChild(pdfLink);
+              }
+
+              // Finalmente recargar la página si lo deseas
+              window.location.reload();
+            });
           })
           .catch(err => {
             Swal.fire({
@@ -311,11 +326,12 @@ const EmitirNC = ({ isLoggedIn }) => {
               color: '#0a2d54',
               confirmButtonColor: '#0a2d54'
             });
-          }).finally(() => {
+          })
+          .finally(() => {
             setLoading(false);
           });
       } else {
-        setLoading(false); 
+        setLoading(false);
       }
     });
   };

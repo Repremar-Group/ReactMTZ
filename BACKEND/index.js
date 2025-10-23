@@ -3054,7 +3054,7 @@ app.get('/api/historialfac/:idCliente', async (req, res) => {
   const { idCliente } = req.params;
   console.log(`Received request for /api/historialfac/${idCliente}`);
 
-const sql = `
+  const sql = `
   SELECT 
     *,
     DATE_FORMAT(FechaCFE, '%d/%m/%Y') AS FechaCFEFormateada
@@ -3535,7 +3535,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     const idrecibo = req.body.idrecibo;
     const numrecibo = req.body.numrecibo;
     console.log("Datos recibidos:", datosRecibo);
-    const fecha = datosRecibo.erfecharecibo; 
+    const fecha = datosRecibo.erfecharecibo;
     const [year, month, day] = fecha.split('-'); // Divide la fecha en partes
 
     // Cargar el PDF base
@@ -4505,13 +4505,13 @@ WHERE IdCliente = ?
         currentPage.drawText(movimiento.Moneda, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + 5, y: currentY + 5, size: 8, font: helveticaFont });
 
         // Comprobar si 'Debe' y 'Haber' son números válidos antes de dibujar
-      const debeValue = (movimiento.Debe != null)
-  ? Number(movimiento.Debe).toFixed(2)
-  : '0.00';
+        const debeValue = (movimiento.Debe != null)
+          ? Number(movimiento.Debe).toFixed(2)
+          : '0.00';
 
-const haberValue = (movimiento.Haber != null)
-  ? Number(movimiento.Haber).toFixed(2)
-  : '0.00';
+        const haberValue = (movimiento.Haber != null)
+          ? Number(movimiento.Haber).toFixed(2)
+          : '0.00';
 
         // Dibujar los valores de "Debe" y "Haber"
         currentPage.drawText(debeValue, { x: startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + columnWidths[4] + 5, y: currentY + 5, size: 8, font: helveticaFont });
@@ -5314,7 +5314,8 @@ app.post('/api/insertarNC', async (req, res) => {
     return res.json({
       message: 'N/C insertada correctamente, facturas y cuenta corriente actualizadas',
       idNC,
-      wsResultado: impactarResponse.data.resultado
+      wsResultado: impactarResponse.data.resultado,
+      pdfBase64: impactarResponse.data.pdfBase64
     });
 
   } catch (err) {
@@ -5372,7 +5373,7 @@ app.post('/api/impactarnc', async (req, res) => {
         importe: factura.TotalCobrar
       }))
     };
-
+    console.log(datosXml.cancelaciones)
     const xml = generarXmlNC(datosXml);
     console.log('Impactando N/C, XML: ', xml);
 
@@ -5391,7 +5392,7 @@ app.post('/api/impactarnc', async (req, res) => {
       xml,
       { headers }
     );
-
+    console.log('RESPUESTA BRUTA DEL WS:', response.data);
     const parsed = await parseSOAP(response.data);
     const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
     const resultado = inner.agregarDocumentoFacturacionResultado;
@@ -5407,29 +5408,71 @@ app.post('/api/impactarnc', async (req, res) => {
 
     // 5. Guardar datos del documento en la tabla NC
     const datosDoc = resultado?.datos?.documento;
+    let pdfBase64 = null;
+    console.log('DATOS DOC NC', datosDoc);
     if (datosDoc) {
       const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
 
-      const updateQuery = `
-              UPDATE nc
-              SET fecha = ?, TipoDocumento = ?, Serie = ?, NumeroCFE = ?
-              WHERE idNC = ?
-            `;
 
-      await pool.query(updateQuery, [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idNC]);
+      await pool.query(`
+        UPDATE nc
+        SET fecha = ?, TipoDocumento = ?, Serie = ?, NumeroCFE = ?
+        WHERE idNC = ?
+      `, [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idNC]);
 
-      return res.status(200).json({
-        success: true,
-        message: 'N/C impactada y datos del WS guardados correctamente',
-        resultado
-      });
-    } else {
-      return res.status(200).json({
-        success: true,
-        message: resultado.descripcion,
-        resultado
-      });
+      // 6. Obtener PDF desde el WS
+      const headersPdf = {
+        'Content-Type': 'text/xml;charset=utf-8',
+        'SOAPAction': '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+        'Accept-Encoding': 'gzip,deflate',
+        'Host': datosEmpresa.serverFacturacion,
+        'Connection': 'Keep-Alive',
+        'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
+      };
+
+      const xmlPdf = `
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+          <soapenv:Header/>
+          <soapenv:Body>
+            <soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+              <xmlParametros><![CDATA[
+                <obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+                  <usuario>${datosEmpresa.usuarioGfe}</usuario>
+                  <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+                  <empresa>${datosEmpresa.codigoEmpresa}</empresa>
+                  <documento>
+                    <fechaDocumento>${fechaDocumento}</fechaDocumento>
+                    <tipoDocumento>${tipoDocumento}</tipoDocumento>
+                    <serieDocumento>${serieDocumento}</serieDocumento>
+                    <numeroDocumento>${numeroDocumento}</numeroDocumento>
+                  </documento>
+                </obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+              ]]></xmlParametros>
+            </soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+          </soapenv:Body>
+        </soapenv:Envelope>
+      `;
+      console.log('XML PDF', xmlPdf);
+      const pdfResp = await axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf, { headers: headersPdf });
+      const parsedPdf = await parseSOAP(pdfResp.data);
+      const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+      const innerPdf = await parseInnerXML(innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));
+      pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
+      if (pdfBase64) {
+        await pool.query(`
+      UPDATE nc
+      SET PdjBase64 = ?
+      WHERE idNC = ?
+    `, [pdfBase64, idNC]);
+      }
     }
+
+    return res.status(200).json({
+      success: true,
+      message: 'N/C impactada, datos y PDF del WS obtenidos correctamente',
+      resultado,
+      pdfBase64
+    });
 
   } catch (err) {
     console.error('Error al impactar N/C:', err);
@@ -5506,6 +5549,439 @@ app.post('/api/reimpactarnc', async (req, res) => {
   } catch (err) {
     console.error('Error reimpactando N/C:', err);
     return res.status(500).json({ message: 'Error al reimpactar N/C', error: err.message });
+  }
+});
+app.get("/api/reportedeembarqueguiasexpo", async (req, res) => {
+  const { desde, hasta, cliente, tipoPago } = req.query;
+  console.log("Parámetros recibidos:", { desde, hasta, cliente, tipoPago });
+  try {
+    let query = `
+      SELECT 
+        g.*, 
+        f.NumeroCFE AS numeroFacturaCFE,
+        r.numeroDocumentoCFE AS numeroReciboCFE
+      FROM guiasexpo g
+      LEFT JOIN facturas f ON g.idfactura = f.Id
+      LEFT JOIN recibos r ON f.idrecibo = r.idrecibo
+      WHERE DATE(g.fechaingresada) BETWEEN ? AND ?
+    `;
+
+    const params = [desde, hasta];
+
+    // Filtro por cliente (opcional)
+    if (cliente && cliente.trim() !== "" && cliente.trim().toLowerCase() !== "todos") {
+      query += " AND g.agente = ?";
+      params.push(cliente);
+    }
+
+    // Filtro por tipo de pago (opcional) con mapeo
+    if (tipoPago && tipoPago.trim() !== "" && tipoPago.trim().toLowerCase() !== "todos") {
+      let tipoFiltro = null;
+      if (tipoPago.toLowerCase() === "cc") tipoFiltro = "C";
+      else if (tipoPago.toLowerCase() === "pp") tipoFiltro = "P";
+
+      if (tipoFiltro) {
+        query += " AND g.tipodepago = ?";
+        params.push(tipoFiltro);
+      }
+    }
+
+
+    query += " ORDER BY g.fechaingresada DESC";
+
+    const [rows] = await pool.query(query, params);
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Reporte Embarque");
+
+    worksheet.columns = [
+      { header: "awbnumber", key: "guia", width: 15 },
+      { header: "agente", key: "agente", width: 20 },
+      { header: "destino", key: "destinovuelo", width: 15 },
+      { header: "nrovuelo", key: "nrovuelo", width: 15 },
+      { header: "fecha", key: "emision", width: 15 },
+      { header: "bruto", key: "pesobruto", width: 10 },
+      { header: "tarifado", key: "pesotarifado", width: 10 },
+      { header: "ppcc", key: "tipodepago", width: 10 },
+      { header: "neto", key: "tarifaneta", width: 10 },
+      { header: "awbrate", key: "tarifaventa", width: 10 },
+      { header: "awa", key: "awa", width: 10 },
+      { header: "awc", key: "duecarrier", width: 10 },
+      { header: "cca", key: "cca", width: 10 },
+      { header: "dbc", key: "dbf", width: 10 },
+      { header: "fletevz", key: "fleteneto", width: 10 },
+      { header: "totalvz", key: "totalvz", width: 10 },
+      { header: "fleteawb", key: "fleteawb", width: 10 },
+      { header: "totalawb", key: "total", width: 10 },
+      { header: "gsa", key: "gsa", width: 10 },
+      { header: "security", key: "security", width: 10 },
+      { header: "pagarcobrar", key: "cobrarpagar", width: 10 },
+      { header: "factura", key: "numeroFacturaCFE", width: 15 },
+      { header: "recibo", key: "numeroReciboCFE", width: 15 },
+    ];
+
+    rows.forEach((r) => {
+      r.cca = 0;
+      const fleteneto = Number(r.fleteneto) || 0;
+      const duecarrier = Number(r.duecarrier) || 0;
+      r.totalvz = fleteneto + duecarrier;
+      r.awa = r.fleteawb || 0;
+      worksheet.addRow(r);
+      // Forzar celdas vacías para que existan y se vean los bordes
+      worksheet.columns.forEach((col, index) => {
+        const cell = worksheet.getRow(worksheet.lastRow.number).getCell(index + 1);
+        if (cell.value === undefined || cell.value === null) {
+          cell.value = "";
+        }
+      });
+    });
+    // 🔹 Define color corporativo RePremar (azul)
+    const azulRepremar = "143361"; // puedes ajustar el tono si querés otro matiz
+
+    // 🔹 Estilo para el header
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: azulRepremar },
+      };
+      cell.font = { bold: true, color: { argb: "FFFFFF" } }; // texto blanco
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    // 🔹 Colorear filas alternadas (gris claro y blanco)
+    const grisClaro = "F2F2F2";
+
+    // 🔹 Aplicar formato a filas (centrar + alternar colores + bordes)
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // omitir header
+      const colorFondo = rowNumber % 2 === 0 ? grisClaro : "FFFFFF";
+      row.eachCell((cell) => {
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: colorFondo },
+        };
+        cell.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+    });
+
+    // 🔹 Agregar autofiltro a todas las columnas relevantes
+    worksheet.autoFilter = {
+      from: "A1",
+      to: worksheet.getRow(1).getCell(worksheet.columnCount)._address,
+    };
+
+    // 🔹 Congelar la fila de encabezado
+    worksheet.views = [{ state: "frozen", ySplit: 1 }];
+
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Reporte_Embarque_${desde}_a_${hasta}.xlsx`
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error("Error generando Excel:", err);
+    res.status(500).json({ mensaje: "Error generando Excel", error: err.message });
+  }
+});
+app.get("/api/reportedeembarque/pdf", async (req, res) => {
+  try {
+    const { desde, hasta, cliente, tipoPago } = req.query;
+    console.log("Parámetros recibidos:", { desde, hasta, cliente, tipoPago });
+
+    // Mapear tipoPago a la base de datos
+    let tipoFiltro = "";
+    if (tipoPago?.toLowerCase() === "cc") tipoFiltro = "C"; // Collect
+    else if (tipoPago?.toLowerCase() === "pp") tipoFiltro = "P"; // Prepaid
+
+    // Query SQL con filtros dinámicos
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        guia AS awb,
+        DATE_FORMAT(emision, '%d/%m/%Y') AS emision,
+        nrovuelo AS vuelo,
+        DATE_FORMAT(fechavuelo, '%d/%m/%Y') AS fecha,
+        destinovuelo AS destino,
+        pesobruto AS peso,
+        pesotarifado AS tarifado,
+        tipodepago AS ppcc,
+        tarifaneta AS tarifa,
+        fleteawb,
+        fleteneto AS totalflete,
+        dueagent,
+        dbf,
+        duecarrier,
+        security,
+        cobrarpagar AS incentivo,
+        total
+      FROM guiasexpo
+      WHERE 1=1
+        ${cliente ? "AND agente = ?" : ""}
+        ${tipoFiltro ? "AND tipodepago = ?" : ""}
+        ${desde && hasta ? "AND emision BETWEEN ? AND ?" : ""}
+      ORDER BY emision ASC
+      `,
+      [
+        ...(cliente ? [cliente] : []),
+        ...(tipoFiltro ? [tipoFiltro] : []),
+        ...(desde && hasta ? [desde, hasta] : []),
+      ]
+    );
+
+    if (!rows.length) {
+      return res.status(404).send("No se encontraron datos para el filtro indicado.");
+    }
+
+    // Separar Collect y Prepaid usando el valor real de la base
+    const collectData = [];
+    const prepaidData = [];
+
+    rows.forEach(r => {
+      r.incentivo = Number(r.fleteawb || 0) - Number(r.totalflete || 0);
+
+      // Para mostrar en la tabla
+      r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
+
+      // Separar según valor real
+      if (r.ppcc === "C") collectData.push(r);
+      else if (r.ppcc === "P") prepaidData.push(r);
+    });
+
+    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalFinal = totalPrepaid - totalCollect;
+
+    // Crear PDF A3 horizontal
+    const pdfDoc = await PDFDocument.create();
+    let page = pdfDoc.addPage([1191, 842]);
+    const { height } = page.getSize();
+
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const azul = rgb(0.12, 0.31, 0.47);
+    const gris = rgb(0.95, 0.95, 0.95);
+    const negro = rgb(0, 0, 0);
+
+    let y = height - 60;
+
+    // Encabezado
+    page.drawText("Reporte de Exportación", {
+      x: 480,
+      y,
+      size: 20,
+      font: bold,
+      color: negro,
+    });
+
+    y -= 40;
+
+    const datos = [
+      ["Cliente:", cliente || "-"],
+      ["Desde:", desde || "-"],
+      ["Hasta:", hasta || "-"],
+      ["Base:", "MVD"],
+    ];
+
+    datos.forEach(([k, v]) => {
+      page.drawText(k, { x: 50, y, size: 12, font: bold });
+      page.drawText(v, { x: 130, y, size: 12, font });
+      y -= 18;
+    });
+
+    y -= 10;
+
+    const headers = [
+      "Número AWB", "Emisión", "Vuelo", "Fecha", "Destino",
+      "Peso Bruto", "Peso Tarifado", "PP/CC", "Tarifa Neta",
+      "Flete AWB", "Total Flete", "Due Agent", "DBF",
+      "Due Carrier", "Security", "Incentivo", "Total",
+    ];
+
+    const colWidths = [
+      77, 65, 54, 65, 54, 60, 71, 60, 54, 60, 65, 65, 42, 71, 60, 71, 60,
+    ];
+    const startX = (1191 - colWidths.reduce((a, b) => a + b, 0)) / 2;
+
+    const drawTable = (dataArray, title, total) => {
+      if (!dataArray.length) return; // no dibuja si no hay datos
+
+      const marginTop = 50; // margen superior al crear nueva página
+      const rowHeight = 17;
+      const headerHeight = 22;
+      const titleHeight = 20;
+
+      // Función para agregar página nueva si y es demasiado bajo
+      const checkNewPage = () => {
+        if (y < 50) { // 50px margen inferior
+          const newPage = pdfDoc.addPage([1191, 842]);
+          y = newPage.getSize().height - marginTop;
+          page = newPage; // reemplaza la página actual
+        }
+      };
+
+      let x = startX;
+      y -= 30;
+
+      // Título tabla
+      page.drawText(title, { x: startX, y, size: 14, font: bold, color: azul });
+      y -= titleHeight;
+
+      // Cabecera
+      x = startX;
+      headers.forEach((h, i) => {
+        checkNewPage();
+        page.drawRectangle({
+          x,
+          y: y - headerHeight,
+          width: colWidths[i],
+          height: headerHeight,
+          color: azul,
+        });
+        page.drawText(h, {
+          x: x + 3,
+          y: y - 15,
+          size: 10,
+          font: bold,
+          color: rgb(1, 1, 1),
+        });
+        x += colWidths[i];
+      });
+      y -= headerHeight;
+
+      // Filas
+      dataArray.forEach((r, idx) => {
+        checkNewPage();
+
+        const colorFondo = idx % 2 === 0 ? gris : rgb(1, 1, 1);
+        x = startX;
+
+        page.drawRectangle({
+          x,
+          y: y - rowHeight,
+          width: colWidths.reduce((a, b) => a + b, 0),
+          height: rowHeight,
+          color: colorFondo,
+        });
+
+        const valores = [
+          r.awb,
+          r.emision,
+          r.vuelo,
+          r.fecha,
+          r.destino,
+          Number(r.peso || 0).toFixed(2),
+          Number(r.tarifado || 0).toFixed(2),
+          r.ppccDisplay,
+          Number(r.tarifa || 0).toFixed(2),
+          Number(r.fleteawb || 0).toFixed(2),
+          Number(r.totalflete || 0).toFixed(2),
+          Number(r.dueagent || 0).toFixed(2),
+          Number(r.dbf || 0).toFixed(2),
+          Number(r.duecarrier || 0).toFixed(2),
+          Number(r.security || 0).toFixed(2),
+          Number(r.incentivo || 0).toFixed(2),
+          Number(r.total || 0).toFixed(2),
+        ];
+
+        valores.forEach((v, i) => {
+          page.drawText(String(v), {
+            x: x + 3,
+            y: y - 12,
+            size: 10,
+            font,
+            color: negro,
+          });
+          x += colWidths[i];
+        });
+
+        y -= rowHeight;
+      });
+
+      y -= 20;
+
+      // Total de la tabla a la derecha
+      const totalTableWidth = colWidths.reduce((a, b) => a + b, 0);
+      const totalX = startX + totalTableWidth - 150;
+
+      page.drawText(title === "COLLECT" ? "A Cobrar:" : "A Pagar:", {
+        x: totalX,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+      page.drawText(total.toFixed(2), {
+        x: totalX + 100,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+
+      y -= 30;
+    };
+
+    // Dibujar tablas solo si tienen datos
+    drawTable(collectData, "COLLECT", totalCollect);
+    drawTable(prepaidData, "PREPAID", totalPrepaid);
+
+    // Total final resaltado con recuadro a la derecha
+    const totalFinalX = startX + colWidths.reduce((a, b) => a + b, 0) - 200;
+    page.drawRectangle({
+      x: totalFinalX,
+      y: y - 22,
+      width: 200,
+      height: 22,
+      color: azul,
+    });
+    page.drawText("Total a Pagar", {
+      x: totalFinalX + 10,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+    page.drawText(totalFinal.toFixed(2), {
+      x: totalFinalX + 200 - 60,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+
+    const pdfBytes = await pdfDoc.save();
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Reporte_Exportacion_${desde}_a_${hasta}.pdf`
+    );
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generando el PDF");
   }
 });
 
