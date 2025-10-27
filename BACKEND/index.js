@@ -17,6 +17,15 @@ const { Console } = require('console');
 const ExcelJS = require('exceljs');
 const nodemailer = require('nodemailer');
 
+const multer = require('multer');
+const xlsx = require('xlsx');
+
+// crea carpeta uploads si no existe
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads');
+}
+
+const upload = multer({ dest: 'uploads/' });
 
 
 const port = process.env.PORT || 5000;
@@ -573,6 +582,142 @@ app.post('/api/insertclientes', async (req, res) => {
   }
 });
 
+app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) => {
+  const filePath = req.file.path;
+
+  try {
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+
+    console.log(`📘 Procesando ${data.length} filas...`);
+
+    const resultados = [];
+    const errores = [];
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
+
+    for (const fila of data) {
+      // 👇 Mapeo de columnas reales a las variables del proceso
+      const Nombre = (fila["CL_NOMBRE,C,50"] || "").toString().trim();
+      const RazonSocial = (fila["CL_RAZON,C,80"] || "").toString().trim(); 
+      const Direccion = fila["CL_DIRECCI"];
+      const Zona = fila["CL_ZONA"];
+      const Ciudad = fila["CL_CIUDAD"];
+      const Rut = fila["CL_RUC"];
+      const IATA = fila["CL_IATA"];
+      const Cass = fila["CL_CASS"];
+      const Pais = fila["CL_CODPAIS"];
+      const Email = fila["CL_EMAIL"];
+      const Tel = fila["CL_TELEFON"];
+      const TDOCDGI = String(fila["CL_TIPO"] || "").trim();
+      const Saldo = 0; // por defecto
+
+      console.log("Fila:", fila);
+      console.log("Nombre:", Nombre, "| RazonSocial:", RazonSocial);
+      if (!RazonSocial || !Nombre) {
+        errores.push({ fila, error: "Faltan campos obligatorios (Nombre o RazonSocial)" });
+        continue;
+      }
+
+      // 1️⃣ Verificar duplicado
+      const [results] = await pool.query(
+        "SELECT * FROM clientes WHERE RazonSocial = ?",
+        [RazonSocial]
+      );
+      if (results.length > 0) {
+        errores.push({ RazonSocial, error: "Ya existe el cliente" });
+        continue;
+      }
+
+      // 2️⃣ Construir XML SOAP
+      const esTipo3 = TDOCDGI === "3";
+      const xml = `
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+          <soapenv:Header/>
+          <soapenv:Body>
+            <soap:agregarElemento>
+              <xmlParametros><![CDATA[
+                <agregarElementoParametros>
+                  <usuario>${datosEmpresa.usuarioGfe}</usuario>
+                  <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+                  <empresa>${datosEmpresa.codigoEmpresa}</empresa>
+                  <elemento>
+                    <nombre>${Nombre}</nombre>
+                    <habilitado>S</habilitado>
+                    <conjuntos>
+                      <conjunto>${datosEmpresa.conjuntoClientes}</conjunto>
+                    </conjuntos>
+                    <atributos>
+                      <atributo><campo>DIR</campo><valor>${Direccion}</valor></atributo>
+                      <atributo><campo>TDOCDGI</campo><valor>${TDOCDGI}</valor></atributo>
+                      ${esTipo3
+          ? `<atributo><campo>CI</campo><valor>${Rut}</valor></atributo>`
+          : `<atributo><campo>RUC</campo><valor>${Rut}</valor></atributo>`}
+                      <atributo><campo>PAIS</campo><valor>${Pais}</valor></atributo>
+                      <atributo><campo>TEL</campo><valor>${Tel}</valor></atributo>
+                      <atributo><campo>RAZON</campo><valor>${RazonSocial}</valor></atributo>
+                      <atributo><campo>EMAIL</campo><valor>${Email}</valor></atributo>
+                      <atributo><campo>LOC</campo><valor>${Zona}</valor></atributo>
+                      <atributo><campo>CIUDAD</campo><valor>${Ciudad}</valor></atributo>
+                    </atributos>
+                  </elemento>
+                </agregarElementoParametros>
+              ]]></xmlParametros>
+            </soap:agregarElemento>
+          </soapenv:Body>
+        </soapenv:Envelope>
+      `;
+
+      try {
+        const response = await axios.post(
+          `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+          Buffer.from(xml, "utf-8"),
+          {
+            headers: {
+              "Content-Type": "text/xml;charset=utf-8",
+              SOAPAction: '"agregarElemento"',
+            },
+          }
+        );
+
+        const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
+        const parsed = await parser.parseStringPromise(response.data);
+        const innerXml = parsed?.Envelope?.Body?.agregarElementoResponse?.xmlResultado;
+
+        if (!innerXml) throw new Error("Respuesta SOAP inválida");
+
+        const rawXml = innerXml.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+        const innerParsed = await xml2js.parseStringPromise(rawXml, { explicitArray: false });
+        const CodigoGIA = innerParsed?.agregarElementoResultado?.datos?.elemento?.codigo;
+        if (!CodigoGIA) throw new Error("No se pudo obtener el Código GIA");
+
+        await pool.query(
+          `INSERT INTO clientes 
+            (Nombre, RazonSocial, Direccion, Zona, Ciudad, Rut, IATA, Cass, Pais, Email, Tel, TDOCDGI, Saldo, CodigoGIA)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [Nombre, RazonSocial, Direccion, Zona, Ciudad, Rut, IATA, Cass, Pais, Email, Tel, TDOCDGI, Saldo, CodigoGIA]
+        );
+
+        resultados.push({ RazonSocial, CodigoGIA, estado: "OK" });
+      } catch (err) {
+        errores.push({ RazonSocial, error: err.message });
+      }
+    }
+
+    fs.unlinkSync(filePath);
+
+    return res.json({
+      mensaje: "Procesamiento completado",
+      insertados: resultados.length,
+      errores: errores.length,
+      resultados,
+      errores,
+    });
+  } catch (err) {
+    console.error("Error procesando Excel:", err);
+    res.status(500).json({ error: "Error procesando Excel" });
+  }
+});
 
 // Endpoint para actualizar un cliente
 app.put('/api/actualizarcliente/:id', async (req, res) => {
