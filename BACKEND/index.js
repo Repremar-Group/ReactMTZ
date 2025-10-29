@@ -585,6 +585,17 @@ app.post('/api/insertclientes', async (req, res) => {
 app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) => {
   const filePath = req.file.path;
 
+  // 🧩 Función para escapar caracteres especiales de XML (solo una vez)
+  const xmlEscape = (value) => {
+    if (value === null || value === undefined) return "";
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+  };
+
   try {
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
@@ -593,43 +604,46 @@ app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) =>
     console.log(`📘 Procesando ${data.length} filas...`);
 
     const resultados = [];
-    const errores = [];
     const datosEmpresa = await obtenerDatosEmpresa(pool);
-
+    const safeInt = (value) => {
+      const num = parseInt(value);
+      return isNaN(num) ? 0 : num;
+    };
     for (const fila of data) {
-      // 👇 Mapeo de columnas reales a las variables del proceso
-      const Nombre = (fila["CL_NOMBRE,C,50"] || "").toString().trim();
-      const RazonSocial = (fila["CL_RAZON,C,80"] || "").toString().trim(); 
-      const Direccion = fila["CL_DIRECCI"];
-      const Zona = fila["CL_ZONA"];
-      const Ciudad = fila["CL_CIUDAD"];
-      const Rut = fila["CL_RUC"];
-      const IATA = fila["CL_IATA"];
-      const Cass = fila["CL_CASS"];
-      const Pais = fila["CL_CODPAIS"];
-      const Email = fila["CL_EMAIL"];
-      const Tel = fila["CL_TELEFON"];
-      const TDOCDGI = String(fila["CL_TIPO"] || "").trim();
-      const Saldo = 0; // por defecto
+      const Nombre = xmlEscape(fila["CL_NOMBRE,C,50"] || "");
+      const CodigoGia = xmlEscape(fila["CL_RUBRO,C,20"] || "");
+      const RazonSocial = xmlEscape(fila["CL_RAZON,C,80"] || "");
 
-      console.log("Fila:", fila);
-      console.log("Nombre:", Nombre, "| RazonSocial:", RazonSocial);
+      // Defaults si están vacíos
+      const Direccion = xmlEscape((fila["CL_DIRECCI,C,50"] || "MISIONES 1372").toString().trim() || "MISIONES 1372");
+      const Zona = xmlEscape((fila["CL_ZONA,C,30"] || "MONTEVIDEO").toString().trim() || "MONTEVIDEO");
+      const Ciudad = xmlEscape((fila["CL_CIUDAD,C,30"] || "MONTEVIDEO").toString().trim() || "MONTEVIDEO");
+      const Rut = xmlEscape((fila["CL_RUC,C,15"] || "0").toString().trim() || "0");
+
+      // Campos opcionales (varchar) que pueden quedar vacíos
+      const IATA = fila["CL_IATA,N,11,0"] ? fila["CL_IATA,N,11,0"].toString() : "";
+      const Cass = "false";
+
+      // Fijos
+      const Pais = "URUGUAY";
+      const Email = xmlEscape(fila["CL_EMAIL,C,254"] || "");
+      const Tel = xmlEscape(fila["CL_TELEFON,M"] || "");
+      const TDOCDGI = "2";
+      const Saldo = 0; // decimal, ok
+
       if (!RazonSocial || !Nombre) {
-        errores.push({ fila, error: "Faltan campos obligatorios (Nombre o RazonSocial)" });
+        console.warn(`⚠️ Faltan campos obligatorios (Nombre o RazonSocial) en fila:`, fila);
         continue;
       }
 
-      // 1️⃣ Verificar duplicado
-      const [results] = await pool.query(
-        "SELECT * FROM clientes WHERE RazonSocial = ?",
-        [RazonSocial]
-      );
+      // 🔍 Verificar duplicado
+      const [results] = await pool.query("SELECT * FROM clientes WHERE RazonSocial = ?", [RazonSocial]);
       if (results.length > 0) {
-        errores.push({ RazonSocial, error: "Ya existe el cliente" });
+        console.log(`⏩ Cliente duplicado: ${RazonSocial}, se omite.`);
         continue;
       }
 
-      // 2️⃣ Construir XML SOAP
+      // 🧾 Armar XML
       const esTipo3 = TDOCDGI === "3";
       const xml = `
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
@@ -642,6 +656,7 @@ app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) =>
                   <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
                   <empresa>${datosEmpresa.codigoEmpresa}</empresa>
                   <elemento>
+                    <codigo>${CodigoGia}</codigo>
                     <nombre>${Nombre}</nombre>
                     <habilitado>S</habilitado>
                     <conjuntos>
@@ -669,6 +684,8 @@ app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) =>
       `;
 
       try {
+        console.log('XML a instertar: ', xml);
+        // 🚀 Enviar XML al servidor GIA
         const response = await axios.post(
           `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
           Buffer.from(xml, "utf-8"),
@@ -680,16 +697,32 @@ app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) =>
           }
         );
 
-        const parser = new xml2js.Parser({ explicitArray: false, tagNameProcessors: [xml2js.processors.stripPrefix] });
-        const parsed = await parser.parseStringPromise(response.data);
+        const rawResponse = response.data;
+        const parser = new xml2js.Parser({
+          explicitArray: false,
+          tagNameProcessors: [xml2js.processors.stripPrefix],
+        });
+
+        const parsed = await parser.parseStringPromise(rawResponse);
         const innerXml = parsed?.Envelope?.Body?.agregarElementoResponse?.xmlResultado;
 
-        if (!innerXml) throw new Error("Respuesta SOAP inválida");
+        if (!innerXml) {
+          console.error("❌ Respuesta SOAP inválida. Respuesta cruda:\n", rawResponse);
+          throw new Error("Respuesta SOAP inválida desde el servidor GIA");
+        }
 
-        const rawXml = innerXml.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+        // 🧩 NO reemplazamos &amp; de nuevo — mantenemos el XML escapado válido
+        const rawXml = innerXml
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">");
+
         const innerParsed = await xml2js.parseStringPromise(rawXml, { explicitArray: false });
         const CodigoGIA = innerParsed?.agregarElementoResultado?.datos?.elemento?.codigo;
-        if (!CodigoGIA) throw new Error("No se pudo obtener el Código GIA");
+
+        if (!CodigoGIA) {
+          console.error("❌ No se pudo obtener Código GIA. XML interno:\n", rawXml);
+          throw new Error("No se pudo obtener Código GIA");
+        }
 
         await pool.query(
           `INSERT INTO clientes 
@@ -700,22 +733,24 @@ app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) =>
 
         resultados.push({ RazonSocial, CodigoGIA, estado: "OK" });
       } catch (err) {
-        errores.push({ RazonSocial, error: err.message });
+        console.error(`💥 Error al procesar cliente "${RazonSocial}":`, err.message);
+        console.error("🧾 Respuesta cruda del WS (si existe):\n", err.response?.data || "Sin respuesta");
+        throw new Error(`Error al enviar cliente "${RazonSocial}" → ${err.message}`);
       }
     }
 
     fs.unlinkSync(filePath);
 
     return res.json({
-      mensaje: "Procesamiento completado",
+      mensaje: "✅ Procesamiento completado sin errores",
       insertados: resultados.length,
-      errores: errores.length,
       resultados,
-      errores,
     });
   } catch (err) {
-    console.error("Error procesando Excel:", err);
-    res.status(500).json({ error: "Error procesando Excel" });
+    console.error("⛔ Error procesando Excel:", err);
+    res.status(500).json({ error: err.message || "Error procesando Excel" });
+  } finally {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   }
 });
 
@@ -784,6 +819,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
   };
 
   const xml = construirXmlModificarElemento();
+  console.log(`\n📤 Enviando XML para cliente "${RazonSocial}":\n`, xml);
   const xmlBuffer = Buffer.from(xml, 'utf-8');
 
   const headers = {
@@ -986,6 +1022,7 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
   const { usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas,
     rubCompras,
     rubCostos,
+    rubDeudores,
     codEfac,
     codEfacCA,
     codETick,
@@ -998,8 +1035,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
     if (rows.length > 0) {
       // Ya hay datos → Hacer UPDATE
       await pool.query(
-        `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?, codEfac = ?, codEfacCA = ?, codETick = ?, codETickCA = ?, usuarioModifica = ?, fechaModifica = ?`,
-        [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
+        `UPDATE datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?,rubDeudores = ?, codEfac = ?, codEfacCA = ?, codETick = ?, codETickCA = ?, usuarioModifica = ?, fechaModifica = ?`,
+        [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, rubDeudores, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
       );
 
       res.send('Datos actualizados correctamente');
@@ -1007,8 +1044,8 @@ app.post('/api/guardar-datos-empresa', async (req, res) => {
       // No hay datos → Hacer INSERT
 
       await pool.query(
-        `INSERT INTO datos_empresa (usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuarioModifica, fechaModifica) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
+        `INSERT INTO datos_empresa SET usuarioGfe = ?, passwordGfe = ?, codigoEmpresa = ?, contraseñaEmpresa = ?, conjuntoClientes = ?, serverFacturacion = ?,rubVentas = ?,rubCompras = ?,rubCostos = ?,rubDeudores = ?, codEfac = ?, codEfacCA = ?, codETick = ?, codETickCA = ?, usuarioModifica = ?, fechaModifica = ?`,
+        [usuarioGfe, passwordGfe, codigoEmpresa, contraseñaEmpresa, conjuntoClientes, serverFacturacion, rubVentas, rubCompras, rubCostos, rubDeudores, codEfac, codEfacCA, codETick, codETickCA, usuModifica, fechaModificacion],
       );
       res.send('Datos insertados correctamente');
     }
@@ -3288,7 +3325,9 @@ app.post('/api/insertrecibo', async (req, res) => {
     razonsocial,
     rut,
     direccion,
-    listadepagos
+    listadepagos,
+    aCuenta,
+    comentario
   } = req.body;
 
   let connection;
@@ -3303,12 +3342,12 @@ app.post('/api/insertrecibo', async (req, res) => {
 
     // 🔸 INSERTAR RECIBO
     const insertReciboQuery = `
-      INSERT INTO recibos (nrorecibo, fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion, nroformulario)
-      VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO recibos (nrorecibo, fecha, idcliente, nombrecliente, moneda, importe, formapago, razonsocial, rut, direccion, nroformulario, aCuenta, comentario)
+      VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const [resultInsert] = await connection.query(insertReciboQuery, [
       documentoausar, fecha, idcliente, nombrecliente, moneda, importe,
-      formapago, razonsocial, rut, direccion, formularioausar
+      formapago, razonsocial, rut, direccion, formularioausar, aCuenta, comentario
     ]);
     const idrecibo = resultInsert.insertId;
 
@@ -3389,15 +3428,26 @@ app.post('/api/impactarrecibo', async (req, res) => {
 
     // 3. Traer facturas asociadas
     const [facturasAsociadas] = await pool.query('SELECT * FROM facturas WHERE idrecibo = ?', [idrecibo]);
-    if (facturasAsociadas.length === 0) return res.status(400).json({ error: 'No hay facturas asociadas' });
+    if (!recibo.aCuenta && facturasAsociadas.length === 0)
+      return res.status(400).json({ error: 'No hay facturas asociadas' });
 
+
+    let codigoClienteGIA = '';
+    if (recibo.aCuenta) {
+      // Si es a cuenta, traemos el código desde la tabla clientes
+      const [clienteRows] = await pool.query('SELECT CodigoGIA FROM clientes WHERE Id = ?', [recibo.idcliente]);
+      codigoClienteGIA = clienteRows[0]?.CodigoGIA || '';
+    } else {
+      // Si no es a cuenta, usamos la primera factura asociada
+      codigoClienteGIA = facturasAsociadas[0].CodigoClienteGia || '';
+    }
     // 4. Armar el XML
     const datosXml = {
       datosEmpresa,
       fechaCFE: formatFecha(recibo.fecha),
       fechaVencimientoCFE: formatFecha(recibo.fecha),
       adendadoc: generarMensaje(recibo.importe, recibo.moneda),
-      codigoClienteGIA: facturasAsociadas[0].CodigoClienteGia || '',
+      codigoClienteGIA: codigoClienteGIA,
       cancelaciones: facturasAsociadas.map(factura => ({
         rubroAfectado: '113102',
         tipoDocumentoAfectado: factura.TipoDocCFE,
@@ -3411,7 +3461,8 @@ app.post('/api/impactarrecibo', async (req, res) => {
         comprobante: pago.nro_pago,
         vencimiento: formatFecha(pago.vencimiento)
       })),
-      Moneda: recibo.moneda
+      Moneda: recibo.moneda,
+      aCuenta: recibo.aCuenta
     };
 
     const xml = generarXmlRecibo(datosXml);
@@ -3673,26 +3724,28 @@ app.post('/api/obtenerFacturasdesdeRecibo', async (req, res) => {
 });
 
 
-
 app.post('/api/generarReciboPDF', async (req, res) => {
   try {
     const datosRecibo = req.body;
-    const idrecibo = req.body.idrecibo;
-    const numrecibo = req.body.numrecibo;
+    const idrecibo = datosRecibo.idrecibo;
+    const numrecibo = datosRecibo.numrecibo;
+    const listadepagos = datosRecibo.listadepagos || [];
     console.log("Datos recibidos:", datosRecibo);
-    const fecha = datosRecibo.erfecharecibo;
-    const [year, month, day] = fecha.split('-'); // Divide la fecha en partes
 
-    // Cargar el PDF base
-    const pdfBasePath = path.join(__dirname, 'pdfs', 'recibo_base.pdf'); // Ruta del PDF base
+    const fecha = datosRecibo.erfecharecibo;
+    const [year, month, day] = fecha.split('-');
+
+    // Cargar PDF base
+    const pdfBasePath = path.join(__dirname, 'pdfs', 'recibo_base.pdf');
     const pdfBytes = fs.readFileSync(pdfBasePath);
 
-    // Cargar el PDF en PDF-Lib
     const pdfDoc = await PDFDocument.load(pdfBytes);
-    const pages = pdfDoc.getPages();
-    const primeraPagina = pages[0];
+    const primeraPagina = pdfDoc.getPages()[0];
 
-    // Insertar los datos estaticos del recibo
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 10;
+
+    // Datos estáticos
     primeraPagina.drawText(`Recibo N°: ${numrecibo}`, { x: 460, y: 760, size: 12, color: rgb(0, 0, 0) });
     primeraPagina.drawText(`${datosRecibo.errut}`, { x: 310, y: 760, size: 12, color: rgb(0, 0, 0) });
     primeraPagina.drawText(`${day}`, { x: 470, y: 700, size: 12, color: rgb(0, 0, 0) });
@@ -3700,79 +3753,173 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     primeraPagina.drawText(`${year}`, { x: 545, y: 700, size: 12, color: rgb(0, 0, 0) });
     primeraPagina.drawText(`${datosRecibo.errazonSocial}`, { x: 150, y: 720, size: 12, color: rgb(0, 0, 0) });
     primeraPagina.drawText(`${datosRecibo.erdireccion}`, { x: 150, y: 700, size: 12, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`Recibo sobre Facturas Detalladas:`, { x: 50, y: 630, size: 12 });
-    primeraPagina.drawText(`Documento:`, { x: 50, y: 610, size: 10 });
-    primeraPagina.drawText(`Fecha:`, { x: 150, y: 610, size: 10 });
-    primeraPagina.drawText(`Saldo:`, { x: 220, y: 610, size: 10 });
-    primeraPagina.drawLine({
-      start: { x: 50, y: 600 }, // Punto de inicio de la línea
-      end: { x: 300, y: 600 },   // Punto final de la línea (ajusta el valor de x para cambiar el largo)
-      thickness: 1,              // Grosor de la línea
-      color: rgb(0, 0, 0)        // Color negro
-    });
-    // Verificar si 'facturas' existe y es un arreglo
-    if (Array.isArray(datosRecibo.facturas)) {
-      let facturaYPos = 590; // Posición Y inicial para las facturas
-      datosRecibo.facturas.forEach((factura) => {
-        primeraPagina.drawText(`${factura.Comprobante}`, { x: 50, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
-        primeraPagina.drawText(`${factura.FechaFormateada}`, { x: 150, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
-        primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 220, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
-        primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 520, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
-        facturaYPos -= 20; // Decrementar la posición Y para la siguiente factura
+
+    // Función para dividir texto en líneas, rompiendo palabras largas si es necesario
+    function dividirEnLineas(texto, maxWidth, font, fontSize) {
+      const lineas = [];
+      let lineaActual = '';
+      for (let i = 0; i < texto.length; i++) {
+        lineaActual += texto[i];
+        const ancho = font.widthOfTextAtSize(lineaActual, fontSize);
+        if (ancho > maxWidth) {
+          lineas.push(lineaActual.slice(0, -1));
+          lineaActual = texto[i];
+        }
+      }
+      if (lineaActual) lineas.push(lineaActual);
+      return lineas;
+    }
+
+    if (datosRecibo.aCuenta) {
+      // Recibo a cuenta: comentario + pagos
+      let yPos = 590;
+
+      primeraPagina.drawText('Comentarios:', {
+        x: 50,
+        y: yPos,
+        size: fontSize,
+        color: rgb(0, 0, 0),
+        font
       });
-      primeraPagina.drawText(`Banco:`, { x: 50, y: facturaYPos, size: 10 });
-      primeraPagina.drawText(`Vencimiento:`, { x: 150, y: facturaYPos, size: 10 });
-      primeraPagina.drawText(`Nro.Documento:`, { x: 220, y: facturaYPos, size: 10 });
-      primeraPagina.drawText(`Moneda:`, { x: 310, y: facturaYPos, size: 10 });
-      primeraPagina.drawText(`Arbitraje:`, { x: 371, y: facturaYPos, size: 10 });
-      primeraPagina.drawText(`Importe:`, { x: 435, y: facturaYPos, size: 10 });
+
+      let comentarioTexto = datosRecibo.comentario?.trim() || 'Sin comentarios.';
+      const maxWidth = 420;
+
+      const lineasComentario = dividirEnLineas(comentarioTexto, maxWidth, font, fontSize);
+
+      let comentarioY = yPos - 20;
+      for (const linea of lineasComentario) {
+        if (comentarioY < 120) break; // evita pasarse de la página
+        primeraPagina.drawText(linea, { x: 50, y: comentarioY, size: fontSize, font, color: rgb(0, 0, 0) });
+        comentarioY -= 14;
+      }
+
+      // Línea separadora debajo del comentario
       primeraPagina.drawLine({
-        start: { x: 50, y: facturaYPos - 10 }, // Punto de inicio de la línea
-        end: { x: 470, y: facturaYPos - 10 },   // Punto final de la línea (ajusta el valor de x para cambiar el largo)
-        thickness: 1,              // Grosor de la línea
-        color: rgb(0, 0, 0)        // Color negro
+        start: { x: 50, y: comentarioY - 5 },
+        end: { x: 470, y: comentarioY - 5 },
+        thickness: 1,
+        color: rgb(0, 0, 0),
       });
-      if (Array.isArray(datosRecibo.listadepagos)) {
-        let pagosYPos = facturaYPos - 20; // Posición Y inicial para las facturas
-        datosRecibo.listadepagos.forEach((pago) => {
-          primeraPagina.drawText(`${pago.icbanco.toUpperCase()}`, { x: 50, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${pago.icfechavencimiento}`, { x: 150, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${pago.icnrocheque}`, { x: 220, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${pago.ictipoMoneda}`, { x: 310, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${datosRecibo.arbitraje}`, { x: 371, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${pago.icimpdelcheque}`, { x: 435, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-          pagosYPos -= 20; // Decrementar la posición Y para la siguiente factura
+      console.log('Lista de pagos del recibo: ', datosRecibo.listadepagos)
+      // Dibujar pagos debajo del comentario
+      if (Array.isArray(listadepagos) && listadepagos.length > 0) {
+        let pagosYPos = comentarioY - 20;
+        const espacioY = 16; // separación vertical entre filas, antes era 20
+        const fontSizeHeader = 10;
+
+        // Encabezado
+        const headerX = {
+          banco: 50,
+          vencimiento: 120,
+          nro: 200,
+          moneda: 280,
+          arbitraje: 360,
+          importe: 430
+        };
+
+        primeraPagina.drawText('Banco', { x: headerX.banco, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+        primeraPagina.drawText('Vencimiento', { x: headerX.vencimiento, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+        primeraPagina.drawText('Nro.Documento', { x: headerX.nro, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+        primeraPagina.drawText('Moneda', { x: headerX.moneda, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+        primeraPagina.drawText('Arbitraje', { x: headerX.arbitraje, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+        primeraPagina.drawText('Importe', { x: headerX.importe, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+
+        // Línea separadora debajo del header
+        primeraPagina.drawLine({
+          start: { x: 50, y: pagosYPos - 3 },
+          end: { x: 470, y: pagosYPos - 3 },
+          thickness: 1,
+          color: rgb(0, 0, 0),
         });
-        //Sumo todos los improes
-        let montototalpagos = datosRecibo.totalrecibo;
-        let montoenletras = generarMensaje(montototalpagos, datosRecibo.ertipoMoneda);
+
+        pagosYPos -= espacioY;
+
+        // Dibujar datos de los pagos
+        for (const pago of listadepagos) {
+          if (pagosYPos < 60) break; // evitar pasar del pie de página
+          primeraPagina.drawText(`${pago.icbanco.toUpperCase()}`, { x: headerX.banco, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.icfechavencimiento}`, { x: headerX.vencimiento, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.icnrocheque}`, { x: headerX.nro, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.ictipoMoneda}`, { x: headerX.moneda, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${datosRecibo.arbitraje}`, { x: headerX.arbitraje, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${pago.icimpdelcheque}`, { x: headerX.importe, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          pagosYPos -= espacioY;
+        }
+
+        // Total en letras
+        const montoenletras = generarMensaje(datosRecibo.erimporte, datosRecibo.ertipoMoneda);
         primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10 });
         primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, color: rgb(0, 0, 0) });
-      } else {
-        console.error("No se encontraron pagos en los datos recibidos.", datosRecibo.listadepagos);
       }
 
     } else {
-      console.error("No se encontraron facturas en los datos recibidos.", datosRecibo.facturas);
+      // Recibo normal: facturas + pagos
+      if (Array.isArray(datosRecibo.facturas)) {
+        primeraPagina.drawText(`Recibo sobre Facturas Detalladas:`, { x: 50, y: 630, size: 12 });
+        primeraPagina.drawText(`Documento:`, { x: 50, y: 610, size: 10 });
+        primeraPagina.drawText(`Fecha:`, { x: 150, y: 610, size: 10 });
+        primeraPagina.drawText(`Saldo:`, { x: 220, y: 610, size: 10 });
+        primeraPagina.drawLine({ start: { x: 50, y: 600 }, end: { x: 300, y: 600 }, thickness: 1, color: rgb(0, 0, 0) });
+
+        let facturaYPos = 590;
+        for (const factura of datosRecibo.facturas) {
+          primeraPagina.drawText(`${factura.Comprobante}`, { x: 50, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${factura.FechaFormateada}`, { x: 150, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 220, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 520, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+          facturaYPos -= 20;
+        }
+
+        primeraPagina.drawLine({ start: { x: 50, y: facturaYPos - 10 }, end: { x: 470, y: facturaYPos - 10 }, thickness: 1, color: rgb(0, 0, 0) });
+
+        if (Array.isArray(listadepagos)) {
+          let pagosYPos = facturaYPos - 20;
+          // Dibujar encabezado de la tabla
+          primeraPagina.drawText('Banco', { x: 50, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Vencimiento', { x: 150, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Nro.Documento', { x: 250, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Moneda', { x: 350, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Arbitraje', { x: 420, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Importe', { x: 490, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+
+          // Línea separadora debajo del header
+          primeraPagina.drawLine({
+            start: { x: 50, y: pagosYPos - 5 },
+            end: { x: 540, y: pagosYPos - 5 },
+            thickness: 1,
+            color: rgb(0, 0, 0),
+          });
+          for (const pago of listadepagos) {
+            primeraPagina.drawText(`${pago.icbanco.toUpperCase()}`, { x: 50, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+            primeraPagina.drawText(`${pago.icfechavencimiento}`, { x: 150, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+            primeraPagina.drawText(`${pago.icnrocheque}`, { x: 220, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+            primeraPagina.drawText(`${pago.ictipoMoneda}`, { x: 310, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+            primeraPagina.drawText(`${datosRecibo.arbitraje}`, { x: 371, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+            primeraPagina.drawText(`${pago.icimpdelcheque}`, { x: 435, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
+            pagosYPos -= 20;
+          }
+
+          // Total en letras
+          const montoenletras = generarMensaje(datosRecibo.erimporte, datosRecibo.ertipoMoneda);
+          primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10 });
+          primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, color: rgb(0, 0, 0) });
+        }
+      } else {
+        console.error("No se encontraron facturas en los datos recibidos.", datosRecibo.facturas);
+      }
     }
 
-    // Guardar el nuevo PDF en memoria
+    // Guardar PDF y actualizar DB
     const pdfFinalBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfFinalBytes).toString('base64');
-    console.log('RECIBO BASE 64:', pdfBase64, 'ID DEL RECIBO A MODIFICAR', idrecibo);
-    const updateQuery = `
-  UPDATE recibos
-  SET pdfbase64 = ?
-  WHERE idrecibo = ?
-`;
+    await pool.query(`UPDATE recibos SET pdfbase64 = ? WHERE idrecibo = ?`, [pdfBase64, idrecibo]);
 
-    await pool.query(updateQuery, [pdfBase64, idrecibo]);
-
-
-    // ✅ Enviar PDF como respuesta SOLO después de guardar en la DB
+    // Enviar PDF
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Recibo_${datosRecibo.ernumrecibo}.pdf`);
     res.send(Buffer.from(pdfFinalBytes));
+
   } catch (error) {
     console.error('Error al generar el PDF:', error);
     res.status(500).json({ error: 'Error al generar el PDF' });

@@ -226,7 +226,7 @@ function generarXmlRecibo(datos) {
 
     console.log('GENERANDO XML RECIBO:', datos);
 
-     if (datos.Moneda === 'UYU') {
+    if (datos.Moneda === 'UYU') {
         const conversionPagos = {
             CHEQUEUS: 'CHEQUEMN',
             TRANSUSD: 'TRANSMN'
@@ -280,26 +280,34 @@ function generarXmlRecibo(datos) {
     // Generar <renglones>
     let renglones = '';
     for (let renglon of datos.formasPago) {
-    // Si moneda es UYU y hay cotización, convertir importe a dólares
-    let precioUnitario = renglon.importe;
-    if (datos.Moneda === 'UYU' && totalFormasPago !== totalCancelaciones && cotizacion) {
-        precioUnitario = (Number(renglon.importe) / Number(cotizacion)).toFixed(2);
-    }
+        // Si moneda es UYU y hay cotización, convertir importe a dólares
+        let precioUnitario = renglon.importe;
+        if (datos.Moneda === 'UYU' && totalFormasPago !== totalCancelaciones && cotizacion) {
+            precioUnitario = (Number(renglon.importe) / Number(cotizacion)).toFixed(2);
+        }
 
-    renglones += `
+        renglones += `
         <renglon>
             <producto>COM004</producto>
             <nombreProducto>COBRO</nombreProducto>
             <cantidad>1</cantidad>
             <precioUnitario>${precioUnitario}</precioUnitario>
         </renglon>`;
-}
+    }
     xmlBase = xmlBase.replace('{{Renglones}}', renglones);
 
     // Generar <cancelaciones>
     let cancelaciones = '';
-    for (let cancelacion of datos.cancelaciones) {
-        cancelaciones += `
+    if (datos.aCuenta) {
+        // Caso "a cuenta": una sola cancelación con importe total del recibo
+        cancelaciones = `
+            <cancelacion>
+                <rubroAfectado>${datos.datosEmpresa.rubDeudores}</rubroAfectado>
+                <importe>${totalFormasPago.toFixed(2)}</importe>
+            </cancelacion>`;
+    } else {
+        for (let cancelacion of datos.cancelaciones) {
+            cancelaciones += `
             <cancelacion>
                 <rubroAfectado>${cancelacion.rubroAfectado}</rubroAfectado>
                 <tipoDocumentoAfectado>${cancelacion.tipoDocumentoAfectado}</tipoDocumentoAfectado>
@@ -307,32 +315,33 @@ function generarXmlRecibo(datos) {
                 <vencimientoAfectado>${cancelacion.vencimientoAfectado}</vencimientoAfectado>
                 <importe>${cancelacion.importe}</importe>
             </cancelacion>`;
+        }
     }
     xmlBase = xmlBase.replace('{{Cancelaciones}}', cancelaciones);
 
     // Generar <formasPago>
     let formasPago = '';
     for (let pago of datos.formasPago) {
-    const esCaja = pago.formaPago === 'CAJAUYU' || pago.formaPago === 'CAJAUSD';
+        const esCaja = pago.formaPago === 'CAJAUYU' || pago.formaPago === 'CAJAUSD';
 
-    // Contenido extra si es CHEQUEMN o TRANSMN
-    let extraCampos = '';
-    if (pago.formaPago === 'CHEQUEMN' || pago.formaPago === 'TRANSMN') {
-        extraCampos = `
+        // Contenido extra si es CHEQUEMN o TRANSMN
+        let extraCampos = '';
+        if (pago.formaPago === 'CHEQUEMN' || pago.formaPago === 'TRANSMN') {
+            extraCampos = `
         <elemento1>CTA01</elemento1>
         <tipoDocumento>CHQ</tipoDocumento>`;
-    }
+        }
 
-    formasPago += `
+        formasPago += `
     <formaPago>
         <formaPago>${pago.formaPago}</formaPago>
         <importe>${pago.importe}</importe>
         ${extraCampos}` +
-        (!esCaja ? `
+            (!esCaja ? `
         <comprobante>${pago.comprobante}</comprobante>
         <vencimiento>${pago.vencimiento}</vencimiento>` : '') + `
     </formaPago>`;
-}
+    }
     xmlBase = xmlBase.replace('{{FormasPago}}', formasPago);
 
     console.log('XML Generado RECIBO:', xmlBase);

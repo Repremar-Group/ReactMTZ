@@ -829,3 +829,10 @@ p {
     /* o el valor que desees */
     text-align: center;
 }
+
+.encabezado-facturas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* título a la izquierda, checkbox a la derecha */
+  margin-bottom: 10px;
+}

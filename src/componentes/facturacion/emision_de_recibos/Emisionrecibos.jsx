@@ -20,6 +20,11 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   }, [navigate]);
   // Estado para los campos del formulario
   const backURL = import.meta.env.VITE_BACK_URL;
+
+  const [aCuenta, setACuenta] = useState(false);
+  const [isModalOpenAcuenta, setIsModalOpenACuenta] = useState(false);
+  const [comentario, setComentario] = useState('');
+
   const [ernumrecibo, setErNumRecibo] = useState('');
   const [erfecharecibo, setErFechaRecibo] = useState('');
 
@@ -192,33 +197,55 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   // Estado para la factura seleccionada
   const [erfacturaSeleccionada, setErFacturaSeleccionada] = useState(null);
 
+  const handleCheckboxChange = (e) => {
+    const checked = e.target.checked;
+    setACuenta(e.target.checked);
+    setErFacturasAsociadas([]);
+    setErSaldoDelRecibo(0);
+    if (checked) {
+      setIsModalOpenACuenta(true);
+    }
+  };
+
+  const handleGuardarComentario = () => {
+    console.log('Comentario:', comentario);
+    setIsModalOpenACuenta(false); // Cerramos el modal al guardar
+  };
+
+  const handleCerrarModalAcuenta = () => {
+    setIsModalOpenACuenta(false);
+    setACuenta(false); // opcional: desmarcar si se cierra sin guardar
+  };
+
   //UseEffect para actualizar el saldo y el total de los recibos.
   useEffect(() => {
     // Copiar erimporte en erimportedelrecibo
     setErImporteDelRecibo(erimporte);
   }, [erimporte]);
 
- useEffect(() => {
-  const totalFacturas = erfacturasasociadas.reduce((total, factura) => {
-    const importe = Number(factura.erimportefacturaasociada || 0);
-    const monedaFactura = factura.ermonedafacturaasociada;
+  useEffect(() => {
+    const totalFacturas = erfacturasasociadas.reduce((total, factura) => {
+      const importe = Number(factura.erimportefacturaasociada || 0);
+      const monedaFactura = factura.ermonedafacturaasociada;
 
-    let importeConvertido = importe;
+      let importeConvertido = importe;
 
-    if (ertipoMoneda === 'USD' && monedaFactura === 'UYU') {
-      // Convertir de UYU a USD
-      importeConvertido = importe / tipoCambio;
-    } else if (ertipoMoneda === 'UYU' && monedaFactura === 'USD') {
-      // Convertir de USD a UYU
-      importeConvertido = importe * tipoCambio;
+      if (ertipoMoneda === 'USD' && monedaFactura === 'UYU') {
+        // Convertir de UYU a USD
+        importeConvertido = importe / tipoCambio;
+      } else if (ertipoMoneda === 'UYU' && monedaFactura === 'USD') {
+        // Convertir de USD a UYU
+        importeConvertido = importe * tipoCambio;
+      }
+
+      return total + importeConvertido;
+    }, 0);
+
+    setErTotalDeFacturas(totalFacturas);
+    if (!aCuenta) {
+      setErSaldoDelRecibo((erimportedelrecibo - totalFacturas).toFixed(2));
     }
-
-    return total + importeConvertido;
-  }, 0);
-
-  setErTotalDeFacturas(totalFacturas);
-  setErSaldoDelRecibo((erimportedelrecibo - totalFacturas).toFixed(2));
-}, [erimportedelrecibo, erfacturasasociadas, tipoCambio, ertipoMoneda]);
+  }, [erimportedelrecibo, erfacturasasociadas, tipoCambio, ertipoMoneda]);
 
   // Función para seleccionar una factura al hacer clic en una fila
   const handleSeleccionarFacturaAsociada = (index) => {
@@ -239,46 +266,54 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
 
 
-const TablaMovimientos = ({ datos, loading }) => (
-  <div className="contenedor-tabla-cuentacorriente">
-    
-    {loading && (
-      <div className="loading-overlay">
-        <div className="loading-spinner"></div>
-      </div>
-    )}
-    <table className="tabla-cuentaco">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Tipo</th>
-          <th>Documento</th>
-          <th>Recibo</th>
-          <th>Monto</th>
-        </tr>
-      </thead>
-      <tbody>
-        {datos.map((factura, index) => (
-          <tr
-            key={index}
-            onDoubleClick={() => {
-              if (factura.Id) {
-                buscarFactura(factura.Id);
-              }
-            }}
-            style={{ cursor: 'pointer' }}
-          >
-            <td>{factura.FechaCFEFormateada || factura.Fecha}</td>
-            <td>{factura.TipoDocCFE || factura.ComprobanteElectronico}</td>
-            <td>{factura.NumeroCFE}</td>
-            <td>{factura.idrecibo || '-'}</td>
-            <td>{factura.TotalCobrar}</td>
+  const TablaMovimientos = ({ datos, loading }) => (
+    <div className="contenedor-tabla-cuentacorriente">
+
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
+      <table className="tabla-cuentaco">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Documento</th>
+            <th>Recibo</th>
+            <th>Monto</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody>
+          {datos.map((factura, index) => (
+            <tr
+              key={index}
+              onDoubleClick={() => {
+                if (aCuenta) {
+                  toast.warning('No podés agregar facturas mientras esté marcado "A Cuenta"');
+                  return;
+                }
+
+                if (factura.Id) {
+                  buscarFactura(factura.Id);
+                }
+              }}
+              style={{
+                cursor: aCuenta ? 'not-allowed' : 'pointer',
+                opacity: aCuenta ? 0.6 : 1,
+              }}
+            >
+              <td>{factura.FechaCFEFormateada || factura.Fecha}</td>
+              <td>{factura.TipoDocCFE || factura.ComprobanteElectronico}</td>
+              <td>{factura.NumeroCFE}</td>
+              <td>{factura.idrecibo || '-'}</td>
+              <td>{factura.TotalCobrar}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   useEffect(() => {
     const erfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
@@ -289,11 +324,11 @@ const TablaMovimientos = ({ datos, loading }) => (
   // Función para manejar el envío del formulario
   const handleSubmitAgregarRecibo = (e) => {
     e.preventDefault();
-    if (ersaldodelrecibo != 0) {
+    if (ersaldodelrecibo != 0 && !aCuenta) {
       toast.error("El recibo debe cancelar exactamente el total de las facturas");
       return;
 
-    } else if (erfacturasasociadas.length === 0) {
+    } else if (erfacturasasociadas.length === 0 && !aCuenta) {
       toast.error("Debes asociar al menos una factura antes de continuar.");
       return; // Detiene la ejecución y no abre el modal
     }
@@ -323,6 +358,8 @@ const TablaMovimientos = ({ datos, loading }) => (
     errazonSocial,
     errut,
     erdireccion,
+    aCuenta,
+    comentario,
   };
 
 
@@ -331,6 +368,29 @@ const TablaMovimientos = ({ datos, loading }) => (
       <ToastContainer />
       <h2 className="Titulo-ingreso-recibos">Ingreso de Recibos</h2>
       <div className="EmitirRecibos-container">
+        {isModalOpenAcuenta && (
+          <div className='modal'>
+            <div className='modal-content'>
+              <h3 className='Titulo-ingreso-recibos'>Ingrese el Detalle del Recibo</h3>
+              <textarea
+                value={comentario}
+                onChange={(e) => setComentario(e.target.value)}
+                placeholder="Escriba su comentario aquí..."
+                style={{
+                  width: '480px',   
+                  height: '150px',  
+                  resize: 'none',   
+                  padding: '8px',
+                  fontSize: '14px'
+                }}
+              />
+              <div className='modal-buttons'>
+                <button className='btn-estandar' onClick={handleGuardarComentario}>Guardar</button>
+                <button className='btn-estandar' onClick={handleCerrarModalAcuenta}>Cancelar</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmitAgregarRecibo} className='formulario-emitir-recibo2'>
 
@@ -461,7 +521,18 @@ const TablaMovimientos = ({ datos, loading }) => (
           </div>
 
           <div className='erfacturasasociadas'>
-            <h3 className='Titulos-formularios-ingreso-recibos'>Facturas Asociadas</h3>
+            <div className='encabezado-facturas'>
+              <h3 className='Titulos-formularios-ingreso-recibos'>Facturas Asociadas</h3>
+
+              <label className='checkbox-estandar'>
+                <input
+                  type='checkbox'
+                  checked={aCuenta}
+                  onChange={handleCheckboxChange}
+                />
+                A Cuenta
+              </label>
+            </div>
             <div className='primerafilafacturasasociadas'>
 
 
@@ -486,7 +557,7 @@ const TablaMovimientos = ({ datos, loading }) => (
                           onKeyDown={handleKeyPressDocumento}
                           placeholder='Nro. Comprobante'
                           autoComplete="off"
-                          disabled={!searchTerm}
+                          disabled={aCuenta || !searchTerm}
                         />
                       </div>
                     </th>
@@ -562,7 +633,7 @@ const TablaMovimientos = ({ datos, loading }) => (
 
           <div className='div-ercuentacorriente'>
             <h3 className='Titulos-formularios-ingreso-recibos'>Cuenta Corriente</h3>
-            <TablaMovimientos datos={movimientos} loading={loading}/>
+            <TablaMovimientos datos={movimientos} loading={loading} />
             <div>
               <label htmlFor="Saldo"><strong>Saldo: </strong> {saldoSelectedCliente ?? '0.00'}</label>
             </div>

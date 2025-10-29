@@ -21,6 +21,7 @@ const DatosEmpresa = ({ isLoggedIn }) => {
         setRubVentas(data.rubVentas || '');
         setRubCompras(data.rubCompras || '');
         setRubCostos(data.rubCostos || '');
+        setRubDeudores(data.rubDeudores || '');
         setCodEfac(data.codEfac || '');
         setCodEfacCA(data.codEfacCA || '');
         setCodETick(data.codETick || '');
@@ -55,6 +56,7 @@ const DatosEmpresa = ({ isLoggedIn }) => {
   const [rubVentas, setRubVentas] = useState('');
   const [rubCompras, setRubCompras] = useState('');
   const [rubCostos, setRubCostos] = useState('');
+  const [rubDeudores, setRubDeudores] = useState('');
   const [codEfac, setCodEfac] = useState('');
   const [codEfacCA, setCodEfacCA] = useState('');
   const [codETick, setCodETick] = useState('');
@@ -71,6 +73,7 @@ const DatosEmpresa = ({ isLoggedIn }) => {
     rubVentas: rubVentas,
     rubCompras: rubCompras,
     rubCostos: rubCostos,
+    rubDeudores: rubDeudores,
     codEfac: codEfac,
     codEfacCA: codEfacCA,
     codETick: codETick,
@@ -150,6 +153,10 @@ const DatosEmpresa = ({ isLoggedIn }) => {
               <div className="div-datosempresa">
                 <label>Rubro de Costos</label>
                 <input type="text" value={rubCostos} onChange={(e) => setRubCostos(e.target.value)} required />
+              </div>
+               <div className="div-datosempresa">
+                <label>Rubro de Deudores</label>
+                <input type="text" value={rubDeudores} onChange={(e) => setRubDeudores(e.target.value)} required />
               </div>
             </div>
 

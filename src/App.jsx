@@ -4,7 +4,7 @@ import { BrowserRouter as Router, BrowserRouter } from 'react-router-dom';
 import Layout from './componentes/layout/Layout';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { ToastContainer } from 'react-toastify';
 
 function App() {
     // Recuperar el estado de autenticación desde localStorage
@@ -23,6 +23,7 @@ function App() {
     };
 
     return (
+        
         <BrowserRouter>
             <Layout isLoggedIn={isLoggedIn} handleLogin={handleLogin} />
         </BrowserRouter>
