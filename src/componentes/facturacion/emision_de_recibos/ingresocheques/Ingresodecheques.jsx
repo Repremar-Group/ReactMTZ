@@ -252,7 +252,9 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     setIconoAlertaGFE('error');
                     setIsModalOpenAlertaGFE(true);
                 }
+                //Comleto los datos del recibo con arbitraje y facturas
                 datosRecibo.arbitraje = icarbitraje;
+                datosRecibo.facturas = facturas;
 
                 // Asignamos totalrecibo según si es aCuenta o no
                 if (datosRecibo.aCuenta) {

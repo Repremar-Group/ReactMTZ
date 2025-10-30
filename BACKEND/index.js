@@ -3235,6 +3235,12 @@ app.get('/api/movimientos/:idCliente', async (req, res) => {
 app.get('/api/historialfac/:idCliente', async (req, res) => {
   const { idCliente } = req.params;
   console.log(`Received request for /api/historialfac/${idCliente}`);
+  console.log('🟢 ID Cliente recibido:', idCliente, typeof idCliente);
+
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
 
   const sql = `
   SELECT 
@@ -3252,7 +3258,7 @@ app.get('/api/historialfac/:idCliente', async (req, res) => {
 
     if (results.length === 0) {
       console.log('No hay facturas emitidas para este cliente');
-      return res.status(404).json({ message: 'No hay facturas emitidas para este cliente' });
+      return res.status(200).json({ message: 'No hay facturas emitidas para este cliente' });
     }
 
     res.status(200).json(results);
@@ -3263,21 +3269,25 @@ app.get('/api/historialfac/:idCliente', async (req, res) => {
 });
 app.get('/api/saldo/:idCliente', async (req, res) => {
   const { idCliente } = req.params;
-  console.log(`Calculando saldo para el cliente ${idCliente}`);
+  console.log(`Calculando saldo total para el cliente ${idCliente}`);
 
   const sql = `
-    SELECT SUM(Haber) - SUM(Debe) AS Saldo
-    FROM cuenta_corriente 
-    WHERE IdCliente = ? 
-    AND Fecha <= CURDATE();
+    SELECT 
+      (c.Saldo + COALESCE(SUM(cc.Haber), 0) - COALESCE(SUM(cc.Debe), 0)) AS Saldo
+    FROM clientes c
+    LEFT JOIN cuenta_corriente cc 
+      ON c.Id = cc.IdCliente 
+      AND cc.Fecha <= CURDATE()
+    WHERE c.Id = ?
+    GROUP BY c.Saldo;
   `;
-
 
   try {
     const [results] = await pool.query(sql, [idCliente]);
 
-    // Si el resultado está vacío, retornar saldo 0
-    const saldo = results[0]?.Saldo || 0;
+    // Si el cliente no existe, devolvemos saldo 0
+    const saldo = results.length > 0 ? results[0].Saldo || 0 : 0;
+
     res.status(200).json({ saldo });
   } catch (error) {
     console.error('Error al calcular saldo:', error);
@@ -3864,46 +3874,116 @@ app.post('/api/generarReciboPDF', async (req, res) => {
 
         let facturaYPos = 590;
         for (const factura of datosRecibo.facturas) {
-          primeraPagina.drawText(`${factura.Comprobante}`, { x: 50, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${factura.FechaFormateada}`, { x: 150, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 220, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${factura.TotalCobrar}`, { x: 520, y: facturaYPos, size: 10, color: rgb(0, 0, 0) });
+          // ✅ Convertir la fecha al formato YYYY-MM-DD
+          let fechaFormateada = "";
+          if (factura.Fecha) {
+            try {
+              const fechaObj = new Date(factura.Fecha);
+              if (!isNaN(fechaObj)) {
+                fechaFormateada = fechaObj.toISOString().split("T")[0];
+              } else {
+                // Si la fecha viene como string sin formato ISO (por ej: "2025-10-29 00:00:00")
+                const match = factura.Fecha.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                fechaFormateada = match ? match[0] : factura.Fecha;
+              }
+            } catch (e) {
+              fechaFormateada = factura.Fecha;
+            }
+          }
+
+          primeraPagina.drawText(`${factura.NumeroCFE}`, {
+            x: 50,
+            y: facturaYPos,
+            size: 10,
+            color: rgb(0, 0, 0),
+          });
+
+          primeraPagina.drawText(`${fechaFormateada}`, {
+            x: 150,
+            y: facturaYPos,
+            size: 10,
+            color: rgb(0, 0, 0),
+          });
+
+          primeraPagina.drawText(`${factura.TotalCobrar}`, {
+            x: 220,
+            y: facturaYPos,
+            size: 10,
+            color: rgb(0, 0, 0),
+          });
+
+          primeraPagina.drawText(`${factura.TotalCobrar}`, {
+            x: 520,
+            y: facturaYPos,
+            size: 10,
+            color: rgb(0, 0, 0),
+          });
+
           facturaYPos -= 20;
         }
 
-        primeraPagina.drawLine({ start: { x: 50, y: facturaYPos - 10 }, end: { x: 470, y: facturaYPos - 10 }, thickness: 1, color: rgb(0, 0, 0) });
+        if (Array.isArray(listadepagos) && listadepagos.length > 0) {
+          // 📍 Posición de inicio debajo de las facturas
+          let pagosYPos = facturaYPos - 30;
+          const espacioY = 16;
+          const fontSizeHeader = 10;
+          const fontSize = 10;
 
-        if (Array.isArray(listadepagos)) {
-          let pagosYPos = facturaYPos - 20;
-          // Dibujar encabezado de la tabla
-          primeraPagina.drawText('Banco', { x: 50, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
-          primeraPagina.drawText('Vencimiento', { x: 150, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
-          primeraPagina.drawText('Nro.Documento', { x: 250, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
-          primeraPagina.drawText('Moneda', { x: 350, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
-          primeraPagina.drawText('Arbitraje', { x: 420, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
-          primeraPagina.drawText('Importe', { x: 490, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          // 🔹 Encabezado
+          const headerX = {
+            banco: 50,
+            vencimiento: 120,
+            nro: 200,
+            moneda: 280,
+            arbitraje: 360,
+            importe: 430
+          };
 
-          // Línea separadora debajo del header
+          primeraPagina.drawText('Banco', { x: headerX.banco, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Vencimiento', { x: headerX.vencimiento, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Nro.Documento', { x: headerX.nro, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Moneda', { x: headerX.moneda, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Arbitraje', { x: headerX.arbitraje, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText('Importe', { x: headerX.importe, y: pagosYPos, size: fontSizeHeader, font, color: rgb(0, 0, 0) });
+
+          // 🔹 Línea separadora debajo del header
           primeraPagina.drawLine({
-            start: { x: 50, y: pagosYPos - 5 },
-            end: { x: 540, y: pagosYPos - 5 },
+            start: { x: 50, y: pagosYPos - 3 },
+            end: { x: 470, y: pagosYPos - 3 },
             thickness: 1,
             color: rgb(0, 0, 0),
           });
+
+          pagosYPos -= espacioY;
+
+          // 🔹 Dibujar datos de los pagos
           for (const pago of listadepagos) {
-            primeraPagina.drawText(`${pago.icbanco.toUpperCase()}`, { x: 50, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-            primeraPagina.drawText(`${pago.icfechavencimiento}`, { x: 150, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-            primeraPagina.drawText(`${pago.icnrocheque}`, { x: 220, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-            primeraPagina.drawText(`${pago.ictipoMoneda}`, { x: 310, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-            primeraPagina.drawText(`${datosRecibo.arbitraje}`, { x: 371, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-            primeraPagina.drawText(`${pago.icimpdelcheque}`, { x: 435, y: pagosYPos, size: 10, color: rgb(0, 0, 0) });
-            pagosYPos -= 20;
+            if (pagosYPos < 60) break; // evita pasar del pie del PDF
+            primeraPagina.drawText(`${pago.icbanco?.toUpperCase() || ''}`, { x: headerX.banco, y: pagosYPos, size: fontSize, font });
+            primeraPagina.drawText(`${pago.icfechavencimiento || ''}`, { x: headerX.vencimiento, y: pagosYPos, size: fontSize, font });
+            primeraPagina.drawText(`${pago.icnrocheque || ''}`, { x: headerX.nro, y: pagosYPos, size: fontSize, font });
+            primeraPagina.drawText(`${pago.ictipoMoneda || ''}`, { x: headerX.moneda, y: pagosYPos, size: fontSize, font });
+            primeraPagina.drawText(`${datosRecibo.arbitraje || ''}`, { x: headerX.arbitraje, y: pagosYPos, size: fontSize, font });
+            primeraPagina.drawText(`${pago.icimpdelcheque || ''}`, { x: headerX.importe, y: pagosYPos, size: fontSize, font });
+            pagosYPos -= espacioY;
           }
 
-          // Total en letras
+          // 🔹 Línea final debajo de los pagos
+          primeraPagina.drawLine({
+            start: { x: 50, y: pagosYPos - 4 },
+            end: { x: 470, y: pagosYPos - 4 },
+            thickness: 1,
+            color: rgb(0, 0, 0),
+          });
+
+          pagosYPos -= 20;
+
+          // 🔹 Total en letras
           const montoenletras = generarMensaje(datosRecibo.erimporte, datosRecibo.ertipoMoneda);
-          primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10 });
-          primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10, font });
+
+          // 🔹 Total numérico (alineado a la derecha)
+          primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, font, color: rgb(0, 0, 0) });
         }
       } else {
         console.error("No se encontraron facturas en los datos recibidos.", datosRecibo.facturas);
@@ -6305,6 +6385,81 @@ app.delete("/api/eliminarRecibo/:id", async (req, res) => {
   } catch (err) {
     console.error("Error eliminando recibo:", err);
     return res.status(500).json({ mensaje: "Error eliminando recibo", error: err.message });
+  }
+});
+
+
+app.post('/api/obtenerSaldoClienteVerificacion', async (req, res) => {
+  // Aseguramos que la variable 'pool' esté definida en el alcance superior para la conexión a MySQL
+
+  const { idCliente } = req.body;
+
+  if (!idCliente) {
+    return res.status(400).json({ error: 'Falta el ID del cliente.' });
+  }
+
+  const sql = `
+    SELECT 
+      Saldo, 
+      usuariomodificasaldo, 
+      DATE_FORMAT(fechamodificasaldo, '%Y-%m-%d %H:%i:%s') AS fechamodificasaldo
+    FROM clientes
+    WHERE Id = ?
+  `;
+
+  try {
+    const [rows] = await pool.query(sql, [idCliente]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado.' });
+    }
+
+    const clienteData = rows[0];
+    const {
+      Saldo,
+      usuariomodificasaldo: usuarioModifica,
+      fechamodificasaldo: fechaModifica
+    } = clienteData;
+
+
+    if (usuarioModifica === null && fechaModifica === null) {
+      // Devuelve false si el saldo nunca se ha modificado/cargado
+      return res.json({ tieneSaldo: false });
+    }
+    // ---------------------------------------
+
+    // Si al menos uno de los campos tiene valor, se considera que tiene un saldo registrado (incluso si es 0)
+    res.status(200).json({
+      tieneSaldo: true,
+      saldo: Saldo, // Usamos la variable Saldo del resultado de la consulta
+      usuariomodificasaldo: usuarioModifica,
+      fechamodificasaldo: fechaModifica
+    });
+  } catch (err) {
+    console.error('Error al obtener saldo del cliente:', err);
+    res.status(500).json({ error: 'Error al obtener saldo del cliente.' });
+  }
+});
+
+app.post('/api/actualizarSaldoCliente', async (req, res) => {
+  const { idCliente, saldo, usuario } = req.body;
+
+  if (!idCliente || saldo == null || isNaN(saldo)) {
+    return res.status(400).json({ error: 'Datos inválidos para actualizar saldo.' });
+  }
+
+  const sql = `
+    UPDATE clientes
+    SET Saldo = ?, usuariomodificasaldo = ?, fechamodificasaldo = NOW()
+    WHERE Id = ?
+  `;
+
+  try {
+    await pool.query(sql, [saldo, usuario || 'Sistema', idCliente]);
+    res.status(200).json({ mensaje: 'Saldo actualizado correctamente.' });
+  } catch (err) {
+    console.error('Error al actualizar saldo del cliente:', err);
+    res.status(500).json({ error: 'Error al actualizar saldo del cliente.' });
   }
 });
 

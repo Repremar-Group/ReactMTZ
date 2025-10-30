@@ -148,28 +148,51 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
   //UseEffect que trae los movimientos de la cuenta corriente luego de selecionar el cliente
   useEffect(() => {
-
     if (selectedCliente?.Id) {
       setLoading(true);
-      // Realiza ambas solicitudes en paralelo
+
       Promise.all([
-        axios.get(`${backURL}/api/historialfac/${selectedCliente.Id}`),
-        axios.get(`${backURL}/api/saldo/${selectedCliente.Id}`)
+        axios.get(`${backURL}/api/historialfac/${selectedCliente.Id}`, {
+          headers: { 'Cache-Control': 'no-cache' },
+          params: { t: Date.now() }
+        }),
+        axios.get(`${backURL}/api/saldo/${selectedCliente.Id}`, {
+          headers: { 'Cache-Control': 'no-cache' },
+          params: { t: Date.now() }
+        })
       ])
         .then(([movimientosRes, saldoRes]) => {
-          console.log('Movimientos recibidos:', movimientosRes.data);
-          console.log('Saldo recibido:', saldoRes.data.saldo);
+          const movimientos = movimientosRes.data;
+          const saldo = saldoRes.data.saldo;
 
-          setMovimientos(movimientosRes.data);
+          console.log('Movimientos recibidos:', movimientos);
+          console.log('Saldo recibido:', saldo);
+
+          // Si no hay facturas, igual mostramos el saldo actual
+          if (!movimientos || movimientos.length === 0) {
+            setMovimientos([]);
+            setSaldoSelectedCliente(saldo);
+          } else {
+            setMovimientos(movimientos);
+            setSaldoSelectedCliente(saldo);
+          }
+
           setErFacturasAsociadas([]);
-          setSaldoSelectedCliente(saldoRes.data.saldo); // Guarda el saldo en el estado
-          //Actualizo todos los campos del formulario 
           setErID(selectedCliente.Id);
           setErRazonSocial(selectedCliente.RazonSocial);
           setErRut(selectedCliente.Rut);
           setErDireccion(selectedCliente.Direccion);
         })
-        .catch(error => console.error('Error al obtener datos:', error))
+        .catch(error => {
+          console.error('Error al obtener datos:', error);
+          // Incluso si una de las promesas falla, intentamos recuperar el saldo
+          axios.get(`${backURL}/api/saldo/${selectedCliente.Id}`, {
+            headers: { 'Cache-Control': 'no-cache' },
+            params: { t: Date.now() }
+          })
+            .then(saldoRes => setSaldoSelectedCliente(saldoRes.data.saldo))
+            .catch(() => setSaldoSelectedCliente(0));
+        })
         .finally(() => setLoading(false));
     }
   }, [selectedCliente]);
@@ -377,9 +400,9 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder="Escriba su comentario aquí..."
                 style={{
-                  width: '480px',   
-                  height: '150px',  
-                  resize: 'none',   
+                  width: '480px',
+                  height: '150px',
+                  resize: 'none',
                   padding: '8px',
                   fontSize: '14px'
                 }}

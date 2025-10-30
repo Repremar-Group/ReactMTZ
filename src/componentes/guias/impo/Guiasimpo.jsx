@@ -413,8 +413,9 @@ const Guiasimpo = ({ isLoggedIn }) => {
   useEffect(() => {
     if (gifleteoriginalguia && gitipodepagoguia === 'P') {
       const fleteoriginal = convertirADecimal(gifleteoriginalguia);
+      const fleteausar = (fleteoriginal*giarbitrajeguia).toFixed(2);
       // Calcular el 22% de gifleteoriginalguia (esto es el IVA)
-      const iva22 = parseFloat(fleteoriginal) * 0.22;
+      const iva22 = parseFloat(fleteausar) * 0.22;
       //Calcular el collect fee
       console.log('fleteoriginal: ', fleteoriginal)
 
@@ -444,7 +445,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
 
       //Asignación de las Varibles.
 
-      setGiFleteGuia(fleteoriginal);
+      setGiFleteGuia(fleteausar);
       setGiIvaS3Guia(ivaS3.toFixed(2))
 
 
@@ -469,7 +470,8 @@ const Guiasimpo = ({ isLoggedIn }) => {
     gicollectfeeguia,
     gicfivaguia,
     giduecarrierguia,
-    gidueagentguia
+    gidueagentguia,
+    giarbitrajeguia
   ]);
 
 
