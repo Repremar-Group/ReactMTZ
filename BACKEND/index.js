@@ -4380,28 +4380,39 @@ app.post('/api/generar-excel-cuentacorriente', async (req, res) => {
   const fechaHasta = new Date(`${hasta}T00:00:00`);
 
   try {
-    const getMovimientos = async () => {
+    const getSaldoInicial = async () => {
       const sql = `
         SELECT 
-          DATE_FORMAT(Fecha, '%d/%m/%Y') AS Fecha,
-          TipoDocumento, NumeroDocumento, NumeroRecibo, Moneda, Debe, Haber
-        FROM cuenta_corriente 
-        WHERE IdCliente = ? AND Fecha BETWEEN ? AND ? AND Moneda = ?
-        ORDER BY Fecha ASC
+          (c.Saldo + IFNULL(SUM(cc.Debe) - SUM(cc.Haber), 0)) AS SaldoInicial
+        FROM clientes c
+        LEFT JOIN cuenta_corriente cc
+          ON c.Id = cc.IdCliente 
+          AND cc.Fecha < ? 
+          AND cc.Moneda = ?
+        WHERE c.Id = ?
+        GROUP BY c.Saldo;
       `;
+      const [rows] = await pool.query(sql, [fechaDesde, moneda, numeroCliente]);
+      return rows[0]?.SaldoInicial || 0;
+    };
+
+    // 🔹 2. Obtener movimientos dentro del rango
+    const getMovimientos = async () => {
+      const sql = `
+    SELECT 
+      Fecha,
+      DATE_FORMAT(Fecha, '%d/%m/%Y') AS FechaFormateada,
+      TipoDocumento, NumeroDocumento, NumeroRecibo, Moneda, Debe, Haber
+    FROM cuenta_corriente 
+    WHERE IdCliente = ? 
+      AND Fecha BETWEEN ? AND ? 
+      AND Moneda = ?
+    ORDER BY Fecha ASC;
+  `;
       const [rows] = await pool.query(sql, [numeroCliente, fechaDesde, fechaHasta, moneda]);
       return rows;
     };
-    // Función para obtener saldo inicial usando pool
-    const getSaldoInicial = async () => {
-      const sql = `
-        SELECT IFNULL(SUM(Debe) - SUM(Haber), 0) AS Saldo
-        FROM cuenta_corriente 
-        WHERE IdCliente = ? AND Fecha <= ? AND Moneda = ?
-      `;
-      const [rows] = await pool.query(sql, [numeroCliente, fechaDesde, moneda]);
-      return rows[0]?.Saldo || 0;
-    };
+
 
     const movimientos = await getMovimientos();
     const saldoInicial = await getSaldoInicial();
@@ -4554,7 +4565,7 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
   const fechaHasta = new Date(`${hasta}T00:00:00`);
 
   const sql = `
-    SELECT 
+  SELECT 
     IdMovimiento, 
     IdCliente, 
     IdFactura, 
@@ -4565,34 +4576,44 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
     Moneda, 
     Debe, 
     Haber
-    FROM cuenta_corriente 
-    WHERE IdCliente = ? 
-      AND Fecha BETWEEN ? AND ? AND Moneda = ?
-    ORDER BY Fecha DESC;
-  `;
-  // Consulta para obtener el saldo inicial
-  const sqlSaldoInicial = `
-    SELECT IFNULL(SUM(Debe) - SUM(Haber), 0) AS Saldo
-FROM cuenta_corriente 
-WHERE IdCliente = ? 
-  AND Fecha <= ? AND Moneda = ?
-  `;
+  FROM cuenta_corriente 
+  WHERE IdCliente = ? 
+    AND Fecha BETWEEN ? AND ? 
+    AND Moneda = ?
+  ORDER BY Fecha ASC;
+`;
 
-  // Consulta para obtener el saldo final
+  // 🔹 2. Saldo inicial (todo lo anterior a la fecha desde)
+  const sqlSaldoInicial = `
+  SELECT 
+    IFNULL(cli.Saldo, 0) + IFNULL(SUM(cc.Debe) - SUM(cc.Haber), 0) AS Saldo
+  FROM clientes cli
+  LEFT JOIN cuenta_corriente cc 
+    ON cli.Id = cc.IdCliente
+    AND cc.Fecha < ?
+    AND cc.Moneda = ?
+  WHERE cli.Id = ?;
+`;
+
+  // 🔹 3. Saldo final (todo hasta la fecha hasta inclusive)
   const sqlSaldoFinal = `
-    SELECT SUM(Debe) - SUM(Haber) AS Saldo
-    FROM cuenta_corriente 
-    WHERE IdCliente = ? 
-    AND Fecha <= ? AND Moneda = ?
-  `;
+  SELECT 
+    IFNULL(cli.Saldo, 0) + IFNULL(SUM(cc.Debe) - SUM(cc.Haber), 0) AS Saldo
+  FROM clientes cli
+  LEFT JOIN cuenta_corriente cc 
+    ON cli.Id = cc.IdCliente
+    AND cc.Fecha <= ?
+    AND cc.Moneda = ?
+  WHERE cli.Id = ?;
+`;
   try {
-    // Promesa para obtener los movimientos
     const [resultMovimientos] = await pool.query(sql, [numeroCliente, fechaDesde, fechaHasta, moneda]);
     console.log('Resultado de movimientos', resultMovimientos);
 
 
-    const [resultSaldoInicialRows] = await pool.query(sqlSaldoInicial, [numeroCliente, fechaDesde, moneda]);
-    const [resultSaldoFinalRows] = await pool.query(sqlSaldoFinal, [numeroCliente, fechaHasta, moneda]);
+    const [resultSaldoInicialRows] = await pool.query(sqlSaldoInicial, [fechaDesde, moneda, numeroCliente]);
+    const [resultSaldoFinalRows] = await pool.query(sqlSaldoFinal, [fechaHasta, moneda, numeroCliente]);
+
 
     const saldoInicial = resultSaldoInicialRows[0]?.Saldo || 0;
     console.log('Saldo inicial', saldoInicial);
@@ -6421,9 +6442,9 @@ app.post('/api/obtenerSaldoClienteVerificacion', async (req, res) => {
       fechamodificasaldo: fechaModifica
     } = clienteData;
 
+    const saldoNum = Number(Saldo); // o saldoNum = parseFloat(Saldo);
 
-    if (usuarioModifica === null && fechaModifica === null) {
-      // Devuelve false si el saldo nunca se ha modificado/cargado
+    if ((usuarioModifica === null && fechaModifica === null) && (!saldoNum || saldoNum === 0)) {
       return res.json({ tieneSaldo: false });
     }
     // ---------------------------------------
@@ -6460,6 +6481,33 @@ app.post('/api/actualizarSaldoCliente', async (req, res) => {
   } catch (err) {
     console.error('Error al actualizar saldo del cliente:', err);
     res.status(500).json({ error: 'Error al actualizar saldo del cliente.' });
+  }
+});
+app.post('/api/obtenerClientePorCodigoGia', async (req, res) => {
+  const { codigoGia } = req.body; // recibimos CodigoGIA
+
+  if (!codigoGia) {
+    return res.status(400).json({ error: 'Falta el CodigoGIA del cliente.' });
+  }
+
+  const sql = `
+    SELECT *
+    FROM clientes
+    WHERE CodigoGIA = ?
+    LIMIT 1
+  `;
+
+  try {
+    const [rows] = await pool.query(sql, [codigoGia]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado.' });
+    }
+
+    // Devuelve el cliente completo
+    res.status(200).json(rows[0]);
+  } catch (err) {
+    console.error('Error al obtener cliente por CodigoGIA:', err);
+    res.status(500).json({ error: 'Error al obtener cliente.' });
   }
 });
 

@@ -2,14 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useState } from 'react';
+import ModalAgregarCliente from './ModalAgregarCliente';
 
 const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSelectCliente }) => {
   if (!isOpen) return null; // Evita renderizar el modal si no está abierto
   const [modalSaldoOpen, setModalSaldoOpen] = useState(false);
+
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [loadingSaldo, setLoadingSaldo] = useState(false);
   const [saldoNuevo, setSaldoNuevo] = useState('');
   const backURL = import.meta.env.VITE_BACK_URL;
+  const [modalAgregarOpen, setModalAgregarOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -56,6 +59,19 @@ const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSel
       alert('Error guardando saldo.');
     }
   };
+  const handleClienteCreado = async (codigoGia) => {
+    try {
+      const res = await axios.post(`${backURL}/api/obtenerClientePorCodigoGia`, { codigoGia });
+      const clienteNuevo = res.data;
+      if (clienteNuevo) {
+        handleSelectCliente(clienteNuevo);
+        closeModal();
+      }
+    } catch (error) {
+      console.error('Error obteniendo cliente recién creado:', error);
+      alert('No se pudo obtener el cliente recién creado.');
+    }
+  };
 
   return (
     <>
@@ -95,14 +111,21 @@ const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSel
           ) : (
             <div>
               <p className='p_modaltraerclientes'>No se encontraron clientes.</p>
-              <Link to="/clientes/agregar">
-                <button className='btn-estandar'>Crear Cliente</button>
-              </Link>
+              <button className='btn-estandar' onClick={() => setModalAgregarOpen(true)}>
+                Crear Cliente
+              </button>
             </div>
           )}
         </div>
       </div>
-
+      <ModalAgregarCliente
+        isOpen={modalAgregarOpen}
+        onClose={() => setModalAgregarOpen(false)}
+        onSuccess={(codigoGia) => {
+          setModalAgregarOpen(false);
+          handleClienteCreado(codigoGia);
+        }}
+      />
       {/* MODAL CARGA DE SALDO */}
       {modalSaldoOpen && (
         <div className="modal" onClick={() => setModalSaldoOpen(false)}>
