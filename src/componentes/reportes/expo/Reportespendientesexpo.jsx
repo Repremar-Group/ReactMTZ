@@ -238,7 +238,10 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
     };
 
     // 👉 Sumo todos los cobrar:
-    const totalCobrar = guiaspendientes.reduce((acc, guia) => acc + (guia.cobrar || 0), 0);
+    const totalCobrar = guiaspendientes.reduce(
+      (acc, guia) => acc + parseFloat(guia.cobrar || 0),
+      0
+    );
 
     // 👉 Dejo una línea en blanco y agrego la fila resumen al final:
     const lastRow = worksheet.lastRow.number + 2;

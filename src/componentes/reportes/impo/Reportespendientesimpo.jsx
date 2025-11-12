@@ -199,22 +199,37 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
         };
       }
     }
+    const parseFecha = (fechaStr) => {
+      if (!fechaStr || typeof fechaStr !== 'string') return '';
+      // Si ya está en formato ISO (YYYY-MM-DD o YYYY/MM/DD)
+      if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(fechaStr)) return new Date(fechaStr);
 
+      // Si viene como DD/MM/YYYY
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(fechaStr)) {
+        const [dia, mes, año] = fechaStr.split('/');
+        return new Date(`${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}T00:00:00`);
+      }
+
+      // Cualquier otro formato no se intenta parsear
+      return '';
+    };
     // 👉 Ahora los datos empiezan desde la fila 6
     guiaspendientes.forEach((guia) => {
+      console.log('Guia A imprimir ', guia)
+      const safe = (v) => (v == null ? '' : v);
       const row = worksheet.addRow([
-        guia.awb,
-        guia.emision ? new Date(guia.emision) : null,
-        guia.vuelo,
-        guia.llegada ? new Date(guia.llegada) : null,
-        guia.peso,
-        guia.tarifado,
-        guia.ori,
-        guia.tipopago,
-        guia.flete,
+        safe(guia.awb),
+        parseFecha(guia.emision),
+        safe(guia.vuelo),
+        parseFecha(guia.llegada),
+        guia.peso ?? 0,
+        guia.tarifado ?? 0,
+        safe(guia.ori),
+        safe(guia.tipopago),
+        guia.flete ?? 0,
         guia.da ?? 0,
         guia.dc ?? 0,
-        guia.cobrar,
+        guia.cobrar ?? 0,
       ]);
       row.getCell(2).numFmt = 'dd/mm/yyyy';
       row.getCell(4).numFmt = 'dd/mm/yyyy';
@@ -226,7 +241,10 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
     };
 
     // 👉 Sumo todos los cobrar:
-    const totalCobrar = guiaspendientes.reduce((acc, guia) => acc + (guia.cobrar || 0), 0);
+    const totalCobrar = guiaspendientes.reduce(
+      (acc, guia) => acc + parseFloat(guia.cobrar || 0),
+      0
+    );
 
     // 👉 Dejo una línea en blanco y agrego la fila resumen al final:
     const lastRow = worksheet.lastRow.number + 2;

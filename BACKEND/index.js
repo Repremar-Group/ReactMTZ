@@ -298,6 +298,42 @@ function generarAdenda(numerodoc, monto, moneda) {
   }
 
 }
+function generarAdendaConConceptos(numerodoc, monto, moneda, detalleFactura = []) {
+  console.log("🔹 [generarAdendaConConceptos] Parámetros recibidos:");
+  console.log("  → numerodoc:", numerodoc);
+  console.log("  → monto:", monto);
+  console.log("  → moneda:", moneda);
+  console.log("  → detalleFactura:", detalleFactura);
+
+  const montoEnLetras = NumeroALetras(monto); // Convierte el monto a letras
+
+  // Encabezado según moneda
+  const encabezado =
+    moneda === "USD"
+      ? `Doc:${numerodoc} - Son dólares americanos U$S ${montoEnLetras}`
+      : `Doc:${numerodoc} - Son pesos uruguayos $ ${montoEnLetras}`;
+
+  // Si hay detalle de adenda, lo formateamos
+  let detalleTexto = "";
+  if (Array.isArray(detalleFactura) && detalleFactura.length > 0) {
+    detalleTexto = detalleFactura
+      .map((item) => {
+        return `${item.descripcion}${item.importe && Number(item.importe) !== 0
+            ? `: ${item.moneda} ${Number(item.importe).toFixed(2)}`
+            : ""
+          }`;
+      })
+      .join(" | ");
+  }
+
+  const resultadoFinal = detalleTexto
+  ? `${encabezado}&#10;&#10;${detalleTexto}`
+  : encabezado;
+
+  console.log("✅ [generarAdendaConConceptos] Resultado final:", resultadoFinal);
+
+  return resultadoFinal;
+}
 
 //Consulta para cargar la tabla de preview de clientes.
 
@@ -615,7 +651,11 @@ app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) =>
       const RazonSocial = xmlEscape(fila["CL_RAZON,C,80"] || "");
 
       // Defaults si están vacíos
-      const Direccion = xmlEscape((fila["CL_DIRECCI,C,50"] || "MISIONES 1372").toString().trim() || "MISIONES 1372");
+      const Direccion = xmlEscape(
+        (fila["CL_DIRECCI,C,50"] && fila["CL_DIRECCI,C,50"].toString().trim() !== "")
+          ? fila["CL_DIRECCI,C,50"].toString().trim()
+          : "-"
+      );
       const Zona = xmlEscape((fila["CL_ZONA,C,30"] || "MONTEVIDEO").toString().trim() || "MONTEVIDEO");
       const Ciudad = xmlEscape((fila["CL_CIUDAD,C,30"] || "MONTEVIDEO").toString().trim() || "MONTEVIDEO");
       const Rut = xmlEscape((fila["CL_RUC,C,15"] || "0").toString().trim() || "0");
@@ -2186,7 +2226,7 @@ app.get('/api/obtenerembarques', async (req, res) => {
       DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada
       FROM guiasexpo g
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-      WHERE g.agente = ? AND g.tipodepago = 'P' AND g.facturada <> 1
+      WHERE g.agente = ? AND g.tipodepago = 'P' AND g.facturada <> 1 AND g.cass = 'N'
     `;
   } else {
     return res.status(400).json({ error: 'Tipo de embarque no válido' });
@@ -2560,8 +2600,7 @@ app.post('/api/insertfactura', async (req, res) => {
 
 
     // Preparar datos SOAP
-    const adenda = generarAdenda(facturaId, TotalCobrar, Moneda);
-    const adendaCuentaAjena = facturaCuentaAjenaId ? generarAdenda(facturaCuentaAjenaId, TotalCuentaAjena, Moneda) : null;
+
 
     const detallesFactura = DetalleFactura.flatMap((detalle) => {
       return detalle.conceptos.map((concepto) => {
@@ -2595,6 +2634,14 @@ app.post('/api/insertfactura', async (req, res) => {
       });
     });
 
+    const DatosAdendaFact = DetalleFactura.flatMap((item) => item.datosAdenda || []);
+    const DatosAdendaFactCA = DetalleFactura.flatMap((item) => item.datosAdendaCA || []);
+
+    const adenda = generarAdendaConConceptos(facturaId, TotalCobrar, Moneda, DatosAdendaFact);
+    const adendaCuentaAjena = facturaCuentaAjenaId
+      ? generarAdendaConConceptos(facturaCuentaAjenaId, TotalCuentaAjena, Moneda, DatosAdendaFactCA)
+      : null;
+
     const datos = {
       fechaCFE: Fecha,
       fechaVencimientoCFE: FechaVencimiento,
@@ -2611,13 +2658,32 @@ app.post('/api/insertfactura', async (req, res) => {
       detalleFacturaCuentaAjena: detallesCuentaAjena,
       adendadoc: adendaCuentaAjena,
       datosEmpresa: datosEmpresa,
-      codigoClienteGIA: CodigoGIA
+      codigoClienteGIA: CodigoGIA,
+      EmpresaCuentaAjena: Compania
     };
+    const datosEfacCuentaAjenaExpo = {
+      fechaCFE: Fecha,
+      fechaVencimientoCFE: FechaVencimiento,
+      Moneda: Moneda,
+      detalleFacturaCuentaAjena: detallesFactura,
+      adendadoc: adenda,
+      datosEmpresa: datosEmpresa,
+      codigoClienteGIA: CodigoGIA,
+      EmpresaCuentaAjena: Compania
+    };
+
 
     console.log('ESTOS SON LOS DATOS:', datos);
 
     // Generar los XMLs
-    const xml = generarXmlefacimpopp(datos);
+    if (comprobanteElectronicoFinal === 'FTA') {
+      console.log('➡ Generando XML con generarXmlefacCuentaAjenaimpopp (Cuenta Ajena)');
+      xml = generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjenaExpo);
+    } else {
+      console.log('➡ Generando XML con generarXmlefacimpopp (Factura normal)');
+      xml = generarXmlefacimpopp(datos);
+    }
+    console.log('ESTOS SON LOS DATOSca:', datosEfacCuentaAjena);
     const xmlCuentaAjena = facturaCuentaAjenaId ? generarXmlefacCuentaAjenaimpopp(datosEfacCuentaAjena) : null;
     console.log('Procesando FacuturaSoap');
     // Llamada directa a la función SOAP
@@ -2872,12 +2938,30 @@ app.post('/api/insertticket', async (req, res) => {
       adendadoc: adendaCuentaAjena,
       datosEmpresa,
       codigoClienteGIA: CodigoGIA,
-      tipoComprobante: datosEmpresa.codETickCA
+      tipoComprobante: datosEmpresa.codETickCA,
+      EmpresaCuentaAjena: Compania
+    };
+    const datosEfacCuentaAjenaExpo = {
+      fechaCFE: Fecha,
+      fechaVencimientoCFE: FechaVencimiento,
+      Moneda: Moneda,
+      detalleFactura: detallesFactura,
+      adendadoc: adenda,
+      datosEmpresa: datosEmpresa,
+      codigoClienteGIA: CodigoGIA,
+      tipoComprobante: datosEmpresa.codETickCA,
+      EmpresaCuentaAjena: Compania
     };
 
     // Enviar SOAP
-    const xml = generarXmlimpactarDocumento(datos);
-    const xmlCuentaAjena = generarXmlimpactarDocumento(datosEfacCuentaAjena);
+    if (comprobanteElectronicoFinal === 'TTA') {
+      console.log('➡ Generando XML con TICKET (Cuenta Ajena)');
+      xml = generarXmlimpactarDocumento(datosEfacCuentaAjenaExpo);
+    } else {
+      console.log('➡ Generando XML coN TICKET');
+      xml = generarXmlimpactarDocumento(datos);
+    }
+    const xmlCuentaAjena = TicketCuentaAjenaId ? generarXmlimpactarDocumento(datosEfacCuentaAjena) : null;
     console.log('XML TICKET GENERADO: ', xml, ' XML TICKETCA GENERADO: ', xmlCuentaAjena);
 
     const resultadoSOAP = await new Promise((resolve, reject) => {
@@ -3756,13 +3840,13 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     const fontSize = 10;
 
     // Datos estáticos
-    primeraPagina.drawText(`Recibo N°: ${numrecibo}`, { x: 460, y: 760, size: 12, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${datosRecibo.errut}`, { x: 310, y: 760, size: 12, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${day}`, { x: 470, y: 700, size: 12, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${month}`, { x: 510, y: 700, size: 12, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${year}`, { x: 545, y: 700, size: 12, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${datosRecibo.errazonSocial}`, { x: 150, y: 720, size: 12, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${datosRecibo.erdireccion}`, { x: 150, y: 700, size: 12, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`Recibo N°: ${numrecibo}`, { x: 480, y: 765, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.errut}`, { x: 275, y: 760, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${day}`, { x: 465, y: 705, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${month}`, { x: 505, y: 705, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${year}`, { x: 540, y: 705, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.errazonSocial}`, { x: 130, y: 725, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.erdireccion}`, { x: 130, y: 705, size: 11, color: rgb(0, 0, 0) });
 
     // Función para dividir texto en líneas, rompiendo palabras largas si es necesario
     function dividirEnLineas(texto, maxWidth, font, fontSize) {
@@ -3860,7 +3944,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
         // Total en letras
         const montoenletras = generarMensaje(datosRecibo.erimporte, datosRecibo.ertipoMoneda);
         primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10 });
-        primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, color: rgb(0, 0, 0) });
+        primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 516, y: 42, size: 10, color: rgb(0, 0, 0) });
       }
 
     } else {
@@ -3983,7 +4067,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
           primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10, font });
 
           // 🔹 Total numérico (alineado a la derecha)
-          primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 520, y: 50, size: 10, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 516, y: 42, size: 10, font, color: rgb(0, 0, 0) });
         }
       } else {
         console.error("No se encontraron facturas en los datos recibidos.", datosRecibo.facturas);
@@ -4986,6 +5070,7 @@ WHERE g.agente = ?
 AND g.emision >= ? 
 AND g.emision <= ? 
 AND g.facturada = 0
+AND g.cass = 'N'
   `;
 
     const params = [cliente, desde, hasta];

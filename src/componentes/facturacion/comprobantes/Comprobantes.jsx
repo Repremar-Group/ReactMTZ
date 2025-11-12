@@ -66,6 +66,10 @@ const Comprobantes = ({ isLoggedIn }) => {
   const [isSelectEnabled, setIsSelectEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [guiasImpoPrepaid, setGuiasImpoPrepaid] = useState([]);
+  const [guiasImpoCollect, setGuiasImpoCollect] = useState([]);
+  const [guiasExpoPrepaid, setGuiasExpoPrepaid] = useState([]);
+
   const [isModalOpenGSM, setIsModalOpenGSM] = useState(false);
   const [datosModal, setDatosModal] = useState([]);
   //Estados para Modal Alerta GFE
@@ -154,47 +158,65 @@ const Comprobantes = ({ isLoggedIn }) => {
   useEffect(() => {
     console.log("embarquesSeleccionados ha cambiado:", embarquesSeleccionados);
     console.log("Tipo de embarque seleccionado:", ectipodeembarque);
-    if (ectipodeembarque !== 'Impo' && ectipodeembarque !== 'Expo') return;
-    // Filtrar los embarques según el tipo y tipodepagoguia
+
+    if (ectipodeembarque !== "Impo" && ectipodeembarque !== "Expo") return;
+
     const guiasimpoprepaid = embarquesSeleccionados.filter(
-      (embarque) => embarque.Tipo === 'IMPO' && embarque.tipodepagoguia === 'P'
+      (embarque) => embarque.Tipo === "IMPO" && embarque.tipodepagoguia === "P"
     );
     const guiasimpocollect = embarquesSeleccionados.filter(
-      (embarque) => embarque.Tipo === 'IMPO' && embarque.tipodepagoguia === 'C'
+      (embarque) => embarque.Tipo === "IMPO" && embarque.tipodepagoguia === "C"
     );
     const guiasexpoprepaid = embarquesSeleccionados.filter(
-      (embarque) => embarque.tipo === 'EXPO' && embarque.tipodepago === 'P'
+      (embarque) => embarque.tipo === "EXPO" && embarque.tipodepago === "P"
     );
-    //Controlo que los embarques sean de la misma empresa
-    if (embarquesSeleccionados.length > 0) {
-      // Obtener todas las empresas de los embarques seleccionados
-      const empresas = embarquesSeleccionados.map(e => e.empresavuelo);
 
-      // Verificar si todas son iguales
+    // Guardar en estado
+    setGuiasImpoPrepaid(guiasimpoprepaid);
+    setGuiasImpoCollect(guiasimpocollect);
+    setGuiasExpoPrepaid(guiasexpoprepaid);
+
+    // Verificar empresas
+    if (embarquesSeleccionados.length > 0) {
+      const empresas = embarquesSeleccionados.map((e) => e.empresavuelo);
       const todasIguales = empresas.every((empresa) => empresa === empresas[0]);
 
       if (todasIguales) {
-        setEcCompania(empresas[0]); // Setea el estado con la única empresa
+        setEcCompania(empresas[0]);
+        console.log("Empresa a facturar", empresas[0]);
       } else {
-        toast.error("Los embarques seleccionados tienen empresas de vuelo diferentes.");
+        toast.error(
+          "Los embarques seleccionados tienen empresas de vuelo diferentes."
+        );
         return;
       }
     }
 
+    // Calcular IVA
+    const totalEcIva = guiasimpocollect.reduce((sum, embarque) => {
+      const valor = parseFloat(embarque.cfiva) || 0;
+      return sum + valor;
+    }, 0);
+
+    setEcIva(Number(totalEcIva.toFixed(2)));
+
+
+  }, [embarquesSeleccionados, ectipodeembarque]);
+  useEffect(() => {
+    if (!eccompania) return;
     // Crear el array de guías con conceptos
     const nuevasGuiasConConceptos = [
       // Agregar guías impo prepaid
-      ...guiasimpoprepaid.map((embarque) => ({
+      ...guiasImpoPrepaid.map((embarque) => ({
         id: embarque.idguia,
         numero_guia: embarque.guia,
         origen: embarque.origenvuelo,
         destino: embarque.destinoguia,
         fecha_envio: embarque.fechavuelo,
-        conceptos: [
-          {
+        datosAdenda: [{
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: 0,
+            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
             descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} Import`,
             moneda: embarque.moneda,
             importe: 0,
@@ -202,30 +224,12 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: 0,
+            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
             descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
             moneda: embarque.moneda,
             importe: 0,
-          },
-          {
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: 8,
-            descripcion: `Verificación Carga Recinto Aduanero: U$S ${embarque.verificacion}`,
-            moneda: embarque.moneda,
-            importe: embarque.verificacion,
-          },
-          {
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: 47,
-            descripcion: `Redondeo: U$S ${embarque.ajuste}`,
-            moneda: embarque.moneda,
-            importe: embarque.ajuste,
-          },
-        ],
-        conceptos_cuentaajena: [
-          {
+          }],
+          datosAdendaCA: [{
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: 0,
@@ -240,11 +244,30 @@ const Comprobantes = ({ isLoggedIn }) => {
             descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
             moneda: embarque.moneda,
             importe: 0,
+          }],
+        conceptos: [
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
+            descripcion: `Verificación Carga Recinto Aduanero: U$S ${embarque.verificacion}`,
+            moneda: embarque.moneda,
+            importe: embarque.verificacion,
           },
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: 5,
+            id_concepto: eccompania === 'Airclass' ? '08' : eccompania === 'AirEuropa' ? '16' : '47',
+            descripcion: `Redondeo: U$S ${embarque.ajuste}`,
+            moneda: embarque.moneda,
+            importe: embarque.ajuste,
+          },
+        ],
+        conceptos_cuentaajena: [
+          {
+            tipo: 'P',
+            guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '02' : eccompania === 'AirEuropa' ? '10' : '0',
             descripcion: `Iva Sobre Flete:`,
             moneda: embarque.moneda,
             importe: embarque.ivas3,
@@ -253,14 +276,13 @@ const Comprobantes = ({ isLoggedIn }) => {
         ],
       })),
       // Agregar guías impo collect
-      ...guiasimpocollect.map((embarque) => ({
+      ...guiasImpoCollect.map((embarque) => ({
         id: embarque.idguia,
         numero_guia: embarque.guia,
         origen: embarque.origenvuelo,
         destino: embarque.destinoguia,
         fecha_envio: embarque.fechavuelo,
-        conceptos: [
-          {
+        datosAdenda: [{
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: 0,
@@ -275,34 +297,8 @@ const Comprobantes = ({ isLoggedIn }) => {
             descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
             moneda: embarque.moneda,
             importe: 0,
-          },
-          {
-            tipo: 'C',
-            guia: embarque.guia,
-            id_concepto: 2,
-            descripcion: `Collect Fee( Iva inc.): U$S: ${parseFloat((Number(embarque.collectfee) + Number(embarque.cfiva)).toFixed(2))}`,
-            moneda: embarque.moneda,
-            importe: Number(embarque.collectfee),
-          },
-          {
-            tipo: 'C',
-            guia: embarque.guia,
-            id_concepto: 8,
-            descripcion: `Verificación Carga Recinto Aduanero: U$S ${embarque.verificacion}`,
-            moneda: embarque.moneda,
-            importe: embarque.verificacion,
-          },
-          {
-            tipo: 'C',
-            guia: embarque.guia,
-            id_concepto: 47,
-            descripcion: `Redondeo: U$S ${embarque.ajuste}`,
-            moneda: embarque.moneda,
-            importe: embarque.ajuste,
-          },
-        ],
-        conceptos_cuentaajena: [
-          {
+          }],
+          datosAdendaCA: [{
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: 0,
@@ -317,11 +313,38 @@ const Comprobantes = ({ isLoggedIn }) => {
             descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
             moneda: embarque.moneda,
             importe: 0,
+          }],
+        conceptos: [
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '05' : eccompania === 'AirEuropa' ? '13' : '0',
+            descripcion: `Collect Fee( Iva inc.): U$S: ${parseFloat((Number(embarque.collectfee) + Number(embarque.cfiva)).toFixed(2))}`,
+            moneda: embarque.moneda,
+            importe: Number(embarque.collectfee),
           },
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: 3,
+            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
+            descripcion: `Verificación Carga Recinto Aduanero: U$S ${embarque.verificacion}`,
+            moneda: embarque.moneda,
+            importe: embarque.verificacion,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '08' : eccompania === 'AirEuropa' ? '16' : '47',
+            descripcion: `Redondeo: U$S ${embarque.ajuste}`,
+            moneda: embarque.moneda,
+            importe: embarque.ajuste,
+          },
+        ],
+        conceptos_cuentaajena: [
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '07' : eccompania === 'AirEuropa' ? '15' : '47',
             descripcion: `Due Carrier Collect:`,
             moneda: embarque.moneda,
             importe: embarque.dcoriginal,
@@ -329,7 +352,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: 4,
+            id_concepto: eccompania === 'Airclass' ? '03' : eccompania === 'AirEuropa' ? '11' : '47',
             descripcion: `Flete Importacion Aerea:`,
             moneda: embarque.moneda,
             importe: embarque.flete,
@@ -337,7 +360,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: 5,
+            id_concepto: eccompania === 'Airclass' ? '02' : eccompania === 'AirEuropa' ? '10' : '47',
             descripcion: `Iva Sobre Flete:`,
             moneda: embarque.moneda,
             importe: embarque.ivas3,
@@ -345,23 +368,22 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: 6,
+            id_concepto: eccompania === 'Airclass' ? '04' : eccompania === 'AirEuropa' ? '12' : '47',
             descripcion: `Otros Gastos Collect:`,
             moneda: embarque.moneda,
             importe: embarque.daoriginal,
           },
 
         ],
-      })),
+      })),//hasta aca estamos bien 
       // Agregar guías expo prepaid
-      ...guiasexpoprepaid.map((embarque) => ({
+      ...guiasExpoPrepaid.map((embarque) => ({
         id: embarque.idguiaexpo,
         numero_guia: embarque.guia,
         origen: embarque.origenvuelo,
         destino: embarque.destinovuelo,
         fecha_envio: embarque.fechavuelo,
-        conceptos: [
-          {
+         datosAdenda: [{
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: 0,
@@ -376,27 +398,30 @@ const Comprobantes = ({ isLoggedIn }) => {
             descripcion: `Viaje: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} AWB: ${embarque.guia}`,
             moneda: 'USD',
             importe: 0,
-          },
+          }],
+        conceptos: [
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: 9,
+            id_concepto: eccompania === 'Airclass' ? '06' : eccompania === 'AirEuropa' ? '14' : '47',
             descripcion: `Flete Exportación Aerea: U$S ${embarque.fleteneto}`,
             moneda: 'USD',
             importe: embarque.fleteneto,
           },
+          ...(eccompania === 'Airclass' && embarque.security && Number(embarque.security) !== 0
+            ? [{
+              tipo: 'P',
+              guia: embarque.guia,
+              id_concepto: '21',
+              descripcion: `Security: U$S ${embarque.security}`,
+              moneda: 'USD',
+              importe: embarque.security,
+            }]
+            : []),
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: 48,
-            descripcion: `Due Agent: U$S ${embarque.dueagent}`,
-            moneda: 'USD',
-            importe: embarque.dueagent,
-          },
-          {
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: 10,
+            id_concepto: eccompania === 'Airclass' ? '07' : eccompania === 'AirEuropa' ? '15' : '47',
             descripcion: `Due Carrier: U$S ${embarque.duecarrier}`,
             moneda: 'USD',
             importe: embarque.duecarrier,
@@ -404,21 +429,12 @@ const Comprobantes = ({ isLoggedIn }) => {
         ],
       })),
     ];
-    // Actualizar el estado con las nuevas guías y conceptos combinados
+
     setGuiasConConceptos(nuevasGuiasConConceptos);
-    console.log('Guias combinadas con conceptos:', nuevasGuiasConConceptos);
-
-    const totalEcIva = guiasimpocollect.reduce((sum, embarque) => {
-      const valor = parseFloat(embarque.cfiva) || 0;
-      console.log(`Sumando: ${sum} + ${valor}`); // Muestra cada paso de la suma
-      return sum + valor;
-    }, 0);
-
-    console.log(`Total calculado: ${totalEcIva.toFixed(2)}`); // Muestra el total final
-    setEcIva(Number(totalEcIva.toFixed(2))); // Aseguramos que sea número
+    console.log("Guias combinadas con conceptos:", nuevasGuiasConConceptos);
+  }, [eccompania, guiasImpoPrepaid, guiasExpoPrepaid, guiasImpoCollect]);
 
 
-  }, [embarquesSeleccionados]);  // El efecto se ejecutará cada vez que cambie `embarquesSeleccionados`
   const calcularTotal = () => {
     // forzamos a número cada importe para evitar concatenaciones
     const total = guiasconconceptos.reduce((suma, guia) => {
@@ -672,8 +688,8 @@ const Comprobantes = ({ isLoggedIn }) => {
         console.log('Factura Agregada (eFactura):', response.data);
 
       } else if (datosFormulario.ComprobanteElectronico === "eticket" || datosFormulario.ComprobanteElectronico === "eticketca") {
-  
-        response = await axios.post(`${backURL}/api/insertticket`, datosFormulario); 
+
+        response = await axios.post(`${backURL}/api/insertticket`, datosFormulario);
         console.log('Factura Agregada (eTicket):', response.data);
 
       } else {

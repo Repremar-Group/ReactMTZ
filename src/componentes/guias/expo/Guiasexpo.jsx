@@ -937,7 +937,7 @@ const Guiasexpo = ({ isLoggedIn }) => {
                     id="gesecurityguia"
                     value={gesecurityguia}
                     onChange={(e) => setGeSecurityGuia(e.target.value)}
-                    required
+                    disabled={vueloSeleccionado?.compania === "AirEuropa"}
                   />
                 </div>
               </div>

@@ -75,6 +75,24 @@ function generarXmlimpactarDocumento(datos) {
     } else {
         moneda = 2
     }
+
+
+    // Construir condicionalmente elemento1 y puntoVenta
+    let bloqueCondicionalCuentaAjena = "<autonumerar>S</autonumerar>";
+    if (datos.EmpresaCuentaAjena) {
+        const elemento1Valor =
+            datos.EmpresaCuentaAjena === "Airclass"
+                ? "AIRCLASS"
+                : datos.EmpresaCuentaAjena === "AirEuropa"
+                    ? "AIREUROPA"
+                    : "";
+
+        bloqueCondicionalCuentaAjena = `
+        <elemento1>${elemento1Valor}</elemento1>
+        <autonumerar>S</autonumerar>
+        <puntoVenta></puntoVenta>`;
+    }
+
     let xmlBase = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
    <soapenv:Header/>
    <soapenv:Body>
@@ -94,7 +112,7 @@ function generarXmlimpactarDocumento(datos) {
                 <moneda>${moneda}</moneda>
                 <fechaVencimiento>{{fechaVencimientoCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
-                <autonumerar>S</autonumerar>
+                ${bloqueCondicionalCuentaAjena}
                 <renglones>
 
                 {{RenglonesAutomaticos}}
@@ -155,13 +173,20 @@ function generarXmlefacCuentaAjenaimpopp(datosCA) {
                 <empresa>${datosCA.datosEmpresa.codigoEmpresa}</empresa>
                 <documento>
                 <fechaDocumento>{{fechaCFE}}</fechaDocumento>
-                <tipoDocumento>FCA</tipoDocumento>
+                <tipoDocumento>${datosCA.datosEmpresa.codEfacCA}</tipoDocumento>
 
                 <cliente>${datosCA.codigoClienteGIA}</cliente>
                 <moneda>${moneda}</moneda>
                 <fechaVencimiento>{{fechaVencimientoCFE}}</fechaVencimiento>
                 <descripcion>{{Adenda}}</descripcion>
+                <elemento1>${datosCA.EmpresaCuentaAjena === "Airclass"
+            ? "AIRCLASS"
+            : datosCA.EmpresaCuentaAjena === "AirEuropa"
+                ? "AIREUROPA"
+                : ""
+        }</elemento1>
                 <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
                 <renglones>
 
                 {{RenglonesAutomaticos}}
@@ -250,7 +275,7 @@ function generarXmlRecibo(datos) {
                 <empresa>${datos.datosEmpresa.codigoEmpresa}</empresa>
                     <documento>
                         <fechaDocumento>{{fechaCFE}}</fechaDocumento>
-                        <tipoDocumento>rec</tipoDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
                         <cliente>${datos.codigoClienteGIA}</cliente>
                         <moneda>${moneda}</moneda>
                         ${cotizacion ? `<cotizacion>${cotizacion}</cotizacion>` : ''}
@@ -288,8 +313,8 @@ function generarXmlRecibo(datos) {
 
         renglones += `
         <renglon>
-            <producto>COM004</producto>
-            <nombreProducto>COBRO</nombreProducto>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
             <cantidad>1</cantidad>
             <precioUnitario>${precioUnitario}</precioUnitario>
         </renglon>`;
