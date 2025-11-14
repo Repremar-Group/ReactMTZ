@@ -498,9 +498,10 @@ const Emisionrecibos = ({ isLoggedIn }) => {
                   required
                 >
                   <option value="">Forma de pago</option>
-                  <option value="CHEQUEUS">Cheque</option>
-                  <option value="TRANSUSD">Transferencia</option>
-                  <option value="CAJAUSD">Efectivo</option>
+                  <option value="CHQDOL">Cheque</option>
+                  <option value="TRANDOL">Transferencia</option>
+                  <option value="EFEDOL">Efectivo</option>
+                  <option value="DOCVZ">Documento</option>
                 </select>
               </div>
             </div>

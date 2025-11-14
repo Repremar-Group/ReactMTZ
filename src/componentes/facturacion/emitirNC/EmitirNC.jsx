@@ -38,6 +38,7 @@ const EmitirNC = ({ isLoggedIn }) => {
   const [fmdireccionfiscal, setFmDireccionFiscal] = useState('');
   const [fmrutcedula, setFmRutCedula] = useState('');
   const [fmcass, setFmCass] = useState('');
+  const [encAcuenta, setEncACuenta] = useState(false);
   const [fmtipodeembarque, setFmTipoDeEmbarque] = useState('');
   const [fmtc, setFmTc] = useState('');
   const [fmguia, setFmGuia] = useState('');
@@ -80,29 +81,12 @@ const EmitirNC = ({ isLoggedIn }) => {
 
 
   const handleAgregarFacturaSeleccionada = (factura) => {
-    if (facturasSeleccionadas.length === 0) {
-      setFacturasSeleccionadas([factura]);
-    } else {
-      const monedaExistente = facturasSeleccionadas[0].Moneda; // moneda de la primera factura
-      const tipoDocExistente = facturasSeleccionadas[0].TipoDocCFE; // tipo doc de la primera factura
-
-      if (factura.Moneda !== monedaExistente) {
-        toast.error("No se pueden mezclar facturas con monedas diferentes.");
-        return;
-      }
-
-      if (factura.TipoDocCFE !== tipoDocExistente) {
-        toast.error("No se pueden mezclar facturas de diferentes tipos.");
-        return;
-      }
-
-      const existe = facturasSeleccionadas.some(f => f.NumeroCFE === factura.NumeroCFE);
-      if (!existe) {
-        setFacturasSeleccionadas(prev => [...prev, factura]);
-      } else {
-        toast.error("Esta factura ya está seleccionada.");
-      }
+    if (facturasSeleccionadas.length > 0) {
+      toast.error("Solo se puede seleccionar una factura a la vez.");
+      return;
     }
+
+    setFacturasSeleccionadas([factura]);
   };
   const [facturasSeleccionadas, setFacturasSeleccionadas] = useState([]);
   const hasFetched = useRef(false);
@@ -221,7 +205,7 @@ const EmitirNC = ({ isLoggedIn }) => {
         const response = await axios.get(`${backURL}/api/obtenertipocambioparacomprobante`);
         if (response.data.tipo_cambio == undefined) {
           alert("No hay tipo de cambio para la fecha actual.");
-          navigate("/tablas/cambio");
+          navigate("/home");
         } else {
           setFmTc(response.data.tipo_cambio);
         }
@@ -229,10 +213,10 @@ const EmitirNC = ({ isLoggedIn }) => {
       } catch (error) {
         if (error.response) {
           alert("No hay tipo de cambio para la fecha actual.");
-          navigate("/tablas/cambio");
+          navigate("/home");
         } else {
           console.error("Error en la consulta:", error);
-          navigate("/tablas/cambio");
+          navigate("/home");
         }
       }
     };
@@ -246,7 +230,7 @@ const EmitirNC = ({ isLoggedIn }) => {
   // Función para manejar el envío del formulario
   const handleSubmitAgregarFm = () => {
     setLoading(true);
-    if (facturasSeleccionadas.length === 0) {
+    if (!encAcuenta && facturasSeleccionadas.length === 0) {
       Swal.fire({
         icon: 'warning',
         title: 'No hay facturas seleccionadas',
@@ -254,8 +238,223 @@ const EmitirNC = ({ isLoggedIn }) => {
       });
       return;
     }
+    // Si es "a cuenta" pedimos los datos primero
+if (encAcuenta) {
+  Swal.fire({
+    title: 'Datos de Nota de Crédito a Cuenta',
+    width: '60%',
+    html: `
+      <div style="margin-bottom:15px; text-align:left;">
+        <label style="font-weight:bold; display:block; margin-bottom:8px;">Tipo de Nota de Crédito</label>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <label><input type="radio" name="tipoNC" value="NTT"> NC - Eticket</label>
+          <label><input type="radio" name="tipoNC" value="NRA"> NC - Eticket CA</label>
+          <label><input type="radio" name="tipoNC" value="NCT"> NC - Efactura</label>
+          <label><input type="radio" name="tipoNC" value="NCA"> NC - Efactura CA</label>
+        </div>
+      </div>
 
-    // Armar texto con números y series
+      <!-- 🔹 Conceptos -->
+      <div id="conceptosContainer" style="display:flex; flex-direction:column; gap:10px; text-align:left;
+          max-height:500px; min-height:400px; max-width:800px; min-width:800px; overflow-y:auto;">
+        <div class="concepto-item" style="display:flex; gap:10px; align-items:center;">
+          <select class="productoNC swal2-input" style="width:60%; height:2.5em;">
+            <option value="">Seleccione un concepto</option>
+            <option value="01">VZ - Verificación de Carga</option>
+            <option value="02">VZ - Iva Sobre Flete</option>
+            <option value="03">VZ - Flete Importación Aerea</option>
+            <option value="04">VZ - Otros Gastos Collect</option>
+            <option value="05">VZ - Collect Fee</option>
+            <option value="06">VZ - Flete Exportación Aerea</option>
+            <option value="07">VZ - Due Carrier Prepaid</option>
+            <option value="08">VZ - Redondeo</option>
+            <option value="09">UX - Verificación de Carga</option>
+            <option value="10">UX - Iva Sobre Flete</option>
+            <option value="11">UX - Flete Importación Aerea</option>
+            <option value="12">UX - Otros Gastos Collect</option>
+            <option value="13">UX - Collect Fee</option>
+            <option value="14">UX - Flete Exportación Aerea</option>
+            <option value="15">UX - Due Carrier Prepaid</option>
+            <option value="16">UX - Redondeo</option>
+            <option value="17">VZ - Comisión Exportación</option>
+            <option value="18">UX - Comisión Exportación Cass</option>
+            <option value="19">UX - Comisión Exportación No Cass</option>
+            <option value="20">UX - Comisión Exportación Mail</option>
+            <option value="21">VZ - Security</option>
+          </select>
+          <input class="importeNC swal2-input" type="number" placeholder="Importe" style="width:30%;">
+          <button class="btnEliminarConcepto" style="background:transparent; color:#b71c1c; border:none;
+                  border-radius:5px; padding:4px 8px; cursor:pointer; font-size:18px;">❌</button>
+        </div>
+      </div>
+
+      <button id="addConceptoBtn" type="button"
+        style="margin-top:10px; padding:6px 10px; background:#0a2d54; color:white; border:none; 
+               border-radius:5px; cursor:pointer;">
+        + Agregar concepto
+      </button>
+
+      <hr style="margin:15px 0;">
+
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <label style="font-weight:bold;">Referencia</label>
+        <div class="switch-container" id="monedaSwitchContainer">
+          <span class="label active" id="labelUYU">UYU</span>
+          <div class="switch" id="monedaSwitch" data-moneda="UYU">
+            <div class="slider"></div>
+          </div>
+          <span class="label" id="labelUSD">USD</span>
+        </div>
+      </div>
+
+      <input id="referenciaNC" class="swal2-input" placeholder="Ej: Ajuste por servicios" style="width:100%;">
+
+      <style>
+        .switch-container { display: flex; align-items: center; gap: 8px; }
+        .label { font-size: 16px; color: #cbd5e0; font-weight: bold; transition: 0.3s; }
+        .label.active { color: #143361; transform: scale(1.2); }
+        .switch { position: relative; width: 60px; height: 30px; border-radius: 15px;
+          background: linear-gradient(to bottom, #2154a1, #143361); cursor: pointer; transition: 0.3s; }
+        .switch.usd { background: linear-gradient(to bottom, #1b5e20, #2e7d32); }
+        .switch .slider { position: absolute; top: 2.6px; left: 3px; width: 24px; height: 24px;
+          border-radius: 50%; background-color: white; box-shadow: 0 0 4px rgba(0,0,0,0.2); transition: 0.3s; }
+        .switch.usd .slider { transform: translateX(30px); }
+      </style>
+    `,
+    didOpen: () => {
+      const popup = Swal.getPopup();
+      const container = popup.querySelector('#conceptosContainer');
+      const templateSelect = popup.querySelector('.productoNC').innerHTML;
+
+      const agregarFila = () => {
+        const newRow = document.createElement('div');
+        newRow.classList.add('concepto-item');
+        newRow.style.display = 'flex';
+        newRow.style.gap = '10px';
+        newRow.style.alignItems = 'center';
+        newRow.innerHTML = `
+          <select class="productoNC swal2-input" style="width:60%; height:2.5em;">
+            ${templateSelect}
+          </select>
+          <input class="importeNC swal2-input" type="number" placeholder="Importe" style="width:30%;">
+          <button class="btnEliminarConcepto" style="background:transparent; color:#b71c1c; border:none;
+                  border-radius:5px; padding:4px 8px; cursor:pointer; font-size:18px;">❌</button>
+        `;
+        newRow.querySelector('.btnEliminarConcepto').addEventListener('click', () => newRow.remove());
+        container.appendChild(newRow);
+      };
+
+      popup.querySelector('#addConceptoBtn').addEventListener('click', agregarFila);
+      container.querySelector('.btnEliminarConcepto').addEventListener('click', (e) => e.target.closest('.concepto-item').remove());
+
+      const switchDiv = popup.querySelector('#monedaSwitch');
+      const labelUYU = popup.querySelector('#labelUYU');
+      const labelUSD = popup.querySelector('#labelUSD');
+
+      switchDiv.addEventListener('click', () => {
+        const isUSD = switchDiv.classList.toggle('usd');
+        if (isUSD) {
+          labelUSD.classList.add('active');
+          labelUYU.classList.remove('active');
+          switchDiv.dataset.moneda = 'USD';
+        } else {
+          labelUYU.classList.add('active');
+          labelUSD.classList.remove('active');
+          switchDiv.dataset.moneda = 'UYU';
+        }
+      });
+    },
+    preConfirm: () => {
+      const popup = Swal.getPopup();
+      const tipoNC = popup.querySelector('input[name="tipoNC"]:checked')?.value;
+      const selectElements = popup.querySelectorAll('.productoNC');
+      const importeElements = popup.querySelectorAll('.importeNC');
+      const referenciaNC = popup.querySelector('#referenciaNC').value.trim();
+      const moneda = popup.querySelector('#monedaSwitch').dataset.moneda || 'UYU';
+
+      if (!tipoNC) {
+        Swal.showValidationMessage('Debe seleccionar un tipo de Nota de Crédito');
+        return false;
+      }
+
+      const conceptos = Array.from(selectElements).map((sel, i) => {
+        const value = sel.options[sel.selectedIndex]?.value || '';
+        const text = sel.options[sel.selectedIndex]?.text || '';
+        const importe = parseFloat(importeElements[i].value);
+        return { id_concepto: value, descripcion: text, importe };
+      }).filter(c => c.id_concepto && !isNaN(c.importe) && c.importe > 0);
+
+      if (conceptos.length === 0) {
+        Swal.showValidationMessage('Debe agregar al menos un concepto con producto e importe válidos');
+        return false;
+      }
+
+      if (!referenciaNC) {
+        Swal.showValidationMessage('Debe ingresar una referencia');
+        return false;
+      }
+
+      return { tipoNC, conceptos, referenciaNC, moneda };
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Generar N/C',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#0a2d54',
+    cancelButtonColor: '#0a2d54'
+  }).then((result) => {
+    if (!result.isConfirmed) return setLoading(false);
+
+    const { tipoNC, conceptos, referenciaNC, moneda } = result.value;
+    const importeTotal = conceptos.reduce((acc, c) => acc + c.importe, 0);
+
+    const datosNC = {
+      idCliente: selectedCliente.Id,
+      fecha: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      DocsAfectados: '',
+      CFEsAfectados: '',
+      ImporteTotal: importeTotal,
+      CodigoClienteGIA: selectedCliente.CodigoGIA,
+      Moneda: moneda,
+      Referencia: referenciaNC,
+      TipoNC: tipoNC,
+      Conceptos: conceptos
+    };
+    console.log('DatosNc antes del back',datosNC);
+    axios.post(`${backURL}/api/insertarNCACUENTA`, datosNC)
+      .then((response) => {
+        Swal.fire({
+          icon: 'success',
+          title: response.data.wsResultado?.descripcion || 'N/C generada correctamente',
+          color: '#0a2d54',
+          confirmButtonColor: '#0a2d54'
+        }).then(() => {
+          if (response.data.pdfBase64) {
+            const pdfLink = document.createElement('a');
+            pdfLink.href = `data:application/pdf;base64,${response.data.pdfBase64}`;
+            const numeroNC = response.data.wsResultado?.datos?.documento?.numeroDocumento || 'NC';
+            pdfLink.download = `NC_${numeroNC}.pdf`;
+            document.body.appendChild(pdfLink);
+            pdfLink.click();
+            document.body.removeChild(pdfLink);
+          }
+          window.location.reload();
+        });
+      })
+      .catch(err => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al generar la N/C',
+          text: err.message,
+          color: '#0a2d54',
+          confirmButtonColor: '#0a2d54'
+        });
+      })
+      .finally(() => setLoading(false));
+  });
+
+  return;
+}
+    // Armar texto con números y series sI NO ES A CUENTA
     const detalles = facturasSeleccionadas
       .map(f => `Número: ${f.NumeroCFE}, Serie: ${f.SerieCFE}`)
       .join('<br>');
@@ -433,6 +632,11 @@ const EmitirNC = ({ isLoggedIn }) => {
   const facturasFiltradas = facturasCliente.filter(factura =>
     factura.NumeroCFE.toString().toLowerCase().includes(erdocumentoasociado.toLowerCase())
   );
+  useEffect(() => {
+    if (encAcuenta === true) {
+      setFacturasSeleccionadas([]);
+    }
+  }, [encAcuenta]);
 
   return (
     <div className="EmitirFacturaManual-container">
@@ -536,6 +740,19 @@ const EmitirNC = ({ isLoggedIn }) => {
                   <option value="true">Si</option>
                 </select>
               </div>
+              <div>
+                <label htmlFor="acuenta">A cuenta:</label>
+                <select
+                  id="acuenta"
+                  value={encAcuenta}
+                  onChange={(e) => setEncACuenta(e.target.value === "true")}
+                  required
+                >
+                  <option value="">Selecciona si es a cuenta</option>
+                  <option value="false">No</option>
+                  <option value="true">Sí</option>
+                </select>
+              </div>
             </div>
 
           </div>
@@ -577,16 +794,16 @@ const EmitirNC = ({ isLoggedIn }) => {
                       <tr>
                         <td colSpan="6" style={{ textAlign: 'center' }}>
                           <div className="loading-spinner">
-                            {/* Aquí tu spinner */}
+
                           </div>
                         </td>
                       </tr>
                     ) : (
                       facturasFiltradas.map((factura, indexec) => (
                         <tr
-                          key={indexec}
-                          onDoubleClick={() => handleAgregarFacturaSeleccionada(factura)}
-                          style={{ cursor: 'pointer' }}
+                          key={`${indexec}-${encAcuenta}`}
+                          onDoubleClick={!encAcuenta ? () => handleAgregarFacturaSeleccionada(factura) : undefined}
+                          style={{ cursor: encAcuenta ? 'not-allowed' : 'pointer' }}
                         >
                           <td>{factura.FechaFormateada}</td>
                           <td>{factura.NumeroCFE}</td>

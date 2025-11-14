@@ -492,7 +492,7 @@ const Comprobantes = ({ isLoggedIn }) => {
         const response = await axios.get(`${backURL}/api/obtenertipocambioparacomprobante`);
         if (response.data.tipo_cambio == undefined) {
           alert("No hay tipo de cambio para la fecha actual.");
-          navigate("/tablas/cambio");
+          navigate("/home");
         } else {
           setEcTc(response.data.tipo_cambio);
         }
@@ -500,10 +500,10 @@ const Comprobantes = ({ isLoggedIn }) => {
       } catch (error) {
         if (error.response) {
           alert("No hay tipo de cambio para la fecha actual.");
-          navigate("/tablas/cambio");
+          navigate("/home");
         } else {
           console.error("Error en la consulta:", error);
-          navigate("/tablas/cambio");
+          navigate("/home");
         }
       }
     };

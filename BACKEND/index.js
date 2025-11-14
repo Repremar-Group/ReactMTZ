@@ -10,7 +10,7 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC, generarXmlNCaCuenta } = require('./ControladoresGFE/controladoresGfe')
 const { obtenerDatosEmpresa } = require('./ControladoresGFE/datosdelaempresaGFE')
 const cron = require('node-cron');
 const { Console } = require('console');
@@ -292,9 +292,19 @@ function generarAdenda(numerodoc, monto, moneda) {
   const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
   console.log('Moneda de la adenda: ', moneda);
   if (moneda === 'USD') {
-    return `Doc:${numerodoc} - Son dólares americanos U$S ${montoEnLetras}`;
+    return `Son dólares americanos U$S ${montoEnLetras}`;
   } else {
-    return `Doc:${numerodoc} - Son pesos uruguayos $ ${montoEnLetras}`;
+    return `Son pesos uruguayos $ ${montoEnLetras}`;
+  }
+
+}
+function generarAdendaSinDoc(monto, moneda) {
+  const montoEnLetras = NumeroALetras(monto);  // Convierte el monto a letras
+  console.log('Moneda de la adenda: ', moneda);
+  if (moneda === 'USD') {
+    return `Son dólares americanos U$S ${montoEnLetras}`;
+  } else {
+    return `Son pesos uruguayos $ ${montoEnLetras}`;
   }
 
 }
@@ -319,16 +329,16 @@ function generarAdendaConConceptos(numerodoc, monto, moneda, detalleFactura = []
     detalleTexto = detalleFactura
       .map((item) => {
         return `${item.descripcion}${item.importe && Number(item.importe) !== 0
-            ? `: ${item.moneda} ${Number(item.importe).toFixed(2)}`
-            : ""
+          ? `: ${item.moneda} ${Number(item.importe).toFixed(2)}`
+          : ""
           }`;
       })
       .join(" | ");
   }
 
   const resultadoFinal = detalleTexto
-  ? `${encabezado}&#10;&#10;${detalleTexto}`
-  : encabezado;
+    ? `${encabezado}&#10;&#10;${detalleTexto}`
+    : encabezado;
 
   console.log("✅ [generarAdendaConConceptos] Resultado final:", resultadoFinal);
 
@@ -2691,7 +2701,7 @@ app.post('/api/insertfactura', async (req, res) => {
     console.log('Resultado FacuturaSoap', resultadoSOAP);
     // Actualizar base de datos con resultados
     const updateQuery = `
-    UPDATE facturas SET FechaCFE=?, ComprobanteElectronico=?, TipoDocCFE=?, SerieCFE=?, NumeroCFE=?, PdfBase64=? WHERE Id=?
+    UPDATE facturas SET FechaCFE=?, ComprobanteElectronico=?, TipoDocCFE=?, SerieCFE=?, NumeroCFE=?, PdfBase64=?, Adenda=? WHERE Id=?
   `;
     const updateCuentaCorrienteQuery = `
     UPDATE cuenta_corriente SET TipoDocumento=?, NumeroDocumento=?, Fecha=? WHERE IdFactura=?
@@ -2702,7 +2712,7 @@ app.post('/api/insertfactura', async (req, res) => {
       const doc1 = resultadoSOAP[0];
       await connection.query(updateQuery, [
         doc1.fechadocumento, doc1.tipodocumento, doc1.tipodocumento,
-        doc1.seriedocumento, doc1.numerodocumento, doc1.pdfBase64, facturaId
+        doc1.seriedocumento, doc1.numerodocumento, doc1.pdfBase64, adenda, facturaId
       ]);
       await connection.query(updateCuentaCorrienteQuery, [
         doc1.tipodocumento, doc1.numerodocumento, doc1.fechadocumento, facturaId
@@ -2714,7 +2724,7 @@ app.post('/api/insertfactura', async (req, res) => {
       const doc2 = resultadoSOAP[1];
       await connection.query(updateQuery, [
         doc2.fechadocumento, doc2.tipodocumento, doc2.tipodocumento,
-        doc2.seriedocumento, doc2.numerodocumento, doc2.pdfBase64, facturaCuentaAjenaId
+        doc2.seriedocumento, doc2.numerodocumento, doc2.pdfBase64, adendaCuentaAjena, facturaCuentaAjenaId
       ]);
       await connection.query(updateCuentaCorrienteQuery, [
         doc2.tipodocumento, doc2.numerodocumento, doc2.fechadocumento, facturaCuentaAjenaId
@@ -5822,33 +5832,74 @@ app.post('/api/impactarnc', async (req, res) => {
     const [facturas] = await pool.query('SELECT * FROM facturas WHERE Id IN (?)', [idsFacturas]);
     if (facturas.length === 0) return res.status(400).json({ error: 'No se encontraron facturas asociadas' });
 
+    //Aca se obtiene el detalle de facturas para poder hacer los conceptos de la nc
+    const detallesFacturas = {};
+
+    for (const factura of facturas) {
+      let detalles = [];
+
+      if (factura.esManual === 1) {
+        const [rows] = await pool.query(
+          "SELECT IdFactura, Codigo, Descripcion, Moneda, IVA, Importe, impuesto, codigoGIA FROM detalle_facturas_manuales WHERE IdFactura = ?",
+          [factura.Id]
+        );
+        detalles = rows.map(det => ({
+          idFactura: det.IdFactura,
+          codigo: det.Codigo,
+          descripcion: det.Descripcion,
+          moneda: det.Moneda,
+          iva: det.IVA,
+          importe: det.Importe,
+          impuesto: det.impuesto,
+          codigoGIA: det.codigoGIA,
+        }));
+      } else {
+        const [rows] = await pool.query(
+          "SELECT IdFactura, Tipo, Guia, Descripcion, Moneda, Importe, Id_concepto FROM detalle_facturas WHERE IdFactura = ?",
+          [factura.Id]
+        );
+        detalles = rows.map(det => ({
+          idFactura: det.IdFactura,
+          tipo: det.Tipo,
+          guia: det.Guia,
+          descripcion: det.Descripcion,
+          moneda: det.Moneda,
+          importe: det.Importe,
+          id_concepto: det.Id_concepto,
+        }));
+      }
+
+      detallesFacturas[factura.Id] = detalles;
+    }
+
     // 3. Preparar datos para XML
     const datosXml = {
       datosEmpresa,
       fechaCFE: formatFecha(nc.fecha),
       fechaVencimientoCFE: formatFecha(nc.fecha),
-      adendadoc: `NC por ${facturas.length} factura(s)`,
+      adendadoc: facturas[0].Adenda,
       codigoClienteGIA: nc.CodigoClienteGIA,
       precioUnitario: nc.ImporteTotal, // Monto total
       Moneda: facturas[0].Moneda,
       tipoComprobante:
         facturas.length > 0
-          ? (facturas[0].TipoDocCFE === 'TCD'
+          ? (facturas[0].TipoDocCFE === 'TCT'
             ? 'NTT' // Codigo Nota para eticket
-            : facturas[0].TipoDocCFE === 'TCA'
+            : facturas[0].TipoDocCFE === 'TTA'
               ? 'NRA'//Codigo Nota para eticket CA
-              : facturas[0].TipoDocCFE === 'FCD'
+              : facturas[0].TipoDocCFE === 'FCT'
                 ? 'NCT'//Codigo Nota para Efactura 
-                : facturas[0].TipoDocCFE === 'FCA'
+                : facturas[0].TipoDocCFE === 'FTA'
                   ? 'NCA' //Codigo Nota para Efactura CA
-                  : 'NCT')
+                  : 'NCA')
           : 'NCT',
       cancelaciones: facturas.map(factura => ({
         rubroAfectado: '113102',
         tipoDocumentoAfectado: factura.TipoDocCFE,
         comprobanteAfectado: factura.NumeroCFE,
         vencimientoAfectado: formatFecha(factura.FechaVencimiento || factura.Fecha),
-        importe: factura.TotalCobrar
+        importe: factura.TotalCobrar,
+        conceptos: detallesFacturas[factura.Id] || []
       }))
     };
     console.log(datosXml.cancelaciones)
@@ -5957,7 +6008,212 @@ app.post('/api/impactarnc', async (req, res) => {
     return res.status(500).json({ error: 'Error al impactar N/C', details: err.message });
   }
 });
+app.post('/api/insertarNCACUENTA', async (req, res) => {
+  const {
+    idCliente,
+    fecha,
+    DocsAfectados = '-',
+    CFEsAfectados = '-',
+    ImporteTotal,
+    CodigoClienteGIA,
+    Moneda,
+    Referencia,
+    TipoNC,
+    Conceptos = []
+  } = req.body;
 
+  if (!idCliente || !fecha || !ImporteTotal) {
+    return res.status(400).json({ message: 'Faltan datos obligatorios' });
+  }
+
+  try {
+    // 1️⃣ Insertar cabecera en tabla nc
+    const sqlInsert = `
+      INSERT INTO nc (
+        fecha,
+        DocsAfectados,
+        CFEsAfectados,
+        ImporteTotal,
+        Moneda,
+        idCliente,
+        CodigoClienteGIA
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await pool.query(sqlInsert, [
+      fecha,
+      DocsAfectados,
+      CFEsAfectados,
+      ImporteTotal,
+      Moneda,
+      idCliente,
+      CodigoClienteGIA
+    ]);
+
+    const idNC = result.insertId;
+
+    // 2️⃣ Impactar al WS (pasamos los conceptos directamente)
+    const impactarResponse = await axios.post('http://localhost:5000/api/impactarncacuentaa', {
+      idNC,
+      TipoNC,
+      Referencia,
+      Conceptos
+    });
+
+    return res.json({
+      message: 'N/C a cuenta insertada correctamente',
+      idNC,
+      wsResultado: impactarResponse.data.resultado,
+      pdfBase64: impactarResponse.data.pdfBase64
+    });
+
+  } catch (err) {
+    console.error('Error procesando N/C a cuenta:', err);
+    return res.status(500).json({
+      message: 'Error procesando N/C a cuenta',
+      error: err.message
+    });
+  }
+});
+app.post('/api/impactarncacuentaa', async (req, res) => {
+  console.log('Impactar NC a cuenta alcanzado');
+  const { idNC, TipoNC, Referencia, Conceptos = [] } = req.body;
+
+  try {
+    const datosEmpresa = await obtenerDatosEmpresa(pool);
+
+    // 1️⃣ Obtener datos de la NC
+    const [ncRows] = await pool.query('SELECT * FROM nc WHERE idNC = ?', [idNC]);
+    const nc = ncRows[0];
+    if (!nc) return res.status(404).json({ error: 'N/C no encontrada' });
+    const adenda = generarAdendaSinDoc(nc.ImporteTotal, nc.Moneda);
+    // 2️⃣ Preparar datos XML
+    const datosXml = {
+      datosEmpresa,
+      fechaCFE: formatFecha(nc.fecha),
+      fechaVencimientoCFE: formatFecha(nc.fecha),
+      codigoClienteGIA: nc.CodigoClienteGIA,
+      Moneda: nc.Moneda,
+      precioUnitario: nc.ImporteTotal,
+      tipoComprobante: TipoNC || 'NCA',
+      referencia: Referencia || '',
+      conceptos: Conceptos.map(c => ({
+        id_concepto: c.id_concepto || '',
+        descripcion: c.descripcion || '',
+        importe: c.importe || 0
+      })),
+      adenda:adenda
+    };
+
+    const xml = generarXmlNCaCuenta(datosXml);
+    console.log('XML NC Cuenta Ajena:', xml);
+
+    // 3️⃣ Enviar XML al WS
+    const headers = {
+      'Content-Type': 'text/xml;charset=utf-8',
+      'SOAPAction': '"agregarDocumentoFacturacion"',
+      'Accept-Encoding': 'gzip,deflate',
+      'Host': datosEmpresa.serverFacturacion,
+      'Connection': 'Keep-Alive',
+      'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
+    };
+
+    const response = await axios.post(
+      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      xml,
+      { headers }
+    );
+
+    const parsed = await parseSOAP(response.data);
+    const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
+    const resultado = inner.agregarDocumentoFacturacionResultado;
+
+    if (resultado.resultado !== "1") {
+      return res.status(200).json({
+        success: false,
+        message: resultado.descripcion,
+        resultado
+      });
+    }
+
+    // 4️⃣ Actualizar NC con datos del documento
+    const datosDoc = resultado?.datos?.documento;
+    let pdfBase64 = null;
+
+    if (datosDoc) {
+      const { fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento } = datosDoc;
+
+      await pool.query(`
+        UPDATE nc
+        SET fecha = ?, TipoDocumento = ?, Serie = ?, NumeroCFE = ?
+        WHERE idNC = ?
+      `, [fechaDocumento, tipoDocumento, serieDocumento, numeroDocumento, idNC]);
+
+      // 5️⃣ Obtener PDF del WS
+      const headersPdf = {
+        'Content-Type': 'text/xml;charset=utf-8',
+        'SOAPAction': '"obtenerRepresentacionImpresaDocumentoFacturacion"',
+        'Accept-Encoding': 'gzip,deflate',
+        'Host': datosEmpresa.serverFacturacion,
+        'Connection': 'Keep-Alive',
+        'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
+      };
+
+      const xmlPdf = `
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+          <soapenv:Header/>
+          <soapenv:Body>
+            <soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+              <xmlParametros><![CDATA[
+                <obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+                  <usuario>${datosEmpresa.usuarioGfe}</usuario>
+                  <usuarioPassword>${datosEmpresa.passwordGfe}</usuarioPassword>
+                  <empresa>${datosEmpresa.codigoEmpresa}</empresa>
+                  <documento>
+                    <fechaDocumento>${fechaDocumento}</fechaDocumento>
+                    <tipoDocumento>${tipoDocumento}</tipoDocumento>
+                    <serieDocumento>${serieDocumento}</serieDocumento>
+                    <numeroDocumento>${numeroDocumento}</numeroDocumento>
+                  </documento>
+                </obtenerRepresentacionImpresaDocumentoFacturacionParametros>
+              ]]></xmlParametros>
+            </soap:obtenerRepresentacionImpresaDocumentoFacturacion>
+          </soapenv:Body>
+        </soapenv:Envelope>
+      `;
+
+      const pdfResp = await axios.post(
+        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        xmlPdf,
+        { headers: headersPdf }
+      );
+
+      const parsedPdf = await parseSOAP(pdfResp.data);
+      const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
+      const innerPdf = await parseInnerXML(innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));
+      pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado.datos.pdfBase64 || null;
+
+      if (pdfBase64) {
+        await pool.query(`UPDATE nc SET PdjBase64 = ? WHERE idNC = ?`, [pdfBase64, idNC]);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'N/C a cuenta impactada y PDF obtenido correctamente',
+      resultado,
+      pdfBase64
+    });
+
+  } catch (err) {
+    console.error('Error al impactar N/C a cuenta:', err);
+    return res.status(500).json({
+      error: 'Error al impactar N/C a cuenta',
+      details: err.message
+    });
+  }
+});
 app.post('/api/eliminarNC', async (req, res) => {
   const { idNC } = req.body;
 
