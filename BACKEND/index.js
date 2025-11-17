@@ -65,7 +65,7 @@ const connection = mysql.createConnection({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoiceprod',
+  database: 'cielosurinvoicetest',
   port: 3306,
   connectTimeout: 60000,
 });
