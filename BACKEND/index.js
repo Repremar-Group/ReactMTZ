@@ -53,7 +53,7 @@ const pool = mysql2.createPool({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoiceprod',
+  database: 'cielosurinvoicetest',
   port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
