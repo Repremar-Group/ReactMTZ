@@ -57,6 +57,9 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [codigoClienteGIA, setCodigoClienteGIA] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [isModalAdendaOpen, setIsModalAdendaOpen] = useState(false);
+  const [adenda, setAdenda] = useState('');
+
   const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
   const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
   const [mensajeAlertaGFE, setmensajeAlertaGFE] = useState('');
@@ -206,7 +209,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   }, []); // Se ejecuta solo una vez al montar el componente
 
   // Función para manejar el envío del formulario
-  const handleSubmitAgregarFm = async (event) => {
+  const handleSubmitAgregarFm = async (event, adendaValor) => {
     event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
     setLoading(true);
     // Recopilar los datos del formulario en un objeto
@@ -235,6 +238,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
       Total: parseFloat(fmtotal).toFixed(2),
       TotalCobrar: parseFloat(fmtotalacobrar).toFixed(2),
       DetalleFactura: fmlistadeconceptos,
+      Adenda: adendaValor,
 
     };
     console.log('info al backend: ', datosFormulario);
@@ -804,7 +808,13 @@ const Facturasmanuales = ({ isLoggedIn }) => {
 
 
         <div className='botonesemitircomprobante'>
-          <button type="button" className='btn-facturar' onClick={handleSubmitAgregarFm}>Facturar</button>
+          <button
+            type="button"
+            className='btn-facturar'
+            onClick={() => setIsModalAdendaOpen(true)}
+          >
+            Facturar
+          </button>
 
           <Link to="/home"><button type="button" className="btn-estandar">Volver</button></Link>
         </div>
@@ -853,6 +863,45 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+      {isModalAdendaOpen && (
+        <div className='modal'>
+          <div className='modal-content'>
+            <h3 className='Titulo-ingreso-recibos'>Ingrese la Adenda</h3>
+
+            <textarea
+              value={adenda}
+              onChange={(e) => setAdenda(e.target.value)}
+              placeholder="Ingrese la adenda"
+              style={{
+                width: '480px',
+                height: '150px',
+                resize: 'none',
+                padding: '8px',
+                fontSize: '14px'
+              }}
+            />
+
+            <div className='modal-buttons'>
+              <button
+                className='btn-estandar'
+                onClick={(e) => {
+                  setIsModalAdendaOpen(false);
+                  handleSubmitAgregarFm(e, adenda);
+                }}
+              >
+                Guardar
+              </button>
+
+              <button
+                className='btn-estandar'
+                onClick={() => setIsModalAdendaOpen(false)}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>

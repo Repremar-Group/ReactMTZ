@@ -236,6 +236,7 @@ const EmitirNC = ({ isLoggedIn }) => {
         title: 'No hay facturas seleccionadas',
         text: 'Por favor seleccioná al menos una factura.',
       });
+      setLoading(false);
       return;
     }
     // Si es "a cuenta" pedimos los datos primero

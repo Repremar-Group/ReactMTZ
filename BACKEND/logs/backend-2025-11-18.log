@@ -1,0 +1,14 @@
+18/11/2025, 16:52:13 [info]: Server running on port 5001
+18/11/2025, 16:52:14 [info]: Conexión exitosa a la base de datos MySQL
+18/11/2025, 16:52:31 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/11/2025, 16:52:32 [info]: 39.812
+18/11/2025, 16:52:52 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/11/2025, 16:52:53 [info]: 39.812
+18/11/2025, 16:55:43 [info]: Server running on port 5001
+18/11/2025, 16:55:43 [info]: Conexión exitosa a la base de datos MySQL
+18/11/2025, 16:55:54 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/11/2025, 16:55:55 [info]: Received request for /api/guias-sin-facturar
+18/11/2025, 16:55:55 [info]: Received request for /api/facturas-sin-cobrar
+18/11/2025, 16:55:55 [info]: Received request for /api/obtenertipocambio
+18/11/2025, 16:55:55 [info]: 39.812
+18/11/2025, 16:56:14 [info]: Received request for /api/previewclientes

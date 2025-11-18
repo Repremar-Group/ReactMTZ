@@ -18,7 +18,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         setIcImporteEnDolares(datosRecibo.erimporte);
         setIcClienteGIA(datosRecibo.clienteGIA);
         setIcFormaDePago(datosRecibo.erformadepago)
-        setIcTotalDeLasGuias(totalfacturas);
+        const total = Number(totalfacturas) || 0;
+        setIcTotalDeLasGuias(parseFloat(total.toFixed(2)));
         setIcSaldoDelDocumento(totalfacturas);
         setIcSaldoDelCheque(totalfacturas)
         setIcTipoMoneda(datosRecibo.ertipoMoneda);
@@ -100,7 +101,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         console.log('Validando Cheque con estos datos: ', icnrocheque, icbanco, icfecha, ictipoMoneda, icarbitraje, icimpdelcheque, icimporteendolares, icfechavencimiento)
         if (icnrocheque && icbanco && icfecha && ictipoMoneda && icarbitraje && icimpdelcheque && icimporteendolares && icfechavencimiento) {
             console.log('Valores del cheque, Importe: ', icimporteendolares, ' Saldo del Pago: ', icsaldodeldocumento, 'A cuenta: ', aCuenta, 'Expresion', (icimporteendolares <= icsaldodeldocumento) && !aCuenta);
-            if (((icimporteendolares <= icsaldodeldocumento) && !aCuenta) || aCuenta) {
+            const saldoRedondeado = parseFloat(Number(icsaldodeldocumento).toFixed(2));
+            if (((icimporteendolares <= saldoRedondeado) && !aCuenta) || aCuenta) {
                 const nuevocheque = { icfecha, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
                 setIcListaDeCheques([...iclistadecheques, nuevocheque]);
                 setIcNroCheque('');
@@ -167,7 +169,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         console.log('Saldo del documento antes de enviar el recibo', icsaldodeldocumento);
 
         // Permitir el envío si el saldo es 0 o si es aCuenta
-        if (icsaldodeldocumento === '0.00' || aCuenta) {
+        if (icsaldodeldocumento === '0.00' || aCuenta || icsaldodeldocumento === '-0.00') {
             console.log('Estas son las facturas asociadas al Recibo: ', facturasAsociadas);
 
             try {

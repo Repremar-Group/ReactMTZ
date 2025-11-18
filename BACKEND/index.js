@@ -29,8 +29,29 @@ const upload = multer({ dest: 'uploads/' });
 
 
 const port = process.env.PORT || 5000;
+const logger = require("./logger");
 
+const originalLog = console.log;
+const originalError = console.error;
+const originalWarn = console.warn;
 
+// Reemplazamos console.log
+console.log = (...args) => {
+  originalLog(...args);                // Sigue imprimiendo en consola
+  logger.info(args.join(" "));         // Se guarda en backend.log
+};
+
+// Reemplazamos console.error
+console.error = (...args) => {
+  originalError(...args);
+  logger.error(args.join(" "));
+};
+
+// Reemplazamos console.warn
+console.warn = (...args) => {
+  originalWarn(...args);
+  logger.warn(args.join(" "));
+};
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -3044,7 +3065,8 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       Redondeo,
       Total,
       TotalCobrar,
-      DetalleFactura
+      DetalleFactura,
+      Adenda
     } = req.body; // Los datos de la factura enviados desde el frontend
 
     const datosEmpresa = await obtenerDatosEmpresa(pool);
@@ -3120,7 +3142,14 @@ app.post('/api/insertfacturamanual', async (req, res) => {
     // Commit de la transacción antes del SOAP
     await connection.commit();
 
-    let adenda = generarAdenda(facturaId, TotalCobrar, Moneda)
+    let adendaGenerada = generarAdenda(facturaId, TotalCobrar, Moneda);
+
+    // Adenda ingresada por el usuario (desde modal del frontend)
+    let adendaFront = Adenda || "";
+
+    // Concatenación con salto de línea REAL para XML
+    let adendaFinal = `${adendaGenerada}\n${adendaFront}`.trim();
+
     const datosParaXML = {
       datosEmpresa: {
         usuarioGfe: datosEmpresa.usuarioGfe, // Reemplazalo con tus valores reales
@@ -3132,7 +3161,7 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       Moneda: Moneda,
       fechaCFE: Fecha,
       fechaVencimientoCFE: FechaVencimiento,
-      adendadoc: adenda, // o cualquier observación que uses
+      adendadoc: adendaFinal, // o cualquier observación que uses
       detalleFactura: DetalleFactura.map((item) => ({
         codItem: item.codigoGIA,
         nombreItem: item.descripcion,
@@ -3222,7 +3251,7 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       }
 
       // Paso 3: Obtener PDF
-      const datosDoc = resultado.datos.documento;
+      datosDoc = resultado.datos.documento;
 
       const xmlPdf = construirXmlObtenerPdf({
         fechaDocumento: datosDoc.fechaDocumento,
@@ -3241,7 +3270,8 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
       const innerPdf = await parseInnerXML(innerPdfXmlEscaped);
 
-      const pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
+      pdfBase64 = innerPdf.obtenerRepresentacionImpresaDocumentoFacturacionResultado?.datos?.pdfBase64 || null;
+
 
       // Paso 4: Actualizar la factura con los datos del CFE
       const updateQuery = `
@@ -6100,7 +6130,7 @@ app.post('/api/impactarncacuentaa', async (req, res) => {
         descripcion: c.descripcion || '',
         importe: c.importe || 0
       })),
-      adenda:adenda
+      adenda: adenda
     };
 
     const xml = generarXmlNCaCuenta(datosXml);
@@ -6849,7 +6879,7 @@ app.post('/api/obtenerClientePorCodigoGia', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT; // SIN valor por defecto
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

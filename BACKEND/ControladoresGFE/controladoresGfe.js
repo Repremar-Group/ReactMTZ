@@ -347,28 +347,35 @@ function generarXmlRecibo(datos) {
 
     // Generar <formasPago>
     let formasPago = '';
-    for (let pago of datos.formasPago) {
-        const esCaja = pago.formaPago === 'EFEDOL' || pago.formaPago === 'EFEPES';
 
-        // Contenido extra si es CHEQUEMN o TRANSMN
-        let extraCampos = '';
-        console.log('Forma de Pago:', pago.formaPago);
-        if (pago.formaPago === 'CHQPES' || pago.formaPago === 'TRANPES') {
-            extraCampos = `
-        <elemento1>CTA01</elemento1>
-        <tipoDocumento>CHQ</tipoDocumento>`;
+    for (let pago of datos.formasPago) {
+        // 1. Identificamos si es un pago básico
+        const esBasico = pago.formaPago === 'EFEDOL' || pago.formaPago === 'EFEPES' || pago.formaPago === 'DOCVZ';
+
+        let contenidoExtra = '';
+
+        //  Si NO es básico, asumimos que es Transferencia o Cheque (Pesos o Dólares)
+        if (!esBasico) {
+            contenidoExtra += `
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>${pago.formaPago.includes('TRAN') ? 'TRANS' : 'CHQ'}</tipoDocumento>
+        <comprobante>${pago.comprobante}</comprobante>`;
+
+            //    Si el nombre incluye "CHQ", le sumamos el vencimiento.
+            if (pago.formaPago.includes('CHQ')) {
+                contenidoExtra += `
+        <vencimiento>${pago.vencimiento}</vencimiento>`;
+            }
         }
 
+        // 4. Construcción final del bloque
         formasPago += `
     <formaPago>
         <formaPago>${pago.formaPago}</formaPago>
-        <importe>${pago.importe}</importe>
-        ${extraCampos}` +
-            (!esCaja ? `
-        <comprobante>${pago.comprobante}</comprobante>
-        <vencimiento>${pago.vencimiento}</vencimiento>` : '') + `
+        <importe>${pago.importe}</importe>${contenidoExtra}
     </formaPago>`;
     }
+
     xmlBase = xmlBase.replace('{{FormasPago}}', formasPago);
 
     console.log('XML Generado RECIBO:', xmlBase);
@@ -439,23 +446,23 @@ function generarXmlNC(datos) {
     let detallesRenglones = '';
 
     datos.cancelaciones.forEach((cancelacion, indexCancelacion) => {
-    console.log(`🔹 Cancelación ${indexCancelacion + 1}: conceptos ->`, cancelacion.conceptos);
+        console.log(`🔹 Cancelación ${indexCancelacion + 1}: conceptos ->`, cancelacion.conceptos);
 
-    if (Array.isArray(cancelacion.conceptos) && cancelacion.conceptos.length > 0) {
-        cancelacion.conceptos.forEach((concepto) => {
-            // Determinar el código de producto según si es factura manual o no
-            let producto =
-                concepto.codigoGIA && concepto.codigoGIA !== ''
-                    ? concepto.codigoGIA // factura manual
-                    : concepto.id_concepto || 'SIN_CODIGO'; // factura no manual
+        if (Array.isArray(cancelacion.conceptos) && cancelacion.conceptos.length > 0) {
+            cancelacion.conceptos.forEach((concepto) => {
+                // Determinar el código de producto según si es factura manual o no
+                let producto =
+                    concepto.codigoGIA && concepto.codigoGIA !== ''
+                        ? concepto.codigoGIA // factura manual
+                        : concepto.id_concepto || 'SIN_CODIGO'; // factura no manual
 
-            // Si es numérico y tiene una sola cifra, le agregamos un 0 adelante
-            if (!isNaN(producto)) {
-                producto = String(producto).padStart(2, '0');
-            }
+                // Si es numérico y tiene una sola cifra, le agregamos un 0 adelante
+                if (!isNaN(producto)) {
+                    producto = String(producto).padStart(2, '0');
+                }
 
-            // Generar el bloque <renglon>
-            detallesRenglones += `
+                // Generar el bloque <renglon>
+                detallesRenglones += `
           <renglon>
             <producto>${producto}</producto>
             <nombreProducto>${escapeXml(`${concepto.descripcion || 'Sin descripción'}`)}</nombreProducto>
@@ -463,9 +470,9 @@ function generarXmlNC(datos) {
             <precioUnitario>${Number(concepto.importe || 0).toFixed(2)}</precioUnitario>
           </renglon>
         `;
-        });
-    }
-});
+            });
+        }
+    });
 
     // Si no hay renglones (fallback)
     if (!detallesRenglones.trim()) {
@@ -487,22 +494,22 @@ function generarXmlNC(datos) {
     return xmlBase;
 }
 function generarXmlNCaCuenta(datos) {
-  console.log('🧾 GENERANDO XML NOTA DE CRÉDITO A CUENTA:', datos);
+    console.log('🧾 GENERANDO XML NOTA DE CRÉDITO A CUENTA:', datos);
 
-  function escapeXml(value = "") {
-    return value
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&apos;");
-  }
+    function escapeXml(value = "") {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&apos;");
+    }
 
-  // Determinar código de moneda (según WS)
-  const moneda = datos.Moneda === 'UYU' ? 1 : 2;
+    // Determinar código de moneda (según WS)
+    const moneda = datos.Moneda === 'UYU' ? 1 : 2;
 
-  // XML base (sin cancelaciones)
-  let xmlBase = `
+    // XML base (sin cancelaciones)
+    let xmlBase = `
   <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
     <soapenv:Header/>
     <soapenv:Body>
@@ -531,17 +538,17 @@ function generarXmlNCaCuenta(datos) {
     </soapenv:Body>
   </soapenv:Envelope>`;
 
-  // 🧩 Generar renglones a partir de los conceptos
-  let detallesRenglones = '';
+    // 🧩 Generar renglones a partir de los conceptos
+    let detallesRenglones = '';
 
-  if (Array.isArray(datos.conceptos) && datos.conceptos.length > 0) {
-    datos.conceptos.forEach((concepto, i) => {
-      const codigo =
-        concepto.id_concepto && concepto.id_concepto !== ''
-          ? concepto.id_concepto
-          : `C${(i + 1).toString().padStart(2, '0')}`;
+    if (Array.isArray(datos.conceptos) && datos.conceptos.length > 0) {
+        datos.conceptos.forEach((concepto, i) => {
+            const codigo =
+                concepto.id_concepto && concepto.id_concepto !== ''
+                    ? concepto.id_concepto
+                    : `C${(i + 1).toString().padStart(2, '0')}`;
 
-      detallesRenglones += `
+            detallesRenglones += `
         <renglon>
           <producto>${escapeXml(codigo)}</producto>
           <nombreProducto>${escapeXml(concepto.descripcion || 'Sin descripción')}</nombreProducto>
@@ -549,10 +556,10 @@ function generarXmlNCaCuenta(datos) {
           <precioUnitario>${Number(concepto.importe || 0).toFixed(2)}</precioUnitario>
         </renglon>
       `;
-    });
-  } else {
-    // fallback por si no hay conceptos
-    detallesRenglones = `
+        });
+    } else {
+        // fallback por si no hay conceptos
+        detallesRenglones = `
       <renglon>
         <producto>GEN001</producto>
         <nombreProducto>NOTA DE CRÉDITO A CUENTA</nombreProducto>
@@ -560,14 +567,14 @@ function generarXmlNCaCuenta(datos) {
         <precioUnitario>${Number(datos.precioUnitario || 0).toFixed(2)}</precioUnitario>
       </renglon>
     `;
-  }
+    }
 
-  // Reemplazar placeholder
-  xmlBase = xmlBase.replace('{{RenglonesAutomaticos}}', detallesRenglones.trim());
+    // Reemplazar placeholder
+    xmlBase = xmlBase.replace('{{RenglonesAutomaticos}}', detallesRenglones.trim());
 
-  console.log('✅ XML GENERADO N/C A CUENTA:\n', xmlBase);
-  return xmlBase;
+    console.log('✅ XML GENERADO N/C A CUENTA:\n', xmlBase);
+    return xmlBase;
 }
 
 
-module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC, generarXmlNCaCuenta};
+module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC, generarXmlNCaCuenta };

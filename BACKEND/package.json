@@ -19,6 +19,8 @@
     "number-to-words": "^1.2.4",
     "numero-a-letras": "^1.0.6",
     "pdf-lib": "^1.17.1",
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0",
     "xlsx": "^0.18.5",
     "xml2js": "^0.6.2"
   }

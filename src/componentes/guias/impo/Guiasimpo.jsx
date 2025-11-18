@@ -564,7 +564,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
       }
       fetchGuias();
       setGiNroGuia('');
-      setGiFechaEmisionGuia('');
       setSearchTerm('');
       setOrigenGuiaSeleccionado('');
       setConexionGuiaSeleccionado('');
@@ -575,7 +574,6 @@ const Guiasimpo = ({ isLoggedIn }) => {
       setGiPesoGuia('');
       setGiPesovolGuia('');
       setGiMonedaGuia('');
-      setGiArbitrajeGuia('');
       setGiTarifaGuia('');
       setGiDcOriginalGuia('');
       setGiDaOriginalGuia('');
