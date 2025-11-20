@@ -12,3 +12,51 @@
 18/11/2025, 16:55:55 [info]: Received request for /api/obtenertipocambio
 18/11/2025, 16:55:55 [info]: 39.812
 18/11/2025, 16:56:14 [info]: Received request for /api/previewclientes
+18/11/2025, 17:24:22 [info]: Received request for /api/previewclientes
+18/11/2025, 17:24:40 [info]: Received request for /api/previewclientes
+18/11/2025, 17:27:12 [info]: Received request for /api/previewclientes
+18/11/2025, 17:28:35 [info]: Received request for /api/previewclientes
+18/11/2025, 17:30:26 [info]: Received request for /api/previewclientes
+18/11/2025, 17:31:54 [info]: Received request for /api/previewclientes
+18/11/2025, 17:32:45 [info]: Received request for /api/previewclientes
+18/11/2025, 17:33:06 [info]: Received request for /api/previewclientes
+18/11/2025, 17:34:09 [info]: Received request for /api/previewclientes
+18/11/2025, 17:34:36 [info]: Received request for /api/previewclientes
+18/11/2025, 17:35:06 [info]: Received request for /api/previewclientes
+18/11/2025, 17:35:09 [info]: Received request for /api/previewclientes
+18/11/2025, 17:35:54 [info]: Received request for /api/previewclientes
+18/11/2025, 17:40:33 [info]: Received request for /api/previewclientes
+18/11/2025, 17:40:48 [info]: Received request for /api/previewclientes
+18/11/2025, 17:41:14 [info]: Received request for /api/previewclientes
+18/11/2025, 17:44:00 [info]: Server running on port 5001
+18/11/2025, 17:44:01 [info]: Conexión exitosa a la base de datos MySQL
+18/11/2025, 17:44:13 [info]: Received request for /api/previewclientes
+18/11/2025, 17:45:43 [info]: Received request for /api/previewclientes
+18/11/2025, 17:45:52 [info]: Received request for /api/previewclientes
+18/11/2025, 17:45:59 [info]: Received request for /api/previewclientes
+18/11/2025, 17:46:05 [info]: Received request for /api/previewclientes
+18/11/2025, 17:46:21 [info]: Received request for /api/previewclientes
+18/11/2025, 17:46:24 [info]: Received request for /api/previewclientes
+18/11/2025, 17:47:28 [info]: Received request for /api/previewclientes
+18/11/2025, 17:47:52 [info]: Received request for /api/previewclientes
+18/11/2025, 17:49:18 [info]: Received request for /api/previewclientes
+18/11/2025, 17:54:19 [info]: Server running on port 5001
+18/11/2025, 17:54:19 [info]: Conexión exitosa a la base de datos MySQL
+18/11/2025, 17:54:31 [info]: Received request for /api/previewclientes
+18/11/2025, 17:54:38 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/11/2025, 17:54:38 [info]: 39.812
+18/11/2025, 17:55:26 [info]: Received request for /api/previewclientes
+18/11/2025, 17:55:58 [info]: Received request for /api/previewclientes
+18/11/2025, 17:57:04 [info]: Received request for /api/previewclientes
+18/11/2025, 17:57:23 [info]: Received request for /api/previewclientes
+18/11/2025, 17:57:29 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/11/2025, 17:57:29 [info]: 39.812
+18/11/2025, 17:57:35 [info]: Received request for /api/previewclientes
+18/11/2025, 17:59:58 [info]: Server running on port 5001
+18/11/2025, 17:59:58 [info]: Conexión exitosa a la base de datos MySQL
+18/11/2025, 18:00:03 [info]: Cambiando estado del cliente:  
+18/11/2025, 18:00:46 [info]: Received request for /api/previewclientes
+18/11/2025, 18:00:48 [info]: Cambiando estado del cliente:  8141
+18/11/2025, 18:00:48 [info]: Received request for /api/previewclientes
+18/11/2025, 18:00:51 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/11/2025, 18:00:51 [info]: 39.812

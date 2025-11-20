@@ -358,7 +358,7 @@ function generarXmlRecibo(datos) {
         if (!esBasico) {
             contenidoExtra += `
         <elemento1>CTA 01</elemento1>
-        <tipoDocumento>${pago.formaPago.includes('TRAN') ? 'TRANS' : 'CHQ'}</tipoDocumento>
+        <tipoDocumento>${pago.formaPago.includes('TRAN') ? 'TRANS' : 'DEP'}</tipoDocumento>
         <comprobante>${pago.comprobante}</comprobante>`;
 
             //    Si el nombre incluye "CHQ", le sumamos el vencimiento.

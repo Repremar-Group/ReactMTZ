@@ -16,7 +16,14 @@
     overflow-y: auto;
     /* Permitir desplazamiento si el contenido excede la altura */
 }
+.row-deshabilitado td {
+  background-color: #e0e0e0 !important;
+  color: #777 !important;
+}
 
+.row-deshabilitado:hover td {
+  background-color: #e0e0e0 !important;
+}
 .Titulo {
     margin: 20px 100px 10px 100px;
     /* Espacio superior, y mantiene el padding lateral */

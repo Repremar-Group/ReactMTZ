@@ -475,7 +475,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
             <div className='div-sextorenglon-datos-recibos'>
               <div>
-                <label htmlFor="erdireccion">Direccion:</label>
+                <label htmlFor="erdireccion">Dirección:</label>
                 <input
                   type="text"
                   id="erdireccion"

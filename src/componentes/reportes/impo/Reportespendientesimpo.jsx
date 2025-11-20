@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../Reportespendientes.css'; // Importa el archivo CSS
 import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 import axios from 'axios';
-
+import { toast, ToastContainer } from 'react-toastify';
 //importaciones para exportar a excel
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -14,6 +14,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
   const [cliente, setCliente] = useState('');
   const [numeroCliente, setNumeroCliente] = useState('');
   const [tipoPago, setTipoPago] = useState('');
+  const [aerolinea, setAerolinea] = useState('');
   const [embarques, setEmbarques] = useState('');
   const [pcs, setPcs] = useState('');
   const [peso, setPeso] = useState('');
@@ -50,6 +51,66 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
     }
   };
 
+  const handlepdfReporteExpo = async (e) => {
+    e.preventDefault();
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
+
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
+
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
+    try {
+      const params = {
+        desde,
+        hasta,
+        cliente: selectedCliente ? selectedCliente.RazonSocial : "",
+        tipoPago,
+        aerolinea,
+      };
+
+      // ⚙️ Llamada al endpoint que genera el PDF
+      const response = await axios.get(`${backURL}/api/reportedeembarquependienteimpo/pdf`, {
+        params,
+        responseType: "arraybuffer", // 👈 importante para PDF binario
+      });
+
+      // 🧩 Crear un Blob con tipo PDF
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // 📁 Crear link temporal para descarga
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Reporte_Embarque_${params.desde}_a_${params.hasta}.pdf`
+      );
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // ✅ Log opcional
+      console.log("PDF descargado correctamente");
+    } catch (error) {
+      console.error("Error al descargar PDF:", error);
+      setError("Error al generar o descargar el reporte PDF");
+    }
+  };
+
   // Selección de un cliente desde el modal
   const handleSelectCliente = (cliente) => {
     setSelectedCliente(cliente);
@@ -64,13 +125,15 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
   // Envío del formulario
   const handleSubmitReporteImpo = async (e) => {
     e.preventDefault();
+
     try {
       const response = await axios.get(`${backURL}/api/obtenerguiasimpopendientes`, {
         params: {
           cliente: searchTerm,
           desde: desde,
           hasta: hasta,
-          tipoPago: tipoPago
+          tipoPago: tipoPago,
+          aerolinea: aerolinea
         }
       });
 
@@ -109,6 +172,25 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
 
 
   const exportaExcel = () => {
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
+
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
+
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Guias Pendientes Impo');
     worksheet.columns = [
@@ -324,6 +406,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
   return (
     <div className="EmitirComprobante-container">
       <form className='formulario-estandar' onSubmit={handleSubmitReporteImpo}>
+        <ToastContainer />
         <h2 className='titulo-estandar'>Reporte de Embarque Pendiente Importación</h2>
         <div className="primerrenglon-estandar">
           <div className="">
@@ -384,6 +467,21 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
             </select>
           </div>
           <div>
+            <label htmlFor="aerolinea">Aerolinea:</label>
+
+            <select
+              id="aerolinea"
+              value={aerolinea}
+              onChange={(e) => setAerolinea(e.target.value)}
+              required
+            >
+              <option value="">Seleccione la Aerolinea</option>
+              <option value="ALL">Todas</option>
+              <option value="AirEuropa">AirEuropa</option>
+              <option value="Airclass">AirClass</option>
+            </select>
+          </div>
+          <div>
             <button className='btn-estandar' type="submit">Generar Reporte</button>
           </div>
         </div>
@@ -396,6 +494,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
 
         <div className='botones-reportes'>
           <button className='btn-estandar' type="button" onClick={exportaExcel}>Generar Excel</button>
+          <button className='btn-estandar' type="button" onClick={handlepdfReporteExpo} >Generar PDF</button>
           <button className='btn-estandar' type="button">Volver</button>
         </div>
 

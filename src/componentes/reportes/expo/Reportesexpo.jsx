@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../Reportes.css'; // Importa el archivo CSS
 import axios from 'axios';
 import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
-
+import { ToastContainer, toast } from 'react-toastify';
 
 const Reportesexpo = ({ isLoggedIn }) => {
   // Estado para los campos del formulario
@@ -10,6 +10,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
   const [hasta, setHasta] = useState('');
   const [numeroCliente, setNumeroCliente] = useState('');
   const [tipoPago, setTipoPago] = useState('');
+  const [aerolinea, setAerolinea] = useState('');
   const backURL = import.meta.env.VITE_BACK_URL;
   // Estado para la búsqueda de clientes
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,12 +36,32 @@ const Reportesexpo = ({ isLoggedIn }) => {
   // Envío del formulario
   const handleSubmitReporteExpo = async (e) => {
     e.preventDefault();
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
+
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
+
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
     try {
       const params = {
         desde,
         hasta,
         cliente: selectedCliente ? selectedCliente.RazonSocial : "",
         tipoPago,
+        aerolinea
       };
 
       // ⚙️ Llamamos al endpoint que genera el Excel
@@ -71,45 +92,65 @@ const Reportesexpo = ({ isLoggedIn }) => {
       setError("Error al generar o descargar el reporte");
     }
   };
-const handlepdfReporteExpo = async (e) => {
-  e.preventDefault();
-  try {
-    const params = {
-      desde,
-      hasta,
-      cliente: selectedCliente ? selectedCliente.RazonSocial : "",
-      tipoPago,
-    };
+  const handlepdfReporteExpo = async (e) => {
+    e.preventDefault();
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
 
-    // ⚙️ Llamada al endpoint que genera el PDF
-    const response = await axios.get(`${backURL}/api/reportedeembarque/pdf`, {
-      params,
-      responseType: "arraybuffer", // 👈 importante para PDF binario
-    });
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
 
-    // 🧩 Crear un Blob con tipo PDF
-    const blob = new Blob([response.data], { type: "application/pdf" });
-    const url = window.URL.createObjectURL(blob);
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
 
-    // 📁 Crear link temporal para descarga
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute(
-      "download",
-      `Reporte_Embarque_${params.desde}_a_${params.hasta}.pdf`
-    );
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
+    try {
+      const params = {
+        desde,
+        hasta,
+        cliente: selectedCliente ? selectedCliente.RazonSocial : "",
+        tipoPago,
+        aerolinea
+      };
 
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+      // ⚙️ Llamada al endpoint que genera el PDF
+      const response = await axios.get(`${backURL}/api/reportedeembarque/pdf`, {
+        params,
+        responseType: "arraybuffer", // 👈 importante para PDF binario
+      });
 
-    // ✅ Log opcional
-    console.log("PDF descargado correctamente");
-  } catch (error) {
-    console.error("Error al descargar PDF:", error);
-    setError("Error al generar o descargar el reporte PDF");
-  }
-};
+      // 🧩 Crear un Blob con tipo PDF
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // 📁 Crear link temporal para descarga
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Reporte_Embarque_${params.desde}_a_${params.hasta}.pdf`
+      );
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // ✅ Log opcional
+      console.log("PDF descargado correctamente");
+    } catch (error) {
+      console.error("Error al descargar PDF:", error);
+      setError("Error al generar o descargar el reporte PDF");
+    }
+  };
 
   // Búsqueda de clientes al presionar Enter
   const handleKeyPress = async (e) => {
@@ -129,6 +170,11 @@ const handlepdfReporteExpo = async (e) => {
   return (
     <div className="reporte-container">
       <form className='formularioschicos' onSubmit={handleSubmitReporteExpo}>
+        <ToastContainer
+          position="top-right"
+          autoClose={4000}
+          closeButton={false}
+        />
         <h2 className='titulo-estandar'>Reporte de Embarque Exportación</h2>
         <div className="date-container">
           <div className="date-field">
@@ -172,6 +218,21 @@ const handlepdfReporteExpo = async (e) => {
               onChange={(e) => setNumeroCliente(e.target.value)}
 
             />
+          </div>
+          <div>
+            <label htmlFor="aerolinea">Aerolinea:</label>
+
+            <select
+              id="aerolinea"
+              value={aerolinea}
+              onChange={(e) => setAerolinea(e.target.value)}
+              required
+            >
+              <option value="">Seleccione la Aerolinea</option>
+              <option value="ALL">Todas</option>
+              <option value="AirEuropa">AirEuropa</option>
+              <option value="Airclass">AirClass</option>
+            </select>
           </div>
           <div>
             <label htmlFor="tipoPago">Tipo de Pago:</label>

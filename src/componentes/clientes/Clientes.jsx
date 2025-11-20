@@ -9,6 +9,11 @@ const Clientes = ({ isLoggedIn }) => {
   const backURL = import.meta.env.VITE_BACK_URL;
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [clienteahabilitar, setClienteAHabilitar] = useState(null);
+  const [clienteadeshabilitar, setClienteADeshabilitar] = useState(null);
+  const [isModalOpenDeshabilitar, setIsModalOpenDeshabilitar] = useState(false);
+  const [isModalOpenHabilitar, setIsModalOpenHabilitar] = useState(false);
+
   const [empresaAEliminar, setEmpresaAEliminar] = useState(null);
   const [rutAEliminar, setRutAEliminar] = useState(null);
   const [idAEliminar, setIdAEliminar] = useState(null);
@@ -48,6 +53,31 @@ const Clientes = ({ isLoggedIn }) => {
     setIdAEliminar(id);
     setCodigoGIAAEliminar(CodigoGIA);
   };
+  const deshabilitarUsuario = (cliente) => {
+    setClienteADeshabilitar(cliente);
+    setIsModalOpenDeshabilitar(true);
+  };
+  const habilitarUsuario = (cliente) => {
+    setClienteAHabilitar(cliente);
+    setIsModalOpenHabilitar(true);
+  };
+
+  const handleSubmitchangeEstadoCliente = async (cliente) => {
+    try {
+      await axios.post(`${backURL}/api/changeestadocliente`, {
+        idCliente: cliente.Id
+      });
+
+      // Si salió bien → recargar lista
+      await fetchClientes();
+
+    } catch (error) {
+      console.error("Error cambiando estado del cliente:", error);
+      alert("Ocurrió un error al intentar deshabilitar el cliente");
+    }
+  };
+
+
 
   const handleModificar = (razonSocial, id) => {
     setIDAModificar(id);
@@ -96,7 +126,10 @@ const Clientes = ({ isLoggedIn }) => {
             </thead>
             <tbody>
               {filteredData.map((row) => (
-                <tr key={row.Id}>
+                <tr
+                  key={row.Id}
+                  className={row.Estado === "I" ? "row-deshabilitado" : ""}
+                >
                   <td title={row.razon_social}>{row.RazonSocial}</td>
                   <td title={row.rut}>{row.Rut}</td>
                   <td title={row.id}>{row.CodigoGIA}</td>
@@ -107,8 +140,10 @@ const Clientes = ({ isLoggedIn }) => {
                     <div className="buscarfacturas-submenu-container">
                       <button disabled className="buscarfacturas-submenu-toggle">☰</button>
                       <div className="buscarfacturas-submenu">
-                          <button className='botonsubmenubuscarfactura' onClick={() => handleModificar(row.RazonSocial, row.Id)}>Modificar Cliente</button>
-                          <button className='botonsubmenubuscarfactura' onClick={() => handleEliminar(row.RazonSocial, row.Rut, row.Id, row.CodigoGIA)}>Eliminar Cliente</button>
+                        <button className='botonsubmenubuscarfactura' onClick={() => handleModificar(row.RazonSocial, row.Id)}>Modificar Cliente</button>
+                        <button className='botonsubmenubuscarfactura' onClick={() => handleEliminar(row.RazonSocial, row.Rut, row.Id, row.CodigoGIA)}>Eliminar Cliente</button>
+                        <button className="botonsubmenubuscarfactura" onClick={() => { row.Estado === "A" ? deshabilitarUsuario(row) : habilitarUsuario(row); }}> {row.Estado === "A" ? "Deshabilitar" : "Habilitar"} </button>
+
                       </div>
                     </div>
                   </td>
@@ -134,6 +169,58 @@ const Clientes = ({ isLoggedIn }) => {
             />
           </div>
         </>
+      )}
+      {isModalOpenDeshabilitar && (
+        <div className='modal'>
+          <div className='modal-content'>
+            <h3 className='Titulo-ingreso-recibos'>Esta Deshabilitando el Cliente {clienteadeshabilitar.RazonSocial}</h3>
+
+            <div className='modal-buttons'>
+              <button
+                className='btn-estandar'
+                onClick={(e) => {
+                  setIsModalOpenDeshabilitar(false);
+                  handleSubmitchangeEstadoCliente(clienteadeshabilitar);
+                }}
+              >
+                Deshabilitar
+              </button>
+
+              <button
+                className='btn-estandar'
+                onClick={() => setIsModalOpenDeshabilitar(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isModalOpenHabilitar && (
+        <div className='modal'>
+          <div className='modal-content'>
+            <h3 className='Titulo-ingreso-recibos'>Esta Habilitando el Cliente {clienteahabilitar.RazonSocial}</h3>
+
+            <div className='modal-buttons'>
+              <button
+                className='btn-estandar'
+                onClick={(e) => {
+                  setIsModalOpenHabilitar(false);
+                  handleSubmitchangeEstadoCliente(clienteahabilitar);
+                }}
+              >
+                Habilitar
+              </button>
+
+              <button
+                className='btn-estandar'
+                onClick={() => setIsModalOpenHabilitar(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {empresaAModificar && (

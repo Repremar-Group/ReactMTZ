@@ -37,8 +37,8 @@ const originalWarn = console.warn;
 
 // Reemplazamos console.log
 console.log = (...args) => {
-  originalLog(...args);                // Sigue imprimiendo en consola
-  logger.info(args.join(" "));         // Se guarda en backend.log
+  originalLog(...args);
+  logger.info(args.join(" "));
 };
 
 // Reemplazamos console.error
@@ -410,6 +410,50 @@ app.get('/api/previewfacturas', async (req, res) => {
     res.status(200).json(formattedResult);
   } catch (err) {
     res.status(500).json({ message: 'Error en el backend cargando facturas', error: err.message });
+  }
+});
+
+app.post('/api/changeestadocliente', async (req, res) => {
+  const { idCliente } = req.body;
+  console.log("Cambiando estado del cliente: ", idCliente);
+  if (!idCliente) {
+    return res.status(400).json({ message: 'idCliente es requerido' });
+  }
+
+  try {
+    // 1) Buscar cliente
+    const [rows] = await pool.query(
+      'SELECT Estado FROM clientes WHERE Id = ?',
+      [idCliente]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+
+    const estadoActual = rows[0].Estado?.trim().toUpperCase();
+
+    // 2) Determinar nuevo estado
+    const nuevoEstado = estadoActual === 'A' ? 'I' : 'A';
+
+    // 3) Actualizar
+    await pool.query(
+      'UPDATE clientes SET Estado = ? WHERE Id = ?',
+      [nuevoEstado, idCliente]
+    );
+
+    res.status(200).json({
+      message: 'Estado de cliente actualizado correctamente',
+      estadoAnterior: estadoActual,
+      estadoNuevo: nuevoEstado
+    });
+
+  } catch (err) {
+    console.error("Error cambiando estado del cliente:", err);
+    res.status(500).json({
+      message: "Error en el servidor al cambiar el estado del cliente",
+      error: err.message
+    });
   }
 });
 
@@ -1153,7 +1197,7 @@ app.get('/api/obtenernombrecliente', async (req, res) => {
   const search = req.query.search;
   try {
     const [results] = await pool.query(
-      'SELECT * FROM clientes WHERE RazonSocial LIKE ?',
+      'SELECT * FROM clientes WHERE Estado = "A" AND RazonSocial LIKE ?',
       [`%${search}%`]
     );
     res.json(results);
@@ -5066,7 +5110,7 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
 
 
 app.get('/api/obtenerguiasimpopendientes', async (req, res) => {
-  const { cliente, desde, hasta, tipoPago } = req.query;
+  const { cliente, desde, hasta, tipoPago, aerolinea } = req.query;
   try {
     let query = `
     SELECT g.*, v.vuelo AS vuelo
@@ -5085,6 +5129,10 @@ AND g.facturada = 0
       query += ` AND tipodepagoguia = ?`;
       params.push(tipoPago);
     }
+    if (aerolinea && aerolinea !== 'Cualquiera' && aerolinea !== 'ALL') {
+      query += ` AND v.compania = ?`;
+      params.push(aerolinea);
+    }
 
     query += ` ORDER BY emision ASC`;
     const [results] = await pool.query(query, params);
@@ -5097,7 +5145,7 @@ AND g.facturada = 0
 });
 
 app.get('/api/obtenerguiasexpopendientes', async (req, res) => {
-  const { cliente, desde, hasta, tipoPago } = req.query;
+  const { cliente, desde, hasta, tipoPago, aerolinea } = req.query;
   try {
     let query = `
     SELECT g.*, v.vuelo AS vuelo
@@ -5116,6 +5164,10 @@ AND g.cass = 'N'
     if (tipoPago && tipoPago !== 'Cualquiera') {
       query += ` AND tipodepago = ?`;
       params.push(tipoPago);
+    }
+    if (aerolinea && aerolinea !== 'Cualquiera' && aerolinea !== 'ALL') {
+      query += ` AND v.compania = ?`;
+      params.push(aerolinea);
     }
 
     query += ` ORDER BY emision ASC`;
@@ -5379,7 +5431,7 @@ app.put('/api/modificarFacturaManual', async (req, res) => {
 
 
 app.get('/api/obtenerguiasimporeporte', async (req, res) => {
-  const { cliente, desde, hasta, tipoPago } = req.query;
+  const { cliente, desde, hasta, tipoPago, aerolinea } = req.query;
 
   console.log("Generando reporte impo:", cliente, desde, hasta, tipoPago);
   try {
@@ -5403,10 +5455,15 @@ WHERE g.emision >= ? AND g.emision <= ?
       query += ` AND g.tipodepagoguia = ?`;
       params.push(tipoPago);
     }
+    if (aerolinea && aerolinea !== 'ALL') {
+      query += ` AND v.compania = ?`;
+      params.push(aerolinea);
+    }
+
 
     query += ` ORDER BY g.emision ASC`;
 
-
+    console.log('QUERY REPORTE IMPO: ', query, params);
     const [results] = await pool.query(query, params);
     res.status(200).json(results);
   } catch (error) {
@@ -6313,17 +6370,20 @@ app.post('/api/reimpactarnc', async (req, res) => {
   }
 });
 app.get("/api/reportedeembarqueguiasexpo", async (req, res) => {
-  const { desde, hasta, cliente, tipoPago } = req.query;
-  console.log("Parámetros recibidos:", { desde, hasta, cliente, tipoPago });
+  const { desde, hasta, cliente, tipoPago, aerolinea } = req.query;
+  console.log("Parámetros recibidos:", desde, hasta, cliente, tipoPago, aerolinea);
   try {
     let query = `
       SELECT 
         g.*, 
         f.NumeroCFE AS numeroFacturaCFE,
-        r.numeroDocumentoCFE AS numeroReciboCFE
+        r.numeroDocumentoCFE AS numeroReciboCFE,
+        v.vuelo AS vuelo,
+        v.compania AS compania
       FROM guiasexpo g
       LEFT JOIN facturas f ON g.idfactura = f.Id
       LEFT JOIN recibos r ON f.idrecibo = r.idrecibo
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
       WHERE DATE(g.fechaingresada) BETWEEN ? AND ?
     `;
 
@@ -6346,10 +6406,13 @@ app.get("/api/reportedeembarqueguiasexpo", async (req, res) => {
         params.push(tipoFiltro);
       }
     }
-
+    if (aerolinea && aerolinea.trim() !== "" && aerolinea.toLowerCase() !== "all") {
+      query += " AND v.compania = ?";
+      params.push(aerolinea);
+    }
 
     query += " ORDER BY g.fechaingresada DESC";
-
+    console.log('Query mas parametros reporte expo', query, params)
     const [rows] = await pool.query(query, params);
 
     const workbook = new ExcelJS.Workbook();
@@ -6467,7 +6530,7 @@ app.get("/api/reportedeembarqueguiasexpo", async (req, res) => {
 });
 app.get("/api/reportedeembarque/pdf", async (req, res) => {
   try {
-    const { desde, hasta, cliente, tipoPago } = req.query;
+    const { desde, hasta, cliente, tipoPago, aerolinea } = req.query;
     console.log("Parámetros recibidos:", { desde, hasta, cliente, tipoPago });
 
     // Mapear tipoPago a la base de datos
@@ -6478,35 +6541,38 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
     // Query SQL con filtros dinámicos
     const [rows] = await pool.query(
       `
-      SELECT 
-        guia AS awb,
-        DATE_FORMAT(emision, '%d/%m/%Y') AS emision,
-        nrovuelo AS vuelo,
-        DATE_FORMAT(fechavuelo, '%d/%m/%Y') AS fecha,
-        destinovuelo AS destino,
-        pesobruto AS peso,
-        pesotarifado AS tarifado,
-        tipodepago AS ppcc,
-        tarifaneta AS tarifa,
-        fleteawb,
-        fleteneto AS totalflete,
-        dueagent,
-        dbf,
-        duecarrier,
-        security,
-        cobrarpagar AS incentivo,
-        total
-      FROM guiasexpo
-      WHERE 1=1
-        ${cliente ? "AND agente = ?" : ""}
-        ${tipoFiltro ? "AND tipodepago = ?" : ""}
-        ${desde && hasta ? "AND emision BETWEEN ? AND ?" : ""}
-      ORDER BY emision ASC
-      `,
+  SELECT 
+    g.guia AS awb,
+    DATE_FORMAT(g.emision, '%d/%m/%Y') AS emision,
+    v.vuelo AS vuelo,
+    DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fecha,
+    g.destinovuelo AS destino,
+    g.pesobruto AS peso,
+    g.pesotarifado AS tarifado,
+    g.tipodepago AS ppcc,
+    g.tarifaneta AS tarifa,
+    g.fleteawb,
+    g.fleteneto AS totalflete,
+    g.dueagent,
+    g.dbf,
+    g.duecarrier,
+    g.security,
+    g.cobrarpagar AS incentivo,
+    g.total
+  FROM guiasexpo g
+  LEFT JOIN vuelos v ON v.idVuelos = g.nrovuelo
+  WHERE 1=1
+    ${cliente ? "AND g.agente = ?" : ""}
+    ${tipoFiltro ? "AND g.tipodepago = ?" : ""}
+    ${desde && hasta ? "AND g.emision BETWEEN ? AND ?" : ""}
+    ${aerolinea && aerolinea.toLowerCase() !== "all" ? "AND v.compania = ?" : ""}
+  ORDER BY g.emision ASC
+  `,
       [
         ...(cliente ? [cliente] : []),
         ...(tipoFiltro ? [tipoFiltro] : []),
         ...(desde && hasta ? [desde, hasta] : []),
+        ...(aerolinea && aerolinea.toLowerCase() !== "all" ? [aerolinea] : []),
       ]
     );
 
@@ -6536,6 +6602,961 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
     // Crear PDF A3 horizontal
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([1191, 842]);
+
+    let imageFile = "AirEuropa.jpg"; // valor por defecto
+
+    if (aerolinea?.toUpperCase() === "AIRCLASS") {
+      imageFile = "Airclass.jpg";
+    } else if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null; // sin imagen
+    }
+
+    // --- SOLO si hay imagen se ejecuta este bloque ---
+    if (imageFile) {
+      const imagePath = path.join(__dirname, "Img", imageFile);
+      const imageBytes = fs.readFileSync(imagePath);
+
+      const jpgImage = await pdfDoc.embedJpg(imageBytes);
+
+      const imgWidth = 160;
+      const imgHeight = (jpgImage.height / jpgImage.width) * imgWidth;
+
+      page.drawImage(jpgImage, {
+        x: 1191 - imgWidth - 40,
+        y: page.getHeight() - imgHeight - 40,
+        width: imgWidth,
+        height: imgHeight,
+      });
+    }
+    const { height } = page.getSize();
+
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const azul = rgb(0.12, 0.31, 0.47);
+    const gris = rgb(0.95, 0.95, 0.95);
+    const negro = rgb(0, 0, 0);
+
+    let y = height - 60;
+
+    // Encabezado
+    page.drawText("Reporte de Exportación", {
+      x: 480,
+      y,
+      size: 20,
+      font: bold,
+      color: negro,
+    });
+
+    y -= 40;
+
+    const datos = [
+      ["Cliente:", cliente || "-"],
+      ["Desde:", desde || "-"],
+      ["Hasta:", hasta || "-"],
+      ["Base:", "MVD"],
+    ];
+
+    datos.forEach(([k, v]) => {
+      page.drawText(k, { x: 50, y, size: 12, font: bold });
+      page.drawText(v, { x: 130, y, size: 12, font });
+      y -= 18;
+    });
+
+    y -= 10;
+
+    const headers = [
+      "Número AWB", "Emisión", "Vuelo", "Fecha", "Destino",
+      "Peso Bruto", "Peso Tarifado", "PP/CC", "Tarifa Neta",
+      "Flete AWB", "Total Flete", "Due Agent", "DBF",
+      "Due Carrier", "Security", "Incentivo", "Total",
+    ];
+
+    const colWidths = [
+      77, 65, 54, 65, 54, 60, 71, 60, 54, 60, 65, 65, 42, 71, 60, 71, 60,
+    ];
+    const startX = (1191 - colWidths.reduce((a, b) => a + b, 0)) / 2;
+
+    const drawTable = (dataArray, title, total) => {
+      if (!dataArray.length) return; // no dibuja si no hay datos
+
+      const marginTop = 50; // margen superior al crear nueva página
+      const rowHeight = 17;
+      const headerHeight = 22;
+      const titleHeight = 20;
+
+      // Función para agregar página nueva si y es demasiado bajo
+      const checkNewPage = () => {
+        if (y < 50) { // 50px margen inferior
+          const newPage = pdfDoc.addPage([1191, 842]);
+          y = newPage.getSize().height - marginTop;
+          page = newPage; // reemplaza la página actual
+        }
+      };
+
+      let x = startX;
+      y -= 30;
+
+      // Título tabla
+      page.drawText(title, { x: startX, y, size: 14, font: bold, color: azul });
+      y -= titleHeight;
+
+      // Cabecera
+      x = startX;
+      headers.forEach((h, i) => {
+        checkNewPage();
+        page.drawRectangle({
+          x,
+          y: y - headerHeight,
+          width: colWidths[i],
+          height: headerHeight,
+          color: azul,
+        });
+        page.drawText(h, {
+          x: x + 3,
+          y: y - 15,
+          size: 10,
+          font: bold,
+          color: rgb(1, 1, 1),
+        });
+        x += colWidths[i];
+      });
+      y -= headerHeight;
+
+      // Filas
+      dataArray.forEach((r, idx) => {
+        checkNewPage();
+
+        const colorFondo = idx % 2 === 0 ? gris : rgb(1, 1, 1);
+        x = startX;
+
+        page.drawRectangle({
+          x,
+          y: y - rowHeight,
+          width: colWidths.reduce((a, b) => a + b, 0),
+          height: rowHeight,
+          color: colorFondo,
+        });
+
+        const valores = [
+          r.awb,
+          r.emision,
+          r.vuelo,
+          r.fecha,
+          r.destino,
+          Number(r.peso || 0).toFixed(2),
+          Number(r.tarifado || 0).toFixed(2),
+          r.ppccDisplay,
+          Number(r.tarifa || 0).toFixed(2),
+          Number(r.fleteawb || 0).toFixed(2),
+          Number(r.totalflete || 0).toFixed(2),
+          Number(r.dueagent || 0).toFixed(2),
+          Number(r.dbf || 0).toFixed(2),
+          Number(r.duecarrier || 0).toFixed(2),
+          Number(r.security || 0).toFixed(2),
+          Number(r.incentivo || 0).toFixed(2),
+          Number(r.total || 0).toFixed(2),
+        ];
+
+        valores.forEach((v, i) => {
+          page.drawText(String(v), {
+            x: x + 3,
+            y: y - 12,
+            size: 10,
+            font,
+            color: negro,
+          });
+          x += colWidths[i];
+        });
+
+        y -= rowHeight;
+      });
+
+      y -= 20;
+
+      // Total de la tabla a la derecha
+      const totalTableWidth = colWidths.reduce((a, b) => a + b, 0);
+      const totalX = startX + totalTableWidth - 150;
+
+      page.drawText(title === "COLLECT" ? "A Cobrar:" : "A Pagar:", {
+        x: totalX,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+      page.drawText(total.toFixed(2), {
+        x: totalX + 100,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+
+      y -= 30;
+    };
+
+    // Dibujar tablas solo si tienen datos
+    drawTable(collectData, "COLLECT", totalCollect);
+    drawTable(prepaidData, "PREPAID", totalPrepaid);
+
+    // Total final resaltado con recuadro a la derecha
+    const totalFinalX = startX + colWidths.reduce((a, b) => a + b, 0) - 200;
+    page.drawRectangle({
+      x: totalFinalX,
+      y: y - 22,
+      width: 200,
+      height: 22,
+      color: azul,
+    });
+    page.drawText("Total a Pagar", {
+      x: totalFinalX + 10,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+    page.drawText(totalFinal.toFixed(2), {
+      x: totalFinalX + 200 - 60,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+
+    const pdfBytes = await pdfDoc.save();
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Reporte_Exportacion_${desde}_a_${hasta}.pdf`
+    );
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generando el PDF");
+  }
+});
+app.get("/api/reportedeembarqueimpo/pdf", async (req, res) => {
+  try {
+    const { desde, hasta, cliente, tipoPago, aerolinea } = req.query;
+    console.log("Parámetros recibidos:", { desde, hasta, cliente, tipoPago });
+
+    // Mapear tipoPago a la base de datos
+    let tipoFiltro = "";
+    if (tipoPago?.toLowerCase() === "cc") tipoFiltro = "C"; // Collect
+    else if (tipoPago?.toLowerCase() === "pp") tipoFiltro = "P"; // Prepaid
+
+    // Query SQL con filtros dinámicos
+    const [rows] = await pool.query(
+      `
+  SELECT 
+    g.guia AS awb,
+    DATE_FORMAT(g.emision, '%d/%m/%Y') AS emision,
+    v.vuelo AS vuelo,
+    DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fecha,
+    g.destinoguia AS destino,
+    g.peso AS peso,
+    g.pesovolumetrico AS tarifado,
+    g.tipodepagoguia AS ppcc,
+    g.tarifa AS tarifa,
+    g.flete AS totalflete,
+    g.dueagent,
+    g.verificacion AS dbf,
+    g.duecarrier,
+    g.collectfee AS security,
+    g.ajuste AS incentivo,
+    g.total
+  FROM guiasimpo g
+  LEFT JOIN vuelos v ON v.idVuelos = g.nrovuelo
+  WHERE 1=1
+    ${cliente ? "AND g.consignatario = ?" : ""}
+    ${tipoFiltro ? "AND g.tipodepagoguia = ?" : ""}
+    ${desde && hasta ? "AND g.emision BETWEEN ? AND ?" : ""}
+    ${aerolinea && aerolinea.toLowerCase() !== "all" ? "AND v.compania = ?" : ""}
+  ORDER BY g.emision ASC
+  `,
+      [
+        ...(cliente ? [cliente] : []),
+        ...(tipoFiltro ? [tipoFiltro] : []),
+        ...(desde && hasta ? [desde, hasta] : []),
+        ...(aerolinea && aerolinea.toLowerCase() !== "all" ? [aerolinea] : []),
+      ]
+    );
+
+    if (!rows.length) {
+      return res.status(404).send("No se encontraron datos para el filtro indicado.");
+    }
+
+    // Separar Collect y Prepaid usando el valor real de la base
+    const collectData = [];
+    const prepaidData = [];
+
+    rows.forEach(r => {
+      r.incentivo = Number(r.fleteawb || 0) - Number(r.totalflete || 0);
+
+      // Para mostrar en la tabla
+      r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
+
+      // Separar según valor real
+      if (r.ppcc === "C") collectData.push(r);
+      else if (r.ppcc === "P") prepaidData.push(r);
+    });
+
+    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalFinal = totalPrepaid - totalCollect;
+
+    // Crear PDF A3 horizontal
+    const pdfDoc = await PDFDocument.create();
+    let page = pdfDoc.addPage([1191, 842]);
+
+    let imageFile = "AirEuropa.jpg"; // valor por defecto
+
+    if (aerolinea?.toUpperCase() === "AIRCLASS") {
+      imageFile = "Airclass.jpg";
+    } else if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null; // sin imagen
+    }
+
+    // --- SOLO si hay imagen se ejecuta este bloque ---
+    if (imageFile) {
+      const imagePath = path.join(__dirname, "Img", imageFile);
+      const imageBytes = fs.readFileSync(imagePath);
+
+      const jpgImage = await pdfDoc.embedJpg(imageBytes);
+
+      const imgWidth = 160;
+      const imgHeight = (jpgImage.height / jpgImage.width) * imgWidth;
+
+      page.drawImage(jpgImage, {
+        x: 1191 - imgWidth - 40,
+        y: page.getHeight() - imgHeight - 40,
+        width: imgWidth,
+        height: imgHeight,
+      });
+    }
+    const { height } = page.getSize();
+
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const azul = rgb(0.12, 0.31, 0.47);
+    const gris = rgb(0.95, 0.95, 0.95);
+    const negro = rgb(0, 0, 0);
+
+    let y = height - 60;
+
+    // Encabezado
+    page.drawText("Reporte de Exportación", {
+      x: 480,
+      y,
+      size: 20,
+      font: bold,
+      color: negro,
+    });
+
+    y -= 40;
+
+    const datos = [
+      ["Cliente:", cliente || "-"],
+      ["Desde:", desde || "-"],
+      ["Hasta:", hasta || "-"],
+      ["Base:", "MVD"],
+    ];
+
+    datos.forEach(([k, v]) => {
+      page.drawText(k, { x: 50, y, size: 12, font: bold });
+      page.drawText(v, { x: 130, y, size: 12, font });
+      y -= 18;
+    });
+
+    y -= 10;
+
+    const headers = [
+      "Número AWB", "Emisión", "Vuelo", "Fecha", "Destino",
+      "Peso Bruto", "Peso Tarifado", "PP/CC", "Tarifa Neta",
+      "Flete AWB", "Total Flete", "Due Agent", "DBF",
+      "Due Carrier", "Security", "Incentivo", "Total",
+    ];
+
+    const colWidths = [
+      77, 65, 54, 65, 54, 60, 71, 60, 54, 60, 65, 65, 42, 71, 60, 71, 60,
+    ];
+    const startX = (1191 - colWidths.reduce((a, b) => a + b, 0)) / 2;
+
+    const drawTable = (dataArray, title, total) => {
+      if (!dataArray.length) return; // no dibuja si no hay datos
+
+      const marginTop = 50; // margen superior al crear nueva página
+      const rowHeight = 17;
+      const headerHeight = 22;
+      const titleHeight = 20;
+
+      // Función para agregar página nueva si y es demasiado bajo
+      const checkNewPage = () => {
+        if (y < 50) { // 50px margen inferior
+          const newPage = pdfDoc.addPage([1191, 842]);
+          y = newPage.getSize().height - marginTop;
+          page = newPage; // reemplaza la página actual
+        }
+      };
+
+      let x = startX;
+      y -= 30;
+
+      // Título tabla
+      page.drawText(title, { x: startX, y, size: 14, font: bold, color: azul });
+      y -= titleHeight;
+
+      // Cabecera
+      x = startX;
+      headers.forEach((h, i) => {
+        checkNewPage();
+        page.drawRectangle({
+          x,
+          y: y - headerHeight,
+          width: colWidths[i],
+          height: headerHeight,
+          color: azul,
+        });
+        page.drawText(h, {
+          x: x + 3,
+          y: y - 15,
+          size: 10,
+          font: bold,
+          color: rgb(1, 1, 1),
+        });
+        x += colWidths[i];
+      });
+      y -= headerHeight;
+
+      // Filas
+      dataArray.forEach((r, idx) => {
+        checkNewPage();
+
+        const colorFondo = idx % 2 === 0 ? gris : rgb(1, 1, 1);
+        x = startX;
+
+        page.drawRectangle({
+          x,
+          y: y - rowHeight,
+          width: colWidths.reduce((a, b) => a + b, 0),
+          height: rowHeight,
+          color: colorFondo,
+        });
+
+        const valores = [
+          r.awb,
+          r.emision,
+          r.vuelo,
+          r.fecha,
+          r.destino,
+          Number(r.peso || 0).toFixed(2),
+          Number(r.tarifado || 0).toFixed(2),
+          r.ppccDisplay,
+          Number(r.tarifa || 0).toFixed(2),
+          Number(r.fleteawb || 0).toFixed(2),
+          Number(r.totalflete || 0).toFixed(2),
+          Number(r.dueagent || 0).toFixed(2),
+          Number(r.dbf || 0).toFixed(2),
+          Number(r.duecarrier || 0).toFixed(2),
+          Number(r.security || 0).toFixed(2),
+          Number(r.incentivo || 0).toFixed(2),
+          Number(r.total || 0).toFixed(2),
+        ];
+
+        valores.forEach((v, i) => {
+          page.drawText(String(v), {
+            x: x + 3,
+            y: y - 12,
+            size: 10,
+            font,
+            color: negro,
+          });
+          x += colWidths[i];
+        });
+
+        y -= rowHeight;
+      });
+
+      y -= 20;
+
+      // Total de la tabla a la derecha
+      const totalTableWidth = colWidths.reduce((a, b) => a + b, 0);
+      const totalX = startX + totalTableWidth - 150;
+
+      page.drawText(title === "COLLECT" ? "A Cobrar:" : "A Pagar:", {
+        x: totalX,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+      page.drawText(total.toFixed(2), {
+        x: totalX + 100,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+
+      y -= 30;
+    };
+
+    // Dibujar tablas solo si tienen datos
+    drawTable(collectData, "COLLECT", totalCollect);
+    drawTable(prepaidData, "PREPAID", totalPrepaid);
+
+    // Total final resaltado con recuadro a la derecha
+    const totalFinalX = startX + colWidths.reduce((a, b) => a + b, 0) - 200;
+    page.drawRectangle({
+      x: totalFinalX,
+      y: y - 22,
+      width: 200,
+      height: 22,
+      color: azul,
+    });
+    page.drawText("Total a Pagar", {
+      x: totalFinalX + 10,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+    page.drawText(totalFinal.toFixed(2), {
+      x: totalFinalX + 200 - 60,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+
+    const pdfBytes = await pdfDoc.save();
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Reporte_Exportacion_${desde}_a_${hasta}.pdf`
+    );
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generando el PDF");
+  }
+});
+app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
+  try {
+    const { desde, hasta, cliente, tipoPago, aerolinea } = req.query;
+    console.log("reportedeembarquependiente, Parámetros recibidos:", { desde, hasta, cliente, tipoPago });
+
+    // Mapear tipoPago a la base de datos
+    let tipoFiltro = "";
+    if (tipoPago?.toLowerCase() === "cc") tipoFiltro = "C"; // Collect
+    else if (tipoPago?.toLowerCase() === "pp") tipoFiltro = "P"; // Prepaid
+
+    // Query SQL con filtros dinámicos
+    const [rows] = await pool.query(
+      `
+  SELECT 
+    g.guia AS awb,
+    DATE_FORMAT(g.emision, '%d/%m/%Y') AS emision,
+    v.vuelo AS vuelo,
+    DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fecha,
+    g.destinovuelo AS destino,
+    g.pesobruto AS peso,
+    g.pesotarifado AS tarifado,
+    g.tipodepago AS ppcc,
+    g.tarifaneta AS tarifa,
+    g.fleteawb,
+    g.fleteneto AS totalflete,
+    g.dueagent,
+    g.dbf,
+    g.duecarrier,
+    g.security,
+    g.cobrarpagar AS incentivo,
+    g.total
+  FROM guiasexpo g
+  LEFT JOIN vuelos v ON v.idVuelos = g.nrovuelo
+  WHERE 1=1
+  AND g.facturada = 0 AND g.cass = 'N' 
+    ${cliente ? "AND g.agente = ?" : ""}
+    ${tipoFiltro ? "AND g.tipodepago = ?" : ""}
+    ${desde && hasta ? "AND g.emision BETWEEN ? AND ?" : ""}
+      ${aerolinea && aerolinea.toLowerCase() !== "all" ? "AND v.compania = ?" : ""}
+  ORDER BY g.emision ASC
+  `,
+      [
+        ...(cliente ? [cliente] : []),
+        ...(tipoFiltro ? [tipoFiltro] : []),
+        ...(desde && hasta ? [desde, hasta] : []),
+        ...(aerolinea && aerolinea.toLowerCase() !== "all" ? [aerolinea] : []),
+      ]
+    );
+
+    if (!rows.length) {
+      return res.status(404).send("No se encontraron datos para el filtro indicado.");
+    }
+
+    // Separar Collect y Prepaid usando el valor real de la base
+    const collectData = [];
+    const prepaidData = [];
+
+    rows.forEach(r => {
+      r.incentivo = Number(r.fleteawb || 0) - Number(r.totalflete || 0);
+
+      // Para mostrar en la tabla
+      r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
+
+      // Separar según valor real
+      if (r.ppcc === "C") collectData.push(r);
+      else if (r.ppcc === "P") prepaidData.push(r);
+    });
+
+    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalFinal = totalPrepaid - totalCollect;
+
+    // Crear PDF A3 horizontal
+    const pdfDoc = await PDFDocument.create();
+    let page = pdfDoc.addPage([1191, 842]);
+    let imageFile = "AirEuropa.jpg"; // valor por defecto
+
+    if (aerolinea?.toUpperCase() === "AIRCLASS") {
+      imageFile = "Airclass.jpg";
+    } else if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null; // sin imagen
+    }
+
+    // --- SOLO si hay imagen se ejecuta este bloque ---
+    if (imageFile) {
+      const imagePath = path.join(__dirname, "Img", imageFile);
+      const imageBytes = fs.readFileSync(imagePath);
+
+      const jpgImage = await pdfDoc.embedJpg(imageBytes);
+
+      const imgWidth = 160;
+      const imgHeight = (jpgImage.height / jpgImage.width) * imgWidth;
+
+      page.drawImage(jpgImage, {
+        x: 1191 - imgWidth - 40,
+        y: page.getHeight() - imgHeight - 40,
+        width: imgWidth,
+        height: imgHeight,
+      });
+    }
+
+    const { height } = page.getSize();
+
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const azul = rgb(0.12, 0.31, 0.47);
+    const gris = rgb(0.95, 0.95, 0.95);
+    const negro = rgb(0, 0, 0);
+
+    let y = height - 60;
+
+    // Encabezado
+    page.drawText("Reporte de Exportación", {
+      x: 480,
+      y,
+      size: 20,
+      font: bold,
+      color: negro,
+    });
+
+    y -= 40;
+
+    const datos = [
+      ["Cliente:", cliente || "-"],
+      ["Desde:", desde || "-"],
+      ["Hasta:", hasta || "-"],
+      ["Base:", "MVD"],
+    ];
+
+    datos.forEach(([k, v]) => {
+      page.drawText(k, { x: 50, y, size: 12, font: bold });
+      page.drawText(v, { x: 130, y, size: 12, font });
+      y -= 18;
+    });
+
+    y -= 10;
+
+    const headers = [
+      "Número AWB", "Emisión", "Vuelo", "Fecha", "Destino",
+      "Peso Bruto", "Peso Tarifado", "PP/CC", "Tarifa Neta",
+      "Flete AWB", "Total Flete", "Due Agent", "DBF",
+      "Due Carrier", "Security", "Incentivo", "Total",
+    ];
+
+    const colWidths = [
+      77, 65, 54, 65, 54, 60, 71, 60, 54, 60, 65, 65, 42, 71, 60, 71, 60,
+    ];
+    const startX = (1191 - colWidths.reduce((a, b) => a + b, 0)) / 2;
+
+    const drawTable = (dataArray, title, total) => {
+      if (!dataArray.length) return; // no dibuja si no hay datos
+
+      const marginTop = 50; // margen superior al crear nueva página
+      const rowHeight = 17;
+      const headerHeight = 22;
+      const titleHeight = 20;
+
+      // Función para agregar página nueva si y es demasiado bajo
+      const checkNewPage = () => {
+        if (y < 50) { // 50px margen inferior
+          const newPage = pdfDoc.addPage([1191, 842]);
+          y = newPage.getSize().height - marginTop;
+          page = newPage; // reemplaza la página actual
+        }
+      };
+
+      let x = startX;
+      y -= 30;
+
+      // Título tabla
+      page.drawText(title, { x: startX, y, size: 14, font: bold, color: azul });
+      y -= titleHeight;
+
+      // Cabecera
+      x = startX;
+      headers.forEach((h, i) => {
+        checkNewPage();
+        page.drawRectangle({
+          x,
+          y: y - headerHeight,
+          width: colWidths[i],
+          height: headerHeight,
+          color: azul,
+        });
+        page.drawText(h, {
+          x: x + 3,
+          y: y - 15,
+          size: 10,
+          font: bold,
+          color: rgb(1, 1, 1),
+        });
+        x += colWidths[i];
+      });
+      y -= headerHeight;
+
+      // Filas
+      dataArray.forEach((r, idx) => {
+        checkNewPage();
+
+        const colorFondo = idx % 2 === 0 ? gris : rgb(1, 1, 1);
+        x = startX;
+
+        page.drawRectangle({
+          x,
+          y: y - rowHeight,
+          width: colWidths.reduce((a, b) => a + b, 0),
+          height: rowHeight,
+          color: colorFondo,
+        });
+
+        const valores = [
+          r.awb,
+          r.emision,
+          r.vuelo,
+          r.fecha,
+          r.destino,
+          Number(r.peso || 0).toFixed(2),
+          Number(r.tarifado || 0).toFixed(2),
+          r.ppccDisplay,
+          Number(r.tarifa || 0).toFixed(2),
+          Number(r.fleteawb || 0).toFixed(2),
+          Number(r.totalflete || 0).toFixed(2),
+          Number(r.dueagent || 0).toFixed(2),
+          Number(r.dbf || 0).toFixed(2),
+          Number(r.duecarrier || 0).toFixed(2),
+          Number(r.security || 0).toFixed(2),
+          Number(r.incentivo || 0).toFixed(2),
+          Number(r.total || 0).toFixed(2),
+        ];
+
+        valores.forEach((v, i) => {
+          page.drawText(String(v), {
+            x: x + 3,
+            y: y - 12,
+            size: 10,
+            font,
+            color: negro,
+          });
+          x += colWidths[i];
+        });
+
+        y -= rowHeight;
+      });
+
+      y -= 20;
+
+      // Total de la tabla a la derecha
+      const totalTableWidth = colWidths.reduce((a, b) => a + b, 0);
+      const totalX = startX + totalTableWidth - 150;
+
+      page.drawText(title === "COLLECT" ? "A Cobrar:" : "A Pagar:", {
+        x: totalX,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+      page.drawText(total.toFixed(2), {
+        x: totalX + 100,
+        y,
+        size: 12,
+        font: bold,
+        color: azul,
+      });
+
+      y -= 30;
+    };
+
+    // Dibujar tablas solo si tienen datos
+    drawTable(collectData, "COLLECT", totalCollect);
+    drawTable(prepaidData, "PREPAID", totalPrepaid);
+
+    // Total final resaltado con recuadro a la derecha
+    const totalFinalX = startX + colWidths.reduce((a, b) => a + b, 0) - 200;
+    page.drawRectangle({
+      x: totalFinalX,
+      y: y - 22,
+      width: 200,
+      height: 22,
+      color: azul,
+    });
+    page.drawText("Total a Pagar", {
+      x: totalFinalX + 10,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+    page.drawText(totalFinal.toFixed(2), {
+      x: totalFinalX + 200 - 60,
+      y: y - 16,
+      size: 12,
+      font: bold,
+      color: rgb(1, 1, 1),
+    });
+
+    const pdfBytes = await pdfDoc.save();
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Reporte_Exportacion_${desde}_a_${hasta}.pdf`
+    );
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generando el PDF");
+  }
+});
+
+app.get("/api/reportedeembarquependienteimpo/pdf", async (req, res) => {
+  try {
+    const { desde, hasta, cliente, tipoPago, aerolinea } = req.query;
+    console.log("reportedeembarquependiente, Parámetros recibidos:", { desde, hasta, cliente, tipoPago });
+
+    // Mapear tipoPago a la base de datos
+    let tipoFiltro = "";
+    if (tipoPago?.toLowerCase() === "cc") tipoFiltro = "C"; // Collect
+    else if (tipoPago?.toLowerCase() === "pp") tipoFiltro = "P"; // Prepaid
+
+    // Query SQL con filtros dinámicos
+    const sql = `
+      SELECT 
+        g.guia AS awb,
+        DATE_FORMAT(g.emision, '%d/%m/%Y') AS emision,
+        v.vuelo AS vuelo,
+        DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fecha,
+        g.destinoguia AS destino,
+        g.peso AS peso,
+        g.pesovolumetrico AS volumetrico,
+        g.tipodepagoguia AS ppcc,
+        g.tarifa,
+        g.flete AS totalflete,
+        g.dueagent,
+        g.duecarrier,
+        g.verificacion,
+        g.collectfee,
+        g.total
+      FROM guiasimpo g
+      LEFT JOIN vuelos v ON v.idVuelos = g.nrovuelo
+      WHERE 1=1
+        AND g.facturada = 0
+        AND g.Tipo = 'IMPO'
+        ${cliente ? " AND g.consignatario = ?" : ""}
+        ${tipoFiltro ? " AND g.tipodepagoguia = ?" : ""}
+        ${desde && hasta ? " AND g.emision BETWEEN ? AND ?" : ""}
+        ${aerolinea && aerolinea.toLowerCase() !== "all" ? " AND v.compania = ?" : ""}
+      ORDER BY g.emision ASC
+    `;
+
+    // Parámetros dinámicos
+    const params = [
+      ...(cliente ? [cliente] : []),
+      ...(tipoFiltro ? [tipoFiltro] : []),
+      ...(desde && hasta ? [desde, hasta] : []),
+      ...(aerolinea && aerolinea.toLowerCase() !== "all" ? [aerolinea] : []),
+    ];
+    const [rows] = await pool.query(sql, params);
+
+    if (!rows.length) {
+      return res.status(404).send("No se encontraron datos para el filtro indicado.");
+    }
+
+    // Separar Collect y Prepaid usando el valor real de la base
+    const collectData = [];
+    const prepaidData = [];
+
+    rows.forEach(r => {
+      r.incentivo = Number(r.fleteawb || 0) - Number(r.totalflete || 0);
+
+      // Para mostrar en la tabla
+      r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
+
+      // Separar según valor real
+      if (r.ppcc === "C") collectData.push(r);
+      else if (r.ppcc === "P") prepaidData.push(r);
+    });
+
+    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalFinal = totalPrepaid - totalCollect;
+
+    // Crear PDF A3 horizontal
+    const pdfDoc = await PDFDocument.create();
+    let page = pdfDoc.addPage([1191, 842]);
+    let imageFile = "AirEuropa.jpg"; // valor por defecto
+
+    if (aerolinea?.toUpperCase() === "AIRCLASS") {
+      imageFile = "Airclass.jpg";
+    } else if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null; // sin imagen
+    }
+
+    // --- SOLO si hay imagen se ejecuta este bloque ---
+    if (imageFile) {
+      const imagePath = path.join(__dirname, "Img", imageFile);
+      const imageBytes = fs.readFileSync(imagePath);
+
+      const jpgImage = await pdfDoc.embedJpg(imageBytes);
+
+      const imgWidth = 160;
+      const imgHeight = (jpgImage.height / jpgImage.width) * imgWidth;
+
+      page.drawImage(jpgImage, {
+        x: 1191 - imgWidth - 40,
+        y: page.getHeight() - imgHeight - 40,
+        width: imgWidth,
+        height: imgHeight,
+      });
+    }
+
     const { height } = page.getSize();
 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);

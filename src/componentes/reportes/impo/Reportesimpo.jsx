@@ -12,6 +12,7 @@ const Reportesimpo = ({ isLoggedIn }) => {
   const [hasta, setHasta] = useState(hoy);
   const [numeroCliente, setNumeroCliente] = useState('');
   const [tipoPago, setTipoPago] = useState('');
+  const [aerolinea, setAerolinea] = useState('');
 
   // Estado para la búsqueda de clientes
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,6 +22,25 @@ const Reportesimpo = ({ isLoggedIn }) => {
   const backURL = import.meta.env.VITE_BACK_URL;
 
   const exportarAExcel = async (data) => {
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
+
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
+
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Reporte Importe');
 
@@ -104,6 +124,66 @@ const Reportesimpo = ({ isLoggedIn }) => {
     saveAs(blob, 'reporte_embarque_impo.xlsx');
   };
 
+  const handlepdfReporteExpo = async (e) => {
+    e.preventDefault();
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
+
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
+
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
+    try {
+      const params = {
+        desde,
+        hasta,
+        cliente: selectedCliente ? selectedCliente.RazonSocial : "",
+        tipoPago,
+        aerolinea
+      };
+
+      // ⚙️ Llamada al endpoint que genera el PDF
+      const response = await axios.get(`${backURL}/api/reportedeembarqueimpo/pdf`, {
+        params,
+        responseType: "arraybuffer", // 👈 importante para PDF binario
+      });
+
+      // 🧩 Crear un Blob con tipo PDF
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // 📁 Crear link temporal para descarga
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Reporte_Embarque_${params.desde}_a_${params.hasta}.pdf`
+      );
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // ✅ Log opcional
+      console.log("PDF descargado correctamente");
+    } catch (error) {
+      console.error("Error al descargar PDF:", error);
+      setError("Error al generar o descargar el reporte PDF");
+    }
+  };
+
   // Manejo del input de búsqueda
   const handleInputChange = (e) => setSearchTerm(e.target.value);
 
@@ -142,7 +222,8 @@ const Reportesimpo = ({ isLoggedIn }) => {
       cliente: searchTerm,
       desde,
       hasta,
-      tipoPago
+      tipoPago,
+      aerolinea
     });
 
     try {
@@ -221,6 +302,21 @@ const Reportesimpo = ({ isLoggedIn }) => {
             />
           </div>
           <div>
+            <label htmlFor="aerolinea">Aerolinea:</label>
+
+            <select
+              id="aerolinea"
+              value={aerolinea}
+              onChange={(e) => setAerolinea(e.target.value)}
+              required
+            >
+              <option value="">Seleccione la Aerolinea</option>
+              <option value="ALL">Todas</option>
+              <option value="AirEuropa">AirEuropa</option>
+              <option value="Airclass">AirClass</option>
+            </select>
+          </div>
+          <div>
             <label htmlFor="tipoPago">Tipo de Pago:</label>
 
             <select
@@ -231,12 +327,12 @@ const Reportesimpo = ({ isLoggedIn }) => {
             >
               <option value="">Seleccione el tipo de pago</option>
               <option value="ALL">Todos</option>
-              <option value="C">Collect</option>
-              <option value="P">PrePaid</option>
+              <option value="cc">Collect</option>
+              <option value="pp">PrePaid</option>
             </select>
           </div>
         </div>
-
+        <button type="button" onClick={handlepdfReporteExpo} >Generar PDF</button>
         <button type="submit">Generar Reporte</button>
       </form>
 

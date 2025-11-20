@@ -5,7 +5,7 @@ import ModalBusquedaClientes from '../../modales/ModalBusquedaClientes';
 //importaciones para exportar a excel
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-
+import { ToastContainer, toast } from 'react-toastify';
 
 
 const Reportespendientesexpo = ({ isLoggedIn }) => {
@@ -16,6 +16,7 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
   const [cliente, setCliente] = useState('');
   const [numeroCliente, setNumeroCliente] = useState('');
   const [tipoPago, setTipoPago] = useState('');
+  const [aerolinea, setAerolinea] = useState('');
   const [embarques, setEmbarques] = useState('');
   const [pcs, setPcs] = useState('');
   const [peso, setPeso] = useState('');
@@ -60,6 +61,67 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
   // Cerrar modal
   const closeModal = () => setIsModalOpen(false);
 
+  const handlepdfReporteExpo = async (e) => {
+    e.preventDefault();
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
+
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
+
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
+    try {
+      const params = {
+        desde,
+        hasta,
+        cliente: selectedCliente ? selectedCliente.RazonSocial : "",
+        tipoPago,
+        aerolinea,
+      };
+
+      // ⚙️ Llamada al endpoint que genera el PDF
+      const response = await axios.get(`${backURL}/api/reportedeembarquependiente/pdf`, {
+        params,
+        responseType: "arraybuffer", // 👈 importante para PDF binario
+      });
+
+      // 🧩 Crear un Blob con tipo PDF
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // 📁 Crear link temporal para descarga
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Reporte_Embarque_${params.desde}_a_${params.hasta}.pdf`
+      );
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // ✅ Log opcional
+      console.log("PDF descargado correctamente");
+    } catch (error) {
+      console.error("Error al descargar PDF:", error);
+      setError("Error al generar o descargar el reporte PDF");
+    }
+  };
+
+
   // Envío del formulario
   const handleSubmitReportePendienteExpo = async (e) => {
     e.preventDefault();
@@ -69,7 +131,8 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
           cliente: searchTerm,
           desde: desde,
           hasta: hasta,
-          tipoPago: tipoPago
+          tipoPago: tipoPago,
+          aerolinea: aerolinea
         }
       });
 
@@ -112,6 +175,25 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
 
 
   const exportaExcel = () => {
+    if (!desde || !hasta) {
+      toast("Debe seleccionar la fecha Desde y Hasta.");
+      return;
+    }
+
+    if (!selectedCliente || !selectedCliente.RazonSocial) {
+      toast("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!tipoPago) {
+      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
+      return;
+    }
+
+    if (!aerolinea) {
+      toast("Debe seleccionar una aerolínea.");
+      return;
+    }
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Guias Pendientes Expo');
     worksheet.columns = [
@@ -323,6 +405,11 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
   return (
     <div className="EmitirComprobante-container">
       <form className='formulario-estandar' onSubmit={handleSubmitReportePendienteExpo}>
+        <ToastContainer
+          position="top-right"
+          autoClose={4000}
+          closeButton={false}
+        />
         <h2 className='titulo-estandar'>Reporte de Embarque Pendiente Exportación</h2>
         <div className="primerrenglon-estandar">
           <div className="">
@@ -382,6 +469,23 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
             </select>
           </div>
           <div>
+            <label htmlFor="aerolinea">Aerolinea:</label>
+
+            <select
+              id="aerolinea"
+              value={aerolinea}
+              onChange={(e) => setAerolinea(e.target.value)}
+              required
+            >
+              <option value="">Seleccione la Aerolinea</option>
+              <option value="ALL">Todas</option>
+              <option value="AirEuropa">AirEuropa</option>
+              <option value="Airclass">AirClass</option>
+            </select>
+          </div>
+
+          <div>
+
             <button className='btn-estandar' type="submit">Generar Reporte</button>
           </div>
         </div>
@@ -395,6 +499,7 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
 
         <div className='botones-reportes'>
           <button className='btn-estandar' type="button" onClick={exportaExcel} >Generar Excel</button>
+          <button className='btn-estandar' type="button" onClick={handlepdfReporteExpo} >Generar PDF</button>
           <button className='btn-estandar' type="button">Volver</button>
         </div>
 
