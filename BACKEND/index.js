@@ -74,7 +74,7 @@ const pool = mysql2.createPool({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoicetest',
+  database: 'cielosurinvoiceprod',
   port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
@@ -86,7 +86,7 @@ const connection = mysql.createConnection({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoicetest',
+  database: 'cielosurinvoiceprod',
   port: 3306,
   connectTimeout: 60000,
 });
