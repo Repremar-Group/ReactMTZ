@@ -6948,7 +6948,7 @@ app.get("/api/reportedeembarqueimpo/pdf", async (req, res) => {
     let y = height - 60;
 
     // Encabezado
-    page.drawText("Reporte de Exportación", {
+    page.drawText("Reporte de Importación", {
       x: 480,
       y,
       size: 20,
@@ -7569,7 +7569,7 @@ app.get("/api/reportedeembarquependienteimpo/pdf", async (req, res) => {
     let y = height - 60;
 
     // Encabezado
-    page.drawText("Reporte de Exportación", {
+    page.drawText("Reporte de Importación", {
       x: 480,
       y,
       size: 20,

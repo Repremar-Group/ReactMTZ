@@ -46,10 +46,6 @@ const Reportesexpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!tipoPago) {
-      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
-      return;
-    }
 
     if (!aerolinea) {
       toast("Debe seleccionar una aerolínea.");
@@ -104,10 +100,6 @@ const Reportesexpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!tipoPago) {
-      toast("Debe seleccionar un tipo de pago válido (PP o CC).");
-      return;
-    }
 
     if (!aerolinea) {
       toast("Debe seleccionar una aerolínea.");
@@ -243,6 +235,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
 
             >
               <option value="">Selecciona un tipo de pago</option>
+              <option value="ALL">CUALQUIERA</option>
               <option value="pp">PREPAID</option>
               <option value="cc">COLLECT</option>
             </select>
