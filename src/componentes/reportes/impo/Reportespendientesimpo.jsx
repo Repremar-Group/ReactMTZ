@@ -139,8 +139,14 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
 
       const data = response.data;
 
+      if (!data || data.length === 0) {
+        toast("No se encontraron guías pendientes para los filtros seleccionados.");
+        setGuiaspendientes([]); 
+        return;
+      }
 
-      // Transformar la data al formato deseado (si es necesario)
+
+     
       const guiasFormateadas = data.map((guia) => ({
         awb: guia.guia,
         agente: guia.consignatario,

@@ -1,0 +1,135 @@
+27/11/2025, 16:10:22 [info]: Server running on port 5001
+27/11/2025, 16:10:23 [info]: Conexión exitosa a la base de datos MySQL
+27/11/2025, 16:10:30 [info]: Received request for /api/guias-sin-facturar
+27/11/2025, 16:10:30 [info]: Received request for /api/facturas-sin-cobrar
+27/11/2025, 16:10:30 [info]: Received request for /api/obtenertipocambio
+27/11/2025, 16:10:31 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+27/11/2025, 16:10:31 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "39.671"
+    }
+  }
+}
+27/11/2025, 16:10:31 [info]: Received request for /api/agregartipocambio
+27/11/2025, 16:11:04 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:11:06 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:11:06 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:15:41 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:15:42 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:15:42 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:15:42 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:15:43 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:15:59 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:16:26 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:16:44 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:17:40 [info]: Generando reporte impo: REPREMAR LOGISTICS S A 2025-10-06 2025-11-27 ALL
+27/11/2025, 16:17:40 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.emision >= ? AND g.emision <= ?
+   AND g.consignatario LIKE ? ORDER BY g.emision ASC 2025-10-06,2025-11-27,%REPREMAR LOGISTICS S A%
+27/11/2025, 16:17:47 [info]: Generando reporte impo: REPREMAR LOGISTICS S A 2025-11-27 2025-11-27 ALL
+27/11/2025, 16:17:47 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.emision >= ? AND g.emision <= ?
+   AND g.consignatario LIKE ? ORDER BY g.emision ASC 2025-11-27,2025-11-27,%REPREMAR LOGISTICS S A%
+27/11/2025, 16:17:51 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:18:24 [info]: Received request for /api/obtenertipocambioparacomprobante
+27/11/2025, 16:18:24 [info]: 39.671
+27/11/2025, 16:18:26 [info]: Received request for /api/previewfacturas
+27/11/2025, 16:18:32 [info]: Impactando Documento en el back Factura:  [object Object]  idFactura:  485
+27/11/2025, 16:18:33 [info]: Moneda de la adenda:  USD
+27/11/2025, 16:18:33 [info]: Convirtiendo esta fecha 07/10/2025
+27/11/2025, 16:18:33 [info]: Convirtiendo esta fecha 07/10/2025
+27/11/2025, 16:18:33 [info]: GENERANDO XML EFACTURA: [object Object]
+27/11/2025, 16:18:33 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                <documento>
+                <fechaDocumento>2025-10-07</fechaDocumento>
+                <tipoDocumento>FCA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-10-07</fechaVencimiento>
+                <descripcion>Son dólares americanos U$S ochocientos trece  con setenta y ocho centavos</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>0</producto>
+                <nombreProducto>Airclass</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>0</producto>
+                <nombreProducto>Viaje: VZ0104 08/10/2025  AWB: 1231ed1s</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>5</producto>
+                <nombreProducto>Iva Sobre Flete:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>813.78</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+27/11/2025, 16:18:37 [info]: Received request for /api/previewfacturas
+27/11/2025, 16:18:40 [info]: Received request for /api/guias-sin-facturar
+27/11/2025, 16:18:40 [info]: Received request for /api/facturas-sin-cobrar
+27/11/2025, 16:18:40 [info]: Received request for /api/obtenertipocambio
+27/11/2025, 16:26:24 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:26:35 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:26:56 [info]: Parámetros recibidos: [object Object]
+27/11/2025, 16:28:15 [info]: Parámetros recibidos: 2025-11-27 2025-11-27 REPREMAR LOGISTICS S A ALL ALL
+27/11/2025, 16:28:15 [info]: Query mas parametros reporte expo 
+      SELECT 
+        g.*, 
+        f.NumeroCFE AS numeroFacturaCFE,
+        r.numeroDocumentoCFE AS numeroReciboCFE,
+        v.vuelo AS vuelo,
+        v.compania AS compania
+      FROM guiasexpo g
+      LEFT JOIN facturas f ON g.idfactura = f.Id
+      LEFT JOIN recibos r ON f.idrecibo = r.idrecibo
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+      WHERE DATE(g.fechaingresada) BETWEEN ? AND ?
+     AND g.agente = ? ORDER BY g.fechaingresada DESC 2025-11-27,2025-11-27,REPREMAR LOGISTICS S A
+27/11/2025, 16:28:19 [info]: Parámetros recibidos: [object Object]

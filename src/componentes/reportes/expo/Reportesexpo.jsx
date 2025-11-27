@@ -85,7 +85,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
       console.log("Excel descargado correctamente");
     } catch (error) {
       console.error("Error al descargar Excel:", error);
-      setError("Error al generar o descargar el reporte");
+      toast("Ocurrio un error o no se encontraron datos.");
     }
   };
   const handlepdfReporteExpo = async (e) => {
@@ -140,7 +140,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
       console.log("PDF descargado correctamente");
     } catch (error) {
       console.error("Error al descargar PDF:", error);
-      setError("Error al generar o descargar el reporte PDF");
+      toast("Ocurrio un error o no se encontraron datos");
     }
   };
 
