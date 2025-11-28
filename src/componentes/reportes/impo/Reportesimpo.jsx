@@ -27,10 +27,7 @@ const Reportesimpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
+
 
     if (!tipoPago) {
       toast("Debe seleccionar un tipo de pago válido (PP o CC).");
@@ -131,10 +128,6 @@ const Reportesimpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
 
     if (!tipoPago) {
       toast("Debe seleccionar un tipo de pago válido (PP o CC).");

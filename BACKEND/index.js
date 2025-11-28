@@ -5111,33 +5111,42 @@ app.post('/api/generar-pdf-cuentacorriente', async (req, res) => {
 
 app.get('/api/obtenerguiasimpopendientes', async (req, res) => {
   const { cliente, desde, hasta, tipoPago, aerolinea } = req.query;
+
   try {
     let query = `
-    SELECT g.*, v.vuelo AS vuelo
-FROM guiasimpo g
-LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-WHERE g.consignatario = ? 
-AND g.emision >= ? 
-AND g.emision <= ? 
-AND g.facturada = 0
-  `;
+      SELECT g.*, v.vuelo AS vuelo
+      FROM guiasimpo g
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+      WHERE g.emision >= ?
+      AND g.emision <= ?
+      AND g.facturada = 0
+    `;
 
-    const params = [cliente, desde, hasta];
+    const params = [desde, hasta];
 
-    // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
+    // ✔️ Agregar filtro por cliente SOLO si viene con valor
+    if (cliente && cliente.trim() !== "") {
+      query += ` AND g.consignatario = ?`;
+      params.push(cliente);
+    }
+
+    // ✔️ Filtro por tipo de pago
     if (tipoPago && tipoPago !== 'Cualquiera') {
-      query += ` AND tipodepagoguia = ?`;
+      query += ` AND g.tipodepagoguia = ?`;
       params.push(tipoPago);
     }
+
+    // ✔️ Filtro por aerolínea
     if (aerolinea && aerolinea !== 'Cualquiera' && aerolinea !== 'ALL') {
       query += ` AND v.compania = ?`;
       params.push(aerolinea);
     }
 
-    query += ` ORDER BY emision ASC`;
-    const [results] = await pool.query(query, params);
+    query += ` ORDER BY g.emision ASC`;
 
+    const [results] = await pool.query(query, params);
     res.status(200).json(results);
+
   } catch (error) {
     console.error('Error al obtener guías impo:', error);
     res.status(500).json({ error: 'Error al obtener guías impo' });
@@ -5146,34 +5155,43 @@ AND g.facturada = 0
 
 app.get('/api/obtenerguiasexpopendientes', async (req, res) => {
   const { cliente, desde, hasta, tipoPago, aerolinea } = req.query;
+
   try {
     let query = `
-    SELECT g.*, v.vuelo AS vuelo
-FROM guiasexpo g
-LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-WHERE g.agente = ? 
-AND g.emision >= ? 
-AND g.emision <= ? 
-AND g.facturada = 0
-AND g.cass = 'N'
-  `;
+      SELECT g.*, v.vuelo AS vuelo
+      FROM guiasexpo g
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+      WHERE g.emision >= ?
+      AND g.emision <= ?
+      AND g.facturada = 0
+      AND g.cass = 'N'
+    `;
 
-    const params = [cliente, desde, hasta];
+    const params = [desde, hasta];
 
-    // Si el tipo de pago no es 'Cualquiera', filtramos por ese campo
+    // ✔️ Filtrar por cliente SOLO si viene con valor
+    if (cliente && cliente.trim() !== "") {
+      query += ` AND g.agente = ?`;
+      params.push(cliente);
+    }
+
+    // ✔️ Filtro por tipo de pago
     if (tipoPago && tipoPago !== 'Cualquiera') {
-      query += ` AND tipodepago = ?`;
+      query += ` AND g.tipodepago = ?`;
       params.push(tipoPago);
     }
+
+    // ✔️ Filtro por aerolínea
     if (aerolinea && aerolinea !== 'Cualquiera' && aerolinea !== 'ALL') {
       query += ` AND v.compania = ?`;
       params.push(aerolinea);
     }
 
-    query += ` ORDER BY emision ASC`;
-    const [results] = await pool.query(query, params);
+    query += ` ORDER BY g.emision ASC`;
 
+    const [results] = await pool.query(query, params);
     res.status(200).json(results);
+
   } catch (error) {
     console.error('Error al obtener guías expo:', error);
     res.status(500).json({ error: 'Error al obtener guías expo' });

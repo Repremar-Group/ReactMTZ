@@ -41,10 +41,6 @@ const Reportesexpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
 
 
     if (!aerolinea) {
@@ -95,10 +91,6 @@ const Reportesexpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
 
 
     if (!aerolinea) {
