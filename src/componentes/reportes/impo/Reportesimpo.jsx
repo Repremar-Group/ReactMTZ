@@ -27,10 +27,7 @@ const Reportesimpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
+
 
     if (!tipoPago) {
       toast("Debe seleccionar un tipo de pago válido (PP o CC).");
@@ -131,10 +128,6 @@ const Reportesimpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
 
     if (!tipoPago) {
       toast("Debe seleccionar un tipo de pago válido (PP o CC).");
@@ -159,6 +152,10 @@ const Reportesimpo = ({ isLoggedIn }) => {
         params,
         responseType: "arraybuffer", // 👈 importante para PDF binario
       });
+      if (!response.data || response.data.byteLength < 1000) {
+        toast("No se encontraron datos para generar el reporte.");
+        return;
+      }
 
       // 🧩 Crear un Blob con tipo PDF
       const blob = new Blob([response.data], { type: "application/pdf" });
@@ -176,11 +173,11 @@ const Reportesimpo = ({ isLoggedIn }) => {
       link.click();
       link.remove();
 
-      // ✅ Log opcional
+
       console.log("PDF descargado correctamente");
     } catch (error) {
       console.error("Error al descargar PDF:", error);
-      setError("Error al generar o descargar el reporte PDF");
+      toast("Ocurrio un error o no se encontraron datos.");
     }
   };
 

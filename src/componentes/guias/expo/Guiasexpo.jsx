@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from "react-router-dom";
 import "./Guiasexpo.css";
 import axios from 'axios';
@@ -52,7 +52,10 @@ const Guiasexpo = ({ isLoggedIn }) => {
   const [genrofacturaguia, setGeNroFacturaGuia] = useState('');
   const [gereciboguia, setGeReciboGuia] = useState('');
   const [tablaguias, setTablaGuias] = useState([]);
-
+  const isManualFleteChange = useRef(false);
+  const isReverseCalculation = useRef(false);
+  const isManualFleteChangeAWB = useRef(false);
+  const isReverseCalculationAWB = useRef(false);
   //Estados para las alertas
   const [isModalOpenEliminar, setIsModalOpenEliminar] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -369,6 +372,8 @@ const Guiasexpo = ({ isLoggedIn }) => {
 
   // useEffect para actualizar Flete Neto cuando Tarifa Neta o Peso Tarifado cambian
   useEffect(() => {
+    if (isManualFleteChange.current) return;
+    if (isReverseCalculation.current) return;
     if (getarifanetaguia && gepesotarifadoguia) {
       // Convertir coma a punto antes de hacer el cálculo
       const tarifanetaconvertida = convertirADecimal(getarifanetaguia);
@@ -404,9 +409,38 @@ const Guiasexpo = ({ isLoggedIn }) => {
       setGeFleteNetoGuia(''); // Si alguno de los campos está vacío, borrar Flete Original
     }
   }, [getarifanetaguia, gepesotarifadoguia]);
+  //Calcula el campo de flete neto si lo cargaron a mano 
+  useEffect(() => {
+    if (!isManualFleteChange.current) return;
+    if (!gefletenetoguia || !gepesotarifadoguia) return;
+
+    isReverseCalculation.current = true;
+
+    const fleteNum = convertirADecimal(gefletenetoguia);  // interno
+    const pesoNum = convertirADecimal(gepesotarifadoguia);
+
+    if (pesoNum > 0 && !isNaN(fleteNum)) {
+
+      // Recalcular tarifa
+      const tarifa = fleteNum / pesoNum;
+      setGeTarifaNetaGuia(tarifa.toFixed(2));
+      // Recalcular GSA
+      const gsa = fleteNum * 0.05;
+      setGeGsaGuia((Math.round(gsa * 100) / 100).toFixed(2));
+    }
+
+    // bajamos solo esta bandera, la otra se baja en el próximo render
+    isManualFleteChange.current = false;
+
+    setTimeout(() => {
+      isReverseCalculation.current = false;
+    }, 3);
+  }, [gefletenetoguia]);
 
   // useEffect para actualizar Flete Awb cuando Tarifa Venta o Peso Tarifado cambian
   useEffect(() => {
+    if (isManualFleteChangeAWB.current) return;
+    if (isReverseCalculationAWB.current) return;
     if (getarifaventaguia && gepesotarifadoguia) {
       // Convertir coma a punto antes de hacer el cálculo
       const tarifaventaconvertida = convertirADecimal(getarifaventaguia);
@@ -425,6 +459,30 @@ const Guiasexpo = ({ isLoggedIn }) => {
       setGeFleteAwbGuia(''); // Si alguno de los campos está vacío, borrar Flete Original
     }
   }, [getarifaventaguia, gepesotarifadoguia]);
+  //Calculo inverso del flete AWB
+  useEffect(() => {
+    if (!isManualFleteChangeAWB.current) return;
+    if (!gefleteawbguia || !gepesotarifadoguia) return;
+
+    isReverseCalculationAWB.current = true;
+
+    const fleteNum = convertirADecimal(gefleteawbguia);  // interno
+    const pesoNum = convertirADecimal(gepesotarifadoguia);
+
+    if (pesoNum > 0 && !isNaN(fleteNum)) {
+
+      // Recalcular tarifa
+      const tarifa = fleteNum / pesoNum;
+      setGeTarifaVentaGuia(tarifa.toFixed(2));
+    }
+
+    // bajamos solo esta bandera, la otra se baja en el próximo render
+    isManualFleteChangeAWB.current = false;
+
+    setTimeout(() => {
+      isReverseCalculationAWB.current = false;
+    }, 2);
+  }, [gefleteawbguia]);
 
   // useEffect para actualizar DBF cuando Due Agent cambia
   useEffect(() => {
@@ -868,10 +926,12 @@ const Guiasexpo = ({ isLoggedIn }) => {
                     type="text"
                     id="gefletenetoguia"
                     value={gefletenetoguia}
-                    onChange={(e) => setGeFleteNetoGuia(e.target.value)}
-                    required
-                    readOnly
+                    onChange={(e) => {
+                      isManualFleteChange.current = true;
+                      setGeFleteNetoGuia(e.target.value);
+                    }}
                   />
+
                 </div>
                 <div>
                   <label htmlFor="gefleteawbguia">Flete AWB:</label>
@@ -879,9 +939,11 @@ const Guiasexpo = ({ isLoggedIn }) => {
                     type="text"
                     id="gefleteawbguia"
                     value={gefleteawbguia}
-                    onChange={(e) => setGeFleteAwbGuia(e.target.value)}
+                    onChange={(e) => {
+                      isManualFleteChangeAWB.current = true;
+                      setGeFleteAwbGuia(e.target.value)
+                    }}
                     required
-                    readOnly
                   />
                 </div>
               </div>

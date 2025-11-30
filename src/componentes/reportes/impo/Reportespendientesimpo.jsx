@@ -58,10 +58,7 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
+
 
     if (!tipoPago) {
       toast("Debe seleccionar un tipo de pago válido (PP o CC).");
@@ -139,8 +136,14 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
 
       const data = response.data;
 
+      if (!data || data.length === 0) {
+        toast("No se encontraron guías pendientes para los filtros seleccionados.");
+        setGuiaspendientes([]); 
+        return;
+      }
 
-      // Transformar la data al formato deseado (si es necesario)
+
+     
       const guiasFormateadas = data.map((guia) => ({
         awb: guia.guia,
         agente: guia.consignatario,
@@ -177,10 +180,6 @@ const Reportespendientesimpo = ({ isLoggedIn }) => {
       return;
     }
 
-    if (!selectedCliente || !selectedCliente.RazonSocial) {
-      toast("Debe seleccionar un cliente.");
-      return;
-    }
 
     if (!tipoPago) {
       toast("Debe seleccionar un tipo de pago válido (PP o CC).");
