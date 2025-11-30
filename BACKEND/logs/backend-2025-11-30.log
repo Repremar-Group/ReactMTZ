@@ -1,0 +1,53 @@
+30/11/2025, 15:52:44 [info]: Server running on port 5001
+30/11/2025, 15:53:05 [error]: Error conectando a la base de datos: Error: connect ETIMEDOUT 172.212.44.168:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1607:16)
+    --------------------
+    at Protocol._enqueue (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at Protocol.handshake (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:51:23)
+    at Connection.connect (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\Connection.js:116:18)
+    at Object.<anonymous> (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\index.js:94:12)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:174:12)
+    at node:internal/main/run_main_module:28:49
+30/11/2025, 15:53:19 [error]: Error en el login: Error: connect ETIMEDOUT 172.212.44.168:3306
+30/11/2025, 15:53:22 [error]: Error en el login: Error: connect ETIMEDOUT 172.212.44.168:3306
+30/11/2025, 15:53:51 [info]: Server running on port 5001
+30/11/2025, 15:54:15 [info]: Server running on port 5001
+30/11/2025, 15:54:36 [error]: Error conectando a la base de datos: Error: connect ETIMEDOUT 172.212.44.168:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1607:16)
+    --------------------
+    at Protocol._enqueue (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at Protocol.handshake (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:51:23)
+    at Connection.connect (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\Connection.js:116:18)
+    at Object.<anonymous> (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\index.js:94:12)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:174:12)
+    at node:internal/main/run_main_module:28:49
+30/11/2025, 15:55:17 [info]: Server running on port 5001
+30/11/2025, 15:55:17 [info]: Conexión exitosa a la base de datos MySQL
+30/11/2025, 15:55:26 [info]: Received request for /api/guias-sin-facturar
+30/11/2025, 15:55:26 [info]: Received request for /api/facturas-sin-cobrar
+30/11/2025, 15:55:26 [info]: Received request for /api/obtenertipocambio
+30/11/2025, 15:55:28 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+30/11/2025, 15:55:28 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "39.264"
+    }
+  }
+}
+30/11/2025, 15:55:28 [info]: Received request for /api/agregartipocambio
