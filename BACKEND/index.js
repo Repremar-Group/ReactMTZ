@@ -5898,6 +5898,22 @@ app.post('/api/insertarNC', async (req, res) => {
           VALUES ?
         `;
     await pool.query(sqlInsertMovimientos, [movimientos]);
+    // 5️⃣ ***Actualizar guias IMPO o EXPO asociadas a esas facturas***
+    const sqlUpdateGuias = `
+      UPDATE guiasimpo
+      SET facturada = 0
+      WHERE idfactura IN (? ) OR idfacturacuentaajena IN (?);
+    `;
+    await pool.query(sqlUpdateGuias, [idsFacturas, idsFacturas]);
+
+    const sqlUpdateGuiasExpo = `
+      UPDATE guiasexpo
+      SET facturada = 0
+      WHERE idfactura IN (?);
+    `;
+    await pool.query(sqlUpdateGuiasExpo, [idsFacturas]);
+
+
 
     const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC });
 
@@ -7927,6 +7943,6 @@ app.get('/api/health', (req, res) => {
   res.status(200).send('Server is running');
 });
 app.get('/', (req, res) => {
-  res.send('Este es el backend');
+  res.send('Este es el backend V 1.1 01/12/25');
 });
 

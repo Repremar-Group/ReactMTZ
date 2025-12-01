@@ -316,7 +316,9 @@ const BuscarNC = () => {
                                                 <div className="buscarfacturas-submenu">
 
 
-
+                                                    {row.NumeroCFE && (
+                                                        <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdjBase64, row.NumeroCFE)}>Descargar PDF</button>
+                                                    )}
                                                     {!row.NumeroCFE && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'

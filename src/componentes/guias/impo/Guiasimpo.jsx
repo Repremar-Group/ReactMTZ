@@ -567,7 +567,7 @@ const Guiasimpo = ({ isLoggedIn }) => {
       setSearchTerm('');
       setOrigenGuiaSeleccionado('');
       setConexionGuiaSeleccionado('');
-      setDestinoGuiaSeleccionado('');
+      setDestinoGuiaSeleccionado('MVD');
       setGiTipoDePagoGuia('');
       setGiMercaderiaGuia('');
       setGiPiezasGuia('');

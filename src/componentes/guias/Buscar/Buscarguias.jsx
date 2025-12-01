@@ -245,19 +245,19 @@ const PreviewGuias = () => {
                                         <td>{row.guia}</td>
                                         <td>{row.nombreVuelo + ' Fecha: ' + row.fechavuelo_formateada}</td>
                                         <td>{row.consignatario || row.agente}</td>
-                                        <td>{row.destinoguia || '-'}</td>
+                                        <td>{row.destinoguia || row.destinovuelo || '-'}</td>
                                         <td>{row.tipo || '-'}</td>
                                         <td>
                                             {row.moneda
-                                                ? (row.idguiasexpo ? row.cobrarpagar : row.total) + " " + row.moneda
-                                                : (row.idguiasexpo ? row.cobrarpagar : row.total)
+                                                ? (row.idguiasexpo ? row.cobrarpagar : row.total) + " " + 'USD'
+                                                : (row.idguiasexpo ? row.cobrarpagar : row.total)+ " " + 'USD'
                                             }
                                         </td>
 
                                         <td>
                                             {row.moneda
-                                                ? (row.idguiasexpo ? row.total : row.totalguia) + " " + row.moneda
-                                                : (row.idguiasexpo ? row.total : row.totalguia)
+                                                ? (row.idguiasexpo ? row.total : row.totalguia) + " " + 'USD'
+                                                : (row.idguiasexpo ? row.total : row.totalguia)+ " " + 'USD'
                                             }
                                         </td>
                                         <td className="td-con-submenu">

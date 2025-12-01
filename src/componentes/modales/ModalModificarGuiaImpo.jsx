@@ -13,6 +13,11 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
         const date = new Date(dateString);
         return date.toISOString().split('T')[0];
     };
+
+    const [vuelos, setVuelos] = useState([]);
+    const [vueloSeleccionado, setVueloSeleccionado] = useState(null);
+    const [isFetchedVuelos, setIsFetchedVuelos] = useState(false); // Para evitar múltiples llamadas
+
     const [loading, setLoading] = useState(false);
     const [datosGuia, setDatosGuia] = useState({
         nrovuelo: '',
@@ -66,6 +71,7 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                         emision: formatDate(response.data.emision),
                         fechavuelo: formatDate(response.data.fechavuelo)
                     });
+                    fetchVuelos();
                     console.log(response.data);
                 }
             } catch (error) {
@@ -79,7 +85,18 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
             fetchGuiaData();
         }
     }, [guia]);
+    useEffect(() => {
+        if (vuelos.length > 0 && datosGuia?.nrovuelo) {
 
+            const idVueloGuia = parseInt(datosGuia.nrovuelo); // "16" → 16
+
+            const encontrado = vuelos.find(v => v.idVuelos === idVueloGuia);
+
+            if (encontrado) {
+                setVueloSeleccionado(encontrado);
+            }
+        }
+    }, [vuelos, datosGuia]);
     // Manejo del input de búsqueda
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -208,11 +225,11 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
         datosGuia.daoriginal
     ]);
 
-    
+
     //UseEffect para calcular la guia si es Collect
     useEffect(() => {
 
-        
+
         if (datosGuia.fleteoriginal) {
 
             const fleteoriginal = convertirADecimal(datosGuia.fleteoriginal);
@@ -346,11 +363,11 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
 
             const redondeo = Math.ceil(
                 (parseFloat(convertirADecimal(datosGuia.verificacion)) || 0) +
-                (parseFloat(convertirADecimal(datosGuia.ivas3)) || 0) 
+                (parseFloat(convertirADecimal(datosGuia.ivas3)) || 0)
             ) -
                 (
                     (parseFloat(convertirADecimal(datosGuia.verificacion)) || 0) +
-                    (parseFloat(convertirADecimal(datosGuia.ivas3)) || 0) 
+                    (parseFloat(convertirADecimal(datosGuia.ivas3)) || 0)
                 );
 
             const totalacobrar = (
@@ -392,13 +409,44 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
         datosGuia.dueagent
     ]);
 
+
+
+    const handleSelectVuelo = (e) => {
+        const id = parseInt(e.target.value);
+
+        const vuelo = vuelos.find(v => v.idVuelos === id);
+
+        setVueloSeleccionado(vuelo);
+
+        if (vuelo) {
+            setDatosGuia(prev => ({
+                ...prev,
+                nrovuelo: vuelo.idVuelos,
+                compania: vuelo.compania,
+            }));
+        }
+
+        console.log("Vuelo seleccionado:", vuelo);
+    };
+
+    const fetchVuelos = async () => {
+        try {
+            const response = await axios.get(`${backURL}/api/obtenervuelos`);
+            setVuelos(response.data);
+            setIsFetchedVuelos(true); // Indica que ya se obtuvieron los datos
+            console.log('Vuelos desde la bd', response.data)
+        } catch (error) {
+            console.error('Error al obtener vuelos:', error);
+        }
+    }
+
     const handleSubmitGuardarGuiaImpo = async (e) => {
         e.preventDefault(); // Previene el comportamiento predeterminado de submit del formulario
-    
+
         try {
             // Enviar los datos al backend usando axios
             const response = await axios.post(`${backURL}/api/modificarguia`, datosGuia);
-    
+
             // Manejo de la respuesta exitosa
             if (response.status === 200) {
                 toast.success('¡Guía Actualizada guardada exitosamente!');
@@ -420,13 +468,51 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                 <h2 className='titulo-estandar'>Modificar Guía: {guia}</h2>
                 {loading ? (
                     <div className="loading-spinner">
-                    {/* El spinner se muestra cuando loading es true */}
-                  </div>
+                        {/* El spinner se muestra cuando loading es true */}
+                    </div>
                 ) : (
                     <div>
                         <form className='formulario-estandar' onSubmit={handleSubmitGuardarGuiaImpo}>
                             <div className='div-primerrenglon-datos-comprobante'>
-                               
+                                <div>
+                                    <label htmlFor="ginrovuelo">Nro.Vuelo:</label>
+                                    <select
+                                        id="Vuelo"
+                                        required
+                                        value={vueloSeleccionado ? vueloSeleccionado.idVuelos : ''}
+                                        onChange={handleSelectVuelo}
+                                        onClick={() => {
+                                            if (!isFetchedVuelos) fetchVuelos();
+                                        }}
+                                    >
+                                        <option value="">Seleccione un Vuelo</option>
+
+                                        {vuelos.map((vuelo) => (
+                                            <option key={vuelo.idVuelos} value={vuelo.idVuelos}>
+                                                {vuelo.vuelo}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="gifechaemisionguia">Fecha Vuelo:</label>
+                                    <input
+                                        type="date"
+                                        id="gifechaemisionguia"
+                                        value={datosGuia.fechavuelo}
+                                        onChange={(e) => setDatosGuia({ ...datosGuia, fechavuelo: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="giempresavuelo">Empresa:</label>
+                                    <input
+                                        type="text"
+                                        id="giempresavuelo"
+                                        value={vueloSeleccionado ? vueloSeleccionado.compania : ''}
+                                        readOnly
+                                    />
+                                </div>
                                 <div>
                                     <label htmlFor="ginroguia">Guia:</label>
                                     <input
@@ -778,9 +864,9 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                 </div>
                             </div>
                             <div style={{ marginTop: '10px' }}>
-                            <button className='btn-estandar'>Guardar</button>
+                                <button className='btn-estandar'>Guardar</button>
                             </div>
-                            
+
                         </form>
                     </div>
                 )}
