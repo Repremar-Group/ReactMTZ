@@ -78,6 +78,7 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                                     <th>Fecha Vuelo</th>
                                     <th>Origen</th>
                                     <th>Destino</th>
+                                    <th>Cobrar/Pagar</th>
                                     <th>Seleccionar</th>
                                 </tr>
                             </thead>
@@ -94,6 +95,9 @@ const ModalBusquedaEmbarque = ({ showModal, onClose, embarques, onSelectEmbarque
                                             <td>{embarque.origenguia || embarque.origenvuelo}</td>
                                             <td>
                                                 {embarque.destinoguia || embarque.destinovuelo}
+                                            </td>
+                                            <td>
+                                                {embarque.cobrarpagar || embarque.total}
                                             </td>
                                             <td>
                                                 <input

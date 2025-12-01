@@ -13,6 +13,11 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
         const date = new Date(dateString);
         return date.toISOString().split('T')[0];
     };
+
+    const [vuelos, setVuelos] = useState([]);
+    const [vueloSeleccionado, setVueloSeleccionado] = useState(null);
+    const [isFetchedVuelos, setIsFetchedVuelos] = useState(false); // Para evitar múltiples llamadas
+
     const [loading, setLoading] = useState(false);
     const [datosGuia, setDatosGuia] = useState({
         agente: '',
@@ -65,6 +70,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                         fechavuelo: formatDate(response.data.fechavuelo)
                     });
                     console.log(response.data);
+                    fetchVuelos();
                 }
             } catch (error) {
                 console.error('Error al obtener los datos de la guía:', error);
@@ -77,6 +83,18 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
             fetchGuiaData();
         }
     }, [guia]);
+    useEffect(() => {
+        if (vuelos.length > 0 && datosGuia?.nrovuelo) {
+
+            const idVueloGuia = parseInt(datosGuia.nrovuelo); // "16" → 16
+
+            const encontrado = vuelos.find(v => v.idVuelos === idVueloGuia);
+
+            if (encontrado) {
+                setVueloSeleccionado(encontrado);
+            }
+        }
+    }, [vuelos, datosGuia]);
 
     // Manejo del input de búsqueda
     const handleInputChange = (e) => {
@@ -237,7 +255,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                     ...prevState,
                     dbf: DBFCalculado.toFixed(2),
                 }));
-                
+
             } else {
                 DBFCalculado = parseFloat(datosGuia.dueagent) * 0.10;
                 setDatosGuia(prevState => ({
@@ -283,8 +301,8 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
             setDatosGuia(prevState => ({
                 ...prevState,
                 total: totaldelaguia.toFixed(2),
-                cobrarpagar:totalacobrar.toFixed(2),
-                agentecollect:AgenteCollect.toFixed(2),
+                cobrarpagar: totalacobrar.toFixed(2),
+                agentecollect: AgenteCollect.toFixed(2),
             }));
 
         } else {
@@ -292,8 +310,8 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                 setDatosGuia(prevState => ({
                     ...prevState,
                     total: '',
-                    cobrarpagar:'',
-                    agentecollect:'',
+                    cobrarpagar: '',
+                    agentecollect: '',
                 }));
             }
         }
@@ -328,8 +346,8 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
             setDatosGuia(prevState => ({
                 ...prevState,
                 total: totaldelaguia.toFixed(2),
-                cobrarpagar:totalacobrar.toFixed(2),
-                agentecollect:0,
+                cobrarpagar: totalacobrar.toFixed(2),
+                agentecollect: 0,
             }));
         } else {
 
@@ -337,8 +355,8 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                 setDatosGuia(prevState => ({
                     ...prevState,
                     total: '',
-                    cobrarpagar:'',
-                    agentecollect:'',
+                    cobrarpagar: '',
+                    agentecollect: '',
                 }));
             }
 
@@ -350,13 +368,41 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
         datosGuia.duecarrier,
         datosGuia.security
     ]);
+    const handleSelectVuelo = (e) => {
+        const id = parseInt(e.target.value);
+
+        const vuelo = vuelos.find(v => v.idVuelos === id);
+
+        setVueloSeleccionado(vuelo);
+
+        if (vuelo) {
+            setDatosGuia(prev => ({
+                ...prev,
+                nrovuelo: vuelo.idVuelos,
+                compania: vuelo.compania,
+            }));
+        }
+
+        console.log("Vuelo seleccionado:", vuelo);
+    };
+
+    const fetchVuelos = async () => {
+        try {
+            const response = await axios.get(`${backURL}/api/obtenervuelos`);
+            setVuelos(response.data);
+            setIsFetchedVuelos(true); // Indica que ya se obtuvieron los datos
+            console.log('Vuelos desde la bd', response.data)
+        } catch (error) {
+            console.error('Error al obtener vuelos:', error);
+        }
+    }
     const handleSubmitGuardarGuiaExpo = async (e) => {
         e.preventDefault(); // Previene el comportamiento predeterminado de submit del formulario
-    
+
         try {
             // Enviar los datos al backend usando axios
             const response = await axios.post(`${backURL}/api/modificarguiaexpo`, datosGuia);
-    
+
             // Manejo de la respuesta exitosa
             if (response.status === 200) {
                 toast.success('¡Guía Actualizada guardada exitosamente!');
@@ -370,7 +416,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
             toast.error('Hubo un error al guardar la guía.');
         }
     };
-    
+
 
     if (!isOpen) return null;
     return (
@@ -386,6 +432,47 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                         <form className='formulario-estandar' onSubmit={handleSubmitGuardarGuiaExpo}>
                             <div className='div-primerrenglon-datos-comprobante'>
                                 <div>
+                                    <label htmlFor="ginrovuelo">Nro.Vuelo:</label>
+                                    <select
+                                        id="Vuelo"
+                                        required
+                                        value={vueloSeleccionado ? vueloSeleccionado.idVuelos : ''}
+                                        onChange={handleSelectVuelo}
+                                        onClick={() => {
+                                            if (!isFetchedVuelos) fetchVuelos();
+                                        }}
+                                    >
+                                        <option value="">Seleccione un Vuelo</option>
+
+                                        {vuelos.map((vuelo) => (
+                                            <option key={vuelo.idVuelos} value={vuelo.idVuelos}>
+                                                {vuelo.vuelo}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="gifechaemisionguia">Fecha Vuelo:</label>
+                                    <input
+                                        type="date"
+                                        id="gifechaemisionguia"
+                                        value={datosGuia.fechavuelo}
+                                        onChange={(e) => setDatosGuia({ ...datosGuia, fechavuelo: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="giempresavuelo">Empresa:</label>
+                                    <input
+                                        type="text"
+                                        id="giempresavuelo"
+                                        value={vueloSeleccionado ? vueloSeleccionado.compania : ''}
+                                        readOnly
+                                    />
+                                </div>
+                            </div>
+                            <div className='div-primerrenglon-datos-comprobante'>
+                                <div>
                                     <label htmlFor="geagente">Agente:</label>
                                     <input
                                         type="text"
@@ -393,7 +480,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         onChange={handleInputChange}
                                         onKeyPress={handleKeyPressModificar}
                                         required
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -403,7 +490,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         value={datosGuia.reserva}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, reserva: e.target.value })}
                                         required
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -414,7 +501,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         value={datosGuia.guia}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, guia: e.target.value })}
                                         required
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -425,7 +512,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         value={datosGuia.emision}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, emision: e.target.value })}
                                         required
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -452,7 +539,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                     <input
                                         type="number"
                                         id="gipiezasguia"
-                                        
+
                                         value={datosGuia.piezas}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, piezas: e.target.value })}
                                     />
@@ -462,7 +549,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                     <input
                                         type="number"
                                         id="gipiezasguia"
-                                        
+
                                         value={datosGuia.pesobruto}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, pesobruto: e.target.value })}
                                     />
@@ -472,7 +559,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                     <input
                                         type="number"
                                         id="gipiezasguia"
-                                        
+
                                         value={datosGuia.pesotarifado}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, pesotarifado: e.target.value })}
                                     />
@@ -486,7 +573,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                     <input
                                         type="number"
                                         id="gipiezasguia"
-                                        
+
                                         value={datosGuia.tarifaneta}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, tarifaneta: e.target.value })}
                                     />
@@ -499,7 +586,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         value={datosGuia.tarifaventa}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, tarifaventa: e.target.value })}
                                         required
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -522,7 +609,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         onChange={(e) => setDatosGuia({ ...datosGuia, fleteawb: e.target.value })}
                                         readOnly
                                         required
-                                        
+
                                     />
                                 </div>
                             </div>
@@ -536,7 +623,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         value={datosGuia.duecarrier}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, duecarrier: e.target.value })}
                                         required
-                                        
+
                                     />
                                 </div>
                                 <div>
@@ -547,7 +634,7 @@ const ModalModificarGuiaExpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
                                         value={datosGuia.dueagent}
                                         onChange={(e) => setDatosGuia({ ...datosGuia, dueagent: e.target.value })}
                                         required
-                                        
+
                                     />
                                 </div>
                                 <div>

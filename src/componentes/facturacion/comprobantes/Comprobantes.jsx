@@ -659,7 +659,7 @@ const Comprobantes = ({ isLoggedIn }) => {
       const ivaca = (0).toFixed(2); // Suponiendo que el IVA es 0
       const totalca = (parseFloat(subtotalca) + parseFloat(ivaca)).toFixed(2);
       const redondeoca = (Math.ceil(totalca) - totalca).toFixed(2); // Redondeo
-      const totalACobrarca = (parseFloat(totalca) + parseFloat(redondeoca)).toFixed(2);
+      const totalACobrarca = (parseFloat(totalca)).toFixed(2);
 
       // Agregar los nuevos valores al objeto SIN reasignarlo
       datosFormulario.SubtotalCuentaAjena = subtotalca;
