@@ -358,7 +358,9 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
     useEffect(() => {
         if (datosGuia.fleteoriginal && datosGuia.tipodepagoguia === 'P') {
             const fleteoriginal = convertirADecimal(datosGuia.fleteoriginal);
-            const iva22 = parseFloat(fleteoriginal) * 0.22;
+            const arbitrajeAusar = convertirADecimal(datosGuia.arbitraje)
+            const fleteausar = (fleteoriginal*arbitrajeAusar).toFixed(2);
+            const iva22 = parseFloat(fleteausar) * 0.22;
             const ivaS3 = iva22 * 0.03;
 
             const redondeo = Math.ceil(
@@ -386,7 +388,7 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
             setDatosGuia(prevState => ({
                 ...prevState,
                 totalguia: totaldelaguia.toFixed(2),
-                flete: fleteoriginal.toFixed(2),
+                flete: fleteausar,
                 ivas3: ivaS3.toFixed(2),
                 ajuste: redondeo.toFixed(2),
                 total: totalacobrar.toFixed(2),
@@ -406,7 +408,8 @@ const ModalModificarGuiaImpo = ({ isOpen, closeModal, closeModalSinrecarga, guia
         datosGuia.verificacion,
         datosGuia.ivas3,
         datosGuia.duecarrier,
-        datosGuia.dueagent
+        datosGuia.dueagent,
+        datosGuia.arbitraje
     ]);
 
 

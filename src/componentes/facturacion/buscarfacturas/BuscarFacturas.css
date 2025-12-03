@@ -10,7 +10,12 @@
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
 }
-
+.TDGUIAS{
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 .Titulo {
   margin: 20px 100px 10px 100px;
   /* Espacio superior, y mantiene el padding lateral */

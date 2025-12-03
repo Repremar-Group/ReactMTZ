@@ -106,15 +106,15 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 
 app.use(cors());
-cron.schedule('34 14 * * *', async () => {
+cron.schedule('00 21 * * *', async () => {
   try {
     console.log('⏰ Ejecutando cierre diario...');
 
     const [resultGuias] = await pool.query(`
       SELECT COUNT(*) AS guias FROM (
-        SELECT guia FROM guiasimpo WHERE facturada = 0
+        SELECT guia FROM guiasimpo WHERE facturada = 0 
         UNION ALL
-        SELECT guia FROM guiasexpo WHERE facturada = 0
+        SELECT guia FROM guiasexpo WHERE facturada = 0 AND cass = 'N'
       ) AS total_guias
     `);
     const guias = resultGuias[0].guias;
@@ -154,7 +154,7 @@ cron.schedule('34 14 * * *', async () => {
 
     const [facturasDet] = await pool.query(`
     SELECT 
-      Comprobante AS numero, 
+      NumeroCFE AS numero, 
       RazonSocial AS cliente, 
       DATE_FORMAT(Fecha, '%d/%m/%Y') AS fecha, 
       TotalCobrar AS monto
@@ -256,9 +256,9 @@ cron.schedule('34 14 * * *', async () => {
     // Enviar mail con adjunto Excel
     const mailOptions = {
       from: 'alertasairbillcielosur@gmail.com',
-      to: 'pgauna@repremar.com',
-      subject: '[TEST] Cierre Diario AirBill',
-      text: `Hola Patricio,\n\nEl cierre diario se ejecutó correctamente.\nGuías sin facturar: ${guias} (Total: $${totalGuiasMonto})\nFacturas sin cobrar: ${facturas} (Total: $${totalFacturasMonto})\n\nSaludos,\nSistema`,
+      to: 'admmvd@cielosur.com.uy',
+      subject: '[KIX] Cierre Diario AirBill',
+      text: `Hola,\n\nEl cierre diario se ejecutó correctamente.\nGuías sin facturar: ${guias} (Total: $${totalGuiasMonto})\nFacturas sin cobrar: ${facturas} (Total: $${totalFacturasMonto})\n\nSaludos,\nSistema`,
       html,
       attachments: [
         {
@@ -380,36 +380,63 @@ app.get('/api/previewclientes', async (req, res) => {
 
 app.get('/api/previewfacturas', async (req, res) => {
   console.log('Received request for /api/previewfacturas');
-  const sql = 'SELECT * FROM facturas ORDER BY Id DESC';
+
+  const sql = `
+    SELECT 
+      f.*,
+      gexpo.guia AS guiaExpo,
+      gimpo.guia AS guiaImpo
+    FROM facturas f
+    LEFT JOIN guiasexpo gexpo ON gexpo.idfactura = f.Id
+    LEFT JOIN guiasimpo gimpo ON gimpo.idfactura = f.Id
+    ORDER BY f.Id DESC
+  `;
 
   try {
-    const [result] = await pool.query(sql);
+    const [rows] = await pool.query(sql);
 
-    // Formatear la fecha en cada resultado
-    const formattedResult = result.map((row) => {
-      const fecha = new Date(row.Fecha);
-      const formattedFecha = fecha.toLocaleDateString('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-      const fechaVenc = row.fechaVencimiento ? new Date(row.fechaVencimiento) : null;
-      const formattedFechaVenc = fechaVenc
-        ? fechaVenc.toLocaleDateString('es-AR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        })
-        : '';
-      return {
-        ...row,
-        Fecha: formattedFecha,
-        fechaVencimiento: formattedFechaVenc, // aquí se agrega
-      };
+    // Agrupar por factura
+    const facturasMap = {};
+
+    rows.forEach(row => {
+      if (!facturasMap[row.Id]) {
+        const fecha = new Date(row.Fecha);
+        const formattedFecha = fecha.toLocaleDateString('es-AR');
+
+        const fechaVenc = row.fechaVencimiento ? new Date(row.fechaVencimiento) : null;
+        const formattedFechaVenc = fechaVenc ? fechaVenc.toLocaleDateString('es-AR') : '';
+
+        facturasMap[row.Id] = {
+          ...row,
+          Fecha: formattedFecha,
+          fechaVencimiento: formattedFechaVenc,
+          guias: []
+        };
+      }
+
+      // Agregar la guía si existe
+      if (row.guiaExpo) {
+        facturasMap[row.Id].guias.push({
+          tipo: "Expo",
+          guia: row.guiaExpo
+        });
+      }
+
+      if (row.guiaImpo) {
+        facturasMap[row.Id].guias.push({
+          tipo: "Impo",
+          guia: row.guiaImpo
+        });
+      }
     });
 
-    res.status(200).json(formattedResult);
+    // Pasar de objeto a array
+    const result = Object.values(facturasMap);
+
+    res.status(200).json(result);
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Error en el backend cargando facturas', error: err.message });
   }
 });
@@ -1198,8 +1225,8 @@ app.get('/api/obtenernombrecliente', async (req, res) => {
   const search = req.query.search;
   try {
     const [results] = await pool.query(
-      'SELECT * FROM clientes WHERE Estado = "A" AND RazonSocial LIKE ?',
-      [`%${search}%`]
+      'SELECT * FROM clientes WHERE Estado = "A" AND (RazonSocial LIKE ? OR Nombre LIKE ?)',
+      [`%${search}%`, `%${search}%`]
     );
     res.json(results);
   } catch (err) {

@@ -77,7 +77,7 @@ const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSel
     <>
       {/* MODAL PRINCIPAL */}
       <div className="modal" onClick={closeModal}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-content-clientes" onClick={(e) => e.stopPropagation()}>
           <h2 className='titulo-estandar'>Resultados de Búsqueda</h2>
           {filteredClientes.length > 0 ? (
             <div className='contenedortabla_clientesbusqueda'>
@@ -85,6 +85,7 @@ const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSel
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Nombre</th>
                     <th>Razón Social</th>
                     <th>Seleccionar</th>
                   </tr>
@@ -93,6 +94,7 @@ const ModalBusquedaClientes = ({ isOpen, closeModal, filteredClientes, handleSel
                   {filteredClientes.map(cliente => (
                     <tr key={cliente.Id}>
                       <td>{cliente.Id}</td>
+                      <td>{cliente.Nombre}</td>
                       <td>{cliente.RazonSocial}</td>
                       <td>
                         <button

@@ -172,9 +172,30 @@ const BuscarFacturas = () => {
         setBusquedaRealizada(true);
     };
     const facturasFiltradas = facturas.filter((row) => {
-        const cumpleBusqueda = !searchField || searchTerm.trim() === ''
-            || row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase());
 
+        let cumpleBusqueda = true;
+
+        // --- BÚSQUEDA ---
+        if (searchField && searchTerm.trim() !== '') {
+
+            const termino = searchTerm.toLowerCase();
+
+            // Buscar por número de guía
+            if (searchField === 'NumeroGuia') {
+
+                cumpleBusqueda = row.guias?.some(g =>
+                    g.guia?.toLowerCase().includes(termino)
+                );
+
+            } else {
+                // Búsqueda estándar por cualquier otro campo
+                const valor = row[searchField];
+                cumpleBusqueda =
+                    valor?.toString().toLowerCase().includes(termino);
+            }
+        }
+
+        // --- FILTRO FECHAS ---
         const parseFecha = (str) => {
             const [dia, mes, anio] = str.split('/');
             return new Date(`${anio}-${mes}-${dia}`);
@@ -182,7 +203,7 @@ const BuscarFacturas = () => {
 
         const fechaFactura = parseFecha(row.Fecha);
         const desde = fechaDesde ? new Date(fechaDesde) : null;
-        const hasta = fechaHasta ? new Date(fechaHasta) : null;
+        const hasta = fechaHasta ? new Date(hastaFecha) : null;
 
         const cumpleFecha =
             (!desde || fechaFactura >= desde) &&
@@ -226,6 +247,15 @@ const BuscarFacturas = () => {
                                 onChange={handleSearch}
                             />
                             <div className="filtros">
+                                <label>
+                                    <input
+                                        type="radio"
+                                        value="NumeroGuia"
+                                        checked={searchField === 'NumeroGuia'}
+                                        onChange={handleCheckboxChange}
+                                    />
+                                    Nro. Guia
+                                </label>
                                 <label>
                                     <input
                                         type="radio"
@@ -291,6 +321,7 @@ const BuscarFacturas = () => {
                                     <th>RUT</th>
                                     <th>Fecha</th>
                                     <th>Monto</th>
+                                    <th>Guias</th>
                                     <th>Estado GFE</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -301,13 +332,13 @@ const BuscarFacturas = () => {
                                         <td>{row.NumeroCFE === null
                                             ? '-' : row.NumeroCFE}</td>
                                         <td>
-                                            {row.TipoDocCFE === 'FCD' ? (
+                                            {row.TipoDocCFE === 'FCT' ? (
                                                 'E-Factura'
-                                            ) : (row.TipoDocCFE === 'FCA' || row.TipoDocCFE === 'efacturaca') ? (
+                                            ) : (row.TipoDocCFE === 'FTA' || row.TipoDocCFE === 'efacturaca') ? (
                                                 'E-Factura Cuenta Ajena'
-                                            ) : (row.TipoDocCFE === 'TCD') ? (
+                                            ) : (row.TipoDocCFE === 'TCT') ? (
                                                 'E-Ticket'
-                                            ) : row.TipoDocCFE === 'TCA' ? (
+                                            ) : row.TipoDocCFE === 'TTA' ? (
                                                 'E-Ticket Cuenta Ajena'
                                             ) : (
                                                 '-'
@@ -319,6 +350,9 @@ const BuscarFacturas = () => {
                                         <td>{row.RutCedula}</td>
                                         <td>{row.Fecha}</td>
                                         <td>{[row.Total, row.Moneda].join(' ')}</td>
+                                        <td title={row.guias?.map(g => g.guia).join(', ')} className='TDGUIAS'>
+                                            {row.guias?.map(g => g.guia).join(', ')}
+                                        </td>
                                         <td>{row.NumeroCFE ? '✔️' : '❌'}</td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
@@ -334,7 +368,7 @@ const BuscarFacturas = () => {
                                                             onClick={async () => {
                                                                 try {
                                                                     setLoadingEnvioGFE(true);
-                                                                    console.log('Factura antes del back',row);
+                                                                    console.log('Factura antes del back', row);
                                                                     const response = await impactarEnGIA(row, backURL);
                                                                     if (response.success) {
                                                                         const doc = response.documento;

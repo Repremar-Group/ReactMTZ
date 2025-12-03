@@ -236,6 +236,7 @@ const PreviewGuias = () => {
                                     <th>Tipo</th>
                                     <th>Monto</th>
                                     <th>Total / Guia</th>
+                                    <th>Facturada</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -260,6 +261,7 @@ const PreviewGuias = () => {
                                                 : (row.idguiasexpo ? row.total : row.totalguia)+ " " + 'USD'
                                             }
                                         </td>
+                                        <td>{row.facturada ? '✔️' : '❌'}</td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
                                                 <button disabled className="buscarfacturas-submenu-toggle">☰</button>
