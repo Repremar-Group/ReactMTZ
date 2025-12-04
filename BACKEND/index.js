@@ -3570,15 +3570,22 @@ app.post('/api/insertrecibo', async (req, res) => {
       const pagosValues = listadepagos.map(pago => [
         idrecibo,
         pago.icfecha,
+        pago.icformadepago,
         pago.icbanco,
         pago.icnrocheque,
         pago.ictipoMoneda,
         pago.icimpdelcheque,
         pago.icfechavencimiento
       ]);
+      console.log("📤 Datos que se enviarán a la BD (tabla pagos):");
+      console.log("Query:", `
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    `);
+      console.log("Valores:", JSON.stringify(pagosValues, null, 2));
 
       const insertPagosQuery = `
-        INSERT INTO pagos (idrecibo, fecha, banco, nro_pago, moneda, importe, vencimiento)
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
         VALUES ?
       `;
       await connection.query(insertPagosQuery, [pagosValues]);
@@ -3659,7 +3666,7 @@ app.post('/api/impactarrecibo', async (req, res) => {
         importe: factura.TotalCobrar
       })),
       formasPago: pagos.map(pago => ({
-        formaPago: recibo.formapago,
+        formaPago: pago.formapago,
         importe: pago.importe,
         comprobante: pago.nro_pago,
         vencimiento: formatFecha(pago.vencimiento)

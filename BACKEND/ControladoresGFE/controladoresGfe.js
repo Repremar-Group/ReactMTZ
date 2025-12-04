@@ -304,22 +304,16 @@ function generarXmlRecibo(datos) {
         .replace('{{Adenda}}', datos.adendadoc);
 
     // Generar <renglones>
-    let renglones = '';
-    for (let renglon of datos.formasPago) {
-        // Si moneda es UYU y hay cotización, convertir importe a dólares
-        let precioUnitario = renglon.importe;
-        if (datos.Moneda === 'UYU' && totalFormasPago !== totalCancelaciones && cotizacion) {
-            precioUnitario = (Number(renglon.importe) / Number(cotizacion)).toFixed(2);
-        }
 
-        renglones += `
-        <renglon>
-            <producto>REC</producto>
-            <nombreProducto>Cancelación de Facturas</nombreProducto>
-            <cantidad>1</cantidad>
-            <precioUnitario>${precioUnitario}</precioUnitario>
-        </renglon>`;
-    }
+    let renglones = `
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>${totalFormasPago}</precioUnitario>
+    </renglon>
+`;
+
     xmlBase = xmlBase.replace('{{Renglones}}', renglones);
 
     // Generar <cancelaciones>

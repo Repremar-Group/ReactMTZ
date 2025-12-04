@@ -99,11 +99,11 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     // Función para agregar una factura asociada a la tabla
     const handleAgregarChequeCargado = () => {
         console.log('Validando Cheque con estos datos: ', icnrocheque, icbanco, icfecha, ictipoMoneda, icarbitraje, icimpdelcheque, icimporteendolares, icfechavencimiento)
-        if (icnrocheque && icbanco && icfecha && ictipoMoneda && icarbitraje && icimpdelcheque && icimporteendolares && icfechavencimiento) {
+        if (icnrocheque && icbanco && icfecha  && icimpdelcheque  && icfechavencimiento && icformadepago) {
             console.log('Valores del cheque, Importe: ', icimporteendolares, ' Saldo del Pago: ', icsaldodeldocumento, 'A cuenta: ', aCuenta, 'Expresion', (icimporteendolares <= icsaldodeldocumento) && !aCuenta);
             const saldoRedondeado = parseFloat(Number(icsaldodeldocumento).toFixed(2));
             if (((icimporteendolares <= saldoRedondeado) && !aCuenta) || aCuenta) {
-                const nuevocheque = { icfecha, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
+                const nuevocheque = { icfecha, icformadepago, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
                 setIcListaDeCheques([...iclistadecheques, nuevocheque]);
                 setIcNroCheque('');
                 setIcImpDelCheque('');
@@ -192,7 +192,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     clienteGIA: icClienteGIA,
                     nombrecliente: datosRecibo.searchTerm,
                     moneda: datosRecibo.ertipoMoneda,
-                    formapago: datosRecibo.erformadepago,
+                    formapago: "-",
                     importe: datosRecibo.erimporte,
                     razonsocial: datosRecibo.errazonSocial,
                     rut: datosRecibo.errut,
@@ -290,7 +290,8 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
             setIcNroCheque('');
             setIcBanco('');
             setIcFecha(fechaActual);
-            setIcTipoMoneda('USD');
+            setIcTipoMoneda(datosRecibo.ertipoMoneda);
+            console.log('Tipo moneda de los pagos',datosRecibo.ertipoMoneda );
             setIcArbitraje('1');
             setIcImpDelCheque('');
             setIcImporteEnDolares('');
@@ -340,6 +341,21 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                     />
                                 </div>
                                 <div>
+                                    <label htmlFor="icformapago">Forma Pago:</label>
+                                    <select
+                                        id="icformapago"
+                                        value={icformadepago}
+                                        onChange={(e) => setIcFormaDePago(e.target.value)}
+
+                                    >
+                                        <option value="">Selecciona una forma</option>
+                                        <option value="DOCVZ">CANJE DOCUMENTOS</option>
+                                        <option value="CHQDOL">CHEQUE</option>
+                                        <option value="EFEDOL">EFECTIVO</option>
+                                        <option value="TRANDOL">TRANSFERENCIA</option>
+                                    </select>
+                                </div>
+                                <div>
                                     <label htmlFor="icbanco">Banco:</label>
                                     <select
                                         id="icbanco"
@@ -352,22 +368,17 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         <option value="banqueheritage">BANQUE HERITAGE</option>
                                         <option value="bbva">BBVA</option>
                                         <option value="brou">BROU</option>
-                                        <option value="canjedocumentos">CANJE DOCUMENTOS</option>
                                         <option value="cash">CASH</option>
-                                        <option value="cheque">CHEQUE</option>
                                         <option value="citibank">CITI BANK</option>
                                         <option value="comercial">COMERCIAL</option>
                                         <option value="deposito">DEPOSITO</option>
-                                        <option value="discount">DISCOUNT</option>
                                         <option value="documentos">DOCUMENTOS</option>
-                                        <option value="efectivo">EFECTIVO</option>
-                                        <option value="giro">GIRO</option>
+                                        <option value="discount">DISCOUNT</option>
                                         <option value="hsbc">HSBC</option>
                                         <option value="itau">ITAU</option>
                                         <option value="lloydstsb">LLOYDS TSB</option>
                                         <option value="santander">SANTANDER</option>
                                         <option value="scotiabank">SCOTIABANK</option>
-                                        <option value="transferencia">TRANSFERENCIA</option>
                                     </select>
                                 </div>
                                 <div className="fecha-ingreso-cheque">
@@ -380,30 +391,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
                                     />
                                 </div>
-                                <div>
-                                    <label htmlFor="ecmoneda">Moneda:</label>
-                                    <select
-                                        id="ecmoneda"
-                                        value={ictipoMoneda}
-                                        onChange={(e) => setIcTipoMoneda(e.target.value)}
 
-                                    >
-                                        <option value="">Selecciona una Moneda</option>
-                                        <option value="USD">USD</option>
-                                        <option value="UYU">UYU</option>
-
-                                    </select>
-                                </div>
-                                <div>
-                                    <label htmlFor="icarbitraje">Arbitraje:</label>
-                                    <input
-                                        type="text"
-                                        id="icarbitraje"
-                                        value={icarbitraje}
-                                        onChange={(e) => setIcArbitraje(e.target.value)}
-
-                                    />
-                                </div>
                                 <div>
                                     <label htmlFor="icimpdelcheque">Imp. del Cheque:</label>
                                     <input
@@ -414,16 +402,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
                                     />
                                 </div>
-                                <div>
-                                    <label htmlFor="icimporteendolares">Importe en USD:</label>
-                                    <input
-                                        type="text"
-                                        id="icimporteendolares"
-                                        value={icimporteendolares}
-                                        onChange={(e) => setIcImporteEnDolares(e.target.value)}
-
-                                    />
-                                </div>
+                
                                 <div className="fecha-vencimiento-cheque">
                                     <label htmlFor="fechavencimientocheque">Vencimiento:</label>
                                     <input
@@ -509,9 +488,10 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                     <thead>
                                         <tr>
                                             <th>Fecha</th>
+                                            <th>Forma de pago</th>
                                             <th>Banco</th>
                                             <th>Nro. de Pago</th>
-                                            <th>Moneda</th>
+
                                             <th>Importe</th>
                                             <th>Vencimiento</th>
                                             <th>Acciones</th>
@@ -527,9 +507,10 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                                 }}
                                             >
                                                 <td>{cheque.icfecha}</td>
+                                                <td>{cheque.icformadepago}</td>
                                                 <td>{cheque.icbanco}</td>
                                                 <td>{cheque.icnrocheque}</td>
-                                                <td>{cheque.ictipoMoneda}</td>
+
                                                 <td>{cheque.icimpdelcheque}</td>
                                                 <td>{cheque.icfechavencimiento}</td>
                                                 <td><button type="button" className="action-button" onClick={handleEliminarChequeCargado} disabled={icchequeseleccionado !== indexic}>❌</button></td>

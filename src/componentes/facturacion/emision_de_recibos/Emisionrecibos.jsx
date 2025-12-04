@@ -488,23 +488,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
             </div>
 
-            <div className='div-cuartorenglon-datos-recibos'>
-              <div>
-                <label htmlFor="erformadepago">Forma de Pago:</label>
-                <select
-                  id="erformadepago"
-                  value={erformadepago}
-                  onChange={(e) => setErFormaDePago(e.target.value)}
-                  required
-                >
-                  <option value="">Forma de pago</option>
-                  <option value="CHQDOL">Cheque</option>
-                  <option value="TRANDOL">Transferencia</option>
-                  <option value="EFEDOL">Efectivo</option>
-                  <option value="DOCVZ">Documento</option>
-                </select>
-              </div>
-            </div>
+            
 
             <div className='div-quintorenglon-datos-recibos'>
               <div>

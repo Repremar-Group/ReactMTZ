@@ -55,3 +55,1107 @@
 4/12/2025, 10:54:09 [info]: Received request for /api/historialfac/39
 4/12/2025, 10:54:09 [info]: 🟢 ID Cliente recibido: 39 string
 4/12/2025, 10:54:09 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 11:10:25 [info]: Server running on port 5001
+4/12/2025, 11:10:26 [info]: Conexión exitosa a la base de datos MySQL
+4/12/2025, 13:54:48 [info]: Received request for /api/guias-sin-facturar
+4/12/2025, 13:54:48 [info]: Received request for /api/facturas-sin-cobrar
+4/12/2025, 13:54:48 [info]: Received request for /api/obtenertipocambio
+4/12/2025, 13:54:49 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "2",
+    "descripcion": "No se ha definido una moneda principal en la empresa.",
+    "datos": ""
+  }
+}
+4/12/2025, 13:54:49 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "39.097"
+    }
+  }
+}
+4/12/2025, 13:54:49 [info]: Received request for /api/agregartipocambio
+4/12/2025, 14:07:43 [info]: Received request for /api/historialfac/39
+4/12/2025, 14:07:43 [info]: 🟢 ID Cliente recibido: 39 string
+4/12/2025, 14:07:43 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 15:03:12 [info]: Received request for /api/historialfac/39
+4/12/2025, 15:03:12 [info]: 🟢 ID Cliente recibido: 39 string
+4/12/2025, 15:03:12 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 15:16:27 [info]: Received request for /api/insertrecibo
+4/12/2025, 15:16:28 [info]: Recibo y pagos insertados correctamente
+4/12/2025, 15:16:28 [info]: Actualizando factura 512 con idrecibo: 206
+4/12/2025, 15:16:28 [info]: Datos recibidos para insertar en cuenta corriente:
+4/12/2025, 15:16:28 [info]: idcliente: 39
+4/12/2025, 15:16:28 [info]: fecha: 2025-12-04
+4/12/2025, 15:16:28 [info]: tipodocumento: Recibo
+4/12/2025, 15:16:28 [info]: numerorecibo: 78
+4/12/2025, 15:16:28 [info]: moneda: UYU
+4/12/2025, 15:16:28 [info]: debe: 0
+4/12/2025, 15:16:28 [info]: haber: 1502.20
+4/12/2025, 15:16:28 [info]: ImpactarRecibo endpoint alcanzado
+4/12/2025, 15:16:28 [info]: ID RECIBIDO: 206
+4/12/2025, 15:16:29 [info]: TOTAL FORMAS PAGO: 1502.2
+4/12/2025, 15:16:29 [info]: TOTAL CANCELACIONES: 150.22
+4/12/2025, 15:16:29 [info]: MONEDA A USAR: 2
+4/12/2025, 15:16:29 [info]: COTIZACION CALCULADA: 10.000000
+4/12/2025, 15:16:29 [info]: GENERANDO XML RECIBO: [object Object]
+4/12/2025, 15:16:29 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <cotizacion>10.000000</cotizacion>
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son pesos uruguayos $ un mil quinientos dos  con veinte centavos</descripcion>
+                        <renglones>
+	                        
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>150.22</precioUnitario>
+        </renglon>
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30125</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>-</formaPago>
+        <importe>1502.20</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 15:16:29 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <cotizacion>10.000000</cotizacion>
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son pesos uruguayos $ un mil quinientos dos  con veinte centavos</descripcion>
+                        <renglones>
+	                        
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>150.22</precioUnitario>
+        </renglon>
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30125</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>-</formaPago>
+        <importe>1502.20</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 15:16:29 [info]: Datos recibidos: [object Object]
+4/12/2025, 15:16:44 [info]: Received request for /api/previewrecibos
+4/12/2025, 15:24:45 [info]: Server running on port 5001
+4/12/2025, 15:24:45 [info]: Conexión exitosa a la base de datos MySQL
+4/12/2025, 15:24:52 [info]: Recibo a Eliminar: 206
+4/12/2025, 15:24:53 [info]: Recibo 206 eliminado correctamente
+4/12/2025, 15:24:55 [info]: Received request for /api/previewrecibos
+4/12/2025, 15:25:09 [info]: Received request for /api/historialfac/39
+4/12/2025, 15:25:09 [info]: 🟢 ID Cliente recibido: 39 string
+4/12/2025, 15:25:09 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 15:25:41 [info]: Received request for /api/insertrecibo
+4/12/2025, 15:25:41 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+4/12/2025, 15:25:41 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+4/12/2025, 15:25:41 [info]: Valores: [
+  [
+    207,
+    "2025-12-04",
+    "canjedocumentos",
+    "bandes",
+    "1",
+    "USD",
+    "150.22",
+    "2025-12-04"
+  ]
+]
+4/12/2025, 15:25:42 [info]: Recibo y pagos insertados correctamente
+4/12/2025, 15:25:42 [info]: Actualizando factura 512 con idrecibo: 207
+4/12/2025, 15:25:42 [info]: Datos recibidos para insertar en cuenta corriente:
+4/12/2025, 15:25:42 [info]: idcliente: 39
+4/12/2025, 15:25:42 [info]: fecha: 2025-12-04
+4/12/2025, 15:25:42 [info]: tipodocumento: Recibo
+4/12/2025, 15:25:42 [info]: numerorecibo: 79
+4/12/2025, 15:25:42 [info]: moneda: USD
+4/12/2025, 15:25:42 [info]: debe: 0
+4/12/2025, 15:25:42 [info]: haber: 150.22
+4/12/2025, 15:25:42 [info]: ImpactarRecibo endpoint alcanzado
+4/12/2025, 15:25:42 [info]: ID RECIBIDO: 207
+4/12/2025, 15:25:43 [info]: TOTAL FORMAS PAGO: 150.22
+4/12/2025, 15:25:43 [info]: TOTAL CANCELACIONES: 150.22
+4/12/2025, 15:25:43 [info]: MONEDA A USAR: 2
+4/12/2025, 15:25:43 [info]: GENERANDO XML RECIBO: [object Object]
+4/12/2025, 15:25:43 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento cincuenta  con veintidos centavos</descripcion>
+                        <renglones>
+	                        
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>150.22</precioUnitario>
+        </renglon>
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30125</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>-</formaPago>
+        <importe>150.22</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 15:25:43 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento cincuenta  con veintidos centavos</descripcion>
+                        <renglones>
+	                        
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>150.22</precioUnitario>
+        </renglon>
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30125</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>-</formaPago>
+        <importe>150.22</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 15:25:43 [info]: Datos recibidos: [object Object]
+4/12/2025, 15:37:59 [info]: Server running on port 5001
+4/12/2025, 15:37:59 [info]: Conexión exitosa a la base de datos MySQL
+4/12/2025, 15:38:07 [info]: Received request for /api/historialfac/39
+4/12/2025, 15:38:07 [info]: 🟢 ID Cliente recibido: 39 string
+4/12/2025, 15:38:07 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 15:41:11 [info]: Received request for /api/insertrecibo
+4/12/2025, 15:41:11 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+4/12/2025, 15:41:11 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+4/12/2025, 15:41:11 [info]: Valores: [
+  [
+    208,
+    "2025-12-04",
+    "DOCVZ",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    208,
+    "2025-12-04",
+    "CHQDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    208,
+    "2025-12-04",
+    "EFEDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    208,
+    "2025-12-04",
+    "TRANDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    208,
+    "2025-12-04",
+    "CHQDOL",
+    "banqueheritage",
+    "1",
+    "USD",
+    "146.22",
+    "2025-12-04"
+  ]
+]
+4/12/2025, 15:41:12 [info]: Recibo y pagos insertados correctamente
+4/12/2025, 15:41:12 [info]: Actualizando factura 516 con idrecibo: 208
+4/12/2025, 15:41:12 [info]: Datos recibidos para insertar en cuenta corriente:
+4/12/2025, 15:41:12 [info]: idcliente: 39
+4/12/2025, 15:41:12 [info]: fecha: 2025-12-04
+4/12/2025, 15:41:12 [info]: tipodocumento: Recibo
+4/12/2025, 15:41:12 [info]: numerorecibo: 80
+4/12/2025, 15:41:12 [info]: moneda: USD
+4/12/2025, 15:41:12 [info]: debe: 0
+4/12/2025, 15:41:12 [info]: haber: 150.22
+4/12/2025, 15:41:12 [info]: ImpactarRecibo endpoint alcanzado
+4/12/2025, 15:41:12 [info]: ID RECIBIDO: 208
+4/12/2025, 15:41:13 [info]: TOTAL FORMAS PAGO: 150.22
+4/12/2025, 15:41:13 [info]: TOTAL CANCELACIONES: 150.22
+4/12/2025, 15:41:13 [info]: MONEDA A USAR: 2
+4/12/2025, 15:41:13 [info]: GENERANDO XML RECIBO: [object Object]
+4/12/2025, 15:41:13 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento cincuenta  con veintidos centavos</descripcion>
+                        <renglones>
+	                        
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>146.22</precioUnitario>
+        </renglon>
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30126</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+    <formaPago>
+        <formaPago>EFEDOL</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>TRANDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>TRANS</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>146.22</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 15:41:13 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento cincuenta  con veintidos centavos</descripcion>
+                        <renglones>
+	                        
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>1.00</precioUnitario>
+        </renglon>
+        <renglon>
+            <producto>REC</producto>
+            <nombreProducto>Cancelación de Facturas</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>146.22</precioUnitario>
+        </renglon>
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30126</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+    <formaPago>
+        <formaPago>EFEDOL</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>TRANDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>TRANS</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>146.22</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 15:41:13 [info]: Datos recibidos: [object Object]
+4/12/2025, 16:04:24 [info]: Server running on port 5001
+4/12/2025, 16:04:24 [info]: Conexión exitosa a la base de datos MySQL
+4/12/2025, 16:04:39 [info]: Received request for /api/previewrecibos
+4/12/2025, 16:04:43 [info]: Recibo a Eliminar: 207
+4/12/2025, 16:04:43 [info]: Recibo 207 eliminado correctamente
+4/12/2025, 16:04:45 [info]: Received request for /api/previewrecibos
+4/12/2025, 16:04:48 [info]: Recibo a Eliminar: 208
+4/12/2025, 16:04:49 [info]: Recibo 208 eliminado correctamente
+4/12/2025, 16:04:51 [info]: Received request for /api/previewrecibos
+4/12/2025, 16:04:58 [info]: Received request for /api/historialfac/39
+4/12/2025, 16:04:58 [info]: 🟢 ID Cliente recibido: 39 string
+4/12/2025, 16:04:58 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 16:05:35 [info]: Received request for /api/insertrecibo
+4/12/2025, 16:05:36 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+4/12/2025, 16:05:36 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+4/12/2025, 16:05:36 [info]: Valores: [
+  [
+    209,
+    "2025-12-04",
+    "DOCVZ",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    209,
+    "2025-12-04",
+    "CHQDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    209,
+    "2025-12-04",
+    "EFEDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    209,
+    "2025-12-04",
+    "TRANDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    209,
+    "2025-12-04",
+    "DOCVZ",
+    "bandes",
+    "1",
+    "USD",
+    "146.22",
+    "2025-12-04"
+  ]
+]
+4/12/2025, 16:05:36 [info]: Recibo y pagos insertados correctamente
+4/12/2025, 16:05:36 [info]: Actualizando factura 512 con idrecibo: 209
+4/12/2025, 16:05:36 [info]: Datos recibidos para insertar en cuenta corriente:
+4/12/2025, 16:05:36 [info]: idcliente: 39
+4/12/2025, 16:05:36 [info]: fecha: 2025-12-04
+4/12/2025, 16:05:36 [info]: tipodocumento: Recibo
+4/12/2025, 16:05:36 [info]: numerorecibo: 81
+4/12/2025, 16:05:36 [info]: moneda: USD
+4/12/2025, 16:05:36 [info]: debe: 0
+4/12/2025, 16:05:36 [info]: haber: 150.22
+4/12/2025, 16:05:37 [info]: ImpactarRecibo endpoint alcanzado
+4/12/2025, 16:05:37 [info]: ID RECIBIDO: 209
+4/12/2025, 16:05:37 [info]: TOTAL FORMAS PAGO: 150.22
+4/12/2025, 16:05:37 [info]: TOTAL CANCELACIONES: 150.22
+4/12/2025, 16:05:37 [info]: MONEDA A USAR: 2
+4/12/2025, 16:05:37 [info]: GENERANDO XML RECIBO: [object Object]
+4/12/2025, 16:05:37 [error]: Error en /api/impactarrecibo: ReferenceError: precioUnitario is not defined
+4/12/2025, 16:05:37 [info]: Datos recibidos: [object Object]
+4/12/2025, 16:06:05 [info]: Server running on port 5001
+4/12/2025, 16:06:05 [info]: Conexión exitosa a la base de datos MySQL
+4/12/2025, 16:06:11 [info]: Received request for /api/previewrecibos
+4/12/2025, 16:06:16 [info]: Recibo a Eliminar: 209
+4/12/2025, 16:06:16 [info]: Recibo 209 eliminado correctamente
+4/12/2025, 16:06:18 [info]: Received request for /api/previewrecibos
+4/12/2025, 16:06:23 [info]: Received request for /api/historialfac/39
+4/12/2025, 16:06:23 [info]: 🟢 ID Cliente recibido: 39 string
+4/12/2025, 16:06:23 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 16:07:59 [info]: Received request for /api/insertrecibo
+4/12/2025, 16:07:59 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+4/12/2025, 16:07:59 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+4/12/2025, 16:07:59 [info]: Valores: [
+  [
+    210,
+    "2025-12-04",
+    "DOCVZ",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    210,
+    "2025-12-04",
+    "CHQDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    210,
+    "2025-12-04",
+    "EFEDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    210,
+    "2025-12-04",
+    "TRANDOL",
+    "bandes",
+    "1",
+    "USD",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    210,
+    "2025-12-04",
+    "DOCVZ",
+    "bandes",
+    "1",
+    "USD",
+    "146.22",
+    "2025-12-04"
+  ]
+]
+4/12/2025, 16:08:00 [info]: Recibo y pagos insertados correctamente
+4/12/2025, 16:08:00 [info]: Actualizando factura 512 con idrecibo: 210
+4/12/2025, 16:08:00 [info]: Datos recibidos para insertar en cuenta corriente:
+4/12/2025, 16:08:00 [info]: idcliente: 39
+4/12/2025, 16:08:00 [info]: fecha: 2025-12-04
+4/12/2025, 16:08:00 [info]: tipodocumento: Recibo
+4/12/2025, 16:08:00 [info]: numerorecibo: 82
+4/12/2025, 16:08:00 [info]: moneda: USD
+4/12/2025, 16:08:00 [info]: debe: 0
+4/12/2025, 16:08:00 [info]: haber: 150.22
+4/12/2025, 16:08:00 [info]: ImpactarRecibo endpoint alcanzado
+4/12/2025, 16:08:00 [info]: ID RECIBIDO: 210
+4/12/2025, 16:08:01 [info]: TOTAL FORMAS PAGO: 150.22
+4/12/2025, 16:08:01 [info]: TOTAL CANCELACIONES: 150.22
+4/12/2025, 16:08:01 [info]: MONEDA A USAR: 2
+4/12/2025, 16:08:01 [info]: GENERANDO XML RECIBO: [object Object]
+4/12/2025, 16:08:01 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento cincuenta  con veintidos centavos</descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>150.22</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30125</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+    <formaPago>
+        <formaPago>EFEDOL</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>TRANDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>TRANS</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>146.22</importe>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 16:08:01 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento cincuenta  con veintidos centavos</descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>150.22</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30125</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+    <formaPago>
+        <formaPago>EFEDOL</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>TRANDOL</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>TRANS</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>146.22</importe>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 16:08:01 [info]: Datos recibidos: [object Object]
+4/12/2025, 16:13:16 [info]: Received request for /api/historialfac/39
+4/12/2025, 16:13:16 [info]: 🟢 ID Cliente recibido: 39 string
+4/12/2025, 16:13:16 [info]: Calculando saldo total para el cliente 39
+4/12/2025, 16:14:28 [info]: Received request for /api/insertrecibo
+4/12/2025, 16:14:28 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+4/12/2025, 16:14:28 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+4/12/2025, 16:14:28 [info]: Valores: [
+  [
+    211,
+    "2025-12-04",
+    "DOCVZ",
+    "bandes",
+    "1",
+    "UYU",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    211,
+    "2025-12-04",
+    "CHQDOL",
+    "bandes",
+    "1",
+    "UYU",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    211,
+    "2025-12-04",
+    "EFEDOL",
+    "bandes",
+    "1",
+    "UYU",
+    "1",
+    "2025-12-04"
+  ],
+  [
+    211,
+    "2025-12-04",
+    "TRANDOL",
+    "bandes",
+    "1",
+    "UYU",
+    "6381.35",
+    "2025-12-04"
+  ]
+]
+4/12/2025, 16:14:29 [info]: Recibo y pagos insertados correctamente
+4/12/2025, 16:14:29 [info]: Actualizando factura 516 con idrecibo: 211
+4/12/2025, 16:14:29 [info]: Datos recibidos para insertar en cuenta corriente:
+4/12/2025, 16:14:29 [info]: idcliente: 39
+4/12/2025, 16:14:29 [info]: fecha: 2025-12-04
+4/12/2025, 16:14:29 [info]: tipodocumento: Recibo
+4/12/2025, 16:14:29 [info]: numerorecibo: 83
+4/12/2025, 16:14:29 [info]: moneda: UYU
+4/12/2025, 16:14:29 [info]: debe: 0
+4/12/2025, 16:14:29 [info]: haber: 6384.35
+4/12/2025, 16:14:29 [info]: ImpactarRecibo endpoint alcanzado
+4/12/2025, 16:14:29 [info]: ID RECIBIDO: 211
+4/12/2025, 16:14:30 [info]: TOTAL FORMAS PAGO: 6384.35
+4/12/2025, 16:14:30 [info]: TOTAL CANCELACIONES: 150.22
+4/12/2025, 16:14:30 [info]: MONEDA A USAR: 2
+4/12/2025, 16:14:30 [info]: COTIZACION CALCULADA: 42.500000
+4/12/2025, 16:14:30 [info]: GENERANDO XML RECIBO: [object Object]
+4/12/2025, 16:14:30 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <cotizacion>42.500000</cotizacion>
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son pesos uruguayos $ seis mil trescientos ochenta y cuatro  con treinta y cinco centavos</descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>6384.35</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30126</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQPES</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+    <formaPago>
+        <formaPago>EFEPES</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>TRANPES</formaPago>
+        <importe>6381.35</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>TRANS</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 16:14:30 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-04</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <cotizacion>42.500000</cotizacion>
+                        <fechaVencimiento>2025-12-04</fechaVencimiento>
+                        <descripcion>Son pesos uruguayos $ seis mil trescientos ochenta y cuatro  con treinta y cinco centavos</descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>6384.35</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30126</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>150.22</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>CHQPES</formaPago>
+        <importe>1.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-04</vencimiento>
+    </formaPago>
+    <formaPago>
+        <formaPago>EFEPES</formaPago>
+        <importe>1.00</importe>
+    </formaPago>
+    <formaPago>
+        <formaPago>TRANPES</formaPago>
+        <importe>6381.35</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>TRANS</tipoDocumento>
+        <comprobante>1</comprobante>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+4/12/2025, 16:14:30 [info]: Datos recibidos: [object Object]
