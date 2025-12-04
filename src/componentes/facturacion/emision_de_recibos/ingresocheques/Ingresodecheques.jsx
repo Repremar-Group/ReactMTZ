@@ -348,10 +348,26 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
                                     >
                                         <option value="">Selecciona un Banco</option>
-                                        <option value="itau">Itau</option>
-                                        <option value="santander">Santander</option>
-                                        <option value="brou">Brou</option>
-                                        <option value="giro">Giro</option>
+                                        <option value="bandes">BANDES</option>
+                                        <option value="banqueheritage">BANQUE HERITAGE</option>
+                                        <option value="bbva">BBVA</option>
+                                        <option value="brou">BROU</option>
+                                        <option value="canjedocumentos">CANJE DOCUMENTOS</option>
+                                        <option value="cash">CASH</option>
+                                        <option value="cheque">CHEQUE</option>
+                                        <option value="citibank">CITI BANK</option>
+                                        <option value="comercial">COMERCIAL</option>
+                                        <option value="deposito">DEPOSITO</option>
+                                        <option value="discount">DISCOUNT</option>
+                                        <option value="documentos">DOCUMENTOS</option>
+                                        <option value="efectivo">EFECTIVO</option>
+                                        <option value="giro">GIRO</option>
+                                        <option value="hsbc">HSBC</option>
+                                        <option value="itau">ITAU</option>
+                                        <option value="lloydstsb">LLOYDS TSB</option>
+                                        <option value="santander">SANTANDER</option>
+                                        <option value="scotiabank">SCOTIABANK</option>
+                                        <option value="transferencia">TRANSFERENCIA</option>
                                     </select>
                                 </div>
                                 <div className="fecha-ingreso-cheque">
