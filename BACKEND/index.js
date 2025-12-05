@@ -5835,16 +5835,17 @@ app.get('/api/obtenercorrelatividad', async (req, res) => {
 app.get('/api/obtenercorrelatividadtabla', async (req, res) => {
   const query = `
     SELECT 
-      nroformulario AS ccformulario, 
-      nrorecibo AS ccdocumento, 
-      DATE_FORMAT(fecha, '%d/%m/%Y') AS ccfecha, 
-      'Recibo' AS cctipocomprobante, 
-      CASE 
-        WHEN numeroDocumentoCFE IS NOT NULL AND numeroDocumentoCFE != '' THEN 'Correcto'
-        ELSE 'Sin impactar'
-      END AS ccestado
-    FROM recibos
-    ORDER BY nroformulario DESC
+  nroformulario AS ccformulario, 
+  nrorecibo AS ccdocumento, 
+  DATE_FORMAT(fecha, '%d/%m/%Y') AS ccfecha, 
+  'Recibo' AS cctipocomprobante, 
+  CASE 
+    WHEN Estado = 'Anulado' THEN 'Anulado'
+    WHEN numeroDocumentoCFE IS NOT NULL AND numeroDocumentoCFE != '' THEN 'Correcto'
+    ELSE 'Sin impactar'
+  END AS ccestado
+FROM recibos
+ORDER BY nroformulario DESC;
   `;
 
   try {
