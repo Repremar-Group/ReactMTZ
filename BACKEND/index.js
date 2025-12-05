@@ -3542,6 +3542,7 @@ app.post('/api/insertrecibo', async (req, res) => {
     const datosEmpresa = await obtenerDatosEmpresa(pool);
     const formularioausar = datosEmpresa.ultimoFormularioRecibo + 1;
     const documentoausar = datosEmpresa.ultimoDocumentoRecibo + 1;
+    const monedaRecibo = 'USD';
 
     // 🔸 INSERTAR RECIBO
     const insertReciboQuery = `
@@ -3549,7 +3550,7 @@ app.post('/api/insertrecibo', async (req, res) => {
       VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const [resultInsert] = await connection.query(insertReciboQuery, [
-      documentoausar, fecha, idcliente, nombrecliente, moneda, importe,
+      documentoausar, fecha, idcliente, nombrecliente, monedaRecibo, importe,
       formapago, razonsocial, rut, direccion, formularioausar, aCuenta, comentario
     ]);
     const idrecibo = resultInsert.insertId;
@@ -3956,13 +3957,13 @@ app.post('/api/generarReciboPDF', async (req, res) => {
     const fontSize = 10;
 
     // Datos estáticos
-    primeraPagina.drawText(`Recibo N°: ${numrecibo}`, { x: 480, y: 765, size: 11, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${datosRecibo.errut}`, { x: 275, y: 760, size: 11, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${day}`, { x: 465, y: 705, size: 11, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${month}`, { x: 505, y: 705, size: 11, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${year}`, { x: 540, y: 705, size: 11, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${datosRecibo.errazonSocial}`, { x: 130, y: 725, size: 11, color: rgb(0, 0, 0) });
-    primeraPagina.drawText(`${datosRecibo.erdireccion}`, { x: 130, y: 705, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`Recibo N°: ${numrecibo}`, { x: 480, y: 775, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.errut}`, { x: 295, y: 770, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${day}`, { x: 470, y: 710, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${month}`, { x: 510, y: 710, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${year}`, { x: 550, y: 710, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.errazonSocial}`, { x: 130, y: 730, size: 11, color: rgb(0, 0, 0) });
+    primeraPagina.drawText(`${datosRecibo.erdireccion}`, { x: 130, y: 710, size: 11, color: rgb(0, 0, 0) });
 
     // Función para dividir texto en líneas, rompiendo palabras largas si es necesario
     function dividirEnLineas(texto, maxWidth, font, fontSize) {
@@ -4052,7 +4053,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
           primeraPagina.drawText(`${pago.icfechavencimiento}`, { x: headerX.vencimiento, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
           primeraPagina.drawText(`${pago.icnrocheque}`, { x: headerX.nro, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
           primeraPagina.drawText(`${pago.ictipoMoneda}`, { x: headerX.moneda, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
-          primeraPagina.drawText(`${datosRecibo.arbitraje}`, { x: headerX.arbitraje, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${datosRecibo.tipoCambio}`, { x: headerX.arbitraje, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
           primeraPagina.drawText(`${pago.icimpdelcheque}`, { x: headerX.importe, y: pagosYPos, size: fontSize, font, color: rgb(0, 0, 0) });
           pagosYPos -= espacioY;
         }
@@ -4163,7 +4164,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
             primeraPagina.drawText(`${pago.icfechavencimiento || ''}`, { x: headerX.vencimiento, y: pagosYPos, size: fontSize, font });
             primeraPagina.drawText(`${pago.icnrocheque || ''}`, { x: headerX.nro, y: pagosYPos, size: fontSize, font });
             primeraPagina.drawText(`${pago.ictipoMoneda || ''}`, { x: headerX.moneda, y: pagosYPos, size: fontSize, font });
-            primeraPagina.drawText(`${datosRecibo.arbitraje || ''}`, { x: headerX.arbitraje, y: pagosYPos, size: fontSize, font });
+            primeraPagina.drawText(`${datosRecibo.tipoCambio || ''}`, { x: headerX.arbitraje, y: pagosYPos, size: fontSize, font });
             primeraPagina.drawText(`${pago.icimpdelcheque || ''}`, { x: headerX.importe, y: pagosYPos, size: fontSize, font });
             pagosYPos -= espacioY;
           }
@@ -4183,7 +4184,7 @@ app.post('/api/generarReciboPDF', async (req, res) => {
           primeraPagina.drawText(`${montoenletras}`, { x: 50, y: pagosYPos, size: 10, font });
 
           // 🔹 Total numérico (alineado a la derecha)
-          primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 516, y: 42, size: 10, font, color: rgb(0, 0, 0) });
+          primeraPagina.drawText(`${datosRecibo.totalrecibo}`, { x: 516, y: 28, size: 10, font, color: rgb(0, 0, 0) });
         }
       } else {
         console.error("No se encontraron facturas en los datos recibidos.", datosRecibo.facturas);

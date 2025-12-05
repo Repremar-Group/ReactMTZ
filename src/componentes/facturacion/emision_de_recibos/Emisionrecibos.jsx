@@ -289,7 +289,11 @@ const Emisionrecibos = ({ isLoggedIn }) => {
 
 
 
-  const TablaMovimientos = ({ datos, loading }) => (
+ const TablaMovimientos = ({ datos, loading }) => {
+  // Garantizo que siempre sea un array
+  const lista = Array.isArray(datos) ? datos : [];
+
+  return (
     <div className="contenedor-tabla-cuentacorriente">
 
       {loading && (
@@ -297,6 +301,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           <div className="loading-spinner"></div>
         </div>
       )}
+
       <table className="tabla-cuentaco">
         <thead>
           <tr>
@@ -307,36 +312,46 @@ const Emisionrecibos = ({ isLoggedIn }) => {
             <th>Monto</th>
           </tr>
         </thead>
-        <tbody>
-          {datos.map((factura, index) => (
-            <tr
-              key={index}
-              onDoubleClick={() => {
-                if (aCuenta) {
-                  toast.warning('No podés agregar facturas mientras esté marcado "A Cuenta"');
-                  return;
-                }
 
-                if (factura.Id) {
-                  buscarFactura(factura.Id);
-                }
-              }}
-              style={{
-                cursor: aCuenta ? 'not-allowed' : 'pointer',
-                opacity: aCuenta ? 0.6 : 1,
-              }}
-            >
-              <td>{factura.FechaCFEFormateada || factura.Fecha}</td>
-              <td>{factura.TipoDocCFE || factura.ComprobanteElectronico}</td>
-              <td>{factura.NumeroCFE}</td>
-              <td>{factura.idrecibo || '-'}</td>
-              <td>{factura.TotalCobrar}</td>
+        <tbody>
+          {lista.length === 0 ? (
+            <tr>
+              <td colSpan="5" style={{ textAlign: "center", padding: "10px" }}>
+                No hay movimientos
+              </td>
             </tr>
-          ))}
+          ) : (
+            lista.map((factura, index) => (
+              <tr
+                key={index}
+                onDoubleClick={() => {
+                  if (aCuenta) {
+                    toast.warning('No podés agregar facturas mientras esté marcado "A Cuenta"');
+                    return;
+                  }
+
+                  if (factura.Id) {
+                    buscarFactura(factura.Id);
+                  }
+                }}
+                style={{
+                  cursor: aCuenta ? 'not-allowed' : 'pointer',
+                  opacity: aCuenta ? 0.6 : 1,
+                }}
+              >
+                <td>{factura.FechaCFEFormateada || factura.Fecha}</td>
+                <td>{factura.TipoDocCFE || factura.ComprobanteElectronico}</td>
+                <td>{factura.NumeroCFE}</td>
+                <td>{factura.idrecibo || '-'}</td>
+                <td>{factura.TotalCobrar}</td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
   );
+};
 
   useEffect(() => {
     const erfechaactual = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
@@ -383,6 +398,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
     erdireccion,
     aCuenta,
     comentario,
+    tipoCambio
   };
 
 

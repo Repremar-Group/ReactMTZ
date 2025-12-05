@@ -1159,3 +1159,6 @@
    </soapenv:Body>
 </soapenv:Envelope>
 4/12/2025, 16:14:30 [info]: Datos recibidos: [object Object]
+4/12/2025, 21:00:00 [info]: ⏰ Ejecutando cierre diario...
+4/12/2025, 21:00:00 [info]: ✅ Cierre diario guardado: 4/12/2025, 9:00:00 p. m.
+4/12/2025, 21:00:04 [info]: 📧 Correo enviado: 250 2.0.0 OK  1764892804 5a478bee46e88-2aba822b615sm8810852eec.0 - gsmtp

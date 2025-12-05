@@ -99,7 +99,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     // Función para agregar una factura asociada a la tabla
     const handleAgregarChequeCargado = () => {
         console.log('Validando Cheque con estos datos: ', icnrocheque, icbanco, icfecha, ictipoMoneda, icarbitraje, icimpdelcheque, icimporteendolares, icfechavencimiento)
-        if (icnrocheque && icbanco && icfecha  && icimpdelcheque  && icfechavencimiento && icformadepago) {
+        if (icnrocheque && icbanco && icfecha && icimpdelcheque && icfechavencimiento && icformadepago) {
             console.log('Valores del cheque, Importe: ', icimporteendolares, ' Saldo del Pago: ', icsaldodeldocumento, 'A cuenta: ', aCuenta, 'Expresion', (icimporteendolares <= icsaldodeldocumento) && !aCuenta);
             const saldoRedondeado = parseFloat(Number(icsaldodeldocumento).toFixed(2));
             if (((icimporteendolares <= saldoRedondeado) && !aCuenta) || aCuenta) {
@@ -131,6 +131,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
     const descargarPDF = async (datosRecibo, idrecibo, numrecibo, iclistadecheques = []) => {
         try {
+            console.log("Estos son los datos del recibo",datosRecibo)
             const response = await fetch(`${backURL}/api/generarReciboPDF`, {
                 method: 'POST',
                 headers: {
@@ -183,7 +184,9 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     console.log("Facturas obtenidas:", responsefacturas.data);
                     facturas = responsefacturas.data;
                 }
-
+                const importeFinal = datosRecibo.ertipoMoneda === 'UYU'
+                    ? Number(datosRecibo.erimporte) / Number(datosRecibo.tipoCambio)
+                    : Number(datosRecibo.erimporte);
                 // Preparar objeto del recibo
                 const nuevoRecibo = {
                     nrorecibo: datosRecibo.ernumrecibo,
@@ -193,7 +196,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     nombrecliente: datosRecibo.searchTerm,
                     moneda: datosRecibo.ertipoMoneda,
                     formapago: "-",
-                    importe: datosRecibo.erimporte,
+                    importe: importeFinal,
                     razonsocial: datosRecibo.errazonSocial,
                     rut: datosRecibo.errut,
                     direccion: datosRecibo.erdireccion,
@@ -267,7 +270,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     );
                 } else {
                     // Total de las guías
-                    datosRecibo.totalrecibo = ictotaldelasguias;
+                    datosRecibo.totalrecibo = (ictotaldelasguias / datosRecibo.tipoCambio).toFixed(2);
                 }
                 // Descargar PDF
                 await descargarPDF(datosRecibo, idrecibo, numrecibo, iclistadecheques);
@@ -277,6 +280,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 toast.error('Error al guardar el recibo');
             } finally {
                 setLoading(false);
+                await descargarPDF(datosRecibo, idrecibo, numrecibo, iclistadecheques);
             }
 
         } else {
@@ -291,7 +295,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
             setIcBanco('');
             setIcFecha(fechaActual);
             setIcTipoMoneda(datosRecibo.ertipoMoneda);
-            console.log('Tipo moneda de los pagos',datosRecibo.ertipoMoneda );
+            console.log('Tipo moneda de los pagos', datosRecibo.ertipoMoneda);
             setIcArbitraje('1');
             setIcImpDelCheque('');
             setIcImporteEnDolares('');
@@ -402,7 +406,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
                                     />
                                 </div>
-                
+
                                 <div className="fecha-vencimiento-cheque">
                                     <label htmlFor="fechavencimientocheque">Vencimiento:</label>
                                     <input
