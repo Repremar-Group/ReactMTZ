@@ -280,7 +280,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                 toast.error('Error al guardar el recibo');
             } finally {
                 setLoading(false);
-                await descargarPDF(datosRecibo, idrecibo, numrecibo, iclistadecheques);
+                
             }
 
         } else {
