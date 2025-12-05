@@ -34,7 +34,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
   //Estados para manejar la moneda del cheque
   const [ertipoMoneda, setErTipoMoneda] = useState('USD');//*
   const [isModalTipoCambioAbierto, setIsModalTipoCambioAbierto] = useState(false);
-  const [tipoCambio, setTipoCambio] = useState(null);
+  const [tipoCambio, setTipoCambio] = useState(1);
 
   const [erimporte, setErImporte] = useState('');
 

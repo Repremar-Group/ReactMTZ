@@ -10,10 +10,11 @@
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
 }
-.TDGUIAS{
+.textoCorto {
+  display: inline-block;
   max-width: 150px;
-  overflow: hidden;
   white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 .Titulo {
@@ -287,8 +288,8 @@ th {
 }
 
 .buscarfacturas-submenu-container {
-  position: relative;
-  display: inline-block;
+     position: relative;
+  z-index: 999999;
 }
 
 /* Botón de los tres puntos */
@@ -315,7 +316,7 @@ th {
   opacity: 0;
   transform: translateY(10px);
   pointer-events: none;
-  position: absolute;
+   position: absolute;
   bottom: -110%;
   /* aparece justo arriba */
   right: 20px;
@@ -323,18 +324,27 @@ th {
   background-color: transparent;
   min-width: 160px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 9999;
+ 
   flex-direction: column;
   padding: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 2147483647;
 }
-
+.td-guias {
+  max-width: 180px;     /* Ajustá el ancho que quieras */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 1;           /* No tapa el submenu */
+}
 /* Mostrar submenu cuando el mouse esté sobre el td */
 .td-con-submenu:hover .buscarfacturas-submenu-container .buscarfacturas-submenu,
 .buscarfacturas-submenu-container:hover .buscarfacturas-submenu {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+
 }
 
 /* Cambia el submenu a la izquierda */
@@ -379,6 +389,7 @@ th {
   font-weight: bolder;
   border: none;
 }
+
 .overlaybuscarfactura {
     position: fixed;
     top: 0;

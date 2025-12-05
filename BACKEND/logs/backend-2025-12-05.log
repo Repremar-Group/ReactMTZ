@@ -969,3 +969,448 @@
    </soapenv:Body>
 </soapenv:Envelope>
 5/12/2025, 12:30:27 [info]: Datos recibidos: [object Object]
+5/12/2025, 14:06:37 [info]: Received request for /api/previewguias
+5/12/2025, 14:06:37 [info]: Received request for /api/previewguiasexpo
+5/12/2025, 14:08:45 [info]: Received request for /api/previewguias
+5/12/2025, 14:08:45 [info]: Received request for /api/previewguiasexpo
+5/12/2025, 14:13:02 [info]: Received request for /api/previewguias
+5/12/2025, 14:13:02 [info]: Received request for /api/previewguiasexpo
+5/12/2025, 14:13:14 [info]: Received request for /api/previewguias
+5/12/2025, 14:13:14 [info]: Received request for /api/previewguiasexpo
+5/12/2025, 14:24:06 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:25:34 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:27:22 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:27:32 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:28:27 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:28:39 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:29:30 [info]: Impactando Documento en el back Factura:  [object Object]  idFactura:  9
+5/12/2025, 14:29:31 [info]: Moneda de la adenda:  USD
+5/12/2025, 14:29:31 [info]: Convirtiendo esta fecha 6/2/2025
+5/12/2025, 14:29:31 [info]: Convirtiendo esta fecha 26/7/2025
+5/12/2025, 14:29:31 [info]: GENERANDO XML EFACTURA: [object Object]
+5/12/2025, 14:29:31 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                <documento>
+                <fechaDocumento>2025-02-06</fechaDocumento>
+                <tipoDocumento>FCD</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-07-26</fechaVencimiento>
+                <descripcion>Son dólares americanos U$S ciento cincuenta y cinco  con sesenta y dos centavos</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>0</producto>
+                <nombreProducto>null</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.00</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+5/12/2025, 14:29:33 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:30:06 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:30:23 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:30:28 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:30:39 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:30:46 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:30:51 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:32:50 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:33:34 [info]: Impactando Documento en el back Factura:  [object Object]  idFactura:  9
+5/12/2025, 14:33:34 [info]: Moneda de la adenda:  USD
+5/12/2025, 14:33:34 [info]: Convirtiendo esta fecha 6/2/2025
+5/12/2025, 14:33:34 [info]: Convirtiendo esta fecha 26/7/2025
+5/12/2025, 14:33:34 [info]: GENERANDO XML EFACTURA: [object Object]
+5/12/2025, 14:33:34 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                <documento>
+                <fechaDocumento>2025-02-06</fechaDocumento>
+                <tipoDocumento>FCD</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-07-26</fechaVencimiento>
+                <descripcion>Son dólares americanos U$S ciento cincuenta y cinco  con sesenta y dos centavos</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>0</producto>
+                <nombreProducto>null</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.00</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+5/12/2025, 14:33:36 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:33:50 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:35:38 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:36:17 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:36:28 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:36:42 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:36:46 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:36:50 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:40:52 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:40:59 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:42:12 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:42:18 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:42:56 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:43:16 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:43:51 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:44:22 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:54:50 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:54:54 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:56:01 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:57:07 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:58:16 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:58:29 [info]: Received request for /api/previewfacturas
+5/12/2025, 14:59:57 [info]: Received request for /api/previewfacturas
+5/12/2025, 15:00:06 [info]: Received request for /api/previewfacturas
+5/12/2025, 15:00:17 [info]: Received request for /api/previewfacturas
+5/12/2025, 15:01:00 [info]: Received request for /api/previewfacturas
+5/12/2025, 15:20:02 [info]: Server running on port 5001
+5/12/2025, 15:20:24 [error]: Error conectando a la base de datos: Error: connect ETIMEDOUT 172.212.44.168:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1607:16)
+    --------------------
+    at Protocol._enqueue (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at Protocol.handshake (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:51:23)
+    at Connection.connect (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\node_modules\mysql\lib\Connection.js:116:18)
+    at Object.<anonymous> (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\BACKEND\index.js:94:12)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:174:12)
+    at node:internal/main/run_main_module:28:49
+5/12/2025, 15:21:43 [info]: Server running on port 5001
+5/12/2025, 15:21:45 [info]: Conexión exitosa a la base de datos MySQL
+5/12/2025, 15:22:07 [info]: Received request for /api/guias-sin-facturar
+5/12/2025, 15:22:07 [info]: Received request for /api/facturas-sin-cobrar
+5/12/2025, 15:22:07 [info]: Received request for /api/obtenertipocambio
+5/12/2025, 15:22:31 [info]: Received request for /api/historialfac/39
+5/12/2025, 15:22:31 [info]: 🟢 ID Cliente recibido: 39 string
+5/12/2025, 15:22:31 [info]: Calculando saldo total para el cliente 39
+5/12/2025, 15:23:18 [info]: Received request for /api/insertrecibo
+5/12/2025, 15:23:19 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+5/12/2025, 15:23:19 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+5/12/2025, 15:23:19 [info]: Valores: [
+  [
+    218,
+    "2025-12-05",
+    "DOCVZ",
+    "bandes",
+    "1",
+    "USD",
+    "112",
+    "2025-12-05"
+  ]
+]
+5/12/2025, 15:23:21 [info]: Recibo y pagos insertados correctamente
+5/12/2025, 15:23:21 [info]: Actualizando factura 446 con idrecibo: 218
+5/12/2025, 15:23:21 [info]: Datos recibidos para insertar en cuenta corriente:
+5/12/2025, 15:23:21 [info]: idcliente: 39
+5/12/2025, 15:23:21 [info]: fecha: 2025-12-05
+5/12/2025, 15:23:21 [info]: tipodocumento: Recibo
+5/12/2025, 15:23:21 [info]: numerorecibo: 90
+5/12/2025, 15:23:21 [info]: moneda: USD
+5/12/2025, 15:23:21 [info]: debe: 0
+5/12/2025, 15:23:21 [info]: haber: 112
+5/12/2025, 15:23:21 [info]: ImpactarRecibo endpoint alcanzado
+5/12/2025, 15:23:21 [info]: ID RECIBIDO: 218
+5/12/2025, 15:23:23 [info]: TOTAL FORMAS PAGO: 112
+5/12/2025, 15:23:23 [info]: TOTAL CANCELACIONES: 112
+5/12/2025, 15:23:23 [info]: MONEDA A USAR: 2
+5/12/2025, 15:23:23 [info]: GENERANDO XML RECIBO: [object Object]
+5/12/2025, 15:23:23 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-05</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-05</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento doce  </descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>112</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30100</comprobanteAfectado>
+                <vencimientoAfectado>2025-08-13</vencimientoAfectado>
+                <importe>112.00</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>112.00</importe>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+5/12/2025, 15:23:23 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-05</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-05</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento doce  </descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>112</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30100</comprobanteAfectado>
+                <vencimientoAfectado>2025-08-13</vencimientoAfectado>
+                <importe>112.00</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>DOCVZ</formaPago>
+        <importe>112.00</importe>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+5/12/2025, 15:23:44 [error]: Error al enviar XML al WS: Error: connect ETIMEDOUT 10.0.10.16:8082
+5/12/2025, 15:23:44 [info]: Datos recibidos: [object Object]
+5/12/2025, 15:24:00 [info]: Received request for /api/historialfac/10
+5/12/2025, 15:24:00 [info]: 🟢 ID Cliente recibido: 10 string
+5/12/2025, 15:24:00 [info]: Calculando saldo total para el cliente 10
+5/12/2025, 15:24:01 [info]: No hay facturas emitidas para este cliente
+5/12/2025, 15:24:07 [info]: Received request for /api/historialfac/39
+5/12/2025, 15:24:07 [info]: 🟢 ID Cliente recibido: 39 string
+5/12/2025, 15:24:07 [info]: Calculando saldo total para el cliente 39
+5/12/2025, 15:24:40 [info]: Received request for /api/insertrecibo
+5/12/2025, 15:24:43 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+5/12/2025, 15:24:43 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+5/12/2025, 15:24:43 [info]: Valores: [
+  [
+    219,
+    "2025-12-05",
+    "CHQDOL",
+    "bandes",
+    "1",
+    "UYU",
+    "1221.30",
+    "2025-12-05"
+  ]
+]
+5/12/2025, 15:24:44 [info]: Recibo y pagos insertados correctamente
+5/12/2025, 15:24:44 [info]: Actualizando factura 456 con idrecibo: 219
+5/12/2025, 15:24:44 [info]: Datos recibidos para insertar en cuenta corriente:
+5/12/2025, 15:24:44 [info]: idcliente: 39
+5/12/2025, 15:24:44 [info]: fecha: 2025-12-05
+5/12/2025, 15:24:44 [info]: tipodocumento: Recibo
+5/12/2025, 15:24:44 [info]: numerorecibo: 91
+5/12/2025, 15:24:44 [info]: moneda: UYU
+5/12/2025, 15:24:44 [info]: debe: 0
+5/12/2025, 15:24:44 [info]: haber: 1221.30
+5/12/2025, 15:24:44 [info]: ImpactarRecibo endpoint alcanzado
+5/12/2025, 15:24:44 [info]: ID RECIBIDO: 219
+5/12/2025, 15:24:46 [info]: TOTAL FORMAS PAGO: 1221.3
+5/12/2025, 15:24:46 [info]: TOTAL CANCELACIONES: 122.13
+5/12/2025, 15:24:46 [info]: MONEDA A USAR: 2
+5/12/2025, 15:24:46 [info]: GENERANDO XML RECIBO: [object Object]
+5/12/2025, 15:24:46 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-05</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-05</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento veintidos  con trece centavos</descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>1221.3</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30105</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-06</vencimientoAfectado>
+                <importe>122.13</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>1221.30</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-05</vencimiento>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+5/12/2025, 15:24:46 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>KI</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-05</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-05</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ciento veintidos  con trece centavos</descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>1221.3</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado>
+                <comprobanteAfectado>30105</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-06</vencimientoAfectado>
+                <importe>122.13</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>1221.30</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-05</vencimiento>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+5/12/2025, 15:25:07 [error]: Error al enviar XML al WS: Error: connect ETIMEDOUT 10.0.10.16:8082
+5/12/2025, 15:25:07 [info]: Datos recibidos: [object Object]

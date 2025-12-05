@@ -121,6 +121,17 @@ const PreviewGuias = () => {
     const [isModalOpenModificar, setIsModalOpenModificar] = useState(false);
     const [guiaSeleccionada, setGuiaSeleccionada] = useState(null);
 
+    const notificarPorEmail = (row) => {
+        const destinatarios = "pgauna@repremar.com"; // separados por ;
+        const asunto = `Notificación de factura ${row.Numero}`;
+        const cuerpo = `Hola,\n\nTe notificamos sobre la factura ${row.Numero}.\nMonto: ${row.Monto}\nCliente: ${row.Cliente}\n\nSaludos.`;
+
+        // Encodeamos para que Outlook lea bien los espacios, saltos de línea, etc.
+        const mailtoLink = `mailto:${destinatarios}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+
+        window.location.href = mailtoLink;
+    };
+
     const openModalModificar = (guia) => {
         setGuiaSeleccionada(guia);
         setIsModalOpenModificar(true);
@@ -251,14 +262,14 @@ const PreviewGuias = () => {
                                         <td>
                                             {row.moneda
                                                 ? (row.idguiasexpo ? row.cobrarpagar : row.total) + " " + 'USD'
-                                                : (row.idguiasexpo ? row.cobrarpagar : row.total)+ " " + 'USD'
+                                                : (row.idguiasexpo ? row.cobrarpagar : row.total) + " " + 'USD'
                                             }
                                         </td>
 
                                         <td>
                                             {row.moneda
                                                 ? (row.idguiasexpo ? row.total : row.totalguia) + " " + 'USD'
-                                                : (row.idguiasexpo ? row.total : row.totalguia)+ " " + 'USD'
+                                                : (row.idguiasexpo ? row.total : row.totalguia) + " " + 'USD'
                                             }
                                         </td>
                                         <td>{row.facturada ? '✔️' : '❌'}</td>
@@ -266,6 +277,12 @@ const PreviewGuias = () => {
                                             <div className="buscarfacturas-submenu-container">
                                                 <button disabled className="buscarfacturas-submenu-toggle">☰</button>
                                                 <div className="buscarfacturas-submenu">
+                                                    <button
+                                                        className='botonsubmenubuscarfactura'
+                                                        onClick={() => notificarPorEmail(row)}
+                                                    >
+                                                        Notificar
+                                                    </button>
                                                     <button className='botonsubmenubuscarfactura' onClick={() => row.tipo === "IMPO" ? openModalVer(row.guia) : openModalVerExpo(row.guia)}  >Visualizar Guía</button>
                                                     <button className='botonsubmenubuscarfactura' onClick={() => row.tipo === "IMPO" ? openModalModificar(row.guia) : openModalModificarExpo(row.guia)}>Modificar Guía</button>
                                                     <button className='botonsubmenubuscarfactura' onClick={() => openModalConfirmDelete(row)}>Eliminar Guía</button>

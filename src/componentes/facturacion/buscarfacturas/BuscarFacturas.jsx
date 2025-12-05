@@ -316,19 +316,20 @@ const BuscarFacturas = () => {
                                 <tr>
                                     <th>Nro. CFE</th>
                                     <th>Tipo Comprobante CFE</th>
+                                    
                                     <th>Recibo</th>
                                     <th>Cliente</th>
                                     <th>RUT</th>
                                     <th>Fecha</th>
                                     <th>Monto</th>
-                                    <th>Guias</th>
+                                  
                                     <th>Estado GFE</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {facturasFiltradas.map((row) => (
-                                    <tr key={row.Id}>
+                                    <tr key={row.Id} title={row.guias?.map(g => g.guia).join(', ') || 'Sin guías'}>
                                         <td>{row.NumeroCFE === null
                                             ? '-' : row.NumeroCFE}</td>
                                         <td>
@@ -344,15 +345,14 @@ const BuscarFacturas = () => {
                                                 '-'
                                             )}
                                         </td>
-                                        <td>{row.idrecibo === null
+                                        
+                                        <td >{row.idrecibo === null
                                             ? '-' : row.idrecibo}</td>
-                                        <td>{row.RazonSocial}</td>
+                                        <td >{row.RazonSocial}</td>
                                         <td>{row.RutCedula}</td>
                                         <td>{row.Fecha}</td>
                                         <td>{[row.Total, row.Moneda].join(' ')}</td>
-                                        <td title={row.guias?.map(g => g.guia).join(', ')} className='TDGUIAS'>
-                                            {row.guias?.map(g => g.guia).join(', ')}
-                                        </td>
+                                       
                                         <td>{row.NumeroCFE ? '✔️' : '❌'}</td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
