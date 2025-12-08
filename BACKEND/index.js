@@ -584,7 +584,9 @@ app.post('/api/insertclientes', async (req, res) => {
     Email,
     Tel,
     TDOCDGI,
-    Saldo
+    Saldo,
+    usuarioModifica,
+    fechaModifica
   } = req.body;
 
   // Validar si ya existe la razón social
@@ -674,7 +676,7 @@ app.post('/api/insertclientes', async (req, res) => {
 
         const insertClienteQuery = `
           INSERT INTO clientes 
-            (Nombre, RazonSocial, Direccion, Zona, Ciudad, Rut, IATA, Cass, Pais, Email, Tel, TDOCDGI, Saldo, CodigoGIA)
+            (Nombre, RazonSocial, Direccion, Zona, Ciudad, Rut, IATA, Cass, Pais, Email, Tel, TDOCDGI, Saldo, usuariomodificasaldo, fechamodificasaldo, CodigoGIA)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
@@ -693,6 +695,8 @@ app.post('/api/insertclientes', async (req, res) => {
             Tel,
             TDOCDGI,
             Saldo,
+            usuarioModifica,
+            fechaModifica,
             CodigoGIA
           ]);
 
@@ -7900,7 +7904,7 @@ app.delete("/api/anularRecibo/:id", async (req, res) => {
     const xml = generarXmlAnularRecibo(datosXml);
     console.log('Impactando Recibo, XML: ', xml);
 
-      const headers = {
+    const headers = {
       'Content-Type': 'text/xml;charset=utf-8',
       'SOAPAction': '"anularDocumentoFacturacion"',
       'Accept-Encoding': 'gzip,deflate',
@@ -7909,7 +7913,7 @@ app.delete("/api/anularRecibo/:id", async (req, res) => {
       'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
     };
 
-     const response = await axios.post(
+    const response = await axios.post(
       `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xml,
       { headers }
@@ -7925,7 +7929,7 @@ app.delete("/api/anularRecibo/:id", async (req, res) => {
 
     console.log("Respuesta WS anularDocumentoFacturacion:", resultado);
 
-   
+
     if (resultado.resultado !== "1") {
       return res.status(422).json({
         success: false,

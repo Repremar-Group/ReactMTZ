@@ -51,7 +51,9 @@ const AgregarCliente = ({ isLoggedIn }) => {
             Email: email,
             Tel: tel,
             TDOCDGI: tipoComprobante,
-            Saldo: 0
+            Saldo: 0,
+            usuarioModifica: 'sistemas',
+            fechaModifica: new Date().toISOString()
         };
         // Realizar la solicitud POST usando axios
         axios.post(`${backURL}/api/insertclientes`, nuevoCliente)
