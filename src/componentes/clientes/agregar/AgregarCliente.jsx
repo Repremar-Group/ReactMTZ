@@ -51,7 +51,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
             Email: email,
             Tel: tel,
             TDOCDGI: tipoComprobante,
-            Saldo: saldo
+            Saldo: 0
         };
         // Realizar la solicitud POST usando axios
         axios.post(`${backURL}/api/insertclientes`, nuevoCliente)
@@ -194,23 +194,6 @@ const AgregarCliente = ({ isLoggedIn }) => {
                         />
                     </div>
 
-
-                    <div>
-                        <label htmlFor="saldo">Saldo:</label>
-                        <input
-                            type="number"
-                            id="saldo"
-                            value={saldo}
-                            onChange={(e) => setSaldo(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                </div>
-
-
-                <div className='div_segundorenglon-agregarusuario'>
-
                     <div>
                         <label htmlFor="iata">IATA:</label>
                         <input
@@ -220,6 +203,14 @@ const AgregarCliente = ({ isLoggedIn }) => {
                             onChange={(e) => setIata(e.target.value)}
                         />
                     </div>
+
+
+                </div>
+
+
+                <div className='div_segundorenglon-agregarusuario'>
+
+
                     <div>
                         <label htmlFor="cass">Cass:</label>
                         <select

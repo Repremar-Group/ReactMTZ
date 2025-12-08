@@ -299,6 +299,26 @@ const Correlatividad = ({ isLoggedIn }) => {
                 >
                   {ccdocumentoEditable ? '🔓' : '🔒'}
                 </span>
+
+
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className="btn-estandar"
+                  onClick={async () => {
+                    try {
+                      const res = await axios.post(`${backURL}/api/insertarReciboAnulado`);
+                      alert(res.data.mensaje);
+                      window.location.reload();
+                    } catch (error) {
+                      console.error(error);
+                      alert("Error al Anular Recibo");
+                    }
+                  }}
+                >
+                  Anular Recibo
+                </button>
               </div>
 
             </div>

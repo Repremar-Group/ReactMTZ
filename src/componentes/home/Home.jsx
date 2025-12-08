@@ -227,7 +227,7 @@ const Home = ({ isLoggedIn }) => {
                                 {facturasSinCobrar.length > 0 ? (
                                     facturasSinCobrar.map((factura, index) => (
                                         <tr key={index}>
-                                            <td>{factura.numero}</td>
+                                            <td>{factura.NumeroCFE}</td>
                                             <td>{factura.cliente}</td>
                                             <td>{factura.fecha}</td>
                                             <td>{factura.monto}</td>

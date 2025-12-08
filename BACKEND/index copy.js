@@ -10,7 +10,7 @@ const fs = require('fs');
 const { NumeroALetras } = require('./numeroALetras');
 const axios = require('axios');
 const xml2js = require('xml2js');
-const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC, generarXmlNCaCuenta, generarXmlAnularRecibo } = require('./ControladoresGFE/controladoresGfe')
+const { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC, generarXmlNCaCuenta } = require('./ControladoresGFE/controladoresGfe')
 const { obtenerDatosEmpresa } = require('./ControladoresGFE/datosdelaempresaGFE')
 const cron = require('node-cron');
 const { Console } = require('console');
@@ -74,7 +74,7 @@ const pool = mysql2.createPool({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoiceprod',
+  database: 'cielosurinvoicetest',
   port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
@@ -86,7 +86,7 @@ const connection = mysql.createConnection({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoiceprod',
+  database: 'cielosurinvoicetest',
   port: 3306,
   connectTimeout: 60000,
 });
@@ -7874,68 +7874,13 @@ app.delete("/api/anularRecibo/:id", async (req, res) => {
 
   console.log('Recibo a Anular:', id);
   try {
-    const datosEmpresa = await obtenerDatosEmpresa(pool);
-
     // 1. Obtener info del recibo (para validar)
-    const [recibo] = await pool.query(`
-  SELECT 
-    *,
-    DATE_FORMAT(fechaDocumentoCFE, '%Y-%m-%d') AS fechaDocumentoCFE_fmt
-  FROM recibos 
-  WHERE idrecibo = ?
-`, [id]);
+    const [recibo] = await pool.query("SELECT * FROM recibos WHERE idrecibo = ?", [id]);
     if (recibo.length === 0) {
       return res.status(404).json({ mensaje: "Recibo no encontrado" });
     }
 
     const nrorecibo = recibo[0].nrorecibo;
-
-    const datosXml = {
-      datosEmpresa,
-      fechaCFE: recibo[0].fechaDocumentoCFE_fmt,
-      tipoDoc: recibo[0].tipoDocumentoCFE,
-      serieDoc: recibo[0].serieDocumentoCFE,
-      numDoc: recibo[0].numeroDocumentoCFE
-    };
-    const xml = generarXmlAnularRecibo(datosXml);
-    console.log('Impactando Recibo, XML: ', xml);
-
-      const headers = {
-      'Content-Type': 'text/xml;charset=utf-8',
-      'SOAPAction': '"anularDocumentoFacturacion"',
-      'Accept-Encoding': 'gzip,deflate',
-      'Host': datosEmpresa.serverFacturacion,
-      'Connection': 'Keep-Alive',
-      'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
-    };
-
-     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
-      xml,
-      { headers }
-    );
-
-    const parsed = await parseSOAP(response.data);
-
-    const inner = await parseInnerXML(
-      parsed.Envelope.Body.anularDocumentoFacturacionResponse.xmlResultado
-    );
-
-    const resultado = inner.anularDocumentoFacturacionResultado;
-
-    console.log("Respuesta WS anularDocumentoFacturacion:", resultado);
-
-   
-    if (resultado.resultado !== "1") {
-      return res.status(422).json({
-        success: false,
-        mensaje: "Error en anularDocumentoFacturacion",
-        errores: [{
-          descripcion: resultado.descripcion,
-          resultado: resultado.resultado
-        }]
-      });
-    }
 
     // Eliminar movimientos de cuenta_corriente asociados al recibo
     await pool.query("DELETE FROM cuenta_corriente WHERE NumeroRecibo = ?", [String(nrorecibo)]);
@@ -7949,76 +7894,15 @@ app.delete("/api/anularRecibo/:id", async (req, res) => {
       [id]
     );
 
-    console.log(`Recibo ${id} anulado correctamente`);
-    return res.json({ mensaje: "Recibo anulado correctamente", idrecibo: id });
+    console.log(`Recibo ${id} eliminado correctamente`);
+    return res.json({ mensaje: "Recibo eliminado correctamente", idrecibo: id });
 
   } catch (err) {
     console.error("Error eliminando recibo:", err);
     return res.status(500).json({ mensaje: "Error eliminando recibo", error: err.message });
   }
 });
-app.post("/api/insertarReciboAnulado", async (req, res) => {
-  try {
-    const datosEmpresa = await obtenerDatosEmpresa(pool);
 
-    const nuevoFormulario = datosEmpresa.ultimoFormularioRecibo + 1;
-    const nuevoDocumento = datosEmpresa.ultimoDocumentoRecibo + 1;
-
-    const [result] = await pool.query(
-      `INSERT INTO recibos (
-        nrorecibo,
-        fecha,
-        idcliente,
-        nombrecliente,
-        moneda,
-        importe,
-        formapago,
-        razonsocial,
-        rut,
-        direccion,
-        fechaDocumentoCFE,
-        tipoDocumentoCFE,
-        serieDocumentoCFE,
-        numeroDocumentoCFE,
-        nroformulario,
-        pdfbase64,
-        aCuenta,
-        comentario,
-        Estado
-      ) VALUES (
-        ?, CURDATE(), NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL, NULL,
-        ?, NULL, 0, NULL, 'Anulado'
-      )`,
-      [nuevoDocumento, nuevoFormulario]
-    );
-
-    const idNuevoRecibo = result.insertId;
-
-    await pool.query(
-      `UPDATE datos_empresa
-       SET ultimoFormularioRecibo = ?, ultimoDocumentoRecibo = ?
-       WHERE id = ?`,
-      [nuevoFormulario, nuevoDocumento, datosEmpresa.id]
-    );
-
-    return res.json({
-      success: true,
-      mensaje: "Recibo vacío anulado insertado correctamente",
-      idrecibo: idNuevoRecibo,
-      nrorecibo: nuevoDocumento,
-      nroformulario: nuevoFormulario
-    });
-
-  } catch (err) {
-    console.error("Error insertando recibo vacío:", err);
-    return res.status(500).json({
-      success: false,
-      mensaje: "Error insertando recibo vacío",
-      error: err.message
-    });
-  }
-});
 
 app.post('/api/obtenerSaldoClienteVerificacion', async (req, res) => {
   // Aseguramos que la variable 'pool' esté definida en el alcance superior para la conexión a MySQL

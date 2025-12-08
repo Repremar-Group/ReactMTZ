@@ -318,6 +318,43 @@ const BuscarRecibos = () => {
                                                     {row.numeroDocumentoCFE && (
                                                         <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdfBase64, row.NumeroCFE)}>Ver</button>
                                                     )}
+                                                    {row.numeroDocumentoCFE && (
+                                                        <button
+                                                            className="
+                                                                px-4 py-1 
+                                                                bg-azul-repremar 
+                                                                text-white 
+                                                                font-medium 
+                                                                rounded-md 
+                                                                hover:bg-azul-repremar-dark 
+                                                                transition-colors 
+                                                                duration-200
+                                                                "
+                                                            onClick={() => {
+                                                                Swal.fire({
+                                                                    title: 'Anular Recibo?',
+                                                                    text: `Esto anulara todo el recibo ${row.nrorecibo} y sus movimientos asociados`,
+                                                                    icon: 'warning',
+                                                                    showCancelButton: true,
+                                                                    confirmButtonText: 'Sí, anular',
+                                                                    cancelButtonText: 'Cancelar'
+                                                                }).then((result) => {
+                                                                    if (result.isConfirmed) {
+                                                                        axios.delete(`${backURL}/api/anularRecibo/${row.idrecibo}`)
+                                                                            .then(res => {
+                                                                                Swal.fire('Anulado', res.data.mensaje || `Recibo ${row.idrecibo} anulado`, 'success')
+                                                                                    .then(() => window.location.reload());
+                                                                            })
+                                                                            .catch(err => {
+                                                                                Swal.fire('Error', err.response?.data?.mensaje || err.message, 'error');
+                                                                            });
+                                                                    }
+                                                                });
+                                                            }}
+                                                        >
+                                                            Anular
+                                                        </button>
+                                                    )}
 
                                                     {!row.numeroDocumentoCFE && (
                                                         <button
@@ -404,7 +441,7 @@ const BuscarRecibos = () => {
                                                             onClick={() => {
                                                                 Swal.fire({
                                                                     title: 'Eliminar Recibo?',
-                                                                    text: `Esto borrará todo el recibo ${row.idrecibo} y sus movimientos asociados`,
+                                                                    text: `Esto borrará todo el recibo ${row.nrorecibo} y sus movimientos asociados`,
                                                                     icon: 'warning',
                                                                     showCancelButton: true,
                                                                     confirmButtonText: 'Sí, eliminar',

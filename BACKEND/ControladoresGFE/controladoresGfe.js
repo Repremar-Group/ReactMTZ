@@ -375,6 +375,37 @@ function generarXmlRecibo(datos) {
     console.log('XML Generado RECIBO:', xmlBase);
     return xmlBase;
 }
+
+function generarXmlAnularRecibo(datos) {
+    console.log('🧾 GENERANDO XML Anular Recibo:', datos);
+
+
+    // XML base (sin cancelaciones)
+    let xmlBase = `
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>${datos.datosEmpresa.usuarioGfe}</usuario>
+            <usuarioPassword>${datos.datosEmpresa.passwordGfe}</usuarioPassword>
+            <empresa>${datos.datosEmpresa.codigoEmpresa}</empresa>
+            <documento>
+              <fechaDocumento>${datos.fechaCFE}</fechaDocumento>
+              <tipoDocumento>${datos.tipoDoc}</tipoDocumento>
+                <serieDocumento>${datos.serieDoc}</serieDocumento>
+                <numeroDocumento>${datos.numDoc}</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>`;
+
+    console.log('✅ XML GENERADO ANULAR RECIBO:\n', xmlBase);
+    return xmlBase;
+}
 function generarXmlNC(datos) {
     console.log('GENERANDO XML NOTA DE CRÉDITO:', datos);
     function escapeXml(value = "") {
@@ -571,4 +602,4 @@ function generarXmlNCaCuenta(datos) {
 }
 
 
-module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC, generarXmlNCaCuenta };
+module.exports = { generarXmlefacimpopp, generarXmlefacCuentaAjenaimpopp, generarXmlimpactarDocumento, generarXmlRecibo, generarXmlNC, generarXmlNCaCuenta, generarXmlAnularRecibo };
