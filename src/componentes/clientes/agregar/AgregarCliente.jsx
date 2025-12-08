@@ -55,6 +55,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
             usuarioModifica: 'sistemas',
             fechaModifica: new Date().toISOString()
         };
+        console.log('Datos a enviar al backend', nuevoCliente)
         // Realizar la solicitud POST usando axios
         axios.post(`${backURL}/api/insertclientes`, nuevoCliente)
             .then(response => {

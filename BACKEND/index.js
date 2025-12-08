@@ -677,7 +677,7 @@ app.post('/api/insertclientes', async (req, res) => {
         const insertClienteQuery = `
           INSERT INTO clientes 
             (Nombre, RazonSocial, Direccion, Zona, Ciudad, Rut, IATA, Cass, Pais, Email, Tel, TDOCDGI, Saldo, usuariomodificasaldo, fechamodificasaldo, CodigoGIA)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         try {

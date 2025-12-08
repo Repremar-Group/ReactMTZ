@@ -354,3 +354,12 @@
 8/12/2025, 17:35:45 [info]: Received request for /api/previewfacturas
 8/12/2025, 17:36:14 [info]: Received request for /api/previewguias
 8/12/2025, 17:36:14 [info]: Received request for /api/previewguiasexpo
+8/12/2025, 17:50:15 [info]: Server running on port 5001
+8/12/2025, 17:50:16 [info]: Conexión exitosa a la base de datos MySQL
+8/12/2025, 17:50:36 [info]: Received request for /api/previewclientes
+8/12/2025, 17:51:23 [info]: Received request for /api/insertclientes
+8/12/2025, 17:51:24 [info]: Datos de la empresa desde el back [object Object]
+8/12/2025, 17:51:25 [error]: Error al insertar el cliente: Error: Column count doesn't match value count at row 1
+8/12/2025, 17:52:41 [info]: Received request for /api/insertclientes
+8/12/2025, 17:52:41 [info]: Datos de la empresa desde el back [object Object]
+8/12/2025, 17:52:42 [error]: Error al insertar el cliente: Error: Column count doesn't match value count at row 1
