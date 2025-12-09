@@ -85,7 +85,7 @@ const ModificarUsuario = ({ closeModal, id }) => {
                         >
                             <option value="">Seleccione un rol</option>
                             <option value="admin">Administrador</option>
-                            <option value="user">Usuario</option>
+                            <option value="usuario">Usuario</option>
                             {/* Agrega más opciones de rol según tus necesidades */}
                         </select>
                     </div>

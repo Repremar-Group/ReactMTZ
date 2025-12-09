@@ -47,6 +47,7 @@ import Ciudades from '../parametros/Ciudades';
 import Monedas from '../parametros/Monedas';
 import CompaniaAerea from '../parametros/CompaniaAerea';
 import Conceptos from '../parametros/Conceptos';
+import Saldos from '../parametros/Saldos';
 
 
 function Layout({ isLoggedIn, handleLogin }) {
@@ -312,12 +313,23 @@ function Layout({ isLoggedIn, handleLogin }) {
                         )
                     }
                 />
+                
                 {/* Ruta monedas: Solo accesible si el usuario está logueado */}
                 <Route
                     path="/parametros/monedas"
                     element={
                         isLoggedIn ? (
                             <Monedas isLoggedIn={isLoggedIn} />
+                        ) : (
+                            <Navigate to="/" /> // Redirige al login si no está autenticado
+                        )
+                    }
+                />
+                <Route
+                    path="/parametros/editarsaldos"
+                    element={
+                        isLoggedIn ? (
+                            <Saldos isLoggedIn={isLoggedIn} />
                         ) : (
                             <Navigate to="/" /> // Redirige al login si no está autenticado
                         )

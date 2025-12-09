@@ -1,0 +1,327 @@
+.Contenedor_Principal {
+    width: 100%;
+    /* Usa todo el ancho disponible */
+    height: 100vh;
+    /* Altura fija relativa a la ventana del navegador */
+    max-width: 100%;
+    /* Ajustamos el ancho máximo para que no exceda el ancho del viewport */
+    padding-left: 100px;
+    /* Espacio solo a la izquierda */
+    padding-right: 20px;
+    /* Espacio a la derecha */
+    margin: 0 auto;
+    /* Centra el contenedor horizontalmente, sin margen superior */
+    box-sizing: border-box;
+    /* Asegúrate de que el padding no afecte el ancho total */
+    overflow-y: auto;
+    /* Permitir desplazamiento si el contenido excede la altura */
+}
+.row-deshabilitado td {
+  background-color: #e0e0e0 !important;
+  color: #777 !important;
+}
+
+.row-deshabilitado:hover td {
+  background-color: #e0e0e0 !important;
+}
+.Titulo {
+    margin: 20px 100px 10px 100px;
+    /* Espacio superior, y mantiene el padding lateral */
+    text-align: left;
+    /* Alinea el texto a la izquierda */
+    color: #143361;
+}
+
+.table-container {
+    width: 100%;
+    /* Ajusta el ancho restando padding */
+    max-width: 100%;
+    /* Ajustamos el ancho máximo para que no exceda el ancho del viewport */
+    margin: 0 auto;
+    /* Centra el contenedor horizontalmente, sin margen superior */
+    box-sizing: border-box;
+    /* Asegúrate de que el padding no afecte el ancho total */
+    overflow-x: auto;
+    /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
+}
+
+.search-bar {
+    display: left;
+    align-items: center;
+    margin-bottom: 10px;
+
+}
+
+.add-button {
+    background: none;
+    /* Sin fondo */
+    border: none;
+    /* Sin borde */
+    cursor: pointer;
+    /* Cambia el cursor al pasar por encima */
+    font-size: 20px;
+    /* Tamaño de la fuente */
+    display: inline-block;
+    /* Ajusta el tamaño del botón al contenido */
+    padding: 2px;
+    /* Padding mínimo para un tamaño reducido */
+    margin: 2px;
+    /* Margen mínimo para evitar espacio adicional */
+    line-height: 1;
+    /* Asegura que el botón no tenga altura extra */
+    height: auto;
+    /* Permitir que el botón ajuste su altura al contenido */
+    width: fit-content;
+    /* Ajusta el ancho al contenido */
+    min-width: 10px;
+    /* Permite que el ancho sea tan pequeño como sea necesario */
+    max-width: none;
+    /* Sin límite superior al ancho */
+    transition: transform 0.2s ease;
+    /* Transición suave para el hover */
+}
+
+.add-button:hover {
+    transform: scale(1.1);
+    /* Aumenta el tamaño al 110% */
+    background: none;
+    /* Sin fondo */
+}
+
+.input_buscar[type="text"] {
+    width: 200px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    /* color de fondo claro */
+    color: gray;
+}
+
+.tabla-clientes th,
+.tabla-clientes td {
+    padding: 12px 15px;
+    /* Espaciado interno en celdas */
+    text-align: left;
+    /* Alinear texto a la izquierda */
+    border: 1px solid #dddddd;
+    /* Bordes de celdas */
+}
+
+.tabla-clientes th {
+    background-color: #143361;
+    /* Color de fondo de los encabezados */
+    color: white;
+    /* Color de texto de los encabezados */
+}
+
+.tabla-clientes {
+    font-size: 1em;
+    /* Tamaño de fuente más pequeño */
+    border-collapse: collapse;
+    /* Sin espacios entre celdas */
+    table-layout: fixed;
+    /* Establece anchos fijos para las columnas */
+    width: 100%;
+    /* Asegura que la tabla use el ancho completo */
+    max-height: 600px;
+    min-width: 1000px;
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+    display: block;
+    /* Hace que la tabla se comporte como un bloque */
+    border-radius: 5px;
+    margin: 20px 0;
+
+
+}
+
+.tabla-clientes tbody {
+    overflow-y: auto;
+    /* Permite el desplazamiento vertical */
+
+}
+
+
+th,
+td {
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+    overflow: hidden;
+    /* Oculta el desbordamiento */
+    white-space: nowrap;
+    /* Evita el salto de línea */
+    text-overflow: ellipsis;
+    /* Muestra "..." si hay desbordamiento */
+
+}
+
+/* Anchos fijos para cada columna */
+th:nth-child(1),
+td:nth-child(1) {
+    width: 25%;
+}
+
+/* Razón social */
+th:nth-child(2),
+td:nth-child(2) {
+    width: 15%;
+}
+
+/* RUT */
+th:nth-child(3),
+td:nth-child(3) {
+    width: 2%;
+    text-align: center;
+}
+
+/* Id */
+th:nth-child(4),
+td:nth-child(4) {
+    width: 3%;
+    text-align: center;
+}
+
+/* País */
+th:nth-child(5),
+td:nth-child(5) {
+    width: 30%;
+}
+
+/* Email */
+th:nth-child(6),
+td:nth-child(6) {
+    width: 10%;
+}
+
+/* Tel */
+th:nth-child(7),
+td:nth-child(7) {
+    width: 6%;
+}
+
+/* Acciones */
+
+th {
+    background-color: #f9f9f9;
+}
+
+
+
+
+
+.modal-container {
+    background-color: transparent;
+    /* Sin fondo */
+    border: none;
+    /* Sin bordes */
+    box-shadow: none;
+    /* Sin sombra */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    /* Asegura que esté por encima de otros elementos */
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Fondo oscuro con transparencia */
+    z-index: 999;
+    /* Detrás del modal, pero delante del resto */
+}
+
+/* Encabezado fijo y sin separadores */
+.divtabla-clientes thead {
+    position: sticky;
+    top: 0;
+    background-color: #143361;
+    z-index: 2;
+    font-size: 14px;
+
+}
+
+.divtabla-clientes th {
+    padding: 12px 15px;
+    text-align: left;
+    background-color: #143361;
+    color: white;
+    border: none;
+
+    /* quitar borde blanco */
+}
+
+/* Cuerpo de la tabla */
+.divtabla-clientes tbody tr {
+    border-bottom: 1px solid #e1e1e1;
+    background-color: white;
+    transition: background 0.3s;
+}
+
+.divtabla-clientes tbody tr:nth-child(even) {
+    background-color: #f7f7fa;
+}
+
+.divtabla-clientes tbody tr:hover {
+    background-color: #ece9f6;
+}
+
+.divtabla-clientes td {
+    padding: 12px 15px;
+    text-align: left;
+    color: #333;
+    background-color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: none;
+}
+
+/* Scrollbar personalizado solo al contenedor */
+.tabla-clientes::-webkit-scrollbar {
+    width: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.tabla-clientes::-webkit-scrollbar-thumb {
+    background-color: #143361;
+    border-radius: 5px;
+    border: 2px solid #f0f0f0;
+}
+
+.tabla-clientes::-webkit-scrollbar-thumb:hover {
+    background-color: #4885e2;
+}
+
+  /* Cuando se activa el modal */
+.modal-container.active {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+/* Fondo semitransparente detrás del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+}

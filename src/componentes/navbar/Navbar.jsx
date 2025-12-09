@@ -76,6 +76,7 @@ const NavBar = () => {
                             <Link to="/parametros/companias_aereas" className="submenuItem">Compañias Aereas</Link>
                             <Link to="/parametros/datosempresa" className="submenuItem">Datos de la Empresa</Link>
                             <Link to="/parametros/usuarios" className="submenuItem">Usuarios</Link>
+                            <Link to="/parametros/editarsaldos" className="submenuItem">Saldos</Link>
                         </div>
                     </div>
                 )}

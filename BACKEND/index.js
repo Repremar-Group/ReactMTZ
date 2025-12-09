@@ -1325,7 +1325,7 @@ app.get('/api/obtenerusuario/:id', async (req, res) => {
   `;
 
   try {
-    const [results] = await pool.query(getUsuarioQuery, [id]);
+    const [results] = await pool.query(getClienteQuery, [id]);
 
     if (results.length > 0) {
       console.log('Usuario encontrado:', results[0]);
@@ -1342,38 +1342,76 @@ app.get('/api/obtenerusuario/:id', async (req, res) => {
 
 // Endpoint para actualizar un cliente
 app.put('/api/actualizarusuario/:id', async (req, res) => {
-  const id = req.params.id; // Obtener el ID del cliente de la URL
-  const {
-    usuario,
-    contraseña,
-    rol,
-  } = req.body; // Obtener los datos del cliente del cuerpo de la solicitud
-
-  // Consulta SQL para actualizar los datos del cliente
-  const sql = `UPDATE clientes SET 
-    usuario = ?,
-    contraseña = ?,
-    rol = ?
-    WHERE id = ?`;
-
-  const values = [
-    usuario,
-    contraseña,
-    rol,
-    id
-  ];
+  const id = req.params.id;
+  let { usuario, contraseña, rol } = req.body;
 
   try {
+    // Si viene una contraseña nueva, la hasheamos
+    let hashedPassword = null;
+
+    if (contraseña && contraseña.trim() !== "") {
+      const saltRounds = 10;
+      hashedPassword = await bcrypt.hash(contraseña, saltRounds);
+    }
+
+    // Construir SQL dinámico dependiendo si hay contraseña o no
+    let sql = `
+      UPDATE usuarios SET 
+        usuario = ?,
+        rol = ?`;
+
+    const values = [usuario, rol];
+
+    if (hashedPassword) {
+      sql += `, contraseña = ?`;
+      values.push(hashedPassword);
+    }
+
+    sql += ` WHERE id = ?`;
+    values.push(id);
+
     const [result] = await pool.query(sql, values);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Cliente No encontrado' });
+      return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    res.status(200).json({ message: 'Cliente Modificado Correctamente' });
+    res.status(200).json({ message: 'Usuario modificado correctamente' });
+
   } catch (err) {
-    console.error('Error actualizando cliente:', err);
-    res.status(500).json({ message: 'Error actualizando cliente' });
+    console.error('Error actualizando usuario:', err);
+    res.status(500).json({ message: 'Error actualizando usuario' });
+  }
+});
+
+
+app.put('/api/modificarsaldo', async (req, res) => {
+  const { idCliente, nuevoSaldo } = req.body;
+
+  if (!idCliente || nuevoSaldo === undefined) {
+    return res.status(400).json({ message: 'Faltan datos requeridos' });
+  }
+
+  try {
+    const sql = `
+      UPDATE clientes
+      SET Saldo = ?
+      WHERE id = ?
+    `;
+
+    const values = [nuevoSaldo, idCliente];
+
+    const [result] = await pool.query(sql, values);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+
+    res.status(200).json({ message: 'Saldo modificado correctamente' });
+
+  } catch (err) {
+    console.error('Error modificando saldo:', err);
+    res.status(500).json({ message: 'Error modificando saldo' });
   }
 });
 
