@@ -53,7 +53,7 @@ const AgregarCliente = ({ isLoggedIn }) => {
             TDOCDGI: tipoComprobante,
             Saldo: 0,
             usuarioModifica: 'sistemas',
-            fechaModifica: new Date().toISOString()
+            fechaModifica: new Date().toISOString().slice(0, 19).replace('T', ' ')
         };
         console.log('Datos a enviar al backend', nuevoCliente)
         // Realizar la solicitud POST usando axios
