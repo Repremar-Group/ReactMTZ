@@ -49,7 +49,9 @@ const ModalAgregarCliente = ({ isOpen, onClose, onSuccess }) => {
             Email: email,
             Tel: tel,
             TDOCDGI: tipoComprobante,
-            Saldo: saldo
+            Saldo: 0,
+            usuarioModifica: 'sistemas',
+            fechaModifica: new Date().toISOString().slice(0, 19).replace('T', ' ')
         };
         // Realizar la solicitud POST usando axios
         try {

@@ -184,7 +184,7 @@ const DatosEmpresa = ({ isLoggedIn }) => {
           </div>
 
           <button className='btn-guardarempresa' type="submit">Guardar</button>
-          <p>V 2.1 08/12/2025</p>
+          <p>V 2.1.1 08/12/2025</p>
         </form>
       </div>
 
