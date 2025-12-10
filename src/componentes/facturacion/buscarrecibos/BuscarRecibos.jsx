@@ -396,36 +396,7 @@ const BuscarRecibos = () => {
                                                             Enviar a GFE
                                                         </button>
                                                     )}
-                                                    {!row.numeroDocumentoCFE && (
-                                                        <button
-                                                            className='botonsubmenubuscarfactura'
-                                                            onClick={async () => {
-                                                                try {
-                                                                    setLoadingEnvioGFE(true);
-                                                                    const response = await axios.get(`${backURL}/api/obtenerModificarRecibo?id=${row.idrecibo}`);
-                                                                    setReciboAModificar(response.data);
-                                                                    console.log('Recibo desde la BD:', response.data);
-                                                                    SetIsModalOpenModificarRecibo(true);
-                                                                } catch {
-                                                                    console.error('Error inesperado:', error);
-
-                                                                    const descripcion =
-                                                                        error?.response?.data?.descripcion ||
-                                                                        error?.response?.data?.message ||
-                                                                        'Ocurrió un error al comunicarse con el servidor.';
-
-                                                                    setTituloAlertaGfe('Error inesperado');
-                                                                    setmensajeAlertaGFE(descripcion);
-                                                                    setIconoAlertaGFE('error');
-                                                                    setIsModalOpenAlertaGFE(true);
-                                                                } finally {
-                                                                    setLoadingEnvioGFE(false);
-                                                                }
-                                                            }}
-                                                        >
-                                                            Modificar
-                                                        </button>
-                                                    )}
+                                               
                                                     {!row.numeroDocumentoCFE && (
                                                         <button
                                                             className="

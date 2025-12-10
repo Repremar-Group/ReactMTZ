@@ -592,12 +592,6 @@ const Guiasexpo = ({ isLoggedIn }) => {
   const [loading, setLoading] = useState(false);
   const handleSubmitAgregarGuiaExpo = async (e) => {
     e.preventDefault();
-    const guiaRegex = /^\d{3}-\d{8}$/;
-
-    if (!guiaRegex.test(genroguia)) {
-      toast.error('El número de guía debe tener el formato 000-00000000');
-      return; // Detiene el envío si no cumple
-    }
 
     // Activar el spinner
     setLoading(true);

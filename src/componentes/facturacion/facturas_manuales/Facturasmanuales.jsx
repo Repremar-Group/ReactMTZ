@@ -47,7 +47,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
   const [fmtotalacobrar, setFmTotalACobrar] = useState('');
   const [fmsubtotal, setFmsubtotal] = useState('');
   const [fmiva, setFmIva] = useState('');
-  const [fmredondeo, setFmRedondeo] = useState('');
+  const [fmredondeo, setFmRedondeo] = useState(0);
   const [fmtotal, setFmTotal] = useState('');
   const [fmivaconcepto, setFmIvaConcepto] = useState('');
   const [fmlistadeconceptos, setFmListaDeConceptos] = useState([]);
@@ -406,14 +406,14 @@ const Facturasmanuales = ({ isLoggedIn }) => {
     });
 
     const nuevoTotal = nuevoSubtotal + nuevoIVA;
-    const nuevoRedondeo = Math.ceil(nuevoTotal) - nuevoTotal; // Redondeo siempre hacia arriba
-    const nuevoTotalACobrar = nuevoTotal + nuevoRedondeo;
+   
+    const nuevoTotalACobrar = nuevoTotal;
 
     // Actualizar estados
     setFmsubtotal(nuevoSubtotal.toFixed(2));
     setFmIva(nuevoIVA.toFixed(2)); // IVA ahora es la suma directa de los valores fmivaconcepto
     setFmTotal(nuevoTotal.toFixed(2));
-    setFmRedondeo(nuevoRedondeo.toFixed(2));
+  
     setFmTotalACobrar(nuevoTotalACobrar.toFixed(2));
 
   }, [fmlistadeconceptos]); // Se ejecuta cada vez que cambia la lista de conceptos
@@ -707,7 +707,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
           <div className='div-tabla-facturas-asociadas'>
             <br />
 
-            <div className='div-primerrenglon-datos-recibos'>
+            <div className='contenedor-tabla-conceptos-asociados'>
               {/* Tabla que muestra las facturas agregadas */}
               <table className='tabla-conceptos-asociados' >
                 <thead>
@@ -769,16 +769,7 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   readOnly
                 />
               </div>
-              <div>
-                <label htmlFor="fmredondeo">Redondeo:</label>
-                <input
-                  type="text"
-                  id="fmredondeo"
-                  value={fmredondeo}
-                  onChange={(e) => setFmRedondeo(e.target.value)}
-                  readOnly
-                />
-              </div>
+            
               <div>
                 <label htmlFor="fmtotal">Total:</label>
                 <input

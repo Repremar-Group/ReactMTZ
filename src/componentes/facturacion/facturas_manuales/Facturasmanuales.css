@@ -1,3 +1,5 @@
+
+
 .EmitirFacturaManual-container{
     max-width: 1600px;
     /* Limita el ancho máximo del formulario */
@@ -82,81 +84,87 @@
     width: 48%;
 }
 
-.tabla-conceptos-asociados::-webkit-scrollbar {
-    width: 10px; 
-    background-color: #f0f0f0;
-    border-radius: 5px;
+/* Contenedor con scroll */
+.contenedor-tabla-conceptos-asociados {
+  max-height: 250px;
+  overflow-y: auto;
+  width: 100%;
+  border-radius: 5px;
 }
-  
-.tabla-conceptos-asociados::-webkit-scrollbar-thumb {
-    background-color: #143361;
-    border-radius: 5px;
-    border: 2px solid #f0f0f0;
-}
-  
-.tabla-conceptos-asociados::-webkit-scrollbar-thumb:hover {
-    background-color: #4885e2;
-}
+
+/* Tabla */
 .tabla-conceptos-asociados {
-    font-size: 14px;
-    border-collapse: collapse;
-    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
-    width: 100%; /* La tabla ocupará el 100% del contenedor */
-    max-height: 200px;
-    overflow-y: auto;
-    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
-    border-radius: 5px;
-    margin: 20px 0;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* evita que se desborde */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.tabla-conceptos-asociados tbody {
-    overflow-y: auto; /* Permite el desplazamiento vertical */
-    max-height: 150px; /* Ajusta la altura para 3 filas */
-}
-
-.tabla-conceptos-asociados th, .tabla-conceptos-asociados td {
-    padding: 2px 5px; /* Espaciado reducido */
-    text-align: left; /* Alineación del texto a la izquierda */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+/* Encabezado fijo */
+.tabla-conceptos-asociados thead {
+  position: sticky;
+  top: 0;
+  background-color: #143361;
+  z-index: 2;
 }
 
 .tabla-conceptos-asociados th {
-    background-color: #143361;
-    font-weight: bold;
-    color: white;
-    padding: 2px 5px;
-}
-.tabla-conceptos-asociados thead {
-    position: relative;
-    top: 0; /* Fija el cabezal en la parte superior */
-    
+  padding: 8px;
+  background-color: #143361;
+  color: white;
+  border: none;
+  text-align: left;
 }
 
-/* Define anchos para las columnas */
-.tabla-conceptos-asociados th:nth-child(1),
-.tabla-conceptos-asociados td:nth-child(1) {
-    width: 5%; /* Columna Tipo */
+/* Filas */
+.tabla-conceptos-asociados td {
+  padding: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* si desborda, se corta */
 }
+
+/* Alternar colores */
+.tabla-conceptos-asociados tbody tr:nth-child(even) {
+  background: #f7f7fa;
+}
+.tabla-conceptos-asociados tbody tr:hover {
+  background: #ece9f6;
+}
+
+/* Scrollbar estilizado */
+.contenedor-tabla-conceptos-asociados::-webkit-scrollbar {
+  width: 10px;
+}
+.contenedor-tabla-conceptos-asociados::-webkit-scrollbar-thumb {
+  background-color: #143361;
+  border-radius: 5px;
+}
+.contenedor-tabla-conceptos-asociados::-webkit-scrollbar-thumb:hover {
+  background-color: #4885e2;
+}
+
+/* Definición clara de columnas */
+.tabla-conceptos-asociados th:nth-child(1),
+.tabla-conceptos-asociados td:nth-child(1) { width: 10%; }
 
 .tabla-conceptos-asociados th:nth-child(2),
-.tabla-conceptos-asociados td:nth-child(2) {
-    width: 60%; /* Columna Guia */
-}
+.tabla-conceptos-asociados td:nth-child(2) { width: 40%; }
 
 .tabla-conceptos-asociados th:nth-child(3),
-.tabla-conceptos-asociados td:nth-child(3) {
-    width: 5%; /* Columna Descripción */
-}
+.tabla-conceptos-asociados td:nth-child(3) { width: 10%; }
 
 .tabla-conceptos-asociados th:nth-child(4),
-.tabla-conceptos-asociados td:nth-child(4) {
-    width: 10%; /* Columna Moneda */
-}
+.tabla-conceptos-asociados td:nth-child(4) { width: 10%; }
 
 .tabla-conceptos-asociados th:nth-child(5),
-.tabla-conceptos-asociados td:nth-child(5) {
-    width: 10%; /* Columna Importe */
-}
+.tabla-conceptos-asociados td:nth-child(5) { width: 15%; }
+
+.tabla-conceptos-asociados th:nth-child(6),
+.tabla-conceptos-asociados td:nth-child(6) { width: 15%; }
+
+
 
  .modal-content-conceptos {
     background-color: white;

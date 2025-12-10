@@ -963,7 +963,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
   };
 
   const xml = construirXmlModificarElemento();
-  console.log(`\n📤 Enviando XML para cliente "${RazonSocial}":\n`, xml);
+  console.log(`\n📤 Enviando XML para cliente "${razonSocial}":\n`, xml);
   const xmlBuffer = Buffer.from(xml, 'utf-8');
 
   const headers = {
@@ -3733,7 +3733,8 @@ app.post('/api/impactarrecibo', async (req, res) => {
         vencimiento: formatFecha(pago.vencimiento)
       })),
       Moneda: pago.moneda,
-      aCuenta: recibo.aCuenta
+      aCuenta: recibo.aCuenta,
+      nroformulario:recibo.nroformulario
     };
 
     const xml = generarXmlRecibo(datosXml);

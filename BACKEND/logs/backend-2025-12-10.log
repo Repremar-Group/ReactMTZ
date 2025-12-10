@@ -640,3 +640,473 @@
 10/12/2025, 12:21:45 [info]: Received request for /api/guias-sin-facturar
 10/12/2025, 12:21:45 [info]: Received request for /api/facturas-sin-cobrar
 10/12/2025, 12:21:45 [info]: Received request for /api/obtenertipocambio
+10/12/2025, 14:21:18 [info]: Server running on port 5001
+10/12/2025, 14:21:19 [info]: Conexión exitosa a la base de datos MySQL
+10/12/2025, 14:21:33 [info]: Received request for /api/guias-sin-facturar
+10/12/2025, 14:21:33 [info]: Received request for /api/facturas-sin-cobrar
+10/12/2025, 14:21:33 [info]: Received request for /api/obtenertipocambio
+10/12/2025, 14:48:38 [info]: Received request for /api/fetchguias
+10/12/2025, 14:48:54 [info]: Received request for /api/insertguiaimpo
+10/12/2025, 14:48:54 [info]: Received request for /api/fetchguias
+10/12/2025, 15:07:52 [info]: Server running on port 5001
+10/12/2025, 15:07:53 [info]: Conexión exitosa a la base de datos MySQL
+10/12/2025, 15:08:07 [info]: Received request for /api/historialfac/39
+10/12/2025, 15:08:07 [info]: 🟢 ID Cliente recibido: 39 string
+10/12/2025, 15:08:07 [info]: Calculando saldo total para el cliente 39
+10/12/2025, 15:09:16 [info]: Received request for /api/insertrecibo
+10/12/2025, 15:09:17 [info]: 📤 Datos que se enviarán a la BD (tabla pagos):
+10/12/2025, 15:09:17 [info]: Query: 
+        INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
+        VALUES ?
+    
+10/12/2025, 15:09:17 [info]: Valores: [
+  [
+    227,
+    "2025-12-10",
+    "CHQDOL",
+    "bandes",
+    "1",
+    "USD",
+    "814",
+    "2025-12-10"
+  ]
+]
+10/12/2025, 15:09:17 [info]: Recibo y pagos insertados correctamente
+10/12/2025, 15:09:17 [info]: Actualizando factura 525 con idrecibo: 227
+10/12/2025, 15:09:17 [info]: Datos recibidos para insertar en cuenta corriente:
+10/12/2025, 15:09:17 [info]: idcliente: 39
+10/12/2025, 15:09:17 [info]: fecha: 2025-12-10
+10/12/2025, 15:09:17 [info]: tipodocumento: Recibo
+10/12/2025, 15:09:17 [info]: numerorecibo: 99
+10/12/2025, 15:09:17 [info]: moneda: USD
+10/12/2025, 15:09:17 [info]: debe: 0
+10/12/2025, 15:09:17 [info]: haber: 814
+10/12/2025, 15:09:18 [info]: ImpactarRecibo endpoint alcanzado
+10/12/2025, 15:09:18 [info]: ID RECIBIDO: 227
+10/12/2025, 15:09:18 [info]: TOTAL FORMAS PAGO: 814
+10/12/2025, 15:09:18 [info]: TOTAL CANCELACIONES: 814
+10/12/2025, 15:09:18 [info]: MONEDA A USAR: 2
+10/12/2025, 15:09:18 [info]: GENERANDO XML RECIBO: [object Object]
+10/12/2025, 15:09:18 [info]: XML Generado RECIBO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-10</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <numeroDocumento>99</numeroDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-10</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ochocientos catorce  </descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>814.00</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>TCA</tipoDocumentoAfectado>
+                <comprobanteAfectado>50031</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>814.00</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>814.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-10</vencimiento>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:09:18 [info]: Impactando Recibo, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                    <documento>
+                        <fechaDocumento>2025-12-10</fechaDocumento>
+                        <tipoDocumento>RECVTAS</tipoDocumento>
+                        <numeroDocumento>99</numeroDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        
+                        <fechaVencimiento>2025-12-10</fechaVencimiento>
+                        <descripcion>Son dólares americanos U$S ochocientos catorce  </descripcion>
+                        <renglones>
+	                        
+    <renglon>
+        <producto>REC</producto>
+        <nombreProducto>Cancelación de Facturas</nombreProducto>
+        <cantidad>1</cantidad>
+        <precioUnitario>814.00</precioUnitario>
+    </renglon>
+
+                        </renglones>
+                        <cancelaciones>
+                            
+            <cancelacion>
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>TCA</tipoDocumentoAfectado>
+                <comprobanteAfectado>50031</comprobanteAfectado>
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado>
+                <importe>814.00</importe>
+            </cancelacion>
+                        </cancelaciones>
+                        <formasPago>
+                            
+    <formaPago>
+        <formaPago>CHQDOL</formaPago>
+        <importe>814.00</importe>
+        <elemento1>CTA 01</elemento1>
+        <tipoDocumento>DEP</tipoDocumento>
+        <comprobante>1</comprobante>
+        <vencimiento>2025-12-10</vencimiento>
+    </formaPago>
+                        </formasPago>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:09:19 [info]: Datos recibidos: [object Object]
+10/12/2025, 15:11:27 [info]: Received request for /api/previewrecibos
+10/12/2025, 15:13:21 [info]: Received request for /api/obtenertipocambioparacomprobante
+10/12/2025, 15:13:21 [info]: 39.361
+10/12/2025, 15:15:58 [info]: Código recibido en backend: 123123
+10/12/2025, 15:26:25 [info]: Received request for /api/obtenertipocambioparacomprobante
+10/12/2025, 15:26:25 [info]: 39.361
+10/12/2025, 15:26:44 [info]: Received request for /api/insertfactura
+10/12/2025, 15:26:45 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "codigoClienteGIA": "REP20",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-10",
+  "FechaVencimiento": "2025-12-10",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.36",
+  "Subtotal": "100.00",
+  "IVA": "22.00",
+  "Redondeo": "0.00",
+  "Total": "122.00",
+  "TotalCobrar": "122.00",
+  "DetalleFactura": [
+    {
+      "idconcepto": 22,
+      "codigo": "VCE",
+      "codigoGIA": "17",
+      "descripcion": "VZ - Comisión Exportación",
+      "impuesto": "iva_basica",
+      "unidadPrincipal": "2",
+      "clasificacion": "0",
+      "categoria": "0",
+      "ivaCalculado": "22.00",
+      "importe": "100",
+      "moneda": "USD"
+    }
+  ],
+  "Adenda": "12"
+}
+10/12/2025, 15:26:45 [info]: Moneda de la adenda:  USD
+10/12/2025, 15:26:45 [info]: GENERANDO XML EFACTURA: [object Object]
+10/12/2025, 15:26:45 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-10</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-10</fechaVencimiento>
+                <descripcion>Son dólares americanos U$S ciento veintidos  
+12</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>17</producto>
+                <nombreProducto>VZ - Comisión Exportación</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>100</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:26:45 [info]: XML generado para envío: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-10</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-10</fechaVencimiento>
+                <descripcion>Son dólares americanos U$S ciento veintidos  
+12</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>17</producto>
+                <nombreProducto>VZ - Comisión Exportación</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>100</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:26:51 [info]: Received request for /api/obtenertipocambioparacomprobante
+10/12/2025, 15:26:51 [info]: 39.361
+10/12/2025, 15:27:28 [info]: Received request for /api/previewclientes
+10/12/2025, 15:27:32 [info]: Received request for /api/guias-sin-facturar
+10/12/2025, 15:27:32 [info]: Received request for /api/facturas-sin-cobrar
+10/12/2025, 15:27:33 [info]: Received request for /api/obtenertipocambio
+10/12/2025, 15:27:37 [info]: Received request for /api/previewclientes
+10/12/2025, 15:27:44 [info]: Received request for /api/obtenerclientes/8180
+10/12/2025, 15:27:44 [info]: Cliente encontrado: [object Object]
+10/12/2025, 15:30:21 [info]: Server running on port 5001
+10/12/2025, 15:30:22 [info]: Conexión exitosa a la base de datos MySQL
+10/12/2025, 15:30:25 [info]: 
+📤 Enviando XML para cliente "COSTING S.A":
+ 
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <soap:modificarElemento>
+      <xmlParametros>
+        <![CDATA[
+<modificarElementoParametros>
+  <usuario>IT</usuario>
+  <usuarioPassword>R3pr3m4r</usuarioPassword>
+  <empresa>REP</empresa>
+  <elemento>
+    <codigo>11312793</codigo>
+    <nombre>COSTING S.A</nombre>
+    <habilitado>S</habilitado>
+    <conjuntos>
+      <conjunto>CLI</conjunto>
+    </conjuntos>
+    <atributos>
+      <atributo><campo>DIR</campo><valor>25 DE MAYO 713 OFICINA 401</valor></atributo>
+      <atributo><campo>TDOCDGI</campo><valor>2</valor></atributo>
+      <atributo><campo>RUC</campo><valor>211531690015</valor></atributo> <atributo><campo>CI</campo><valor></valor></atributo>
+      <atributo><campo>PAIS</campo><valor>URUGUAY</valor></atributo>
+      <atributo><campo>TEL</campo><valor>0</valor></atributo>
+      <atributo><campo>RAZON</campo><valor>COSTING S.A</valor></atributo>
+      <atributo><campo>EMAIL</campo><valor>COMERCIAL@ITLCARGO.COM.UY</valor></atributo>
+      <atributo><campo>LOC</campo><valor>MONTEVIDEO</valor></atributo>
+      <atributo><campo>CIUDAD</campo><valor>MONTEVIDEO</valor></atributo>
+    </atributos>
+  </elemento>
+</modificarElementoParametros>
+        ]]>
+      </xmlParametros>
+    </soap:modificarElemento>
+  </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:30:25 [info]: XML MODIFICAR A SOAP 
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <soap:modificarElemento>
+      <xmlParametros>
+        <![CDATA[
+<modificarElementoParametros>
+  <usuario>IT</usuario>
+  <usuarioPassword>R3pr3m4r</usuarioPassword>
+  <empresa>REP</empresa>
+  <elemento>
+    <codigo>11312793</codigo>
+    <nombre>COSTING S.A</nombre>
+    <habilitado>S</habilitado>
+    <conjuntos>
+      <conjunto>CLI</conjunto>
+    </conjuntos>
+    <atributos>
+      <atributo><campo>DIR</campo><valor>25 DE MAYO 713 OFICINA 401</valor></atributo>
+      <atributo><campo>TDOCDGI</campo><valor>2</valor></atributo>
+      <atributo><campo>RUC</campo><valor>211531690015</valor></atributo> <atributo><campo>CI</campo><valor></valor></atributo>
+      <atributo><campo>PAIS</campo><valor>URUGUAY</valor></atributo>
+      <atributo><campo>TEL</campo><valor>0</valor></atributo>
+      <atributo><campo>RAZON</campo><valor>COSTING S.A</valor></atributo>
+      <atributo><campo>EMAIL</campo><valor>COMERCIAL@ITLCARGO.COM.UY</valor></atributo>
+      <atributo><campo>LOC</campo><valor>MONTEVIDEO</valor></atributo>
+      <atributo><campo>CIUDAD</campo><valor>MONTEVIDEO</valor></atributo>
+    </atributos>
+  </elemento>
+</modificarElementoParametros>
+        ]]>
+      </xmlParametros>
+    </soap:modificarElemento>
+  </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:30:25 [info]: Respuesta cruda SOAP <modificarElementoResultado>
+    <resultado>1</resultado>
+    <descripcion>Elemento '11312793-COSTING S.A' modificado correctamente</descripcion>
+    <datos>
+        <elemento>
+            <empresa>REP</empresa>
+            <codigo>11312793</codigo>
+        </elemento>
+    </datos>
+</modificarElementoResultado>
+10/12/2025, 15:30:25 [info]: Received request for /api/previewclientes
+10/12/2025, 15:31:25 [info]: Received request for /api/obtenerclientes/8180
+10/12/2025, 15:31:25 [info]: Cliente encontrado: [object Object]
+10/12/2025, 15:31:28 [info]: 
+📤 Enviando XML para cliente "COSTING S.A":
+ 
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <soap:modificarElemento>
+      <xmlParametros>
+        <![CDATA[
+<modificarElementoParametros>
+  <usuario>IT</usuario>
+  <usuarioPassword>R3pr3m4r</usuarioPassword>
+  <empresa>REP</empresa>
+  <elemento>
+    <codigo>11312793</codigo>
+    <nombre>COSTING S.A</nombre>
+    <habilitado>S</habilitado>
+    <conjuntos>
+      <conjunto>CLI</conjunto>
+    </conjuntos>
+    <atributos>
+      <atributo><campo>DIR</campo><valor>25 DE MAYO 713 OFICINA 401</valor></atributo>
+      <atributo><campo>TDOCDGI</campo><valor>2</valor></atributo>
+      <atributo><campo>RUC</campo><valor>211531690014</valor></atributo> <atributo><campo>CI</campo><valor></valor></atributo>
+      <atributo><campo>PAIS</campo><valor>URUGUAY</valor></atributo>
+      <atributo><campo>TEL</campo><valor>0</valor></atributo>
+      <atributo><campo>RAZON</campo><valor>COSTING S.A</valor></atributo>
+      <atributo><campo>EMAIL</campo><valor>COMERCIAL@ITLCARGO.COM.UY</valor></atributo>
+      <atributo><campo>LOC</campo><valor>MONTEVIDEO</valor></atributo>
+      <atributo><campo>CIUDAD</campo><valor>MONTEVIDEO</valor></atributo>
+    </atributos>
+  </elemento>
+</modificarElementoParametros>
+        ]]>
+      </xmlParametros>
+    </soap:modificarElemento>
+  </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:31:28 [info]: XML MODIFICAR A SOAP 
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <soap:modificarElemento>
+      <xmlParametros>
+        <![CDATA[
+<modificarElementoParametros>
+  <usuario>IT</usuario>
+  <usuarioPassword>R3pr3m4r</usuarioPassword>
+  <empresa>REP</empresa>
+  <elemento>
+    <codigo>11312793</codigo>
+    <nombre>COSTING S.A</nombre>
+    <habilitado>S</habilitado>
+    <conjuntos>
+      <conjunto>CLI</conjunto>
+    </conjuntos>
+    <atributos>
+      <atributo><campo>DIR</campo><valor>25 DE MAYO 713 OFICINA 401</valor></atributo>
+      <atributo><campo>TDOCDGI</campo><valor>2</valor></atributo>
+      <atributo><campo>RUC</campo><valor>211531690014</valor></atributo> <atributo><campo>CI</campo><valor></valor></atributo>
+      <atributo><campo>PAIS</campo><valor>URUGUAY</valor></atributo>
+      <atributo><campo>TEL</campo><valor>0</valor></atributo>
+      <atributo><campo>RAZON</campo><valor>COSTING S.A</valor></atributo>
+      <atributo><campo>EMAIL</campo><valor>COMERCIAL@ITLCARGO.COM.UY</valor></atributo>
+      <atributo><campo>LOC</campo><valor>MONTEVIDEO</valor></atributo>
+      <atributo><campo>CIUDAD</campo><valor>MONTEVIDEO</valor></atributo>
+    </atributos>
+  </elemento>
+</modificarElementoParametros>
+        ]]>
+      </xmlParametros>
+    </soap:modificarElemento>
+  </soapenv:Body>
+</soapenv:Envelope>
+10/12/2025, 15:31:29 [info]: Respuesta cruda SOAP <modificarElementoResultado>
+    <resultado>1</resultado>
+    <descripcion>Elemento '11312793-COSTING S.A' modificado correctamente</descripcion>
+    <datos>
+        <elemento>
+            <empresa>REP</empresa>
+            <codigo>11312793</codigo>
+        </elemento>
+    </datos>
+</modificarElementoResultado>
+10/12/2025, 15:31:29 [info]: Received request for /api/previewclientes

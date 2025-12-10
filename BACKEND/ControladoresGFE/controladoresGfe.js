@@ -277,6 +277,7 @@ function generarXmlRecibo(datos) {
                     <documento>
                         <fechaDocumento>{{fechaCFE}}</fechaDocumento>
                         <tipoDocumento>RECVTAS</tipoDocumento>
+                        <numeroDocumento>${datos.nroformulario}</numeroDocumento>
                         <cliente>${datos.codigoClienteGIA}</cliente>
                         <moneda>${moneda}</moneda>
                         ${cotizacion ? `<cotizacion>${cotizacion}</cotizacion>` : ''}
