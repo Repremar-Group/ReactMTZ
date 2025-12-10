@@ -310,7 +310,7 @@ function generarXmlRecibo(datos) {
         <producto>REC</producto>
         <nombreProducto>Cancelación de Facturas</nombreProducto>
         <cantidad>1</cantidad>
-        <precioUnitario>${totalFormasPago}</precioUnitario>
+        <precioUnitario>${totalCancelaciones.toFixed(2)}</precioUnitario>
     </renglon>
 `;
 

@@ -25,7 +25,9 @@ function App() {
     return (
         
         <BrowserRouter>
+        
             <Layout isLoggedIn={isLoggedIn} handleLogin={handleLogin} />
+            
         </BrowserRouter>
     );
 }

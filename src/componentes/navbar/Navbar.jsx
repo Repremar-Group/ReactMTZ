@@ -7,7 +7,7 @@ const NavBar = () => {
     const rol = localStorage.getItem('rol');
     return (
         <header className="navbar">
-            <Link to="/home" className="logoPagina">
+            <Link to="/home" className="logoPagina" title='V 2.1.3 10/12/2025'>
                 <img src={logo} alt="Home" />
             </Link>
 
@@ -81,7 +81,9 @@ const NavBar = () => {
                     </div>
                 )}
                 <Link to="/logout"><button className="botonNavBar">Salir</button></Link>
+                
             </nav>
+            
         </header>
     );
 };

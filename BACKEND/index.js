@@ -3585,6 +3585,11 @@ app.post('/api/insertrecibo', async (req, res) => {
     const formularioausar = datosEmpresa.ultimoFormularioRecibo + 1;
     const documentoausar = datosEmpresa.ultimoDocumentoRecibo + 1;
     const monedaRecibo = 'USD';
+    const conversionPagos = {
+      CHQDOL: 'CHQPES',
+      TRANDOL: 'TRANPES',
+      EFEDOL: 'EFEPES',
+    };
 
     // 🔸 INSERTAR RECIBO
     const insertReciboQuery = `
@@ -3610,16 +3615,29 @@ app.post('/api/insertrecibo', async (req, res) => {
     ]);
     // 🔸 INSERTAR PAGOS (si hay)
     if (Array.isArray(listadepagos) && listadepagos.length > 0) {
-      const pagosValues = listadepagos.map(pago => [
-        idrecibo,
-        pago.icfecha,
-        pago.icformadepago,
-        pago.icbanco,
-        pago.icnrocheque,
-        pago.ictipoMoneda,
-        pago.icimpdelcheque,
-        pago.icfechavencimiento
-      ]);
+      const conversionPagos = {
+        CHQDOL: 'CHQPES',
+        TRANDOL: 'TRANPES',
+        EFEDOL: 'EFEPES',
+      };
+
+      const pagosValues = listadepagos.map(pago => {
+        const formaDePagoConvertida =
+          pago.ictipoMoneda === 'UYU'
+            ? (conversionPagos[pago.icformadepago] || pago.icformadepago)
+            : pago.icformadepago;
+        return [
+          idrecibo,
+          pago.icfecha,
+          formaDePagoConvertida,
+          pago.icbanco,
+          pago.icnrocheque,
+          pago.ictipoMoneda,
+          pago.icimpdelcheque,
+          pago.icfechavencimiento
+        ];
+      });
+
       console.log("📤 Datos que se enviarán a la BD (tabla pagos):");
       console.log("Query:", `
         INSERT INTO pagos (idrecibo, fecha, formapago, banco, nro_pago, moneda, importe, vencimiento)
@@ -3678,7 +3696,7 @@ app.post('/api/impactarrecibo', async (req, res) => {
 
     // 2. Traer pagos
     const [pagos] = await pool.query('SELECT * FROM pagos WHERE idrecibo = ?', [idrecibo]);
-
+    const pago = pagos[0];
     // 3. Traer facturas asociadas
     const [facturasAsociadas] = await pool.query('SELECT * FROM facturas WHERE idrecibo = ?', [idrecibo]);
     if (!recibo.aCuenta && facturasAsociadas.length === 0)
@@ -3714,7 +3732,7 @@ app.post('/api/impactarrecibo', async (req, res) => {
         comprobante: pago.nro_pago,
         vencimiento: formatFecha(pago.vencimiento)
       })),
-      Moneda: recibo.moneda,
+      Moneda: pago.moneda,
       aCuenta: recibo.aCuenta
     };
 

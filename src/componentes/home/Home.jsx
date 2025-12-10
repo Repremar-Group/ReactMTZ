@@ -242,6 +242,7 @@ const Home = ({ isLoggedIn }) => {
                         </table>
                     </div>
                 </div>
+                
             </div>
 
             {/* Gráficas */}
@@ -274,8 +275,11 @@ const Home = ({ isLoggedIn }) => {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
+                
             </div>
+            
         </div>
+        
     );
 };
 

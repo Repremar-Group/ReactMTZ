@@ -29,6 +29,11 @@
             "date": 1765306107553,
             "name": "logs\\backend-2025-12-09.log",
             "hash": "e591adaa3af3282a327ff3815e1f2759ae3b4429ec1ea6b7cf2bbe06e1b69a72"
+        },
+        {
+            "date": 1765378938071,
+            "name": "logs\\backend-2025-12-10.log",
+            "hash": "6fed5348ab058d359436ccc920f39619c3582dc5a456e6f4468d9030f3c18db9"
         }
     ],
     "hashType": "sha256"
