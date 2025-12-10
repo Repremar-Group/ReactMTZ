@@ -229,6 +229,11 @@ function generarXmlRecibo(datos) {
     // 1. Calcular sumas
     const totalFormasPago = datos.formasPago.reduce((acc, item) => acc + Number(item.importe || 0), 0);
     const totalCancelaciones = datos.cancelaciones.reduce((acc, item) => acc + Number(item.importe || 0), 0);
+    const valorPrecioUnitario =
+        datos.aCuenta === 1
+            ? totalFormasPago.toFixed(2)
+            : totalCancelaciones.toFixed(2);
+
 
     // 2. Determinar moneda y cotización
     let moneda;
@@ -311,7 +316,7 @@ function generarXmlRecibo(datos) {
         <producto>REC</producto>
         <nombreProducto>Cancelación de Facturas</nombreProducto>
         <cantidad>1</cantidad>
-        <precioUnitario>${totalCancelaciones.toFixed(2)}</precioUnitario>
+        <precioUnitario>${valorPrecioUnitario}</precioUnitario>
     </renglon>
 `;
 
