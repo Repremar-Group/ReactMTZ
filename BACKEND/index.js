@@ -355,9 +355,7 @@ function generarAdendaConConceptos(numerodoc, monto, moneda, detalleFactura = []
       .join(" | ");
   }
 
-  const resultadoFinal = detalleTexto
-    ? `${encabezado}&#10;&#10;${detalleTexto}`
-    : encabezado;
+  const resultadoFinal = detalleTexto;
 
   console.log("✅ [generarAdendaConConceptos] Resultado final:", resultadoFinal);
 
@@ -389,57 +387,66 @@ app.get('/api/previewfacturas', async (req, res) => {
     FROM facturas f
     LEFT JOIN guiasexpo gexpo ON gexpo.idfactura = f.Id
     LEFT JOIN guiasimpo gimpo ON gimpo.idfactura = f.Id
-    ORDER BY f.Id DESC
+    ORDER BY f.Fecha DESC
   `;
 
   try {
     const [rows] = await pool.query(sql);
 
-    // Agrupar por factura
-    const facturasMap = {};
+    // 🔹 Usar Map para mantener el orden del ORDER BY
+    const facturasMap = new Map();
 
     rows.forEach(row => {
-      if (!facturasMap[row.Id]) {
+      if (!facturasMap.has(row.Id)) {
+
         const fecha = new Date(row.Fecha);
         const formattedFecha = fecha.toLocaleDateString('es-AR');
 
-        const fechaVenc = row.fechaVencimiento ? new Date(row.fechaVencimiento) : null;
-        const formattedFechaVenc = fechaVenc ? fechaVenc.toLocaleDateString('es-AR') : '';
+        const fechaVenc = row.fechaVencimiento
+          ? new Date(row.fechaVencimiento)
+          : null;
+        const formattedFechaVenc = fechaVenc
+          ? fechaVenc.toLocaleDateString('es-AR')
+          : '';
 
-        facturasMap[row.Id] = {
+        facturasMap.set(row.Id, {
           ...row,
           Fecha: formattedFecha,
           fechaVencimiento: formattedFechaVenc,
           guias: []
-        };
+        });
       }
 
-      // Agregar la guía si existe
+      // 🔹 Agregar guías si existen
       if (row.guiaExpo) {
-        facturasMap[row.Id].guias.push({
-          tipo: "Expo",
+        facturasMap.get(row.Id).guias.push({
+          tipo: 'Expo',
           guia: row.guiaExpo
         });
       }
 
       if (row.guiaImpo) {
-        facturasMap[row.Id].guias.push({
-          tipo: "Impo",
+        facturasMap.get(row.Id).guias.push({
+          tipo: 'Impo',
           guia: row.guiaImpo
         });
       }
     });
 
-    // Pasar de objeto a array
-    const result = Object.values(facturasMap);
+    // 🔹 Convertir Map a array manteniendo orden
+    const result = Array.from(facturasMap.values());
 
     res.status(200).json(result);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error en el backend cargando facturas', error: err.message });
+    console.error('Error cargando facturas:', err);
+    res.status(500).json({
+      message: 'Error en el backend cargando facturas',
+      error: err.message
+    });
   }
 });
+
 
 app.post('/api/changeestadocliente', async (req, res) => {
   const { idCliente } = req.body;
@@ -562,7 +569,40 @@ app.get('/api/previewrecibos', async (req, res) => {
     res.status(500).json({ message: 'Error en el backend cargando recibos', error: err.message });
   }
 });
+app.post('/api/guiasimpo/marcar-notificada', async (req, res) => {
+  const { guia } = req.body;
+  let connection;
 
+  if (!guia) {
+    return res.status(400).json({ message: 'Falta el número de guía' });
+  }
+
+  try {
+    connection = await pool.getConnection();
+
+    const [result] = await connection.query(
+      `UPDATE guiasimpo
+       SET notificada = 1
+       WHERE guia = ?`,
+      [guia]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Guía no encontrada' });
+    }
+
+    res.json({
+      message: 'Guía marcada como notificada',
+      guia
+    });
+
+  } catch (error) {
+    console.error('Error marcando guía como notificada:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
 
 //Armado de la consulta Insert Cliente
 
@@ -2337,6 +2377,41 @@ app.get('/api/obtenertipocambioparacomprobante', async (req, res) => {
     res.status(500).json({ error: 'Error en la consulta' });
   }
 });
+app.get('/api/clientes/emailrazonsocial', async (req, res) => {
+  const { razonSocial } = req.query;
+  console.log(razonSocial);
+  let connection;
+
+  if (!razonSocial) {
+    return res.status(400).json({ message: 'Falta razonSocial' });
+  }
+
+  try {
+    connection = await pool.getConnection();
+
+    const [rows] = await connection.query(
+      `SELECT Email 
+       FROM clientes 
+       WHERE RazonSocial = ? 
+       LIMIT 1`,
+      [razonSocial]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+
+    res.json({
+      email: rows[0].Email
+    });
+
+  } catch (error) {
+    console.error('Error buscando email por razón social:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
 
 app.get('/api/obtenerembarques', async (req, res) => {
   console.log('Received request for /api/obtenerembarques');
@@ -2571,45 +2646,68 @@ app.post('/api/insertfactura', async (req, res) => {
   console.log('Received request for /api/insertfactura');
   let connection;
   let facturaCuentaAjenaId;
+  let facturaId;
 
+  let comprobanteElectronicoFinal;
+
+
+  const datosEmpresa = await obtenerDatosEmpresa(pool);
+
+  const {
+    IdCliente,
+    Nombre,
+    RazonSocial,
+    DireccionFiscal,
+    CodigoGIA,
+    Ciudad,
+    Pais,
+    RutCedula,
+    ComprobanteElectronico,
+    Comprobante,
+    Compania,
+    Electronico,
+    Moneda,
+    Fecha,
+    FechaVencimiento,
+    TipoIVA,
+    CASS,
+    TipoEmbarque,
+    TC,
+    Subtotal,
+    IVA,
+    Redondeo,
+    Total,
+    TotalCobrar,
+    DetalleFactura, // Lista de detalles para insertar
+    SubtotalCuentaAjena,
+    IVACuentaAjena,
+    TotalCuentaAjena,
+    RedondeoCuentaAjena,
+    TotalCobrarCuentaAjena,
+    EmbarquesSeleccionados
+  } = req.body; // Los datos de la factura enviados desde el frontend
+  switch (ComprobanteElectronico.toLowerCase()) {
+    case 'efactura':
+      comprobanteElectronicoFinal = datosEmpresa.codEfac;
+      break;
+    case 'efacturaca':
+      comprobanteElectronicoFinal = datosEmpresa.codEfacCA;
+      break;
+    case 'eticket':
+      comprobanteElectronicoFinal = datosEmpresa.codETick;
+      break;
+    case 'eticketca':
+      comprobanteElectronicoFinal = datosEmpresa.codETickCA;
+      break;
+    default:
+      comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
+      break;
+  }
   try {
     // Obtener conexión del pool
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    const datosEmpresa = await obtenerDatosEmpresa(pool);
-    const {
-      IdCliente,
-      Nombre,
-      RazonSocial,
-      DireccionFiscal,
-      CodigoGIA,
-      Ciudad,
-      Pais,
-      RutCedula,
-      ComprobanteElectronico,
-      Comprobante,
-      Compania,
-      Electronico,
-      Moneda,
-      Fecha,
-      FechaVencimiento,
-      TipoIVA,
-      CASS,
-      TipoEmbarque,
-      TC,
-      Subtotal,
-      IVA,
-      Redondeo,
-      Total,
-      TotalCobrar,
-      DetalleFactura, // Lista de detalles para insertar
-      SubtotalCuentaAjena,
-      IVACuentaAjena,
-      TotalCuentaAjena,
-      RedondeoCuentaAjena,
-      TotalCobrarCuentaAjena,
-      EmbarquesSeleccionados
-    } = req.body; // Los datos de la factura enviados desde el frontend
+
     console.log(JSON.stringify(req.body, null, 2));
     console.log('Moneda en el back: ', Moneda);
     if (Moneda === 'UYU') {
@@ -2630,25 +2728,7 @@ app.post('/api/insertfactura', async (req, res) => {
       });
     }
 
-    let comprobanteElectronicoFinal;
 
-    switch (ComprobanteElectronico.toLowerCase()) {
-      case 'efactura':
-        comprobanteElectronicoFinal = datosEmpresa.codEfac;
-        break;
-      case 'efacturaca':
-        comprobanteElectronicoFinal = datosEmpresa.codEfacCA;
-        break;
-      case 'eticket':
-        comprobanteElectronicoFinal = datosEmpresa.codETick;
-        break;
-      case 'eticketca':
-        comprobanteElectronicoFinal = datosEmpresa.codETickCA;
-        break;
-      default:
-        comprobanteElectronicoFinal = ComprobanteElectronico; // Por si viene uno que no corresponde
-        break;
-    }
 
     console.log('Tipo de comprobante desde front', ComprobanteElectronico, 'Comprobante Convertido', comprobanteElectronicoFinal);
 
@@ -2739,7 +2819,24 @@ app.post('/api/insertfactura', async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [IdCliente, facturaId, Fecha, 'Factura', Comprobante, Moneda, TotalCobrar]
     );
+    await connection.commit();           // ⬅ COMMIT  SIEMPRE
+    connection.release();
 
+  } catch (err) {
+    if (connection) await connection.rollback();
+    if (connection) connection.release();
+
+    console.error('Error al insertar en BD:', err);
+
+    return res.status(500).json({
+      success: false,
+      origen: "BD",
+      error: err.message || JSON.stringify(err)
+    });
+  }
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
     // Preparar datos SOAP
 
@@ -2865,6 +2962,8 @@ app.post('/api/insertfactura', async (req, res) => {
 
     console.log('Resultado SOAP recibido:', JSON.stringify(resultadoSOAP, null, 2));
     await connection.commit();
+    connection.release();
+    connection = null;
     res.status(200).json({
       success: true,
       resultados: resultadoSOAP,
@@ -2874,8 +2973,9 @@ app.post('/api/insertfactura', async (req, res) => {
 
   } catch (err) {
     if (connection) await connection.rollback();
+    if (connection) connection.release();
     console.error('Error en /api/insertfactura:', err);
-    res.status(500).json({ error: err.message || err });
+    res.status(500).json({ error: err.descripcion || err });
   } finally {
     if (connection) connection.release();
   }
@@ -3681,6 +3781,31 @@ app.post('/api/insertrecibo', async (req, res) => {
     if (connection) connection.release();
   }
 });
+//Este endpoint valida los pagos en cheques
+app.post('/api/validarcheque', async (req, res) => {
+  const { nroPago, formaPago } = req.body;
+
+  // Solo validar si es cheque
+  if (!['CHQDOL', 'CHQPES'].includes(formaPago)) {
+    return res.json({ existe: false });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT 1
+       FROM pagos
+       WHERE formapago IN ('CHQDOL', 'CHQPES')
+       AND nro_pago = ?
+       LIMIT 1`,
+      [nroPago]
+    );
+
+    res.json({ existe: rows.length > 0 });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error validando cheque' });
+  }
+});
 
 
 app.post('/api/impactarrecibo', async (req, res) => {
@@ -3734,7 +3859,7 @@ app.post('/api/impactarrecibo', async (req, res) => {
       })),
       Moneda: pago.moneda,
       aCuenta: recibo.aCuenta,
-      nroformulario:recibo.nroformulario
+      nroformulario: recibo.nroformulario
     };
 
     const xml = generarXmlRecibo(datosXml);
@@ -4251,6 +4376,15 @@ app.post('/api/generarReciboPDF', async (req, res) => {
         console.error("No se encontraron facturas en los datos recibidos.", datosRecibo.facturas);
       }
     }
+    // 📄 Duplicar la primera página para que salgan 3 iguales
+    const paginas = pdfDoc.getPages();
+    const paginaOriginal = paginas[0];
+
+    const pagina2 = await pdfDoc.copyPages(pdfDoc, [0]);
+    pdfDoc.addPage(pagina2[0]);
+
+    const pagina3 = await pdfDoc.copyPages(pdfDoc, [0]);
+    pdfDoc.addPage(pagina3[0]);
 
     // Guardar PDF y actualizar DB
     const pdfFinalBytes = await pdfDoc.save();
@@ -5651,7 +5785,7 @@ app.get('/api/guias-sin-facturar', async (req, res) => {
   const totalSql = `
     SELECT 
       (SELECT IFNULL(SUM(total), 0) FROM guiasimpo WHERE facturada = 0) +
-      (SELECT IFNULL(SUM(total), 0) FROM guiasexpo WHERE facturada = 0) AS total_sin_facturar
+      (SELECT IFNULL(SUM(cobrarpagar), 0) FROM guiasexpo WHERE facturada = 0) AS total_sin_facturar
   `;
 
   try {

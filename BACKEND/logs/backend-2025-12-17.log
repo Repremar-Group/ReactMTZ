@@ -1,0 +1,201 @@
+17/12/2025, 09:35:55 [info]: Server running on port 5001
+17/12/2025, 09:35:56 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 09:39:48 [info]: Received request for /api/guias-sin-facturar
+17/12/2025, 09:39:48 [info]: Received request for /api/facturas-sin-cobrar
+17/12/2025, 09:39:48 [info]: Received request for /api/obtenertipocambio
+17/12/2025, 09:39:50 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+17/12/2025, 09:39:50 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "39.165"
+    }
+  }
+}
+17/12/2025, 09:39:50 [info]: Received request for /api/agregartipocambio
+17/12/2025, 09:40:09 [info]: Received request for /api/previewguias
+17/12/2025, 09:40:09 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 09:44:57 [info]: Received request for /api/previewguias
+17/12/2025, 09:44:57 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 09:45:37 [info]: Received request for /api/previewguias
+17/12/2025, 09:45:37 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 09:48:42 [info]: Received request for /api/previewfacturas
+17/12/2025, 09:54:30 [info]: Received request for /api/previewguias
+17/12/2025, 09:54:30 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 10:35:28 [info]: Received request for /api/previewguias
+17/12/2025, 10:35:28 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 10:35:36 [info]: Received request for /api/previewguias
+17/12/2025, 10:35:37 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 10:36:49 [info]: Received request for /api/previewguias
+17/12/2025, 10:36:49 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:34:52 [info]: Received request for /api/previewguias
+17/12/2025, 11:34:52 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:35:12 [info]: Received request for /api/previewguias
+17/12/2025, 11:35:13 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:36:01 [info]: Received request for /api/previewguias
+17/12/2025, 11:36:01 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:37:12 [info]: Received request for /api/previewguias
+17/12/2025, 11:37:12 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:42:54 [info]: Received request for /api/previewguias
+17/12/2025, 11:42:54 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:43:04 [info]: Received request for /api/previewguias
+17/12/2025, 11:43:04 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:45:04 [info]: Received request for /api/previewguias
+17/12/2025, 11:45:04 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:45:04 [info]: Received request for /api/previewguias
+17/12/2025, 11:45:04 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:45:05 [info]: Received request for /api/previewguias
+17/12/2025, 11:45:05 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:45:20 [info]: Received request for /api/previewguias
+17/12/2025, 11:45:21 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 11:49:29 [info]: Received request for /api/previewguias
+17/12/2025, 11:49:29 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 12:03:24 [info]: Received request for /api/previewguias
+17/12/2025, 12:03:24 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 12:04:23 [info]: Received request for /api/previewguias
+17/12/2025, 12:04:23 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 12:04:27 [info]: Received request for /api/previewguias
+17/12/2025, 12:04:27 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 13:27:11 [info]: Received request for /api/previewguias
+17/12/2025, 13:27:11 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 13:36:54 [info]: Received request for /api/guias-sin-facturar
+17/12/2025, 13:36:54 [info]: Received request for /api/facturas-sin-cobrar
+17/12/2025, 13:36:54 [info]: Received request for /api/obtenertipocambio
+17/12/2025, 13:42:26 [info]: Server running on port 5001
+17/12/2025, 13:42:26 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 14:58:28 [info]: Server running on port 5001
+17/12/2025, 14:58:28 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 14:59:16 [info]: Received request for /api/guias-sin-facturar
+17/12/2025, 14:59:16 [info]: Received request for /api/facturas-sin-cobrar
+17/12/2025, 14:59:16 [info]: Received request for /api/obtenertipocambio
+17/12/2025, 14:59:39 [info]: Received request for /api/previewguias
+17/12/2025, 14:59:39 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:03:34 [info]: Received request for /api/obtenertipocambioparacomprobante
+17/12/2025, 15:03:34 [info]: 39.165
+17/12/2025, 15:05:49 [info]: Received request for /api/previewguias
+17/12/2025, 15:05:49 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:10:02 [info]: Server running on port 5001
+17/12/2025, 15:10:03 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 15:11:34 [info]: Server running on port 5001
+17/12/2025, 15:11:34 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 15:13:01 [info]: Received request for /api/previewguias
+17/12/2025, 15:13:01 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:14:06 [info]: Received request for /api/previewguias
+17/12/2025, 15:14:06 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:14:45 [info]: Server running on port 5001
+17/12/2025, 15:14:45 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 15:14:48 [info]: Received request for /api/previewguias
+17/12/2025, 15:14:48 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:15:39 [info]: Server running on port 5001
+17/12/2025, 15:15:40 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 15:15:42 [info]: 
+17/12/2025, 15:15:57 [info]: Received request for /api/previewguias
+17/12/2025, 15:15:57 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:15:58 [info]: Received request for /api/previewguias
+17/12/2025, 15:15:58 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:16:03 [info]: Received request for /api/previewguias
+17/12/2025, 15:16:03 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:16:05 [info]: Repremar SA
+17/12/2025, 15:16:33 [info]: Received request for /api/previewguias
+17/12/2025, 15:16:33 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:16:35 [info]: Repremar SA
+17/12/2025, 15:16:58 [info]: Server running on port 5001
+17/12/2025, 15:16:59 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 15:17:02 [info]: Repremar SA
+17/12/2025, 15:18:21 [info]: Repremar SA
+17/12/2025, 15:19:27 [info]: Repremar SA
+17/12/2025, 15:19:56 [info]: REPREMAR LOGISTICS S A
+17/12/2025, 15:20:04 [info]: PROSEGUR URUGUAY S.A
+17/12/2025, 15:20:15 [info]: Received request for /api/previewclientes
+17/12/2025, 15:20:23 [info]: Received request for /api/obtenerclientes/5461
+17/12/2025, 15:20:23 [info]: Cliente encontrado: [object Object]
+17/12/2025, 15:20:26 [info]: Received request for /api/previewclientes
+17/12/2025, 15:21:06 [info]: Received request for /api/previewguias
+17/12/2025, 15:21:06 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:21:10 [info]: Repremar SA
+17/12/2025, 15:21:20 [info]: CHEBURIN S.A
+17/12/2025, 15:23:31 [info]: Received request for /api/previewguias
+17/12/2025, 15:23:31 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:23:33 [info]: Received request for /api/previewguias
+17/12/2025, 15:23:33 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:23:44 [info]: PROSEGUR URUGUAY S.A
+17/12/2025, 15:23:48 [info]: CHEBURIN S.A
+17/12/2025, 15:23:56 [info]: Repremar SA
+17/12/2025, 15:24:37 [info]: Repremar SA
+17/12/2025, 15:25:01 [info]: Received request for /api/previewclientes
+17/12/2025, 15:26:23 [info]: Received request for /api/insertclientes
+17/12/2025, 15:26:23 [info]: Datos de la empresa desde el back [object Object]
+17/12/2025, 15:26:26 [info]: Received request for /api/previewclientes
+17/12/2025, 15:26:42 [info]: Received request for /api/previewguias
+17/12/2025, 15:26:42 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:27:13 [info]: REPREMAR LOGISTICS S A
+17/12/2025, 15:31:58 [info]: Repremar SA
+17/12/2025, 15:34:58 [info]: Received request for /api/previewguias
+17/12/2025, 15:34:58 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:35:02 [info]: Repremar SA
+17/12/2025, 15:36:11 [info]: Repremar SA
+17/12/2025, 15:45:13 [info]: Received request for /api/previewguias
+17/12/2025, 15:45:13 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:45:43 [info]: Received request for /api/previewguias
+17/12/2025, 15:45:43 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:45:48 [info]: Server running on port 5001
+17/12/2025, 15:45:48 [info]: Conexión exitosa a la base de datos MySQL
+17/12/2025, 15:46:04 [info]: Repremar SA
+17/12/2025, 15:46:24 [info]: Received request for /api/previewguias
+17/12/2025, 15:46:24 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:47:08 [info]: Received request for /api/previewguias
+17/12/2025, 15:47:08 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:47:32 [info]: Received request for /api/previewguias
+17/12/2025, 15:47:33 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:49:47 [info]: Received request for /api/previewguias
+17/12/2025, 15:49:47 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:50:16 [info]: Received request for /api/previewguias
+17/12/2025, 15:50:16 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:50:26 [info]: Received request for /api/previewguias
+17/12/2025, 15:50:27 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:51:48 [info]: Received request for /api/previewguias
+17/12/2025, 15:51:48 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:52:24 [info]: Received request for /api/previewguias
+17/12/2025, 15:52:24 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:52:39 [info]: Received request for /api/previewguias
+17/12/2025, 15:52:39 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:53:12 [info]: Received request for /api/previewfacturas
+17/12/2025, 15:53:48 [info]: Received request for /api/previewguias
+17/12/2025, 15:53:48 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:54:43 [info]: Received request for /api/previewguias
+17/12/2025, 15:54:43 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:55:39 [info]: Repremar SA
+17/12/2025, 15:55:48 [info]: Received request for /api/previewguias
+17/12/2025, 15:55:48 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:56:47 [info]: Received request for /api/previewguias
+17/12/2025, 15:56:47 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:58:01 [info]: Repremar SA
+17/12/2025, 15:59:03 [info]: Received request for /api/previewguias
+17/12/2025, 15:59:03 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 15:59:05 [info]: Repremar SA
+17/12/2025, 15:59:12 [info]: Received request for /api/previewguias
+17/12/2025, 15:59:12 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 16:00:41 [info]: Received request for /api/previewguias
+17/12/2025, 16:00:41 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 16:01:13 [info]: Received request for /api/previewguias
+17/12/2025, 16:01:13 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 16:01:15 [info]: Repremar SA
+17/12/2025, 16:02:06 [info]: Received request for /api/previewguias
+17/12/2025, 16:02:06 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 16:04:53 [info]: Received request for /api/previewguias
+17/12/2025, 16:04:53 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 16:05:07 [info]: Received request for /api/previewguias
+17/12/2025, 16:05:07 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 16:05:28 [info]: Received request for /api/previewguias
+17/12/2025, 16:05:28 [info]: Received request for /api/previewguiasexpo
+17/12/2025, 17:55:48 [info]: Repremar SA
+17/12/2025, 21:00:00 [info]: ⏰ Ejecutando cierre diario...
+17/12/2025, 21:00:00 [info]: ✅ Cierre diario guardado: 17/12/2025, 9:00:00 p. m.
+17/12/2025, 21:00:05 [info]: 📧 Correo enviado: 250 2.0.0 OK  1766016005 5a478bee46e88-2b04e5ea34fsm765065eec.15 - gsmtp

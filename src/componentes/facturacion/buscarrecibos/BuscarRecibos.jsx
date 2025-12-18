@@ -310,13 +310,19 @@ const BuscarRecibos = () => {
                                         <td>{row.fecha}</td>
                                         <td>{row.importe}</td>
                                         <td>{row.moneda}</td>
-                                        <td>{row.numeroDocumentoCFE ? '✔️' : '❌'}</td>
+                                        <td>
+                                            {row.Estado === 'Anulado'
+                                                ? 'Anulado'
+                                                : row.numeroDocumentoCFE
+                                                    ? '✔️'
+                                                    : '❌'}
+                                        </td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
                                                 <button disabled className="buscarfacturas-submenu-toggle">☰</button>
                                                 <div className="buscarfacturas-submenu">
                                                     {row.numeroDocumentoCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.PdfBase64, row.NumeroCFE)}>Ver</button>
+                                                        <button className='botonsubmenubuscarfactura' onClick={() => descargarPDFBase64(row.pdfbase64, row.numeroDocumentoCFE)}>Ver</button>
                                                     )}
                                                     {row.numeroDocumentoCFE && (
                                                         <button
@@ -396,7 +402,7 @@ const BuscarRecibos = () => {
                                                             Enviar a GFE
                                                         </button>
                                                     )}
-                                               
+
                                                     {!row.numeroDocumentoCFE && (
                                                         <button
                                                             className="

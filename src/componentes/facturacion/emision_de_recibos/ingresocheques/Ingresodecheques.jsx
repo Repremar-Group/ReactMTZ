@@ -45,6 +45,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
     const [isModalOpenAlertaGFE, setIsModalOpenAlertaGFE] = useState(false);
     const [tituloAlertaGfe, setTituloAlertaGfe] = useState('');
+    const [reciboImpactado, setReciboImpactado] = useState(false);
     const [mensajeAlertaGFE, setmensajeAlertaGFE] = useState('');
     const [iconoAlertaGFE, setIconoAlertaGFE] = useState('');
     const handleConfirmAlertaGFE = () => {
@@ -54,6 +55,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
 
     const [icnrocheque, setIcNroCheque] = useState('');
+    const [errorCheque, setErrorCheque] = useState(false);
     const [icClienteGIA, setIcClienteGIA] = useState('');
     const [icbanco, setIcBanco] = useState('');
     const [iccomentario, setIcComentario] = useState('');
@@ -99,22 +101,27 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     // Función para agregar una factura asociada a la tabla
     const handleAgregarChequeCargado = () => {
         console.log('Validando Cheque con estos datos: ', icnrocheque, icbanco, icfecha, ictipoMoneda, icarbitraje, icimpdelcheque, icimporteendolares, icfechavencimiento)
-        if (icnrocheque && icbanco && icfecha && icimpdelcheque && icfechavencimiento && icformadepago) {
-            console.log('Valores del cheque, Importe: ', icimporteendolares, ' Saldo del Pago: ', icsaldodeldocumento, 'A cuenta: ', aCuenta, 'Expresion', (icimporteendolares <= icsaldodeldocumento) && !aCuenta);
-            const saldoRedondeado = parseFloat(Number(icsaldodeldocumento).toFixed(2));
-            if (((icimporteendolares <= saldoRedondeado) && !aCuenta) || aCuenta) {
-                const nuevocheque = { icfecha, icformadepago, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
-                setIcListaDeCheques([...iclistadecheques, nuevocheque]);
-                setIcNroCheque('');
-                setIcImpDelCheque('');
-                setIcImporteEnDolares('');
-            } else {
-                toast.error('No se puede ingresar un pago con un monto mayor al saldo del pago.')
-            }
+        if (errorCheque == false) {
+            if (icnrocheque && icbanco && icfecha && icimpdelcheque && icfechavencimiento && icformadepago) {
+                console.log('Valores del cheque, Importe: ', icimporteendolares, ' Saldo del Pago: ', icsaldodeldocumento, 'A cuenta: ', aCuenta, 'Expresion', (icimporteendolares <= icsaldodeldocumento) && !aCuenta);
+                const saldoRedondeado = parseFloat(Number(icsaldodeldocumento).toFixed(2));
+                if (((icimporteendolares <= saldoRedondeado) && !aCuenta) || aCuenta) {
+                    const nuevocheque = { icfecha, icformadepago, icbanco, icnrocheque, ictipoMoneda, icimpdelcheque, icfechavencimiento };
+                    setIcListaDeCheques([...iclistadecheques, nuevocheque]);
+                    setIcNroCheque('');
+                    setIcImpDelCheque('');
+                    setIcImporteEnDolares('');
+                } else {
+                    toast.error('No se puede ingresar un pago con un monto mayor al saldo del pago.')
+                }
 
-        } else {
-            toast.error('Debes completar todos los campos para agregar el pago');
+            } else {
+                toast.error('Debes completar todos los campos para agregar el pago');
+            }
+        }else{
+            toast.error('Ya existe el número de cheque')
         }
+
     };
 
     useEffect(() => {
@@ -131,7 +138,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
 
     const descargarPDF = async (datosRecibo, idrecibo, numrecibo, iclistadecheques = []) => {
         try {
-            console.log("Estos son los datos del recibo",datosRecibo)
+            console.log("Estos son los datos del recibo", datosRecibo)
             const response = await fetch(`${backURL}/api/generarReciboPDF`, {
                 method: 'POST',
                 headers: {
@@ -163,6 +170,26 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
         }
     };
     const [loading, setLoading] = useState(false);
+
+    const validarCheque = async (nro, forma) => {
+        if (!['CHQDOL', 'CHQPES'].includes(forma) || !nro) return;
+
+        try {
+            const res = await axios.post(`${backURL}/api/validarcheque`, {
+                nroPago: nro,
+                formaPago: forma
+            });
+
+            if (res.data.existe) {
+                toast.error('Ya existe un cheque con este número');
+                setErrorCheque(true);
+            } else{
+                setErrorCheque(false);
+            }
+        } catch (err) {
+            toast.error('Error validando cheque');
+        }
+    };
     // Función para manejar el envío del formulario
     const handleSubmitAgregarRecibo = async (e) => {
         e.preventDefault();
@@ -256,6 +283,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     setmensajeAlertaGFE(JSON.stringify(errorData, null, 2));
                     setIconoAlertaGFE('error');
                     setIsModalOpenAlertaGFE(true);
+
                 }
                 //Comleto los datos del recibo con arbitraje y facturas
                 datosRecibo.arbitraje = icarbitraje;
@@ -272,15 +300,18 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                     // Total de las guías
                     datosRecibo.totalrecibo = (ictotaldelasguias / datosRecibo.tipoCambio).toFixed(2);
                 }
-                // Descargar PDF
+                console.log('Recibo Impactado', reciboImpactado)
+
                 await descargarPDF(datosRecibo, idrecibo, numrecibo, iclistadecheques);
+
+
 
             } catch (error) {
                 console.error('Error al guardar el recibo:', error);
                 toast.error('Error al guardar el recibo');
             } finally {
                 setLoading(false);
-                  
+
             }
 
         } else {
@@ -317,7 +348,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
     if (!isOpen) return null;
 
     return (
-        <div className="modal" onClick={closeModal}>
+        <div className="modal" >
             <ToastContainer />
             <div className="modal-content-ingresodepagos" onClick={(e) => e.stopPropagation()}>
                 {loading && (
@@ -341,7 +372,7 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                         id="nrocheque"
                                         value={icnrocheque}
                                         onChange={(e) => setIcNroCheque(e.target.value)}
-
+                                        onBlur={() => validarCheque(icnrocheque, icformadepago)}
                                     />
                                 </div>
                                 <div>
@@ -349,7 +380,11 @@ const Ingresodecheques = ({ isOpen, closeModal, facturasAsociadas, datosRecibo, 
                                     <select
                                         id="icformapago"
                                         value={icformadepago}
-                                        onChange={(e) => setIcFormaDePago(e.target.value)}
+                                        onChange={(e) => {
+                                            const forma = e.target.value;
+                                            setIcFormaDePago(forma);
+                                            validarCheque(icnrocheque, forma);
+                                        }}
 
                                     >
                                         <option value="">Selecciona una forma</option>

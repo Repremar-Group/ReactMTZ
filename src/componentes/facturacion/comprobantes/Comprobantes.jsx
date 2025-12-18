@@ -214,37 +214,37 @@ const Comprobantes = ({ isLoggedIn }) => {
         destino: embarque.destinoguia,
         fecha_envio: embarque.fechavuelo,
         datosAdenda: [{
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
-            descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} Import`,
-            moneda: embarque.moneda,
-            importe: 0,
-          },
-          {
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
-            descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
-            moneda: embarque.moneda,
-            importe: 0,
-          }],
-          datosAdendaCA: [{
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `${embarque.empresavuelo}`,
-            moneda: 'USD',
-            importe: 0,
-          },
-          {
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
-            moneda: embarque.moneda,
-            importe: 0,
-          }],
+          tipo: 'P',
+          guia: embarque.guia,
+          id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
+          descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} Import`,
+          moneda: embarque.moneda,
+          importe: 0,
+        },
+        {
+          tipo: 'P',
+          guia: embarque.guia,
+          id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
+          descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
+          moneda: embarque.moneda,
+          importe: 0,
+        }],
+        datosAdendaCA: [{
+          tipo: 'P',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `${embarque.empresavuelo}`,
+          moneda: 'USD',
+          importe: 0,
+        },
+        {
+          tipo: 'P',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
+          moneda: embarque.moneda,
+          importe: 0,
+        }],
         conceptos: [
           {
             tipo: 'P',
@@ -283,37 +283,37 @@ const Comprobantes = ({ isLoggedIn }) => {
         destino: embarque.destinoguia,
         fecha_envio: embarque.fechavuelo,
         datosAdenda: [{
-            tipo: 'C',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} Import`,
-            moneda: embarque.moneda,
-            importe: 0,
-          },
-          {
-            tipo: 'C',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
-            moneda: embarque.moneda,
-            importe: 0,
-          }],
-          datosAdendaCA: [{
-            tipo: 'C',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `${embarque.empresavuelo}`,
-            moneda: 'USD',
-            importe: 0,
-          },
-          {
-            tipo: 'C',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
-            moneda: embarque.moneda,
-            importe: 0,
-          }],
+          tipo: 'C',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} Import`,
+          moneda: embarque.moneda,
+          importe: 0,
+        },
+        {
+          tipo: 'C',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `AWB: ${embarque.guia} ${embarque.origenvuelo}/${embarque.conexionguia}/${embarque.destinoguia}`,
+          moneda: embarque.moneda,
+          importe: 0,
+        }],
+        datosAdendaCA: [{
+          tipo: 'C',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `${embarque.empresavuelo}`,
+          moneda: 'USD',
+          importe: 0,
+        },
+        {
+          tipo: 'C',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada}  AWB: ${embarque.guia}`,
+          moneda: embarque.moneda,
+          importe: 0,
+        }],
         conceptos: [
           {
             tipo: 'C',
@@ -375,22 +375,22 @@ const Comprobantes = ({ isLoggedIn }) => {
         origen: embarque.origenvuelo,
         destino: embarque.destinovuelo,
         fecha_envio: embarque.fechavuelo,
-         datosAdenda: [{
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `${embarque.empresavuelo}`,
-            moneda: 'USD',
-            importe: 0,
-          },
-          {
-            tipo: 'P',
-            guia: embarque.guia,
-            id_concepto: 0,
-            descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} AWB: ${embarque.guia}`,
-            moneda: 'USD',
-            importe: 0,
-          }],
+        datosAdenda: [{
+          tipo: 'P',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `${embarque.empresavuelo}`,
+          moneda: 'USD',
+          importe: 0,
+        },
+        {
+          tipo: 'P',
+          guia: embarque.guia,
+          id_concepto: 0,
+          descripcion: `Vuelo: ${embarque.nombreVuelo} ${embarque.fechavuelo_formateada} AWB: ${embarque.guia}`,
+          moneda: 'USD',
+          importe: 0,
+        }],
         conceptos: [
           {
             tipo: 'P',
@@ -706,7 +706,9 @@ const Comprobantes = ({ isLoggedIn }) => {
 
       } else if (response.status === 500) {
         setTituloAlertaGfe('Error al Cargar la Factura');
-        setmensajeAlertaGFE('');
+        setmensajeAlertaGFE(
+          error.response.data.error.descripcion || JSON.stringify(error.response.data.error)
+        );
         setIconoAlertaGFE('error');
         setIsModalOpenAlertaGFE(true);
 
@@ -742,7 +744,9 @@ const Comprobantes = ({ isLoggedIn }) => {
 
       } else if (error.response && error.response.status === 500) {
         setTituloAlertaGfe('Error al Cargar la Factura');
-        setmensajeAlertaGFE('');
+        setmensajeAlertaGFE(
+          error.response.data.error.descripcion || JSON.stringify(error.response.data.error)
+        );
         setIconoAlertaGFE('error');
         setIsModalOpenAlertaGFE(true);
 

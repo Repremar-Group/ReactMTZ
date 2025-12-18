@@ -1,0 +1,5213 @@
+12/12/2025, 11:39:36 [info]: Server running on port 5001
+12/12/2025, 11:39:36 [info]: Conexión exitosa a la base de datos MySQL
+12/12/2025, 11:41:06 [info]: Received request for /api/guias-sin-facturar
+12/12/2025, 11:41:06 [info]: Received request for /api/facturas-sin-cobrar
+12/12/2025, 11:41:06 [info]: Received request for /api/obtenertipocambio
+12/12/2025, 11:41:08 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+12/12/2025, 11:41:08 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "39.166"
+    }
+  }
+}
+12/12/2025, 11:41:08 [info]: Received request for /api/agregartipocambio
+12/12/2025, 11:42:20 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 11:42:20 [info]: 39.166
+12/12/2025, 15:39:41 [info]: Received request for /api/guias-sin-facturar
+12/12/2025, 15:39:41 [info]: Received request for /api/facturas-sin-cobrar
+12/12/2025, 15:39:41 [info]: Received request for /api/obtenertipocambio
+12/12/2025, 15:39:49 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:39:49 [info]: 39.166
+12/12/2025, 15:39:56 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:39:56 [info]: [object Object],[object Object]
+12/12/2025, 15:39:59 [info]: Received request for /api/insertfactura
+12/12/2025, 15:39:59 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:39:59 [info]: Moneda en el back:  USD
+12/12/2025, 15:39:59 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:39:59 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:40:00 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:40:01 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:40:01 [info]:   → numerodoc: 610
+12/12/2025, 15:40:01 [info]:   → monto: 123.15
+12/12/2025, 15:40:01 [info]:   → moneda: USD
+12/12/2025, 15:40:01 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:40:01 [info]: ✅ [generarAdendaConConceptos] Resultado final: Doc:610 - Son dólares americanos U$S ciento veintitres  con quince centavos&#10;&#10;Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:40:01 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:40:01 [info]:   → numerodoc: 611
+12/12/2025, 15:40:01 [info]:   → monto: 99.85
+12/12/2025, 15:40:01 [info]:   → moneda: USD
+12/12/2025, 15:40:01 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:40:01 [info]: ✅ [generarAdendaConConceptos] Resultado final: Doc:611 - Son dólares americanos U$S noventa y nueve  con ochenta y cinco centavos&#10;&#10;Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:40:01 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:40:01 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:40:01 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:40:01 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Doc:610 - Son dólares americanos U$S ciento veintitres  con quince centavos&#10;&#10;Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:40:01 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:40:01 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:40:01 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Doc:611 - Son dólares americanos U$S noventa y nueve  con ochenta y cinco centavos&#10;&#10;Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:40:01 [info]: Procesando FacuturaSoap
+12/12/2025, 15:40:02 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:40:28 [info]: Server running on port 5001
+12/12/2025, 15:40:28 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:40:28 [info]: Conexión exitosa a la base de datos MySQL
+12/12/2025, 15:40:28 [info]: 39.166
+12/12/2025, 15:40:37 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:40:37 [info]: [object Object],[object Object]
+12/12/2025, 15:40:40 [info]: Received request for /api/insertfactura
+12/12/2025, 15:40:41 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:40:41 [info]: Moneda en el back:  USD
+12/12/2025, 15:40:41 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:40:41 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:40:41 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:40:42 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:40:42 [info]:   → numerodoc: 612
+12/12/2025, 15:40:42 [info]:   → monto: 123.15
+12/12/2025, 15:40:42 [info]:   → moneda: USD
+12/12/2025, 15:40:42 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:40:42 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:40:42 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:40:42 [info]:   → numerodoc: 613
+12/12/2025, 15:40:42 [info]:   → monto: 99.85
+12/12/2025, 15:40:42 [info]:   → moneda: USD
+12/12/2025, 15:40:42 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:40:42 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:40:42 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:40:42 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:40:42 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:40:42 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:40:42 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:40:42 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:40:42 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:40:42 [info]: Procesando FacuturaSoap
+12/12/2025, 15:40:42 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:42:57 [info]: Server running on port 5001
+12/12/2025, 15:42:58 [info]: Conexión exitosa a la base de datos MySQL
+12/12/2025, 15:42:58 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:42:59 [info]: 39.166
+12/12/2025, 15:43:02 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:43:03 [info]: [object Object],[object Object]
+12/12/2025, 15:43:05 [info]: Received request for /api/insertfactura
+12/12/2025, 15:43:05 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:43:05 [info]: Moneda en el back:  USD
+12/12/2025, 15:43:05 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:43:05 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:43:05 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:43:06 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:43:06 [info]:   → numerodoc: 614
+12/12/2025, 15:43:06 [info]:   → monto: 123.15
+12/12/2025, 15:43:06 [info]:   → moneda: USD
+12/12/2025, 15:43:06 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:43:06 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:43:06 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:43:06 [info]:   → numerodoc: 615
+12/12/2025, 15:43:06 [info]:   → monto: 99.85
+12/12/2025, 15:43:06 [info]:   → moneda: USD
+12/12/2025, 15:43:06 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:43:06 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:43:06 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:43:06 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:43:06 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:43:06 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:43:06 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:43:06 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:43:06 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:43:06 [info]: Procesando FacuturaSoap
+12/12/2025, 15:43:07 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:43:47 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:43:47 [info]: [object Object],[object Object]
+12/12/2025, 15:43:49 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:43:50 [info]: 39.166
+12/12/2025, 15:43:54 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:43:54 [info]: [object Object],[object Object]
+12/12/2025, 15:43:57 [info]: Received request for /api/insertfactura
+12/12/2025, 15:43:57 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:43:57 [info]: Moneda en el back:  USD
+12/12/2025, 15:43:57 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:43:57 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:43:57 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:43:58 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:43:58 [info]:   → numerodoc: 616
+12/12/2025, 15:43:58 [info]:   → monto: 123.15
+12/12/2025, 15:43:58 [info]:   → moneda: USD
+12/12/2025, 15:43:58 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:43:58 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:43:58 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:43:58 [info]:   → numerodoc: 617
+12/12/2025, 15:43:58 [info]:   → monto: 99.85
+12/12/2025, 15:43:58 [info]:   → moneda: USD
+12/12/2025, 15:43:58 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:43:58 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:43:58 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:43:58 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:43:58 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:43:58 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:43:58 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:43:58 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:43:58 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:43:58 [info]: Procesando FacuturaSoap
+12/12/2025, 15:43:59 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:45:31 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:45:31 [info]: [object Object],[object Object]
+12/12/2025, 15:45:33 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:45:34 [info]: 39.166
+12/12/2025, 15:45:40 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:45:40 [info]: [object Object],[object Object]
+12/12/2025, 15:45:43 [info]: Received request for /api/insertfactura
+12/12/2025, 15:45:43 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:45:43 [info]: Moneda en el back:  USD
+12/12/2025, 15:45:43 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:45:44 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:45:44 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:45:45 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:45:45 [info]:   → numerodoc: 618
+12/12/2025, 15:45:45 [info]:   → monto: 123.15
+12/12/2025, 15:45:45 [info]:   → moneda: USD
+12/12/2025, 15:45:45 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:45:45 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:45:45 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:45:45 [info]:   → numerodoc: 619
+12/12/2025, 15:45:45 [info]:   → monto: 99.85
+12/12/2025, 15:45:45 [info]:   → moneda: USD
+12/12/2025, 15:45:45 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:45:45 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:45:45 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:45:45 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:45:45 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:45:45 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:45:45 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:45:45 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:45:45 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:45:45 [info]: Procesando FacuturaSoap
+12/12/2025, 15:45:45 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:45:51 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:45:51 [info]: [object Object],[object Object]
+12/12/2025, 15:45:52 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:45:52 [info]: 39.166
+12/12/2025, 15:45:53 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:45:53 [info]: 39.166
+12/12/2025, 15:45:57 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:45:57 [info]: [object Object],[object Object]
+12/12/2025, 15:45:59 [info]: Received request for /api/insertfactura
+12/12/2025, 15:45:59 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:45:59 [info]: Moneda en el back:  USD
+12/12/2025, 15:45:59 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:45:59 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:46:00 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:46:01 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:46:01 [info]:   → numerodoc: 620
+12/12/2025, 15:46:01 [info]:   → monto: 123.15
+12/12/2025, 15:46:01 [info]:   → moneda: USD
+12/12/2025, 15:46:01 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:46:01 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:46:01 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:46:01 [info]:   → numerodoc: 621
+12/12/2025, 15:46:01 [info]:   → monto: 99.85
+12/12/2025, 15:46:01 [info]:   → moneda: USD
+12/12/2025, 15:46:01 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:46:01 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:46:01 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:46:01 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:46:01 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:46:01 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:46:01 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:46:01 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:46:01 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:46:01 [info]: Procesando FacuturaSoap
+12/12/2025, 15:46:01 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:46:05 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:46:05 [info]: [object Object],[object Object]
+12/12/2025, 15:47:09 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:47:09 [info]: [object Object],[object Object]
+12/12/2025, 15:47:12 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:47:12 [info]: 39.166
+12/12/2025, 15:47:17 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:47:17 [info]: [object Object],[object Object]
+12/12/2025, 15:47:19 [info]: Received request for /api/insertfactura
+12/12/2025, 15:47:20 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:47:20 [info]: Moneda en el back:  USD
+12/12/2025, 15:47:20 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:47:20 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:47:20 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:47:21 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:47:21 [info]:   → numerodoc: 622
+12/12/2025, 15:47:21 [info]:   → monto: 123.15
+12/12/2025, 15:47:21 [info]:   → moneda: USD
+12/12/2025, 15:47:21 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:47:21 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:47:21 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:47:21 [info]:   → numerodoc: 623
+12/12/2025, 15:47:21 [info]:   → monto: 99.85
+12/12/2025, 15:47:21 [info]:   → moneda: USD
+12/12/2025, 15:47:21 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:47:21 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:47:21 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:47:21 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:47:21 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:47:21 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:47:21 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:47:21 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:47:21 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:47:21 [info]: Procesando FacuturaSoap
+12/12/2025, 15:47:21 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:47:33 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:47:33 [info]: [object Object],[object Object]
+12/12/2025, 15:47:33 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:47:33 [info]: 39.166
+12/12/2025, 15:47:34 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:47:34 [info]: 39.166
+12/12/2025, 15:47:44 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:47:44 [info]: [object Object],[object Object]
+12/12/2025, 15:47:47 [info]: Received request for /api/insertfactura
+12/12/2025, 15:47:47 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:47:47 [info]: Moneda en el back:  USD
+12/12/2025, 15:47:47 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:47:47 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:47:47 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:47:48 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:47:48 [info]:   → numerodoc: 624
+12/12/2025, 15:47:48 [info]:   → monto: 123.15
+12/12/2025, 15:47:48 [info]:   → moneda: USD
+12/12/2025, 15:47:48 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:47:48 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:47:48 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:47:48 [info]:   → numerodoc: 625
+12/12/2025, 15:47:48 [info]:   → monto: 99.85
+12/12/2025, 15:47:48 [info]:   → moneda: USD
+12/12/2025, 15:47:48 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:47:48 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:47:48 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:47:48 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:47:48 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:47:48 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:47:48 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:47:48 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:47:48 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:47:48 [info]: Procesando FacuturaSoap
+12/12/2025, 15:47:49 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:47:59 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:48:00 [info]: [object Object],[object Object]
+12/12/2025, 15:48:02 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:48:02 [info]: 39.166
+12/12/2025, 15:48:03 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:48:03 [info]: 39.166
+12/12/2025, 15:48:07 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:48:08 [info]: [object Object],[object Object]
+12/12/2025, 15:48:10 [info]: Received request for /api/insertfactura
+12/12/2025, 15:48:11 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:48:11 [info]: Moneda en el back:  USD
+12/12/2025, 15:48:11 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:48:11 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:48:11 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:48:12 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:48:12 [info]:   → numerodoc: 626
+12/12/2025, 15:48:12 [info]:   → monto: 123.15
+12/12/2025, 15:48:12 [info]:   → moneda: USD
+12/12/2025, 15:48:12 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:48:12 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:48:12 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:48:12 [info]:   → numerodoc: 627
+12/12/2025, 15:48:12 [info]:   → monto: 99.85
+12/12/2025, 15:48:12 [info]:   → moneda: USD
+12/12/2025, 15:48:12 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:48:12 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:48:12 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:48:12 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:48:12 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:48:12 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:48:12 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:48:12 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:48:12 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:48:12 [info]: Procesando FacuturaSoap
+12/12/2025, 15:48:12 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:48:16 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:48:16 [info]: [object Object],[object Object]
+12/12/2025, 15:48:46 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:48:46 [info]: [object Object],[object Object]
+12/12/2025, 15:48:48 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:48:48 [info]: [object Object],[object Object]
+12/12/2025, 15:48:51 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:48:51 [info]: 39.166
+12/12/2025, 15:48:56 [info]: Received request for /api/obtenerembarques
+12/12/2025, 15:48:56 [info]: [object Object],[object Object]
+12/12/2025, 15:48:59 [info]: Received request for /api/insertfactura
+12/12/2025, 15:48:59 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:48:59 [info]: Moneda en el back:  USD
+12/12/2025, 15:48:59 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 15:48:59 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 15:48:59 [info]: Moneda antes de adenda:  USD
+12/12/2025, 15:49:00 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:49:00 [info]:   → numerodoc: 628
+12/12/2025, 15:49:00 [info]:   → monto: 123.15
+12/12/2025, 15:49:00 [info]:   → moneda: USD
+12/12/2025, 15:49:00 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:49:00 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD
+12/12/2025, 15:49:00 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 15:49:00 [info]:   → numerodoc: 629
+12/12/2025, 15:49:00 [info]:   → monto: 99.85
+12/12/2025, 15:49:00 [info]:   → moneda: USD
+12/12/2025, 15:49:00 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 15:49:00 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784
+12/12/2025, 15:49:00 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 15:49:00 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 15:49:00 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 15:49:00 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 06/10/2025 Import | AWB: 123-53465784 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>123.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.15</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:49:00 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 15:49:00 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 15:49:00 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>REP20</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 06/10/2025  AWB: 123-53465784</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>99.85</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 15:49:00 [info]: Procesando FacuturaSoap
+12/12/2025, 15:49:01 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 15:49:06 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 15:49:06 [info]: 39.166
+12/12/2025, 16:14:29 [info]: Server running on port 5001
+12/12/2025, 16:14:30 [info]: Conexión exitosa a la base de datos MySQL
+12/12/2025, 16:14:35 [info]: Received request for /api/obtenerembarques
+12/12/2025, 16:14:35 [info]: [object Object],[object Object]
+12/12/2025, 16:14:38 [info]: Received request for /api/insertfactura
+12/12/2025, 16:14:39 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 16:14:39 [info]: Moneda en el back:  USD
+12/12/2025, 16:14:39 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 16:14:39 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "123.15",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "123.15",
+  "TotalCobrar": "123.15",
+  "DetalleFactura": [
+    {
+      "id": 42,
+      "numero_guia": "123-53465784",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-10-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 06/10/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "AWB: 123-53465784 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 06/10/2025  AWB: 123-53465784",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "123.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.15"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "123-53465784",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "99.85"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 42,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-10-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "123-53465784",
+      "emision": "2025-10-14T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "1231d12",
+      "piezas": 12312,
+      "peso": 123,
+      "pesovolumetrico": "123.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "123.00",
+      "fleteoriginal": "15129.00",
+      "dcoriginal": "123.00",
+      "daoriginal": "123.00",
+      "flete": "15129.00",
+      "ivas3": "99.85",
+      "duecarrier": "123.00",
+      "dueagent": "123.00",
+      "verificacion": "123.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.15",
+      "total": "223.00",
+      "totalguia": "15375.00",
+      "fechaingresada": "2025-10-14T17:30:17.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "06/10/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "99.85",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "99.85",
+  "RedondeoCuentaAjena": "0.15",
+  "TotalCobrarCuentaAjena": "99.85"
+}
+12/12/2025, 16:14:39 [info]: Moneda antes de adenda:  USD
+12/12/2025, 16:14:41 [error]: Error en /api/insertfactura: ReferenceError: DetalleFactura is not defined
+12/12/2025, 16:24:16 [info]: Server running on port 5001
+12/12/2025, 16:24:17 [info]: Conexión exitosa a la base de datos MySQL
+12/12/2025, 16:24:19 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 16:24:20 [info]: 39.166
+12/12/2025, 16:24:24 [info]: Received request for /api/obtenerembarques
+12/12/2025, 16:24:24 [info]: [object Object]
+12/12/2025, 16:24:27 [info]: Received request for /api/insertfactura
+12/12/2025, 16:24:28 [info]: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "AirEuropa",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "0.93",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "0.93",
+  "TotalCobrar": "0.93",
+  "DetalleFactura": [
+    {
+      "id": 49,
+      "numero_guia": "510-10566743",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-11-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "09",
+          "descripcion": "Vuelo: UX0045 06/11/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "09",
+          "descripcion": "AWB: 510-10566743 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": 0,
+          "descripcion": "AirEuropa",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: UX0045 06/11/2025  AWB: 510-10566743",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "09",
+          "descripcion": "UX - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "0.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "16",
+          "descripcion": "UX - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.93"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "10",
+          "descripcion": "UX - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "0.07"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 49,
+      "nrovuelo": "17",
+      "fechavuelo": "2025-11-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "510-10566743",
+      "emision": "2025-11-06T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "12",
+      "piezas": 1,
+      "peso": 10,
+      "pesovolumetrico": "10.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "1.00",
+      "fleteoriginal": "10.00",
+      "dcoriginal": "500.00",
+      "daoriginal": "500.00",
+      "flete": "10.00",
+      "ivas3": "0.07",
+      "duecarrier": "500.00",
+      "dueagent": "500.00",
+      "verificacion": "0.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.93",
+      "total": "1.00",
+      "totalguia": "1010.00",
+      "fechaingresada": "2025-11-06T17:44:52.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "UX0045",
+      "empresavuelo": "AirEuropa",
+      "fechavuelo_formateada": "06/11/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "0.07",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "0.07",
+  "RedondeoCuentaAjena": "0.93",
+  "TotalCobrarCuentaAjena": "0.07"
+}
+12/12/2025, 16:24:28 [info]: Moneda en el back:  USD
+12/12/2025, 16:24:28 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 16:24:28 [info]: Datos recibidos en el backend: {
+  "IdCliente": 39,
+  "Nombre": "REPREMAR LOGISTICS S A",
+  "RazonSocial": "REPREMAR LOGISTICS S A",
+  "DireccionFiscal": "Misiones 1372",
+  "CodigoGIA": "REP20",
+  "Ciudad": "Montevideo",
+  "Pais": "Uruguay",
+  "RutCedula": "53681592",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "AirEuropa",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "0.93",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "0.93",
+  "TotalCobrar": "0.93",
+  "DetalleFactura": [
+    {
+      "id": 49,
+      "numero_guia": "510-10566743",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-11-06T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "09",
+          "descripcion": "Vuelo: UX0045 06/11/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "09",
+          "descripcion": "AWB: 510-10566743 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": 0,
+          "descripcion": "AirEuropa",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: UX0045 06/11/2025  AWB: 510-10566743",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "09",
+          "descripcion": "UX - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "0.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "16",
+          "descripcion": "UX - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.93"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "510-10566743",
+          "id_concepto": "10",
+          "descripcion": "UX - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "0.07"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 49,
+      "nrovuelo": "17",
+      "fechavuelo": "2025-11-06T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "510-10566743",
+      "emision": "2025-11-06T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S A",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "12",
+      "piezas": 1,
+      "peso": 10,
+      "pesovolumetrico": "10.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "1.00",
+      "fleteoriginal": "10.00",
+      "dcoriginal": "500.00",
+      "daoriginal": "500.00",
+      "flete": "10.00",
+      "ivas3": "0.07",
+      "duecarrier": "500.00",
+      "dueagent": "500.00",
+      "verificacion": "0.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.93",
+      "total": "1.00",
+      "totalguia": "1010.00",
+      "fechaingresada": "2025-11-06T17:44:52.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": null,
+      "idfacturacuentaajena": null,
+      "nombreVuelo": "UX0045",
+      "empresavuelo": "AirEuropa",
+      "fechavuelo_formateada": "06/11/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "0.07",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "0.07",
+  "RedondeoCuentaAjena": "0.93",
+  "TotalCobrarCuentaAjena": "0.07"
+}
+12/12/2025, 16:24:28 [info]: Moneda antes de adenda:  USD
+12/12/2025, 16:24:29 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 16:24:29 [info]:   → numerodoc: 
+12/12/2025, 16:24:29 [info]:   → monto: 0.93
+12/12/2025, 16:24:29 [info]:   → moneda: USD
+12/12/2025, 16:24:29 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 16:24:29 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: UX0045 06/11/2025 Import | AWB: 510-10566743 EZE/EZE/MVD
+12/12/2025, 16:24:29 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 16:24:29 [info]:   → numerodoc: 633
+12/12/2025, 16:24:29 [info]:   → monto: 0.07
+12/12/2025, 16:24:29 [info]:   → moneda: USD
+12/12/2025, 16:24:29 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 16:24:29 [info]: ✅ [generarAdendaConConceptos] Resultado final: AirEuropa | Vuelo: UX0045 06/11/2025  AWB: 510-10566743
+12/12/2025, 16:24:29 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 16:24:29 [error]: Error en /api/insertfactura: ReferenceError: comprobanteElectronicoFinal is not defined
+12/12/2025, 16:26:14 [info]: Server running on port 5001
+12/12/2025, 16:26:14 [info]: Conexión exitosa a la base de datos MySQL
+12/12/2025, 16:26:14 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 16:26:15 [info]: 39.166
+12/12/2025, 16:26:16 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 16:26:16 [info]: 39.166
+12/12/2025, 16:26:17 [info]: Received request for /api/previewfacturas
+12/12/2025, 16:29:56 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 16:29:56 [info]: 39.166
+12/12/2025, 16:30:00 [info]: Received request for /api/obtenerembarques
+12/12/2025, 16:30:01 [info]: No se encontraron embarques para el cliente y tipo de embarque
+12/12/2025, 16:30:16 [info]: Received request for /api/obtenerembarques
+12/12/2025, 16:30:16 [info]: [object Object],[object Object],[object Object]
+12/12/2025, 16:30:20 [info]: Received request for /api/insertfactura
+12/12/2025, 16:30:56 [info]: Server running on port 5001
+12/12/2025, 16:30:57 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 16:30:57 [info]: Conexión exitosa a la base de datos MySQL
+12/12/2025, 16:30:57 [info]: 39.166
+12/12/2025, 16:31:02 [info]: Received request for /api/obtenerembarques
+12/12/2025, 16:31:02 [info]: [object Object],[object Object],[object Object]
+12/12/2025, 16:31:05 [info]: Received request for /api/insertfactura
+12/12/2025, 16:31:05 [info]: {
+  "IdCliente": 5458,
+  "Nombre": "REPREMAR LOGISTICS S.A.",
+  "RazonSocial": "REPREMAR LOGISTICS S.A.",
+  "DireccionFiscal": "MISIONES 1372 OF.602",
+  "CodigoGIA": "11310002",
+  "Ciudad": "MONTEVIDEO",
+  "Pais": "URUGUAY",
+  "RutCedula": "214055710010",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "150.92",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "150.92",
+  "TotalCobrar": "150.92",
+  "DetalleFactura": [
+    {
+      "id": 52,
+      "numero_guia": "510-10854934",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-11-12T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 12/11/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "01",
+          "descripcion": "AWB: 510-10854934 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 12/11/2025  AWB: 510-10854934",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "150.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.92"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "0.08"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 52,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-11-12T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "510-10854934",
+      "emision": "2025-11-12T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S.A.",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "Carga General",
+      "piezas": 1,
+      "peso": 1,
+      "pesovolumetrico": "12.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "1.00",
+      "fleteoriginal": "12.00",
+      "dcoriginal": "1.00",
+      "daoriginal": "1.00",
+      "flete": "12.00",
+      "ivas3": "0.08",
+      "duecarrier": "1.00",
+      "dueagent": "1.00",
+      "verificacion": "150.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.92",
+      "total": "151.00",
+      "totalguia": "14.00",
+      "fechaingresada": "2025-11-12T21:06:09.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": 581,
+      "idfacturacuentaajena": 582,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "12/11/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "0.08",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "0.08",
+  "RedondeoCuentaAjena": "0.92",
+  "TotalCobrarCuentaAjena": "0.08"
+}
+12/12/2025, 16:31:05 [info]: Moneda en el back:  USD
+12/12/2025, 16:31:05 [info]: Tipo de comprobante desde front efactura Comprobante Convertido FCT
+12/12/2025, 16:31:05 [info]: Datos recibidos en el backend: {
+  "IdCliente": 5458,
+  "Nombre": "REPREMAR LOGISTICS S.A.",
+  "RazonSocial": "REPREMAR LOGISTICS S.A.",
+  "DireccionFiscal": "MISIONES 1372 OF.602",
+  "CodigoGIA": "11310002",
+  "Ciudad": "MONTEVIDEO",
+  "Pais": "URUGUAY",
+  "RutCedula": "214055710010",
+  "ComprobanteElectronico": "efactura",
+  "Comprobante": "",
+  "Compania": "Airclass",
+  "Electronico": "",
+  "Moneda": "USD",
+  "Fecha": "2025-12-12",
+  "FechaVencimiento": "2025-12-12",
+  "CASS": "false",
+  "TipoEmbarque": "Impo",
+  "TC": "39.17",
+  "Subtotal": "150.92",
+  "IVA": "0.00",
+  "Redondeo": "0.00",
+  "Total": "150.92",
+  "TotalCobrar": "150.92",
+  "DetalleFactura": [
+    {
+      "id": 52,
+      "numero_guia": "510-10854934",
+      "origen": "EZE",
+      "destino": "MVD",
+      "fecha_envio": "2025-11-12T03:00:00.000Z",
+      "datosAdenda": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "01",
+          "descripcion": "Vuelo: VZ0104 12/11/2025 Import",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "01",
+          "descripcion": "AWB: 510-10854934 EZE/EZE/MVD",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "datosAdendaCA": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": 0,
+          "descripcion": "Airclass",
+          "moneda": "USD",
+          "importe": 0
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": 0,
+          "descripcion": "Vuelo: VZ0104 12/11/2025  AWB: 510-10854934",
+          "moneda": "USD",
+          "importe": 0
+        }
+      ],
+      "conceptos": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "01",
+          "descripcion": "VZ - Verificación de Carga:",
+          "moneda": "USD",
+          "importe": "150.00"
+        },
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "08",
+          "descripcion": "VZ - Redondeo:",
+          "moneda": "USD",
+          "importe": "0.92"
+        }
+      ],
+      "conceptos_cuentaajena": [
+        {
+          "tipo": "P",
+          "guia": "510-10854934",
+          "id_concepto": "02",
+          "descripcion": "VZ - Iva Sobre Flete",
+          "moneda": "USD",
+          "importe": "0.08"
+        }
+      ]
+    }
+  ],
+  "EmbarquesSeleccionados": [
+    {
+      "idguia": 52,
+      "nrovuelo": "16",
+      "fechavuelo": "2025-11-12T03:00:00.000Z",
+      "origenvuelo": "EZE",
+      "guia": "510-10854934",
+      "emision": "2025-11-12T03:00:00.000Z",
+      "consignatario": "REPREMAR LOGISTICS S.A.",
+      "origenguia": "EZE",
+      "conexionguia": "EZE",
+      "destinoguia": "MVD",
+      "tipodepagoguia": "P",
+      "mercaderia": "Carga General",
+      "piezas": 1,
+      "peso": 1,
+      "pesovolumetrico": "12.00",
+      "moneda": "USD",
+      "arbitraje": "1.00000000",
+      "tarifa": "1.00",
+      "fleteoriginal": "12.00",
+      "dcoriginal": "1.00",
+      "daoriginal": "1.00",
+      "flete": "12.00",
+      "ivas3": "0.08",
+      "duecarrier": "1.00",
+      "dueagent": "1.00",
+      "verificacion": "150.00",
+      "collectfee": "0.00",
+      "cfiva": "0.00",
+      "ajuste": "0.92",
+      "total": "151.00",
+      "totalguia": "14.00",
+      "fechaingresada": "2025-11-12T21:06:09.000Z",
+      "Tipo": "IMPO",
+      "facturada": 0,
+      "idfactura": 581,
+      "idfacturacuentaajena": 582,
+      "nombreVuelo": "VZ0104",
+      "empresavuelo": "Airclass",
+      "fechavuelo_formateada": "12/11/2025"
+    }
+  ],
+  "SubtotalCuentaAjena": "0.08",
+  "IVACuentaAjena": "0.00",
+  "TotalCuentaAjena": "0.08",
+  "RedondeoCuentaAjena": "0.92",
+  "TotalCobrarCuentaAjena": "0.08"
+}
+12/12/2025, 16:31:05 [info]: Moneda antes de adenda:  USD
+12/12/2025, 16:31:07 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 16:31:07 [info]:   → numerodoc: 
+12/12/2025, 16:31:07 [info]:   → monto: 150.92
+12/12/2025, 16:31:07 [info]:   → moneda: USD
+12/12/2025, 16:31:07 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 16:31:07 [info]: ✅ [generarAdendaConConceptos] Resultado final: Vuelo: VZ0104 12/11/2025 Import | AWB: 510-10854934 EZE/EZE/MVD
+12/12/2025, 16:31:07 [info]: 🔹 [generarAdendaConConceptos] Parámetros recibidos:
+12/12/2025, 16:31:07 [info]:   → numerodoc: 635
+12/12/2025, 16:31:07 [info]:   → monto: 0.08
+12/12/2025, 16:31:07 [info]:   → moneda: USD
+12/12/2025, 16:31:07 [info]:   → detalleFactura: [object Object],[object Object]
+12/12/2025, 16:31:07 [info]: ✅ [generarAdendaConConceptos] Resultado final: Airclass | Vuelo: VZ0104 12/11/2025  AWB: 510-10854934
+12/12/2025, 16:31:07 [info]: ESTOS SON LOS DATOS: [object Object]
+12/12/2025, 16:31:07 [info]: ➡ Generando XML con generarXmlefacimpopp (Factura normal)
+12/12/2025, 16:31:07 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 16:31:07 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>11310002</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Vuelo: VZ0104 12/11/2025 Import | AWB: 510-10854934 EZE/EZE/MVD</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>01</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>150.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>08</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.92</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 16:31:07 [info]: ESTOS SON LOS DATOSca: [object Object]
+12/12/2025, 16:31:07 [info]: GENERANDO XML EFACTURA CUENTA AJENA: [object Object]
+12/12/2025, 16:31:07 [info]: XML Generado EFACTURA CUENTA AJENA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FTA</tipoDocumento>
+
+                <cliente>11310002</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Airclass | Vuelo: VZ0104 12/11/2025  AWB: 510-10854934</descripcion>
+                <elemento1>AIRCLASS</elemento1>
+                <autonumerar>S</autonumerar>
+                <puntoVenta></puntoVenta>
+                <renglones>
+
+                
+                <renglon>
+                <producto>02</producto>
+                <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.08</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 16:31:07 [info]: Procesando FacuturaSoap
+12/12/2025, 16:31:07 [error]: Error en /api/insertfactura: [object Object]
+12/12/2025, 16:34:41 [info]: Received request for /api/obtenertipocambioparacomprobante
+12/12/2025, 16:34:41 [info]: 39.166
+12/12/2025, 16:34:45 [info]: Received request for /api/previewfacturas
+12/12/2025, 16:34:56 [info]: Impactando Documento en el back Factura:  [object Object]  idFactura:  634
+12/12/2025, 16:34:56 [info]: Moneda de la adenda:  USD
+12/12/2025, 16:34:56 [info]: Convirtiendo esta fecha 12/12/2025
+12/12/2025, 16:34:56 [info]: Convirtiendo esta fecha 12/12/2025
+12/12/2025, 16:34:56 [info]: GENERANDO XML EFACTURA: [object Object]
+12/12/2025, 16:34:56 [info]: XML Generado EFACTURA: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros>
+            <![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                <documento>
+                <fechaDocumento>2025-12-12</fechaDocumento>
+                <tipoDocumento>FCT</tipoDocumento>
+
+                <cliente>11310002</cliente>
+                <moneda>2</moneda>
+                <fechaVencimiento>2025-12-12</fechaVencimiento>
+                <descripcion>Son dólares americanos U$S ciento cincuenta  con noventa y dos centavos</descripcion>
+                <autonumerar>S</autonumerar>
+                <renglones>
+
+                
+                <renglon>
+                <producto>1</producto>
+                <nombreProducto>VZ - Verificación de Carga:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>150.00</precioUnitario>
+                </renglon>
+            
+                <renglon>
+                <producto>8</producto>
+                <nombreProducto>VZ - Redondeo:</nombreProducto>
+                <cantidad>1</cantidad>
+                <precioUnitario>0.92</precioUnitario>
+                </renglon>
+            
+
+                </renglones>
+                </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]>
+</xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+12/12/2025, 16:34:59 [info]: Received request for /api/previewfacturas

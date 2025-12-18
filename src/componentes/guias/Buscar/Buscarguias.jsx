@@ -10,7 +10,7 @@ import ModalVerGuiaExpo from '../../modales/ModalVerGuiaExpo';
 import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
 import 'react-toastify/dist/ReactToastify.css';
-
+import Swal from 'sweetalert2';
 
 const PreviewGuias = () => {
     const backURL = import.meta.env.VITE_BACK_URL;
@@ -121,15 +121,125 @@ const PreviewGuias = () => {
     const [isModalOpenModificar, setIsModalOpenModificar] = useState(false);
     const [guiaSeleccionada, setGuiaSeleccionada] = useState(null);
 
-    const notificarPorEmail = (row) => {
-        const destinatarios = "pgauna@repremar.com"; // separados por ;
-        const asunto = `Notificación de factura ${row.Numero}`;
-        const cuerpo = `Hola,\n\nTe notificamos sobre la factura ${row.Numero}.\nMonto: ${row.Monto}\nCliente: ${row.Cliente}\n\nSaludos.`;
+    const notificarPorEmail = async (row) => {
 
-        // Encodeamos para que Outlook lea bien los espacios, saltos de línea, etc.
-        const mailtoLink = `mailto:${destinatarios}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+        let costoGuia;
+        let cliente;
+        if (row.tipo == 'EXPO') {
+            costoGuia = row.cobrarpagar;
+            cliente = row.agente
+        } else {
+            costoGuia = row.total;
+            cliente = row.consignatario
+        }
 
-        window.location.href = mailtoLink;
+        try {
+            const resp = await axios.get(
+                `${backURL}/api/clientes/emailrazonsocial`,
+                {
+                    params: {
+                        razonSocial: cliente
+                    }
+                }
+            );
+            console.log(resp.data);
+
+            const destinatarios = resp?.data?.email?.trim();
+
+            if (!destinatarios) {
+                toast.error(`El cliente "${cliente}" no tiene email configurado`);
+                return;
+            }
+            const asunto = `Notificación de arribo - ${row.guia}`;
+            const cuerpo = `Buenos días estimados.\n\nNotificamos arribo de carga en asunto. \nArribada con ${row.nombreVuelo} el ${row.fechavuelo_formateada}.\nGastos terminales USD ${costoGuia}.\n\nDatos bancarios:\nItaú cuenta corriente USD\n0584536 KIXOLER SA\n\nUna vez reciba el comprobante, les paso factura, recibo y transferido.\n\nMuchas gracias.\nSaludos.`;
+
+
+            const mailtoLink = `mailto:${destinatarios}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+
+            window.location.href = mailtoLink;
+
+
+            setTimeout(async () => {
+                // 3️⃣ Confirmación manual
+                const result = await Swal.fire({
+                    title: 'Confirmación de envío',
+                    text: '¿Enviaste el correo?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, enviado',
+                    cancelButtonText: 'No'
+                });
+
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Confirmado',
+                        text: 'El envío fue confirmado por el usuario'
+                    });
+
+                    try {
+                        await axios.post(`${backURL}/api/guiasimpo/marcar-notificada`, {
+                            guia: row.guia
+                        });
+                        window.location.reload();
+                    } catch (err) {
+                        console.error('Error marcando guía como notificada', err);
+                        toast.error('No se pudo marcar la guía como notificada');
+                    }
+
+
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'No enviado',
+                        text: 'El correo no fue enviado'
+                    });
+                }
+            }, 1500);
+        } catch (error) {
+            console.error('Error obteniendo mail del cliente', error);
+            toast.error(`No se pudo obtener el email para ${cliente}`);
+        }
+    };
+     const notificada = async (row) => {
+
+            setTimeout(async () => {
+                // 3️⃣ Confirmación manual
+                const result = await Swal.fire({
+                    title: 'Confirmación de notificación',
+                    text: '¿Notifico al cliente?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, notifique',
+                    cancelButtonText: 'No'
+                });
+
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Confirmado',
+                        text: 'La Notificación fue confirmada por el usuario'
+                    });
+
+                    try {
+                        await axios.post(`${backURL}/api/guiasimpo/marcar-notificada`, {
+                            guia: row.guia
+                        });
+                        window.location.reload();
+                    } catch (err) {
+                        console.error('Error marcando guía como notificada', err);
+                        toast.error('No se pudo marcar la guía como notificada');
+                    }
+
+
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'No Notificado',
+                        text: 'El cliente no fue notificado'
+                    });
+                }
+            }, 0);
     };
 
     const openModalModificar = (guia) => {
@@ -237,7 +347,7 @@ const PreviewGuias = () => {
                     </div>
                     {error && <div className="error">{error}</div>}
                     <div className='contenedor-tabla-buscarfacturas'>
-                        <table className='tabla-facturas'>
+                        <table className='tabla-busguias'>
                             <thead>
                                 <tr>
                                     <th>Guía</th>
@@ -248,11 +358,12 @@ const PreviewGuias = () => {
                                     <th>Monto</th>
                                     <th>Total / Guia</th>
                                     <th>Facturada</th>
+                                    <th>Notificada</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredGuias.map((row) => (
+                                {filteredGuias.map((row, index) => (
                                     <tr key={row.idguia}>
                                         <td>{row.guia}</td>
                                         <td>{row.nombreVuelo + ' Fecha: ' + row.fechavuelo_formateada}</td>
@@ -273,16 +384,30 @@ const PreviewGuias = () => {
                                             }
                                         </td>
                                         <td>{row.facturada ? '✔️' : '❌'}</td>
-                                        <td className="td-con-submenu">
-                                            <div className="buscarfacturas-submenu-container">
-                                                <button disabled className="buscarfacturas-submenu-toggle">☰</button>
-                                                <div className="buscarfacturas-submenu">
-                                                    <button
-                                                        className='botonsubmenubuscarfactura'
-                                                        onClick={() => notificarPorEmail(row)}
-                                                    >
-                                                        Notificar
-                                                    </button>
+                                        <td>{row.notificada ? '✔️' : '❌'}</td>
+                                        <td className="td-con-submenuguias">
+                                            <div className="buscarguias-submenu-container">
+                                                <button disabled className="buscarguias-submenu-toggle">☰</button>
+                                                <div className={`buscarguias-submenu ${index < 1 ? 'submenu-ajustado' : ''
+                                                    }`}
+                                                >
+                                                    {row.facturada == 1 && row.notificada == 0 &&(
+                                                        <button
+                                                            className='botonsubmenubuscarfactura'
+                                                            onClick={() => notificarPorEmail(row)}
+                                                        >
+                                                            Notificar
+                                                        </button>
+                                                    )}
+                                                     {row.facturada == 1 && row.notificada == 0 &&(
+                                                        <button
+                                                            className='botonsubmenubuscarfactura'
+                                                            onClick={() => notificada(row)}
+                                                        >
+                                                            Notificada
+                                                        </button>
+                                                    )}
+
                                                     <button className='botonsubmenubuscarfactura' onClick={() => row.tipo === "IMPO" ? openModalVer(row.guia) : openModalVerExpo(row.guia)}  >Visualizar Guía</button>
                                                     <button className='botonsubmenubuscarfactura' onClick={() => row.tipo === "IMPO" ? openModalModificar(row.guia) : openModalModificarExpo(row.guia)}>Modificar Guía</button>
                                                     <button className='botonsubmenubuscarfactura' onClick={() => openModalConfirmDelete(row)}>Eliminar Guía</button>
