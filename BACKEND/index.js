@@ -2748,7 +2748,7 @@ app.post('/api/insertfactura', async (req, res) => {
       Comprobante, Compania, Electronico, Moneda, Fecha, TipoIVA, CASS, TipoEmbarque, TC, Subtotal, IVA,
       Redondeo, Total, TotalCobrar, CodigoGIA, FechaVencimiento]);
 
-    const facturaId = resultFactura.insertId; // Obtener el ID de la factura insertada
+    facturaId = resultFactura.insertId; // Obtener el ID de la factura insertada
 
     console.log('Moneda antes de adenda: ', Moneda);
 
@@ -2928,6 +2928,8 @@ app.post('/api/insertfactura', async (req, res) => {
     // Llamada directa a la función SOAP
     const resultadoSOAP = await procesarFacturaSOAP(xml, xmlCuentaAjena);
     console.log('Resultado FacuturaSoap', resultadoSOAP);
+    console.log('resultadoSOAP[0]:', resultadoSOAP[0]);
+    console.log('resultadoSOAP[1]:', resultadoSOAP[1]);
     // Actualizar base de datos con resultados
     const updateQuery = `
     UPDATE facturas SET FechaCFE=?, ComprobanteElectronico=?, TipoDocCFE=?, SerieCFE=?, NumeroCFE=?, PdfBase64=?, Adenda=? WHERE Id=?
