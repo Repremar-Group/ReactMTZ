@@ -7450,9 +7450,9 @@ app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
   AND g.facturada = 0 AND g.cass = 'N' 
     ${cliente ? "AND g.agente = ?" : ""}
     ${tipoFiltro ? "AND g.tipodepago = ?" : ""}
-    ${desde && hasta ? "AND g.emision BETWEEN ? AND ?" : ""}
+    ${desde && hasta ? "AND g.fechavuelo BETWEEN ? AND ?" : ""}
       ${aerolinea && aerolinea.toLowerCase() !== "all" ? "AND v.compania = ?" : ""}
-  ORDER BY g.emision ASC
+  ORDER BY g.fechavuelo ASC
   `,
       [
         ...(cliente ? [cliente] : []),
