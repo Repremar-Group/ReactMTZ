@@ -5350,8 +5350,8 @@ app.get('/api/obtenerguiasimpopendientes', async (req, res) => {
       SELECT g.*, v.vuelo AS vuelo
       FROM guiasimpo g
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-      WHERE g.emision >= ?
-      AND g.emision <= ?
+      WHERE g.fechavuelo >= ?
+      AND g.fechavuelo <= ?
       AND g.facturada = 0
     `;
 
@@ -5394,8 +5394,8 @@ app.get('/api/obtenerguiasexpopendientes', async (req, res) => {
       SELECT g.*, v.vuelo AS vuelo
       FROM guiasexpo g
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-      WHERE g.emision >= ?
-      AND g.emision <= ?
+      WHERE g.fechavuelo >= ?
+      AND g.fechavuelo <= ?
       AND g.facturada = 0
       AND g.cass = 'N'
     `;
@@ -5692,7 +5692,7 @@ app.get('/api/obtenerguiasimporeporte', async (req, res) => {
   v.vuelo AS vuelo
 FROM guiasimpo g
 LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-WHERE g.emision >= ? AND g.emision <= ?
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
   `;
 
     const params = [desde, hasta];
@@ -6652,7 +6652,7 @@ app.get("/api/reportedeembarqueguiasexpo", async (req, res) => {
       LEFT JOIN facturas f ON g.idfactura = f.Id
       LEFT JOIN recibos r ON f.idrecibo = r.idrecibo
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-      WHERE DATE(g.fechaingresada) BETWEEN ? AND ?
+      WHERE DATE(g.fechavuelo) BETWEEN ? AND ?
     `;
 
     const params = [desde, hasta];
@@ -7140,7 +7140,7 @@ app.get("/api/reportedeembarqueimpo/pdf", async (req, res) => {
   WHERE 1=1
     ${cliente ? "AND g.consignatario = ?" : ""}
     ${tipoFiltro ? "AND g.tipodepagoguia = ?" : ""}
-    ${desde && hasta ? "AND g.emision BETWEEN ? AND ?" : ""}
+    ${desde && hasta ? "AND g.fechavuelo BETWEEN ? AND ?" : ""}
     ${aerolinea && aerolinea.toLowerCase() !== "all" ? "AND v.compania = ?" : ""}
   ORDER BY g.emision ASC
   `,
