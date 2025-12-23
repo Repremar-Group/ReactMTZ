@@ -380,15 +380,18 @@ app.get('/api/previewfacturas', async (req, res) => {
   console.log('Received request for /api/previewfacturas');
 
   const sql = `
-    SELECT 
-      f.*,
-      gexpo.guia AS guiaExpo,
-      gimpo.guia AS guiaImpo
-    FROM facturas f
-    LEFT JOIN guiasexpo gexpo ON gexpo.idfactura = f.Id
-    LEFT JOIN guiasimpo gimpo ON gimpo.idfactura = f.Id
-    ORDER BY f.Fecha DESC
-  `;
+  SELECT 
+    f.*,
+    gexpo.guia AS guiaExpo,
+    gimpo.guia AS guiaImpo
+  FROM facturas f
+  LEFT JOIN guiasexpo gexpo 
+    ON gexpo.idfactura = f.Id
+  LEFT JOIN guiasimpo gimpo 
+    ON gimpo.idfactura = f.Id
+    OR gimpo.idfacturacuentaajena = f.Id
+  ORDER BY f.Fecha DESC
+`;
 
   try {
     const [rows] = await pool.query(sql);
@@ -2089,6 +2092,7 @@ app.get('/api/previewguias', async (req, res) => {
       DATE_FORMAT(g.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada, tipo
       FROM guiasimpo g
       LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+      ORDER BY g.fechavuelo DESC
     `;
     // Ejecutar la consulta para obtener todas las guías
     const [results] = await pool.query(fetchGuiasQuery);
@@ -2113,6 +2117,7 @@ app.get('/api/previewguiasexpo', async (req, res) => {
         DATE_FORMAT(e.fechavuelo, '%d/%m/%Y') AS fechavuelo_formateada, tipo
       FROM guiasexpo e
       LEFT JOIN vuelos v ON e.nrovuelo = v.idVuelos
+      ORDER BY e.fechavuelo DESC
     `;
     // Ejecutar la consulta para obtener todas las guías expo
     const [results] = await pool.query(fetchGuiasExpoQuery);
@@ -2639,6 +2644,103 @@ app.get('/api/buscarconcepto/:codigo', async (req, res) => {
   } catch (err) {
     console.error('Error al obtener el concepto:', err);
     res.status(500).json({ error: 'Error en la consulta' });
+  }
+});
+app.delete('/api/facturas/eliminar', async (req, res) => {
+  const { IdFactura } = req.body;
+  console.log('ID de factura a eliminar', IdFactura);
+  if (!IdFactura) {
+    return res.status(400).json({ mensaje: 'IdFactura requerido' });
+  }
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    // 1️ Buscar factura
+    const [facturaRows] = await conn.query(
+      `SELECT 
+         Id,
+         NumeroCFE,
+         TipoEmbarque
+       FROM facturas
+       WHERE Id = ?`,
+      [IdFactura]
+    );
+
+    if (!facturaRows || facturaRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ mensaje: 'Factura no encontrada' });
+    }
+
+    const factura = facturaRows[0];
+
+    // 2️ Validar CFE
+    if (factura.NumeroCFE) {
+      await conn.rollback();
+      return res.status(400).json({
+        mensaje: 'No se puede eliminar una factura con CFE'
+      });
+    }
+
+    // 3️ Desasociar guías según tipo
+    if (factura.TipoEmbarque === 'Expo') {
+      await conn.query(
+        `UPDATE guiasexpo
+         SET facturada = 0,
+             idfactura = NULL
+         WHERE idfactura = ?`,
+        [IdFactura]
+      );
+    }
+
+    if (factura.TipoEmbarque === 'Impo') {
+      await conn.query(
+        `UPDATE guiasimpo
+   SET idfactura = NULL,
+       facturada = 0
+   WHERE idfactura = ?`,
+        [IdFactura]
+      );
+
+      // 2️⃣ Limpiar factura cuenta ajena (sin FK)
+      await conn.query(
+        `UPDATE guiasimpo
+   SET idfacturacuentaajena = NULL
+   WHERE idfacturacuentaajena = ?`,
+        [IdFactura]
+      );
+    }
+
+    // 4️⃣ Eliminar movimientos de cuenta corriente
+    await conn.query(
+      `DELETE FROM cuenta_corriente
+       WHERE IdFactura = ?`,
+      [IdFactura]
+    );
+
+    // 5️⃣ Eliminar factura
+    await conn.query(
+      `DELETE FROM facturas
+       WHERE Id = ?`,
+      [IdFactura]
+    );
+
+    await conn.commit();
+
+    res.status(200).json({
+      mensaje: 'Factura eliminada correctamente'
+    });
+
+  } catch (error) {
+    if (conn) await conn.rollback();
+    console.error('Error al eliminar factura:', error);
+    res.status(500).json({
+      mensaje: 'Error al eliminar la factura'
+    });
+  } finally {
+    if (conn) conn.release();
   }
 });
 
@@ -5685,15 +5787,44 @@ app.get('/api/obtenerguiasimporeporte', async (req, res) => {
   const { cliente, desde, hasta, tipoPago, aerolinea } = req.query;
 
   console.log("Generando reporte impo:", cliente, desde, hasta, tipoPago);
+
   try {
     let query = `
-    SELECT 
-  g.*, 
-  v.vuelo AS vuelo
-FROM guiasimpo g
-LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
-WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
-  `;
+      SELECT 
+        g.*,
+        v.vuelo AS vuelo,
+
+        -- FACTURA NORMAL
+        f.NumeroCFE  AS factura_cfe,
+        f.idrecibo   AS factura_idrecibo,
+
+        -- FACTURA CUENTA AJENA
+        fca.NumeroCFE AS factura_ca_cfe,
+        fca.idrecibo  AS factura_ca_idrecibo,
+
+        -- RECIBO (CFE)
+        r.numeroDocumentoCFE AS recibo_cfe
+
+      FROM guiasimpo g
+
+      LEFT JOIN vuelos v 
+        ON g.nrovuelo = v.idVuelos
+
+      -- Factura normal
+      LEFT JOIN facturas f 
+        ON f.Id = g.idfactura
+
+      -- Factura cuenta ajena
+      LEFT JOIN facturas fca 
+        ON fca.Id = g.idfacturacuentaajena
+
+      -- Recibo (prioriza factura normal, si no existe usa CA)
+      LEFT JOIN recibos r 
+        ON r.idrecibo = COALESCE(f.idrecibo, fca.idrecibo)
+
+      WHERE g.fechavuelo >= ? 
+        AND g.fechavuelo <= ?
+    `;
 
     const params = [desde, hasta];
 
@@ -5706,17 +5837,19 @@ WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
       query += ` AND g.tipodepagoguia = ?`;
       params.push(tipoPago);
     }
+
     if (aerolinea && aerolinea !== 'ALL') {
       query += ` AND v.compania = ?`;
       params.push(aerolinea);
     }
 
+    query += ` ORDER BY g.fechavuelo ASC`;
 
-    query += ` ORDER BY g.emision ASC`;
+    console.log('QUERY REPORTE IMPO:', query, params);
 
-    console.log('QUERY REPORTE IMPO: ', query, params);
     const [results] = await pool.query(query, params);
     res.status(200).json(results);
+
   } catch (error) {
     console.error('Error al obtener guías impo:', error);
     res.status(500).json({ error: 'Error al obtener guías impo' });
@@ -6832,7 +6965,7 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
   WHERE 1=1
     ${cliente ? "AND g.agente = ?" : ""}
     ${tipoFiltro ? "AND g.tipodepago = ?" : ""}
-    ${desde && hasta ? "AND g.emision BETWEEN ? AND ?" : ""}
+    ${desde && hasta ? "AND g.fechavuelo BETWEEN ? AND ?" : ""}
     ${aerolinea && aerolinea.toLowerCase() !== "all" ? "AND v.compania = ?" : ""}
   ORDER BY g.emision ASC
   `,
@@ -6853,7 +6986,18 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
     const prepaidData = [];
 
     rows.forEach(r => {
-      r.incentivo = Number(r.fleteawb || 0) - Number(r.totalflete || 0);
+      const fleteAwb = Number(r.fleteawb || 0);
+      const totalFlete = Number(r.totalflete || 0);
+
+      if (r.ppcc === "C") {
+        // COLLECT → incentivo al cobrar
+        r.incentivo = fleteAwb - totalFlete;
+      } else if (r.ppcc === "P") {
+        // PREPAID 
+        r.incentivo = 0;
+      } else {
+        r.incentivo = 0;
+      }
 
       // Para mostrar en la tabla
       r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
@@ -6862,6 +7006,7 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
       if (r.ppcc === "C") collectData.push(r);
       else if (r.ppcc === "P") prepaidData.push(r);
     });
+
 
     const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
     const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
@@ -7471,15 +7616,27 @@ app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
     const prepaidData = [];
 
     rows.forEach(r => {
-      r.incentivo = Number(r.fleteawb || 0) - Number(r.totalflete || 0);
+  const fleteAwb = Number(r.fleteawb || 0);
+  const totalFlete = Number(r.totalflete || 0);
 
-      // Para mostrar en la tabla
-      r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
+  // Incentivo correcto según tipo de pago
+  if (r.ppcc === "C") {
+    // COLLECT → cobro
+    r.incentivo = fleteAwb - totalFlete;
+  } else if (r.ppcc === "P") {
+    // PREPAID 
+      r.incentivo = 0;
+  } else {
+    r.incentivo = 0;
+  }
 
-      // Separar según valor real
-      if (r.ppcc === "C") collectData.push(r);
-      else if (r.ppcc === "P") prepaidData.push(r);
-    });
+  // Para mostrar en la tabla
+  r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
+
+  // Separar según valor real
+  if (r.ppcc === "C") collectData.push(r);
+  else if (r.ppcc === "P") prepaidData.push(r);
+});
 
     const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
     const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
@@ -7759,7 +7916,7 @@ app.get("/api/reportedeembarquependienteimpo/pdf", async (req, res) => {
         AND g.Tipo = 'IMPO'
         ${cliente ? " AND g.consignatario = ?" : ""}
         ${tipoFiltro ? " AND g.tipodepagoguia = ?" : ""}
-        ${desde && hasta ? " AND g.emision BETWEEN ? AND ?" : ""}
+        ${desde && hasta ? " AND g.fechavuelo BETWEEN ? AND ?" : ""}
         ${aerolinea && aerolinea.toLowerCase() !== "all" ? " AND v.compania = ?" : ""}
       ORDER BY g.emision ASC
     `;
@@ -8143,6 +8300,10 @@ app.delete("/api/anularRecibo/:id", async (req, res) => {
     //  Eliminar el recibo
     await pool.query(
       "UPDATE recibos SET Estado = 'Anulado' WHERE idrecibo = ?",
+      [id]
+    );
+    await pool.query(
+      "UPDATE pagos SET nro_pago = '-' WHERE idrecibo = ?",
       [id]
     );
 

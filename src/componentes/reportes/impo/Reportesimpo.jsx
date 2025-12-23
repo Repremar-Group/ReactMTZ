@@ -27,8 +27,6 @@ const Reportesimpo = ({ isLoggedIn }) => {
       return;
     }
 
-
-
     if (!tipoPago) {
       toast("Debe seleccionar un tipo de pago válido (PP o CC).");
       return;
@@ -42,9 +40,8 @@ const Reportesimpo = ({ isLoggedIn }) => {
     const worksheet = workbook.addWorksheet('Reporte Importe');
 
     worksheet.columns = [
-      { header: 'Fecha', key: 'emision', width: 15 },
+      { header: 'Fecha', key: 'fechaVuelo', width: 15 },
       { header: 'Número AWB', key: 'guia', width: 20 },
-      { header: 'Tipo', key: 'tipodepagoguia', width: 10 },
       { header: 'Agente', key: 'consignatario', width: 25 },
       { header: 'Origen', key: 'origenguia', width: 15 },
       { header: 'Vuelo', key: 'vuelo', width: 15 },
@@ -60,6 +57,11 @@ const Reportesimpo = ({ isLoggedIn }) => {
       { header: 'IVA 3%', key: 'ivas3', width: 12 },
       { header: 'Ajuste', key: 'ajuste', width: 12 },
       { header: 'Total', key: 'total', width: 12 },
+      { header: 'Tipo', key: 'tipodepagoguia', width: 10 },
+      { header: 'Factura', key: 'factura', width: 10 },
+      { header: 'Factura CA', key: 'facturaca', width: 10 },
+      { header: 'Recibo', key: 'recibo', width: 10 },
+      { header: 'Notificada', key: 'notificada', width: 10 },
     ];
     // Estilo: encabezado con fondo azul y letras blancas
     const headerRow = worksheet.getRow(1);
@@ -75,14 +77,28 @@ const Reportesimpo = ({ isLoggedIn }) => {
       };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
-    worksheet.getColumn('emision').numFmt = 'dd/mm/yyyy';
+    worksheet.getColumn('fechaVuelo').numFmt = 'dd/mm/yyyy';
+
     // Filtro tipo Excel en los encabezados
     worksheet.autoFilter = {
       from: 'A1',
       to: worksheet.getRow(1).getCell(worksheet.getRow(1).cellCount)._address,
     };
+    //Ordeno por consignatario y fecha
+    const dataOrdenada = [...data].sort((a, b) => {
+      const consA = (a.consignatario || '').toLowerCase();
+      const consB = (b.consignatario || '').toLowerCase();
+
+      if (consA < consB) return -1;
+      if (consA > consB) return 1;
+
+      const fechaA = new Date(a.fechavuelo);
+      const fechaB = new Date(b.fechavuelo);
+
+      return fechaA - fechaB;
+    });
     // Agregar los datos aplicando la lógica de tipo de pago
-    data.forEach((item) => {
+    dataOrdenada.forEach((item) => {
       const tipoPago = item.tipodepagoguia;
 
       const ppcharges = tipoPago === 'C' ? 0 : item.flete || 0;
@@ -91,9 +107,8 @@ const Reportesimpo = ({ isLoggedIn }) => {
       const ccothers = tipoPago === 'P' ? 0 : (item.dcoriginal || 0) + (item.daoriginal || 0);
 
       worksheet.addRow({
-        emision: item.emision ? new Date(item.emision) : null,
+        fechaVuelo: item.fechavuelo ? new Date(item.fechavuelo) : null,
         guia: item.guia,
-        tipodepagoguia: item.tipodepagoguia,
         consignatario: item.consignatario,
         origenguia: item.origenguia,
         vuelo: item.vuelo,
@@ -109,6 +124,11 @@ const Reportesimpo = ({ isLoggedIn }) => {
         ivas3: item.ivas3,
         ajuste: item.ajuste,
         total: item.total,
+        tipodepagoguia: item.tipodepagoguia,
+        factura: item.factura_cfe,
+        facturaca: item.factura_ca_cfe,
+        recibo: item.recibo_cfe,
+        notificada: item.notificada === 1 ? 'SI' : 'NO',
       });
     });
 

@@ -1,0 +1,266 @@
+23/12/2025, 09:40:09 [info]: Server running on port 5001
+23/12/2025, 09:40:10 [info]: Conexión exitosa a la base de datos MySQL
+23/12/2025, 09:40:26 [info]: Received request for /api/guias-sin-facturar
+23/12/2025, 09:40:26 [info]: Received request for /api/facturas-sin-cobrar
+23/12/2025, 09:40:27 [info]: Received request for /api/obtenertipocambio
+23/12/2025, 09:40:29 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+23/12/2025, 09:40:29 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "39.07"
+    }
+  }
+}
+23/12/2025, 09:40:29 [info]: Received request for /api/agregartipocambio
+23/12/2025, 09:44:03 [info]: Parámetros recibidos: [object Object]
+23/12/2025, 09:46:35 [info]: Parámetros recibidos: [object Object]
+23/12/2025, 10:01:50 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+23/12/2025, 10:03:28 [info]: Server running on port 5001
+23/12/2025, 10:03:29 [info]: Conexión exitosa a la base de datos MySQL
+23/12/2025, 10:03:30 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+23/12/2025, 10:04:25 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+23/12/2025, 10:04:59 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+23/12/2025, 10:09:24 [info]: Received request for /api/previewguias
+23/12/2025, 10:09:24 [info]: Received request for /api/previewguiasexpo
+23/12/2025, 10:10:23 [info]: REPREMAR LOGISTICS S.A.
+23/12/2025, 10:13:31 [info]: Received request for /api/previewguias
+23/12/2025, 10:13:31 [info]: Received request for /api/previewguiasexpo
+23/12/2025, 10:14:18 [info]: Received request for /api/previewguias
+23/12/2025, 10:14:18 [info]: Received request for /api/previewguiasexpo
+23/12/2025, 10:15:20 [info]: Received request for /api/previewguias
+23/12/2025, 10:15:20 [info]: Received request for /api/previewguiasexpo
+23/12/2025, 10:15:41 [info]: Received request for /api/previewguias
+23/12/2025, 10:15:41 [info]: Received request for /api/previewguiasexpo
+23/12/2025, 10:16:43 [info]: Received request for /api/previewguias
+23/12/2025, 10:16:43 [info]: Received request for /api/previewguiasexpo
+23/12/2025, 10:26:18 [info]: Generando reporte impo:  2025-12-23 2025-12-23 ALL
+23/12/2025, 10:26:18 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2025-12-23,2025-12-23
+23/12/2025, 10:26:27 [info]: Generando reporte impo:  2022-05-23 2025-12-23 ALL
+23/12/2025, 10:26:27 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2022-05-23,2025-12-23
+23/12/2025, 10:31:49 [info]: Generando reporte impo:  2022-05-23 2025-12-23 ALL
+23/12/2025, 10:31:49 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2022-05-23,2025-12-23
+23/12/2025, 10:32:02 [info]: Generando reporte impo:  2022-05-23 2025-12-23 ALL
+23/12/2025, 10:32:02 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2022-05-23,2025-12-23
+23/12/2025, 10:32:04 [info]: Parámetros recibidos: [object Object]
+23/12/2025, 10:32:05 [info]: Generando reporte impo:  2022-05-23 2025-12-23 ALL
+23/12/2025, 10:32:05 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2022-05-23,2025-12-23
+23/12/2025, 10:33:43 [info]: Generando reporte impo:  2022-05-23 2025-12-23 ALL
+23/12/2025, 10:33:43 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2022-05-23,2025-12-23
+23/12/2025, 10:34:02 [info]: Generando reporte impo:  2023-01-24 2025-12-23 ALL
+23/12/2025, 10:34:02 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2023-01-24,2025-12-23
+23/12/2025, 10:37:52 [info]: Generando reporte impo:  2023-01-24 2025-12-23 ALL
+23/12/2025, 10:37:52 [info]: QUERY REPORTE IMPO:  
+    SELECT 
+  g.*, 
+  v.vuelo AS vuelo
+FROM guiasimpo g
+LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+WHERE g.fechavuelo >= ? AND g.fechavuelo <= ?
+   ORDER BY g.emision ASC 2023-01-24,2025-12-23
+23/12/2025, 10:44:17 [info]: Server running on port 5001
+23/12/2025, 10:44:17 [info]: Conexión exitosa a la base de datos MySQL
+23/12/2025, 10:44:19 [info]: Generando reporte impo:  2023-01-24 2025-12-23 ALL
+23/12/2025, 10:44:19 [info]: QUERY REPORTE IMPO: 
+      SELECT 
+        g.*,
+        v.vuelo AS vuelo,
+
+        -- FACTURA NORMAL
+        f.NumeroCFE  AS factura_cfe,
+        f.idrecibo   AS factura_idrecibo,
+
+        -- FACTURA CUENTA AJENA
+        fca.NumeroCFE AS factura_ca_cfe,
+        fca.idrecibo  AS factura_ca_idrecibo,
+
+        -- RECIBO (CFE)
+        r.numeroDocumentoCFE AS recibo_cfe
+
+      FROM guiasimpo g
+
+      LEFT JOIN vuelos v 
+        ON g.nrovuelo = v.idVuelos
+
+      -- Factura normal
+      LEFT JOIN facturas f 
+        ON f.Id = g.idfactura
+
+      -- Factura cuenta ajena
+      LEFT JOIN facturas fca 
+        ON fca.Id = g.idfacturacuentaajena
+
+      -- Recibo (prioriza factura normal, si no existe usa CA)
+      LEFT JOIN recibos r 
+        ON r.idrecibo = COALESCE(f.idrecibo, fca.idrecibo)
+
+      WHERE g.fechavuelo >= ? 
+        AND g.fechavuelo <= ?
+     ORDER BY g.fechavuelo ASC 2023-01-24,2025-12-23
+23/12/2025, 10:57:04 [info]: Generando reporte impo:  2023-01-24 2025-12-23 ALL
+23/12/2025, 10:57:04 [info]: QUERY REPORTE IMPO: 
+      SELECT 
+        g.*,
+        v.vuelo AS vuelo,
+
+        -- FACTURA NORMAL
+        f.NumeroCFE  AS factura_cfe,
+        f.idrecibo   AS factura_idrecibo,
+
+        -- FACTURA CUENTA AJENA
+        fca.NumeroCFE AS factura_ca_cfe,
+        fca.idrecibo  AS factura_ca_idrecibo,
+
+        -- RECIBO (CFE)
+        r.numeroDocumentoCFE AS recibo_cfe
+
+      FROM guiasimpo g
+
+      LEFT JOIN vuelos v 
+        ON g.nrovuelo = v.idVuelos
+
+      -- Factura normal
+      LEFT JOIN facturas f 
+        ON f.Id = g.idfactura
+
+      -- Factura cuenta ajena
+      LEFT JOIN facturas fca 
+        ON fca.Id = g.idfacturacuentaajena
+
+      -- Recibo (prioriza factura normal, si no existe usa CA)
+      LEFT JOIN recibos r 
+        ON r.idrecibo = COALESCE(f.idrecibo, fca.idrecibo)
+
+      WHERE g.fechavuelo >= ? 
+        AND g.fechavuelo <= ?
+     ORDER BY g.fechavuelo ASC 2023-01-24,2025-12-23
+23/12/2025, 10:58:57 [info]: Generando reporte impo:  2023-01-24 2025-12-23 ALL
+23/12/2025, 10:58:57 [info]: QUERY REPORTE IMPO: 
+      SELECT 
+        g.*,
+        v.vuelo AS vuelo,
+
+        -- FACTURA NORMAL
+        f.NumeroCFE  AS factura_cfe,
+        f.idrecibo   AS factura_idrecibo,
+
+        -- FACTURA CUENTA AJENA
+        fca.NumeroCFE AS factura_ca_cfe,
+        fca.idrecibo  AS factura_ca_idrecibo,
+
+        -- RECIBO (CFE)
+        r.numeroDocumentoCFE AS recibo_cfe
+
+      FROM guiasimpo g
+
+      LEFT JOIN vuelos v 
+        ON g.nrovuelo = v.idVuelos
+
+      -- Factura normal
+      LEFT JOIN facturas f 
+        ON f.Id = g.idfactura
+
+      -- Factura cuenta ajena
+      LEFT JOIN facturas fca 
+        ON fca.Id = g.idfacturacuentaajena
+
+      -- Recibo (prioriza factura normal, si no existe usa CA)
+      LEFT JOIN recibos r 
+        ON r.idrecibo = COALESCE(f.idrecibo, fca.idrecibo)
+
+      WHERE g.fechavuelo >= ? 
+        AND g.fechavuelo <= ?
+     ORDER BY g.fechavuelo ASC 2023-01-24,2025-12-23
+23/12/2025, 11:04:28 [info]: Generando reporte impo:  2023-01-16 2025-12-23 ALL
+23/12/2025, 11:04:28 [info]: QUERY REPORTE IMPO: 
+      SELECT 
+        g.*,
+        v.vuelo AS vuelo,
+
+        -- FACTURA NORMAL
+        f.NumeroCFE  AS factura_cfe,
+        f.idrecibo   AS factura_idrecibo,
+
+        -- FACTURA CUENTA AJENA
+        fca.NumeroCFE AS factura_ca_cfe,
+        fca.idrecibo  AS factura_ca_idrecibo,
+
+        -- RECIBO (CFE)
+        r.numeroDocumentoCFE AS recibo_cfe
+
+      FROM guiasimpo g
+
+      LEFT JOIN vuelos v 
+        ON g.nrovuelo = v.idVuelos
+
+      -- Factura normal
+      LEFT JOIN facturas f 
+        ON f.Id = g.idfactura
+
+      -- Factura cuenta ajena
+      LEFT JOIN facturas fca 
+        ON fca.Id = g.idfacturacuentaajena
+
+      -- Recibo (prioriza factura normal, si no existe usa CA)
+      LEFT JOIN recibos r 
+        ON r.idrecibo = COALESCE(f.idrecibo, fca.idrecibo)
+
+      WHERE g.fechavuelo >= ? 
+        AND g.fechavuelo <= ?
+     ORDER BY g.fechavuelo ASC 2023-01-16,2025-12-23

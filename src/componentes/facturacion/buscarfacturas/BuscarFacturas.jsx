@@ -16,6 +16,7 @@ import { descargarPDFBase64, impactarEnGIA } from '../../../ConexionGFE/Funcione
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import ModificarFacturasManuales from '../facturas_manuales/ModificarFacturasManuales';
+import Swal from 'sweetalert2';
 
 const BuscarFacturas = () => {
     const navigate = useNavigate();
@@ -28,6 +29,28 @@ const BuscarFacturas = () => {
     }, [navigate]);
 
     const [submenuVisibleId, setSubmenuVisibleId] = useState(null);
+    const toggleSeleccionFactura = (factura) => {
+        setFacturasSeleccionadas(prev => {
+            const existe = prev.find(f => f.Id === factura.Id);
+
+            if (existe) {
+                // Desmarcar
+                return prev.filter(f => f.Id !== factura.Id);
+            }
+
+            // Validaciones antes de marcar
+            if (!factura.NumeroCFE || !factura.PdfBase64) {
+                toast.warning(
+                    'No se puede seleccionar la factura porque no tiene Número CFE o PDF.',
+                    { autoClose: 3000 }
+                );
+                return prev;
+            }
+
+            // Marcar
+            return [...prev, factura];
+        });
+    };
 
     const toggleSubmenu = (id) => {
         setSubmenuVisibleId((prevId) => (prevId === id ? null : id));
@@ -36,6 +59,7 @@ const BuscarFacturas = () => {
 
     //Estados para Modal Modificar Factura
     const [isModalOpenModificarFactura, SetIsModalOpenModificarFactura] = useState(false);
+    const [facturasSeleccionadas, setFacturasSeleccionadas] = useState([]);
     const [facturaamodificar, setFacturaAModificar] = useState([]);
     const onCloseModificarFactura = () => {
         SetIsModalOpenModificarFactura(false);
@@ -102,6 +126,46 @@ const BuscarFacturas = () => {
         setSearchField(e.target.value);
         setBusquedaRealizada(true);
     };
+    const eliminarFactura = async (row) => {
+        console.log('Factura A Eliminar', row.Id);
+        const result = await Swal.fire({
+            title: '¿Eliminar factura?',
+            text: `Esta acción eliminará la factura ${row.Id}. No se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await axios.delete(`${backURL}/api/facturas/eliminar`, {
+                data: {
+                    IdFactura: row.Id
+                }
+            });
+
+            await Swal.fire({
+                icon: 'success',
+                title: 'Eliminada',
+                text: 'La factura fue eliminada correctamente'
+            });
+
+            // 🔄 Recargar listado
+            fetchFacturas();
+        } catch (err) {
+            console.error(err);
+
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: err.response?.data?.message || 'No se pudo eliminar la factura'
+            });
+        }
+    };
 
 
 
@@ -131,6 +195,7 @@ const BuscarFacturas = () => {
         if (descargadas > 0) {
             const blob = await zip.generateAsync({ type: 'blob' });
             saveAs(blob, 'facturas.zip');
+            setFacturasSeleccionadas([])
         }
 
         if (descargadas > 0 || omitidas > 0) {
@@ -298,10 +363,10 @@ const BuscarFacturas = () => {
                                     <label>Hasta:</label>
                                     <input type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
                                 </div>
-                                {busquedaRealizada && facturasFiltradas.length > 0 && (
+                                {facturasSeleccionadas.length > 0 && (
                                     <button
                                         className="boton-descargar-todas"
-                                        onClick={() => descargarFacturasEnZip(facturasFiltradas)}
+                                        onClick={() => descargarFacturasEnZip(facturasSeleccionadas)}
                                     >
                                         Descargar facturas
                                     </button>
@@ -316,20 +381,23 @@ const BuscarFacturas = () => {
                                 <tr>
                                     <th>Nro. CFE</th>
                                     <th>Tipo Comprobante CFE</th>
-                                    
                                     <th>Recibo</th>
                                     <th>Cliente</th>
                                     <th>RUT</th>
                                     <th>Fecha</th>
                                     <th>Monto</th>
-                                  
                                     <th>Estado GFE</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {facturasFiltradas.map((row) => (
-                                    <tr key={row.Id} title={row.guias?.map(g => g.guia).join(', ') || 'Sin guías'}>
+                                    <tr
+                                        key={row.Id}
+                                        title={row.guias?.map(g => g.guia).join(', ') || 'Sin guías'}
+                                        onDoubleClick={() => toggleSeleccionFactura(row)}
+                                        className={facturasSeleccionadas.some(f => f.Id === row.Id) ? 'fila-seleccionada' : ''}
+                                    >
                                         <td>{row.NumeroCFE === null
                                             ? '-' : row.NumeroCFE}</td>
                                         <td>
@@ -345,14 +413,14 @@ const BuscarFacturas = () => {
                                                 '-'
                                             )}
                                         </td>
-                                        
+
                                         <td >{row.idrecibo === null
                                             ? '-' : row.idrecibo}</td>
                                         <td >{row.RazonSocial}</td>
                                         <td>{row.RutCedula}</td>
                                         <td>{row.Fecha}</td>
                                         <td>{[row.Total, row.Moneda].join(' ')}</td>
-                                       
+
                                         <td>{row.NumeroCFE ? '✔️' : '❌'}</td>
                                         <td className="td-con-submenu">
                                             <div className="buscarfacturas-submenu-container">
@@ -430,7 +498,10 @@ const BuscarFacturas = () => {
                                                         </button>
                                                     )}
                                                     {!row.NumeroCFE && (
-                                                        <button className='botonsubmenubuscarfactura' onClick={() => alert(`Enviar PDF de ${row.Id}`)}>
+                                                        <button
+                                                            className="botonsubmenubuscarfactura"
+                                                            onClick={() => eliminarFactura(row)}
+                                                        >
                                                             Eliminar
                                                         </button>
                                                     )}

@@ -120,8 +120,15 @@ const Home = ({ isLoggedIn }) => {
                 const cierreData = cierreRes.data;
                 console.log('Datos del backend: Guias: ', guiasData.guias.length, 'Facturas: ', facturasData.length);
 
-                setGuiasSinFacturar(guiasData.guias);
-                setFacturasSinCobrar(facturasData);
+                const guiasOrdenadas = [...guiasData.guias].sort((a, b) =>
+                    (a.cliente || '').localeCompare(b.cliente || '', 'es', { sensitivity: 'base' })
+                );
+                const facturasOrdenadas = [...facturasData].sort((a, b) =>
+                    (a.cliente || '').localeCompare(b.cliente || '', 'es', { sensitivity: 'base' })
+                );
+
+                setFacturasSinCobrar(facturasOrdenadas);
+                setGuiasSinFacturar(guiasOrdenadas);
                 setTotalSinFacturar(guiasData.total_sin_facturar);
                 setTotalSinCobrar(facturasRes.data.totalSinCobrar);
 
@@ -145,7 +152,7 @@ const Home = ({ isLoggedIn }) => {
                 const ultimos7Dias = formateado
                     .sort((a, b) => new Date(b.fecha.split('/').reverse().join('-')) - new Date(a.fecha.split('/').reverse().join('-'))) // ordenar por fecha descendente
                     .slice(0, 7)
-                    .reverse(); 
+                    .reverse();
 
                 console.log('Datos para Graficas (últimos 7 días):', ultimos7Dias);
                 setData(ultimos7Dias);
@@ -242,7 +249,7 @@ const Home = ({ isLoggedIn }) => {
                         </table>
                     </div>
                 </div>
-                
+
             </div>
 
             {/* Gráficas */}
@@ -275,11 +282,11 @@ const Home = ({ isLoggedIn }) => {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                
+
             </div>
-            
+
         </div>
-        
+
     );
 };
 

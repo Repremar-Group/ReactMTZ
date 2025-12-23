@@ -24,7 +24,7 @@ const PreviewGuias = () => {
     const [modalMessage, setModalMessage] = useState('');
     const [modalType, setModalType] = useState('alert'); // 'alert' o 'confirm'
     const [guiaAEliminar, setGuiaAEliminar] = useState([]);
-
+    const [soloSinNotificar, setSoloSinNotificar] = useState(false);
     //Funcion para modal de eliminar
     const openModalConfirmDelete = (guia) => {
         if (guia.facturada != 1) {
@@ -201,45 +201,45 @@ const PreviewGuias = () => {
             toast.error(`No se pudo obtener el email para ${cliente}`);
         }
     };
-     const notificada = async (row) => {
+    const notificada = async (row) => {
 
-            setTimeout(async () => {
-                // 3️⃣ Confirmación manual
-                const result = await Swal.fire({
-                    title: 'Confirmación de notificación',
-                    text: '¿Notifico al cliente?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Sí, notifique',
-                    cancelButtonText: 'No'
+        setTimeout(async () => {
+            // 3️⃣ Confirmación manual
+            const result = await Swal.fire({
+                title: 'Confirmación de notificación',
+                text: '¿Notifico al cliente?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, notifique',
+                cancelButtonText: 'No'
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Confirmado',
+                    text: 'La Notificación fue confirmada por el usuario'
                 });
 
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Confirmado',
-                        text: 'La Notificación fue confirmada por el usuario'
+                try {
+                    await axios.post(`${backURL}/api/guiasimpo/marcar-notificada`, {
+                        guia: row.guia
                     });
-
-                    try {
-                        await axios.post(`${backURL}/api/guiasimpo/marcar-notificada`, {
-                            guia: row.guia
-                        });
-                        window.location.reload();
-                    } catch (err) {
-                        console.error('Error marcando guía como notificada', err);
-                        toast.error('No se pudo marcar la guía como notificada');
-                    }
-
-
-                } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'No Notificado',
-                        text: 'El cliente no fue notificado'
-                    });
+                    window.location.reload();
+                } catch (err) {
+                    console.error('Error marcando guía como notificada', err);
+                    toast.error('No se pudo marcar la guía como notificada');
                 }
-            }, 0);
+
+
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'No Notificado',
+                    text: 'El cliente no fue notificado'
+                });
+            }
+        }, 0);
     };
 
     const openModalModificar = (guia) => {
@@ -303,6 +303,7 @@ const PreviewGuias = () => {
         setCurrentPage(0);
     };
 
+
     const filteredGuias = Array.isArray(guias)
         ? guias.filter((row) =>
             (row.tipo === (isImpo ? 'IMPO' : 'EXPO')) &&  // Filtrar por tipo
@@ -310,8 +311,22 @@ const PreviewGuias = () => {
                 (row.guia && row.guia.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (row.consignatario && row.consignatario.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (row.destinoguia && row.destinoguia.toLowerCase().includes(searchTerm.toLowerCase()))
-            )
+            ) &&
+
+            // Filtro “Sin notificar” (solo si el check está activo)
+            (!soloSinNotificar || !row.notificada)
         )
+
+            //  Ordenar: sin notificar arriba, luego por fecha
+            .sort((a, b) => {
+                // primero sin notificar
+                if (a.notificada !== b.notificada) {
+                    return a.notificada ? 1 : -1;
+                }
+
+                // luego por fecha (más vieja arriba)
+                return new Date(a.fecha) - new Date(b.fecha);
+            })
         : [];
 
     return (
@@ -336,6 +351,16 @@ const PreviewGuias = () => {
                                 </div>
                                 <span className={`label ${!isImpo ? 'active' : ''}`}>Expo</span>
                             </div>
+                            {isImpo && (
+                                <label className="checkbox-estandar">
+                                    <input
+                                        type="checkbox"
+                                        checked={soloSinNotificar}
+                                        onChange={(e) => setSoloSinNotificar(e.target.checked)}
+                                    />
+                                    Sin notificar
+                                </label>
+                            )}
                             <input
                                 className="input_buscar"
                                 type="text"
@@ -343,6 +368,7 @@ const PreviewGuias = () => {
                                 value={searchTerm}
                                 onChange={handleSearch}
                             />
+
                         </div>
                     </div>
                     {error && <div className="error">{error}</div>}
@@ -358,7 +384,7 @@ const PreviewGuias = () => {
                                     <th>Monto</th>
                                     <th>Total / Guia</th>
                                     <th>Facturada</th>
-                                    <th>Notificada</th>
+                                    {isImpo && <th>Notificada</th>}
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -384,14 +410,16 @@ const PreviewGuias = () => {
                                             }
                                         </td>
                                         <td>{row.facturada ? '✔️' : '❌'}</td>
-                                        <td>{row.notificada ? '✔️' : '❌'}</td>
+                                        {isImpo && (
+                                            <td>{row.notificada ? '✔️' : '❌'}</td>
+                                        )}
                                         <td className="td-con-submenuguias">
                                             <div className="buscarguias-submenu-container">
                                                 <button disabled className="buscarguias-submenu-toggle">☰</button>
                                                 <div className={`buscarguias-submenu ${index < 1 ? 'submenu-ajustado' : ''
                                                     }`}
                                                 >
-                                                    {row.facturada == 1 && row.notificada == 0 &&(
+                                                    {isImpo && row.facturada == 1 && row.notificada == 0 && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'
                                                             onClick={() => notificarPorEmail(row)}
@@ -399,7 +427,7 @@ const PreviewGuias = () => {
                                                             Notificar
                                                         </button>
                                                     )}
-                                                     {row.facturada == 1 && row.notificada == 0 &&(
+                                                    {isImpo && row.facturada == 1 && row.notificada == 0 && (
                                                         <button
                                                             className='botonsubmenubuscarfactura'
                                                             onClick={() => notificada(row)}

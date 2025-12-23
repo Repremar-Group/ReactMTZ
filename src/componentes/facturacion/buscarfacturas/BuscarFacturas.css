@@ -452,3 +452,7 @@ th {
 .boton-descargar-todas:focus {
   outline: none;
 }
+
+.fila-seleccionada td {
+    color: #2196f3 !important;
+}

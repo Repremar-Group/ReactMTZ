@@ -1,0 +1,281 @@
+22/12/2025, 10:10:07 [info]: Server running on port 5001
+22/12/2025, 10:10:08 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 10:10:14 [info]: Received request for /api/guias-sin-facturar
+22/12/2025, 10:10:14 [info]: Received request for /api/facturas-sin-cobrar
+22/12/2025, 10:10:14 [info]: Received request for /api/obtenertipocambio
+22/12/2025, 10:10:17 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+22/12/2025, 10:10:17 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "39.043"
+    }
+  }
+}
+22/12/2025, 10:10:17 [info]: Received request for /api/agregartipocambio
+22/12/2025, 10:11:42 [info]: Received request for /api/previewrecibos
+22/12/2025, 10:16:07 [info]: Server running on port 5001
+22/12/2025, 10:16:07 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 10:16:22 [info]: Recibo a Anular: 201
+22/12/2025, 10:16:23 [info]: 🧾 GENERANDO XML Anular Recibo: [object Object]
+22/12/2025, 10:16:23 [info]: ✅ XML GENERADO ANULAR RECIBO:
+ 
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-11-18</fechaDocumento>
+              <tipoDocumento>RECVTAS</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>23</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:23 [info]: Impactando Recibo, XML:  
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-11-18</fechaDocumento>
+              <tipoDocumento>RECVTAS</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>23</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:23 [info]: Respuesta WS anularDocumentoFacturacion: [object Object]
+22/12/2025, 10:16:35 [info]: Recibo a Anular: 189
+22/12/2025, 10:16:36 [info]: 🧾 GENERANDO XML Anular Recibo: [object Object]
+22/12/2025, 10:16:36 [info]: ✅ XML GENERADO ANULAR RECIBO:
+ 
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-11-12</fechaDocumento>
+              <tipoDocumento>RECVTAS</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>7</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:36 [info]: Impactando Recibo, XML:  
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-11-12</fechaDocumento>
+              <tipoDocumento>RECVTAS</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>7</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:36 [info]: Respuesta WS anularDocumentoFacturacion: [object Object]
+22/12/2025, 10:16:39 [info]: Recibo a Anular: 190
+22/12/2025, 10:16:40 [info]: 🧾 GENERANDO XML Anular Recibo: [object Object]
+22/12/2025, 10:16:40 [info]: ✅ XML GENERADO ANULAR RECIBO:
+ 
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-11-12</fechaDocumento>
+              <tipoDocumento>RECVTAS</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>6</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:40 [info]: Impactando Recibo, XML:  
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-11-12</fechaDocumento>
+              <tipoDocumento>RECVTAS</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>6</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:40 [info]: Respuesta WS anularDocumentoFacturacion: [object Object]
+22/12/2025, 10:16:44 [info]: Recibo a Anular: 178
+22/12/2025, 10:16:44 [info]: 🧾 GENERANDO XML Anular Recibo: [object Object]
+22/12/2025, 10:16:44 [info]: ✅ XML GENERADO ANULAR RECIBO:
+ 
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-10-29</fechaDocumento>
+              <tipoDocumento>REC</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>67</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:44 [info]: Impactando Recibo, XML:  
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:anularDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <anularDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2025-10-29</fechaDocumento>
+              <tipoDocumento>REC</tipoDocumento>
+                <serieDocumento>A</serieDocumento>
+                <numeroDocumento>67</numeroDocumento>
+            </documento>
+          </anularDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:anularDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+22/12/2025, 10:16:45 [info]: Respuesta WS anularDocumentoFacturacion: [object Object]
+22/12/2025, 10:16:45 [info]: Recibo 178 anulado correctamente
+22/12/2025, 10:16:47 [info]: Received request for /api/previewrecibos
+22/12/2025, 10:40:01 [info]: Server running on port 5001
+22/12/2025, 10:40:02 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 10:40:09 [info]: Received request for /api/previewrecibos
+22/12/2025, 10:40:11 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:41:42 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:42:29 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:43:24 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:45:05 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:47:16 [info]: Server running on port 5001
+22/12/2025, 10:47:16 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 10:47:20 [info]: ID de factura a eliminar 
+22/12/2025, 10:47:41 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:48:08 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:48:21 [info]: ID de factura a eliminar 
+22/12/2025, 10:48:44 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:48:48 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:49:14 [info]: ID de factura a eliminar 
+22/12/2025, 10:50:38 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:50:43 [info]: ID de factura a eliminar 636
+22/12/2025, 10:50:44 [error]: Error al eliminar factura: Error: Cannot delete or update a parent row: a foreign key constraint fails (`cielosurinvoicetest`.`guiasimpo`, CONSTRAINT `guiasimpo_ibfk_1` FOREIGN KEY (`idfactura`) REFERENCES `facturas` (`Id`))
+22/12/2025, 10:52:37 [info]: Server running on port 5001
+22/12/2025, 10:52:38 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 10:52:42 [info]: ID de factura a eliminar 636
+22/12/2025, 10:52:43 [error]: Error al eliminar factura: Error: Cannot delete or update a parent row: a foreign key constraint fails (`cielosurinvoicetest`.`guiasimpo`, CONSTRAINT `guiasimpo_ibfk_1` FOREIGN KEY (`idfactura`) REFERENCES `facturas` (`Id`))
+22/12/2025, 10:55:35 [info]: Server running on port 5001
+22/12/2025, 10:55:36 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 10:55:41 [info]: ID de factura a eliminar 636
+22/12/2025, 10:57:50 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:57:53 [info]: Received request for /api/previewfacturas
+22/12/2025, 10:58:01 [info]: ID de factura a eliminar 637
+22/12/2025, 10:58:03 [info]: Received request for /api/previewfacturas
+22/12/2025, 11:28:54 [info]: Received request for /api/previewfacturas
+22/12/2025, 11:35:57 [info]: Server running on port 5001
+22/12/2025, 11:35:58 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 11:36:00 [info]: Received request for /api/previewfacturas
+22/12/2025, 11:42:45 [info]: Received request for /api/previewguias
+22/12/2025, 11:42:45 [info]: Received request for /api/previewguiasexpo
+22/12/2025, 11:43:25 [info]: Repremar SA
+22/12/2025, 12:05:18 [info]: Server running on port 5001
+22/12/2025, 12:05:18 [info]: Conexión exitosa a la base de datos MySQL
+22/12/2025, 12:05:19 [info]: Received request for /api/previewguias
+22/12/2025, 12:05:19 [info]: Received request for /api/previewguiasexpo
+22/12/2025, 12:12:32 [info]: Received request for /api/previewguias
+22/12/2025, 12:12:32 [info]: Received request for /api/previewguiasexpo
+22/12/2025, 12:14:43 [info]: Received request for /api/previewguias
+22/12/2025, 12:14:43 [info]: Received request for /api/previewguiasexpo
+22/12/2025, 12:15:00 [info]: Received request for /api/previewguias
+22/12/2025, 12:15:00 [info]: Received request for /api/previewguiasexpo
+22/12/2025, 12:15:23 [info]: Received request for /api/previewguias
+22/12/2025, 12:15:23 [info]: Received request for /api/previewguiasexpo
+22/12/2025, 12:15:40 [info]: Received request for /api/previewguias
+22/12/2025, 12:15:41 [info]: Received request for /api/previewguiasexpo
+22/12/2025, 14:35:23 [info]: Received request for /api/guias-sin-facturar
+22/12/2025, 14:35:23 [info]: Received request for /api/facturas-sin-cobrar
+22/12/2025, 14:35:23 [info]: Received request for /api/obtenertipocambio
+22/12/2025, 14:39:10 [info]: Received request for /api/obtenertipocambio
+22/12/2025, 14:39:10 [info]: Received request for /api/guias-sin-facturar
+22/12/2025, 14:39:10 [info]: Received request for /api/facturas-sin-cobrar
+22/12/2025, 15:15:10 [info]: Received request for /api/obtenertipocambio
+22/12/2025, 15:15:10 [info]: Received request for /api/guias-sin-facturar
+22/12/2025, 15:15:10 [info]: Received request for /api/facturas-sin-cobrar
+22/12/2025, 15:49:07 [info]: Received request for /api/previewfacturas
+22/12/2025, 15:51:38 [info]: Received request for /api/previewfacturas
+22/12/2025, 15:52:01 [info]: Received request for /api/previewfacturas
+22/12/2025, 15:54:41 [info]: Received request for /api/previewfacturas
+22/12/2025, 15:56:03 [info]: Received request for /api/previewfacturas
+22/12/2025, 16:01:25 [info]: Received request for /api/previewfacturas
+22/12/2025, 16:01:56 [info]: Received request for /api/previewfacturas
+22/12/2025, 16:02:53 [info]: Received request for /api/previewfacturas
+22/12/2025, 16:04:16 [info]: Received request for /api/previewfacturas
