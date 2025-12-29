@@ -1,0 +1,46 @@
+29/12/2025, 09:36:37 [info]: Server running on port 5001
+29/12/2025, 09:36:38 [info]: Conexión exitosa a la base de datos MySQL
+29/12/2025, 09:37:34 [info]: Received request for /api/guias-sin-facturar
+29/12/2025, 09:37:34 [info]: Received request for /api/facturas-sin-cobrar
+29/12/2025, 09:37:34 [info]: Received request for /api/obtenertipocambio
+29/12/2025, 09:38:30 [info]: Parámetros recibidos: [object Object]
+29/12/2025, 09:40:48 [info]: Received request for /api/previewguias
+29/12/2025, 09:40:48 [info]: Received request for /api/previewguiasexpo
+29/12/2025, 09:41:10 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:41:11 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:41:11 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:41:11 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:41:36 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:41:36 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:41:36 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:41:36 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:42:40 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:42:40 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:42:40 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:42:40 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:43:35 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:43:35 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:43:36 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:43:36 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:45:17 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:45:17 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:45:17 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:45:18 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:45:46 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:45:46 [info]: Received request for /api/obtenerexpo
+29/12/2025, 09:45:46 [info]: Received request for /api/obtenerguia
+29/12/2025, 09:45:46 [info]: Received request for /api/obtenerexpo
+29/12/2025, 10:02:17 [info]: Server running on port 5001
+29/12/2025, 10:02:17 [info]: Conexión exitosa a la base de datos MySQL
+29/12/2025, 10:02:33 [info]: Parámetros recibidos: [object Object]
+29/12/2025, 10:11:13 [info]: Server running on port 5001
+29/12/2025, 10:11:14 [info]: Conexión exitosa a la base de datos MySQL
+29/12/2025, 10:11:15 [info]: Parámetros recibidos: [object Object]
+29/12/2025, 10:40:03 [info]: Server running on port 5001
+29/12/2025, 10:40:03 [info]: Conexión exitosa a la base de datos MySQL
+29/12/2025, 10:49:34 [info]: Received request for /api/guias-sin-facturar
+29/12/2025, 10:49:34 [info]: Received request for /api/facturas-sin-cobrar
+29/12/2025, 10:49:34 [info]: Received request for /api/obtenertipocambio
+29/12/2025, 10:52:17 [info]: Received request for /api/previewfacturas
+29/12/2025, 10:54:05 [info]: Parámetros recibidos: [object Object]
+29/12/2025, 10:54:29 [info]: Received request for /api/previewfacturas

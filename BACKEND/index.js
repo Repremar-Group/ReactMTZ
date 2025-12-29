@@ -2079,7 +2079,62 @@ app.delete('/api/eliminarGuiaExpo/:guiaAEliminar', async (req, res) => {
     res.status(500).json({ error: 'Hubo un error al eliminar la guía' });
   }
 });
+app.get('/api/guias/facturas-base64', async (req, res) => {
+  const { idguia } = req.query;
 
+  if (!idguia) {
+    return res.status(400).json({ error: 'idguia es requerido' });
+  }
+
+  try {
+    // 1️⃣ Obtener ids de facturas desde la guía
+    const [guias] = await pool.query(
+      `SELECT idfactura, idfacturacuentaajena
+       FROM guiasimpo
+       WHERE idguia = ?`,
+      [idguia]
+    );
+
+    if (!guias.length) {
+      return res.status(404).json({ message: 'Guía no encontrada' });
+    }
+
+    const { idfactura, idfacturacuentaajena } = guias[0];
+
+    // eliminar null / 0
+    const ids = [idfactura, idfacturacuentaajena].filter(id => id && id > 0);
+
+    if (!ids.length) {
+      return res.json([]);
+    }
+
+    // 2️⃣ Buscar facturas asociadas
+    const [facturas] = await pool.query(
+      `SELECT 
+        Id,
+        PdfBase64,
+        Comprobante,
+        SerieCFE,
+        NumeroCFE
+       FROM facturas
+       WHERE Id IN (?)`,
+      [ids]
+    );
+
+    // 3️⃣ Formatear respuesta
+    const response = facturas.map(f => ({
+      id: f.Id,
+      base64: f.PdfBase64,
+      nombreArchivo: `${f.Comprobante || 'Factura'}_${f.SerieCFE || ''}${f.NumeroCFE || f.Id}.pdf`
+    }));
+
+    res.json(response);
+
+  } catch (error) {
+    console.error('Error obteniendo facturas por idguia', error);
+    res.status(500).json({ error: 'Error obteniendo facturas' });
+  }
+});
 app.get('/api/previewguias', async (req, res) => {
   console.log('Received request for /api/previewguias');
 
@@ -6958,7 +7013,7 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
     g.dbf,
     g.duecarrier,
     g.security,
-    g.cobrarpagar AS incentivo,
+    g.cobrarpagar AS totalguia,
     g.total
   FROM guiasexpo g
   LEFT JOIN vuelos v ON v.idVuelos = g.nrovuelo
@@ -7008,8 +7063,8 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
     });
 
 
-    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
-    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.totalguia || 0), 0);
+    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.totalguia || 0), 0);
     const totalFinal = totalPrepaid - totalCollect;
 
     // Crear PDF A3 horizontal
@@ -7168,7 +7223,7 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
           Number(r.duecarrier || 0).toFixed(2),
           Number(r.security || 0).toFixed(2),
           Number(r.incentivo || 0).toFixed(2),
-          Number(r.total || 0).toFixed(2),
+          Number(r.totalguia || 0).toFixed(2),
         ];
 
         valores.forEach((v, i) => {
@@ -7587,7 +7642,7 @@ app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
     g.dbf,
     g.duecarrier,
     g.security,
-    g.cobrarpagar AS incentivo,
+    g.cobrarpagar AS cobrar,
     g.total
   FROM guiasexpo g
   LEFT JOIN vuelos v ON v.idVuelos = g.nrovuelo
@@ -7638,8 +7693,8 @@ app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
   else if (r.ppcc === "P") prepaidData.push(r);
 });
 
-    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.total || 0), 0);
-    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.cobrar || 0), 0);
+    const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.cobrar || 0), 0);
     const totalFinal = totalPrepaid - totalCollect;
 
     // Crear PDF A3 horizontal
@@ -7798,7 +7853,7 @@ app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
           Number(r.duecarrier || 0).toFixed(2),
           Number(r.security || 0).toFixed(2),
           Number(r.incentivo || 0).toFixed(2),
-          Number(r.total || 0).toFixed(2),
+          Number(r.cobrar || 0).toFixed(2),
         ];
 
         valores.forEach((v, i) => {

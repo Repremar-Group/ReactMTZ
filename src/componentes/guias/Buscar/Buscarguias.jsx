@@ -11,6 +11,7 @@ import ModalModificarGuiaExpo from '../../modales/ModalModificarGuiaExpo';
 import ModalAlerta from '../../modales/Alertas';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
+import JSZip from 'jszip';
 
 const PreviewGuias = () => {
     const backURL = import.meta.env.VITE_BACK_URL;
@@ -121,8 +122,35 @@ const PreviewGuias = () => {
     const [isModalOpenModificar, setIsModalOpenModificar] = useState(false);
     const [guiaSeleccionada, setGuiaSeleccionada] = useState(null);
 
-    const notificarPorEmail = async (row) => {
+    const descargarFacturasZip = async (guia) => {
+        const resp = await axios.get(`${backURL}/api/guias/facturas-base64`, {
+            params: { idguia: guia.idguia }
+        });
 
+        if (!resp.data.length) {
+            toast.info('La guía no tiene facturas asociadas');
+            return;
+        }
+
+        const zip = new JSZip();
+
+        resp.data.forEach(factura => {
+            zip.file(
+                factura.nombreArchivo,
+                factura.base64,
+                { base64: true }
+            );
+        });
+
+        const contenidoZip = await zip.generateAsync({ type: 'blob' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(contenidoZip);
+        link.download = `Facturas_${guia.guia}.zip`;
+        link.click();
+    };
+    const notificarPorEmail = async (row) => {
+        await descargarFacturasZip(row);
         let costoGuia;
         let cliente;
         if (row.tipo == 'EXPO') {

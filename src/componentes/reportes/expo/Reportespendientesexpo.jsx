@@ -165,7 +165,7 @@ const Reportespendientesexpo = ({ isLoggedIn }) => {
         security: guia.security ?? 0,
         incentivo: -guia.fleteneto,
         total: guia.total,
-        cobrar: guia.total
+        cobrar: guia.cobrarpagar
 
       }));
 
