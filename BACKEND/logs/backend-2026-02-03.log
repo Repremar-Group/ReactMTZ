@@ -1,0 +1,112 @@
+3/2/2026, 10:34:53 [info]: Server running on port 5001
+3/2/2026, 10:34:53 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:35:06 [info]: Received request for /api/guias-sin-facturar
+3/2/2026, 10:35:06 [info]: Received request for /api/facturas-sin-cobrar
+3/2/2026, 10:35:06 [info]: Received request for /api/obtenertipocambio
+3/2/2026, 10:35:09 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+3/2/2026, 10:35:09 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "38.523"
+    }
+  }
+}
+3/2/2026, 10:35:09 [info]: Received request for /api/agregartipocambio
+3/2/2026, 10:43:25 [info]: Server running on port 5001
+3/2/2026, 10:43:25 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:45:24 [info]: Server running on port 5001
+3/2/2026, 10:45:25 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:46:13 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:46:13 [error]: ReferenceError: contole is not defined
+3/2/2026, 10:46:44 [info]: Server running on port 5001
+3/2/2026, 10:46:44 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:46:45 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:46:46 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 10:49:05 [info]: Server running on port 5001
+3/2/2026, 10:49:06 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:49:07 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:49:08 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 10:49:36 [info]: Server running on port 5001
+3/2/2026, 10:49:37 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:49:39 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:49:39 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 10:50:05 [info]: Server running on port 5001
+3/2/2026, 10:50:05 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:50:06 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:50:07 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 10:52:03 [info]: Server running on port 5001
+3/2/2026, 10:52:04 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:52:04 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:52:05 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 10:52:05 [info]: Iteración 0 [object Object]
+3/2/2026, 10:52:05 [info]: Iteración 1 [object Object]
+3/2/2026, 10:54:32 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:54:32 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 10:54:32 [info]: Iteración 0 [object Object]
+3/2/2026, 10:54:32 [info]: Iteración 1 [object Object]
+3/2/2026, 10:55:04 [info]: Parámetros recibidos: 2025-01-03 2026-02-03  ALL ALL
+3/2/2026, 10:55:04 [info]: Query mas parametros reporte expo 
+      SELECT 
+        g.*, 
+        f.NumeroCFE AS numeroFacturaCFE,
+        r.numeroDocumentoCFE AS numeroReciboCFE,
+        v.vuelo AS vuelo,
+        v.compania AS compania
+      FROM guiasexpo g
+      LEFT JOIN facturas f ON g.idfactura = f.Id
+      LEFT JOIN recibos r ON f.idrecibo = r.idrecibo
+      LEFT JOIN vuelos v ON g.nrovuelo = v.idVuelos
+      WHERE DATE(g.fechavuelo) BETWEEN ? AND ?
+     ORDER BY g.fechaingresada DESC 2025-01-03,2026-02-03
+3/2/2026, 10:56:32 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:56:34 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:56:42 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:56:54 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:57:04 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:57:56 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:58:11 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:58:22 [info]: Server running on port 5001
+3/2/2026, 10:58:23 [info]: Conexión exitosa a la base de datos MySQL
+3/2/2026, 10:58:25 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 10:58:25 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 10:58:25 [info]: Iteración 0 [object Object]
+3/2/2026, 11:02:54 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 11:02:55 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 11:02:55 [info]: Iteración 0 [object Object]
+3/2/2026, 11:02:55 [info]: Iteración 1 [object Object]
+3/2/2026, 11:02:55 [info]: Iteración 2 [object Object]
+3/2/2026, 11:02:55 [info]: Iteración 3 [object Object]
+3/2/2026, 11:02:55 [info]: Iteración 4 [object Object]
+3/2/2026, 11:03:37 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 11:03:37 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 11:03:37 [info]: Iteración 0 [object Object]
+3/2/2026, 11:03:37 [info]: Iteración 1 [object Object]
+3/2/2026, 11:03:37 [info]: Iteración 2 [object Object]
+3/2/2026, 11:03:37 [info]: Iteración 3 [object Object]
+3/2/2026, 11:03:37 [info]: Iteración 4 [object Object]
+3/2/2026, 11:03:45 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 11:03:46 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 11:03:46 [info]: Iteración 0 [object Object]
+3/2/2026, 11:03:46 [info]: Iteración 1 [object Object]
+3/2/2026, 11:03:58 [info]: Parámetros recibidos: [object Object]
+3/2/2026, 11:03:58 [info]: Calculando totales de collect y Prepaid...
+3/2/2026, 11:03:58 [info]: Iteración 0 [object Object]
+3/2/2026, 11:03:58 [info]: Iteración 1 [object Object]
+3/2/2026, 11:03:58 [info]: Iteración 2 [object Object]
+3/2/2026, 11:11:18 [info]: Received request for /api/previewguias
+3/2/2026, 11:11:18 [info]: Received request for /api/previewguiasexpo
+3/2/2026, 11:11:37 [info]: Received request for /api/obtenerguia
+3/2/2026, 11:11:37 [info]: Received request for /api/obtenerexpo
+3/2/2026, 11:11:37 [info]: Received request for /api/obtenerguia
+3/2/2026, 11:11:37 [info]: Received request for /api/obtenerexpo
+3/2/2026, 11:15:23 [info]: Received request for /api/fetchguias
+3/2/2026, 11:18:41 [info]: Server running on port 5001
+3/2/2026, 11:18:42 [info]: Conexión exitosa a la base de datos MySQL

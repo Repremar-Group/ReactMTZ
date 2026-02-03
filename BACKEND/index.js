@@ -7062,8 +7062,27 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
       else if (r.ppcc === "P") prepaidData.push(r);
     });
 
+    console.log('Calculando totales de collect y Prepaid...');
+    const totalCollect = collectData.reduce((acc, r, index) => {
+      const fleteawb = Number(r.fleteawb) || 0;
+      const totalflete = Number(r.totalflete) || 0;
+      const dueagent = Number(r.dueagent) || 0;
 
-    const totalCollect = collectData.reduce((acc, r) => acc + Number(r.totalguia || 0), 0);
+      const calculo = (fleteawb - totalflete) + dueagent;
+      const nuevoAcc = acc + calculo;
+
+      console.log(`Iteración ${index}`, {
+        fleteawb,
+        totalflete,
+        dueagent,
+        calculo,
+        acumuladoAnterior: acc,
+        acumuladoNuevo: nuevoAcc,
+        registro: r
+      });
+
+      return nuevoAcc;
+    }, 0);
     const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.totalguia || 0), 0);
     const totalFinal = totalPrepaid - totalCollect;
 
@@ -7671,27 +7690,27 @@ app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
     const prepaidData = [];
 
     rows.forEach(r => {
-  const fleteAwb = Number(r.fleteawb || 0);
-  const totalFlete = Number(r.totalflete || 0);
+      const fleteAwb = Number(r.fleteawb || 0);
+      const totalFlete = Number(r.totalflete || 0);
 
-  // Incentivo correcto según tipo de pago
-  if (r.ppcc === "C") {
-    // COLLECT → cobro
-    r.incentivo = fleteAwb - totalFlete;
-  } else if (r.ppcc === "P") {
-    // PREPAID 
-      r.incentivo = 0;
-  } else {
-    r.incentivo = 0;
-  }
+      // Incentivo correcto según tipo de pago
+      if (r.ppcc === "C") {
+        // COLLECT → cobro
+        r.incentivo = fleteAwb - totalFlete;
+      } else if (r.ppcc === "P") {
+        // PREPAID 
+        r.incentivo = 0;
+      } else {
+        r.incentivo = 0;
+      }
 
-  // Para mostrar en la tabla
-  r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
+      // Para mostrar en la tabla
+      r.ppccDisplay = r.ppcc === "P" ? "PREPAID" : "COLLECT";
 
-  // Separar según valor real
-  if (r.ppcc === "C") collectData.push(r);
-  else if (r.ppcc === "P") prepaidData.push(r);
-});
+      // Separar según valor real
+      if (r.ppcc === "C") collectData.push(r);
+      else if (r.ppcc === "P") prepaidData.push(r);
+    });
 
     const totalCollect = collectData.reduce((acc, r) => acc + Number(r.cobrar || 0), 0);
     const totalPrepaid = prepaidData.reduce((acc, r) => acc + Number(r.cobrar || 0), 0);
