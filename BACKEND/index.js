@@ -7210,7 +7210,7 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
       });
       y -= headerHeight;
 
-      // Filas
+      // Aca se arrabcan a hacer las filas del reporte, este codigo se ejecuta una vez por cada fila 
       dataArray.forEach((r, idx) => {
         checkNewPage();
 
@@ -7224,7 +7224,27 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
           height: rowHeight,
           color: colorFondo,
         });
+        const calcularTotalGuia = (r) => {
+          const fleteawb = Number(r.fleteawb) || 0;
+          const totalflete = Number(r.totalflete) || 0;
+          const dueagent = Number(r.dueagent) || 0;
+          const totalguia = Number(r.totalguia) || 0;
 
+          const esCollect = r.ppccDisplay === 'COLLECT';
+          const esPrepaid = r.ppccDisplay === 'PREPAID';
+
+          if (esCollect) {
+            return (fleteawb - totalflete) + dueagent;
+          }
+
+          if (esPrepaid) {
+            return totalguia;
+          }
+
+          return 0;
+        };
+
+        const totalGuia = calcularTotalGuia(r);
         const valores = [
           r.awb,
           r.emision,
@@ -7242,7 +7262,7 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
           Number(r.duecarrier || 0).toFixed(2),
           Number(r.security || 0).toFixed(2),
           Number(r.incentivo || 0).toFixed(2),
-          Number(r.totalguia || 0).toFixed(2),
+          totalGuia.toFixed(2),
         ];
 
         valores.forEach((v, i) => {
