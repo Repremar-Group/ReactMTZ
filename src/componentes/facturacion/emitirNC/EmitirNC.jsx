@@ -282,6 +282,8 @@ if (encAcuenta) {
             <option value="19">UX - Comisión Exportación No Cass</option>
             <option value="20">UX - Comisión Exportación Mail</option>
             <option value="21">VZ - Security</option>
+            <option value="22">VZ - Flete Exportación Aérea (Excento)</option>
+            <option value="23">VZ - Due Carrier (Excento)</option>
           </select>
           <input class="importeNC swal2-input" type="number" placeholder="Importe" style="width:30%;">
           <button class="btnEliminarConcepto" style="background:transparent; color:#b71c1c; border:none;
