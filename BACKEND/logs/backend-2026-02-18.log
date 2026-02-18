@@ -1,0 +1,388 @@
+18/2/2026, 15:04:40 [info]: Server running on port 5001
+18/2/2026, 15:04:40 [info]: Conexión exitosa a la base de datos MySQL
+18/2/2026, 15:07:52 [info]: Received request for /api/guias-sin-facturar
+18/2/2026, 15:07:52 [info]: Received request for /api/facturas-sin-cobrar
+18/2/2026, 15:07:52 [info]: Received request for /api/obtenertipocambio
+18/2/2026, 15:07:56 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+18/2/2026, 15:07:56 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "38.841"
+    }
+  }
+}
+18/2/2026, 15:07:56 [info]: Received request for /api/agregartipocambio
+18/2/2026, 15:09:24 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:09:24 [info]: 38.841
+18/2/2026, 15:09:36 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:09:36 [info]: 38.841
+18/2/2026, 15:15:01 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:15:01 [info]: 38.841
+18/2/2026, 15:15:36 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:15:36 [info]: 38.841
+18/2/2026, 15:18:45 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:18:46 [info]: 38.841
+18/2/2026, 15:19:22 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:19:22 [info]: 38.841
+18/2/2026, 15:19:38 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:19:39 [info]: 38.841
+18/2/2026, 15:19:41 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:19:41 [info]: 38.841
+18/2/2026, 15:26:07 [info]: Endpoint historialfacturacionnc ejecutandose
+18/2/2026, 15:26:28 [error]: Error procesando N/C: AggregateError
+18/2/2026, 15:27:13 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:27:13 [info]: 38.841
+18/2/2026, 15:27:16 [info]: Endpoint historialfacturacionnc ejecutandose
+18/2/2026, 15:27:23 [error]: Error procesando N/C: AggregateError
+18/2/2026, 15:28:17 [info]: Server running on port 5001
+18/2/2026, 15:28:17 [info]: Conexión exitosa a la base de datos MySQL
+18/2/2026, 15:28:39 [info]: Server running on port 5001
+18/2/2026, 15:28:40 [info]: Conexión exitosa a la base de datos MySQL
+18/2/2026, 15:28:45 [error]: Error procesando N/C: AggregateError
+18/2/2026, 15:29:13 [info]: Server running on port 5001
+18/2/2026, 15:29:14 [info]: Conexión exitosa a la base de datos MySQL
+18/2/2026, 15:29:18 [error]: Error procesando N/C: AggregateError
+18/2/2026, 15:29:55 [info]: Server running on port 5001
+18/2/2026, 15:29:55 [info]: Conexión exitosa a la base de datos MySQL
+18/2/2026, 15:29:59 [info]: ImpactarNC endpoint alcanzado
+18/2/2026, 15:29:59 [info]: ID N/C RECIBIDO: 77
+18/2/2026, 15:30:00 [info]: [object Object]
+18/2/2026, 15:30:00 [info]: GENERANDO XML NOTA DE CRÉDITO: [object Object]
+18/2/2026, 15:30:00 [info]: 🔹 Cancelación 1: conceptos -> [object Object],[object Object],[object Object]
+18/2/2026, 15:30:00 [info]: XML Generado NOTA DE CRÉDITO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                    <documento>
+                        <fechaDocumento>2026-02-18</fechaDocumento>
+                        <tipoDocumento>NCA</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <fechaVencimiento>2026-02-18</fechaVencimiento>
+                        <descripcion>null</descripcion>
+                        <autonumerar>S</autonumerar>
+                        <renglones>
+	                        <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>Airclass</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>Viaje: VZ0104 08/10/2025  AWB: 1231ed1s</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>05</producto>
+            <nombreProducto>Iva Sobre Flete:</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>813.78</precioUnitario>
+          </renglon>
+                        </renglones>
+                        <cancelaciones> 
+                            <cancelacion> 
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCA</tipoDocumentoAfectado> 
+                <comprobanteAfectado>40045</comprobanteAfectado> 
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado> 
+                <importe>814.00</importe> 
+            </cancelacion>
+                        </cancelaciones>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+18/2/2026, 15:30:00 [info]: Impactando N/C, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                    <documento>
+                        <fechaDocumento>2026-02-18</fechaDocumento>
+                        <tipoDocumento>NCA</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <fechaVencimiento>2026-02-18</fechaVencimiento>
+                        <descripcion>null</descripcion>
+                        <autonumerar>S</autonumerar>
+                        <renglones>
+	                        <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>Airclass</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>Viaje: VZ0104 08/10/2025  AWB: 1231ed1s</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>05</producto>
+            <nombreProducto>Iva Sobre Flete:</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>813.78</precioUnitario>
+          </renglon>
+                        </renglones>
+                        <cancelaciones> 
+                            <cancelacion> 
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCA</tipoDocumentoAfectado> 
+                <comprobanteAfectado>40045</comprobanteAfectado> 
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado> 
+                <importe>814.00</importe> 
+            </cancelacion>
+                        </cancelaciones>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+18/2/2026, 15:30:00 [info]: RESPUESTA BRUTA DEL WS: <?xml version='1.0' encoding='UTF-8'?><S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/"><S:Body><ns2:agregarDocumentoFacturacionResponse xmlns:ns2="http://soap/"><xmlResultado>&lt;agregarDocumentoFacturacionResultado&gt;
+   &lt;resultado&gt;2&lt;/resultado&gt;
+   &lt;descripcion&gt;No se puede cargar el impuesto correspondiente al tipo de impuesto IVA porque ni el producto SIN_CODIGO ni el elemento REP20 tienen definido un impuesto para este tipo de impuesto.&lt;/descripcion&gt;
+   &lt;datos&gt;&lt;/datos&gt;
+&lt;/agregarDocumentoFacturacionResultado&gt;
+</xmlResultado></ns2:agregarDocumentoFacturacionResponse></S:Body></S:Envelope>
+18/2/2026, 15:30:16 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:30:16 [info]: 38.841
+18/2/2026, 15:30:20 [info]: Endpoint historialfacturacionnc ejecutandose
+18/2/2026, 15:30:29 [info]: ImpactarNC endpoint alcanzado
+18/2/2026, 15:30:29 [info]: ID N/C RECIBIDO: 78
+18/2/2026, 15:30:30 [info]: [object Object]
+18/2/2026, 15:30:30 [info]: GENERANDO XML NOTA DE CRÉDITO: [object Object]
+18/2/2026, 15:30:30 [info]: 🔹 Cancelación 1: conceptos -> [object Object],[object Object],[object Object],[object Object]
+18/2/2026, 15:30:30 [info]: XML Generado NOTA DE CRÉDITO: <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                    <documento>
+                        <fechaDocumento>2026-02-17</fechaDocumento>
+                        <tipoDocumento>NCA</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <fechaVencimiento>2026-02-17</fechaVencimiento>
+                        <descripcion>null</descripcion>
+                        <autonumerar>S</autonumerar>
+                        <renglones>
+	                        <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>Viaje: VZ0104 08/10/2025 Import</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>AWB: 1231ed1s EZE/EZE/MVD</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>08</producto>
+            <nombreProducto>Verificación Carga Recinto Aduanero: U$S 150.00</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>150.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>47</producto>
+            <nombreProducto>Redondeo: U$S 0.22</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.22</precioUnitario>
+          </renglon>
+                        </renglones>
+                        <cancelaciones> 
+                            <cancelacion> 
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado> 
+                <comprobanteAfectado>30112</comprobanteAfectado> 
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado> 
+                <importe>150.22</importe> 
+            </cancelacion>
+                        </cancelaciones>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+18/2/2026, 15:30:30 [info]: Impactando N/C, XML:  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+         <!--Optional:-->
+         <xmlParametros><![CDATA[
+                <agregarDocumentoFacturacionParametros>
+                <usuario>IT</usuario>
+                <usuarioPassword>R3pr3m4r</usuarioPassword>
+                <empresa>REP</empresa>
+                    <documento>
+                        <fechaDocumento>2026-02-17</fechaDocumento>
+                        <tipoDocumento>NCA</tipoDocumento>
+                        <cliente>REP20</cliente>
+                        <moneda>2</moneda>
+                        <fechaVencimiento>2026-02-17</fechaVencimiento>
+                        <descripcion>null</descripcion>
+                        <autonumerar>S</autonumerar>
+                        <renglones>
+	                        <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>Viaje: VZ0104 08/10/2025 Import</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>SIN_CODIGO</producto>
+            <nombreProducto>AWB: 1231ed1s EZE/EZE/MVD</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>08</producto>
+            <nombreProducto>Verificación Carga Recinto Aduanero: U$S 150.00</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>150.00</precioUnitario>
+          </renglon>
+        
+          <renglon>
+            <producto>47</producto>
+            <nombreProducto>Redondeo: U$S 0.22</nombreProducto>
+            <cantidad>1</cantidad>
+            <precioUnitario>0.22</precioUnitario>
+          </renglon>
+                        </renglones>
+                        <cancelaciones> 
+                            <cancelacion> 
+                <rubroAfectado>113102</rubroAfectado>
+                <tipoDocumentoAfectado>FCD</tipoDocumentoAfectado> 
+                <comprobanteAfectado>30112</comprobanteAfectado> 
+                <vencimientoAfectado>2025-10-07</vencimientoAfectado> 
+                <importe>150.22</importe> 
+            </cancelacion>
+                        </cancelaciones>
+                    </documento>
+                </agregarDocumentoFacturacionParametros>
+            ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+   </soapenv:Body>
+</soapenv:Envelope>
+18/2/2026, 15:30:30 [info]: RESPUESTA BRUTA DEL WS: <?xml version='1.0' encoding='UTF-8'?><S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/"><S:Body><ns2:agregarDocumentoFacturacionResponse xmlns:ns2="http://soap/"><xmlResultado>&lt;agregarDocumentoFacturacionResultado&gt;
+   &lt;resultado&gt;2&lt;/resultado&gt;
+   &lt;descripcion&gt;No se puede cargar el impuesto correspondiente al tipo de impuesto IVA porque ni el producto SIN_CODIGO ni el elemento REP20 tienen definido un impuesto para este tipo de impuesto.&lt;/descripcion&gt;
+   &lt;datos&gt;&lt;/datos&gt;
+&lt;/agregarDocumentoFacturacionResultado&gt;
+</xmlResultado></ns2:agregarDocumentoFacturacionResponse></S:Body></S:Envelope>
+18/2/2026, 15:30:51 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:30:52 [info]: 38.841
+18/2/2026, 15:30:56 [info]: Endpoint historialfacturacionnc ejecutandose
+18/2/2026, 15:31:29 [info]: Impactar NC a cuenta alcanzado
+18/2/2026, 15:31:29 [info]: Moneda de la adenda:  USD
+18/2/2026, 15:31:29 [info]: 🧾 GENERANDO XML NOTA DE CRÉDITO A CUENTA: [object Object]
+18/2/2026, 15:31:29 [info]: ✅ XML GENERADO N/C A CUENTA:
+ 
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <agregarDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2026-02-02</fechaDocumento>
+              <tipoDocumento>NCA</tipoDocumento>
+              <cliente>REP20</cliente>
+              <moneda>2</moneda>
+              <fechaVencimiento>2026-02-02</fechaVencimiento>
+              <descripcion>Son dólares americanos U$S cien  </descripcion>
+              <autonumerar>S</autonumerar>
+              <referenciaGlobal>ajuste de iva</referenciaGlobal>
+              <renglones>
+                <renglon>
+          <producto>02</producto>
+          <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+          <cantidad>1</cantidad>
+          <precioUnitario>100.00</precioUnitario>
+        </renglon>
+              </renglones>
+            </documento>
+          </agregarDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+18/2/2026, 15:31:29 [info]: XML NC Cuenta Ajena: 
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+    <soapenv:Header/>
+    <soapenv:Body>
+      <soap:agregarDocumentoFacturacion>
+        <xmlParametros><![CDATA[
+          <agregarDocumentoFacturacionParametros>
+            <usuario>IT</usuario>
+            <usuarioPassword>R3pr3m4r</usuarioPassword>
+            <empresa>REP</empresa>
+            <documento>
+              <fechaDocumento>2026-02-02</fechaDocumento>
+              <tipoDocumento>NCA</tipoDocumento>
+              <cliente>REP20</cliente>
+              <moneda>2</moneda>
+              <fechaVencimiento>2026-02-02</fechaVencimiento>
+              <descripcion>Son dólares americanos U$S cien  </descripcion>
+              <autonumerar>S</autonumerar>
+              <referenciaGlobal>ajuste de iva</referenciaGlobal>
+              <renglones>
+                <renglon>
+          <producto>02</producto>
+          <nombreProducto>VZ - Iva Sobre Flete</nombreProducto>
+          <cantidad>1</cantidad>
+          <precioUnitario>100.00</precioUnitario>
+        </renglon>
+              </renglones>
+            </documento>
+          </agregarDocumentoFacturacionParametros>
+        ]]></xmlParametros>
+      </soap:agregarDocumentoFacturacion>
+    </soapenv:Body>
+  </soapenv:Envelope>
+18/2/2026, 15:31:42 [info]: Received request for /api/obtenertipocambioparacomprobante
+18/2/2026, 15:31:42 [info]: 38.841

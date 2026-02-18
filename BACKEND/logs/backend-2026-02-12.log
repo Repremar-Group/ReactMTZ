@@ -1,0 +1,7 @@
+12/2/2026, 10:15:41 [info]: Server running on port 5001
+12/2/2026, 10:15:42 [info]: Conexión exitosa a la base de datos MySQL
+12/2/2026, 10:16:28 [info]: Server running on port 5001
+12/2/2026, 10:16:29 [info]: Conexión exitosa a la base de datos MySQL
+12/2/2026, 10:21:00 [info]: Received request for /api/guias-sin-facturar
+12/2/2026, 10:21:00 [info]: Received request for /api/facturas-sin-cobrar
+12/2/2026, 10:21:00 [info]: Received request for /api/obtenertipocambio

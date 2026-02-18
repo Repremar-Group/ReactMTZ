@@ -14,7 +14,8 @@ const EmitirNC = ({ isLoggedIn }) => {
   const navigate = useNavigate();
   useEffect(() => {
     const rol = localStorage.getItem('rol');
-
+     const icfechaactual = new Date().toISOString().split("T")[0];
+    setEcFecha(icfechaactual);
     if (rol == '') {
       navigate('/');
     }
@@ -39,6 +40,7 @@ const EmitirNC = ({ isLoggedIn }) => {
   const [fmrutcedula, setFmRutCedula] = useState('');
   const [fmcass, setFmCass] = useState('');
   const [encAcuenta, setEncACuenta] = useState(false);
+  const [ecfecha, setEcFecha] = useState('');
   const [fmtipodeembarque, setFmTipoDeEmbarque] = useState('');
   const [fmtc, setFmTc] = useState('');
   const [fmguia, setFmGuia] = useState('');
@@ -240,11 +242,11 @@ const EmitirNC = ({ isLoggedIn }) => {
       return;
     }
     // Si es "a cuenta" pedimos los datos primero
-if (encAcuenta) {
-  Swal.fire({
-    title: 'Datos de Nota de Crédito a Cuenta',
-    width: '60%',
-    html: `
+    if (encAcuenta) {
+      Swal.fire({
+        title: 'Datos de Nota de Crédito a Cuenta',
+        width: '60%',
+        html: `
       <div style="margin-bottom:15px; text-align:left;">
         <label style="font-weight:bold; display:block; margin-bottom:8px;">Tipo de Nota de Crédito</label>
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
@@ -282,8 +284,6 @@ if (encAcuenta) {
             <option value="19">UX - Comisión Exportación No Cass</option>
             <option value="20">UX - Comisión Exportación Mail</option>
             <option value="21">VZ - Security</option>
-            <option value="22">VZ - Flete Exportación Aérea (Excento)</option>
-            <option value="23">VZ - Due Carrier (Excento)</option>
           </select>
           <input class="importeNC swal2-input" type="number" placeholder="Importe" style="width:30%;">
           <button class="btnEliminarConcepto" style="background:transparent; color:#b71c1c; border:none;
@@ -324,18 +324,18 @@ if (encAcuenta) {
         .switch.usd .slider { transform: translateX(30px); }
       </style>
     `,
-    didOpen: () => {
-      const popup = Swal.getPopup();
-      const container = popup.querySelector('#conceptosContainer');
-      const templateSelect = popup.querySelector('.productoNC').innerHTML;
+        didOpen: () => {
+          const popup = Swal.getPopup();
+          const container = popup.querySelector('#conceptosContainer');
+          const templateSelect = popup.querySelector('.productoNC').innerHTML;
 
-      const agregarFila = () => {
-        const newRow = document.createElement('div');
-        newRow.classList.add('concepto-item');
-        newRow.style.display = 'flex';
-        newRow.style.gap = '10px';
-        newRow.style.alignItems = 'center';
-        newRow.innerHTML = `
+          const agregarFila = () => {
+            const newRow = document.createElement('div');
+            newRow.classList.add('concepto-item');
+            newRow.style.display = 'flex';
+            newRow.style.gap = '10px';
+            newRow.style.alignItems = 'center';
+            newRow.innerHTML = `
           <select class="productoNC swal2-input" style="width:60%; height:2.5em;">
             ${templateSelect}
           </select>
@@ -343,120 +343,120 @@ if (encAcuenta) {
           <button class="btnEliminarConcepto" style="background:transparent; color:#b71c1c; border:none;
                   border-radius:5px; padding:4px 8px; cursor:pointer; font-size:18px;">❌</button>
         `;
-        newRow.querySelector('.btnEliminarConcepto').addEventListener('click', () => newRow.remove());
-        container.appendChild(newRow);
-      };
+            newRow.querySelector('.btnEliminarConcepto').addEventListener('click', () => newRow.remove());
+            container.appendChild(newRow);
+          };
 
-      popup.querySelector('#addConceptoBtn').addEventListener('click', agregarFila);
-      container.querySelector('.btnEliminarConcepto').addEventListener('click', (e) => e.target.closest('.concepto-item').remove());
+          popup.querySelector('#addConceptoBtn').addEventListener('click', agregarFila);
+          container.querySelector('.btnEliminarConcepto').addEventListener('click', (e) => e.target.closest('.concepto-item').remove());
 
-      const switchDiv = popup.querySelector('#monedaSwitch');
-      const labelUYU = popup.querySelector('#labelUYU');
-      const labelUSD = popup.querySelector('#labelUSD');
+          const switchDiv = popup.querySelector('#monedaSwitch');
+          const labelUYU = popup.querySelector('#labelUYU');
+          const labelUSD = popup.querySelector('#labelUSD');
 
-      switchDiv.addEventListener('click', () => {
-        const isUSD = switchDiv.classList.toggle('usd');
-        if (isUSD) {
-          labelUSD.classList.add('active');
-          labelUYU.classList.remove('active');
-          switchDiv.dataset.moneda = 'USD';
-        } else {
-          labelUYU.classList.add('active');
-          labelUSD.classList.remove('active');
-          switchDiv.dataset.moneda = 'UYU';
-        }
-      });
-    },
-    preConfirm: () => {
-      const popup = Swal.getPopup();
-      const tipoNC = popup.querySelector('input[name="tipoNC"]:checked')?.value;
-      const selectElements = popup.querySelectorAll('.productoNC');
-      const importeElements = popup.querySelectorAll('.importeNC');
-      const referenciaNC = popup.querySelector('#referenciaNC').value.trim();
-      const moneda = popup.querySelector('#monedaSwitch').dataset.moneda || 'UYU';
+          switchDiv.addEventListener('click', () => {
+            const isUSD = switchDiv.classList.toggle('usd');
+            if (isUSD) {
+              labelUSD.classList.add('active');
+              labelUYU.classList.remove('active');
+              switchDiv.dataset.moneda = 'USD';
+            } else {
+              labelUYU.classList.add('active');
+              labelUSD.classList.remove('active');
+              switchDiv.dataset.moneda = 'UYU';
+            }
+          });
+        },
+        preConfirm: () => {
+          const popup = Swal.getPopup();
+          const tipoNC = popup.querySelector('input[name="tipoNC"]:checked')?.value;
+          const selectElements = popup.querySelectorAll('.productoNC');
+          const importeElements = popup.querySelectorAll('.importeNC');
+          const referenciaNC = popup.querySelector('#referenciaNC').value.trim();
+          const moneda = popup.querySelector('#monedaSwitch').dataset.moneda || 'UYU';
 
-      if (!tipoNC) {
-        Swal.showValidationMessage('Debe seleccionar un tipo de Nota de Crédito');
-        return false;
-      }
-
-      const conceptos = Array.from(selectElements).map((sel, i) => {
-        const value = sel.options[sel.selectedIndex]?.value || '';
-        const text = sel.options[sel.selectedIndex]?.text || '';
-        const importe = parseFloat(importeElements[i].value);
-        return { id_concepto: value, descripcion: text, importe };
-      }).filter(c => c.id_concepto && !isNaN(c.importe) && c.importe > 0);
-
-      if (conceptos.length === 0) {
-        Swal.showValidationMessage('Debe agregar al menos un concepto con producto e importe válidos');
-        return false;
-      }
-
-      if (!referenciaNC) {
-        Swal.showValidationMessage('Debe ingresar una referencia');
-        return false;
-      }
-
-      return { tipoNC, conceptos, referenciaNC, moneda };
-    },
-    showCancelButton: true,
-    confirmButtonText: 'Generar N/C',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#0a2d54',
-    cancelButtonColor: '#0a2d54'
-  }).then((result) => {
-    if (!result.isConfirmed) return setLoading(false);
-
-    const { tipoNC, conceptos, referenciaNC, moneda } = result.value;
-    const importeTotal = conceptos.reduce((acc, c) => acc + c.importe, 0);
-
-    const datosNC = {
-      idCliente: selectedCliente.Id,
-      fecha: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      DocsAfectados: '',
-      CFEsAfectados: '',
-      ImporteTotal: importeTotal,
-      CodigoClienteGIA: selectedCliente.CodigoGIA,
-      Moneda: moneda,
-      Referencia: referenciaNC,
-      TipoNC: tipoNC,
-      Conceptos: conceptos
-    };
-    console.log('DatosNc antes del back',datosNC);
-    axios.post(`${backURL}/api/insertarNCACUENTA`, datosNC)
-      .then((response) => {
-        Swal.fire({
-          icon: 'success',
-          title: response.data.wsResultado?.descripcion || 'N/C generada correctamente',
-          color: '#0a2d54',
-          confirmButtonColor: '#0a2d54'
-        }).then(() => {
-          if (response.data.pdfBase64) {
-            const pdfLink = document.createElement('a');
-            pdfLink.href = `data:application/pdf;base64,${response.data.pdfBase64}`;
-            const numeroNC = response.data.wsResultado?.datos?.documento?.numeroDocumento || 'NC';
-            pdfLink.download = `NC_${numeroNC}.pdf`;
-            document.body.appendChild(pdfLink);
-            pdfLink.click();
-            document.body.removeChild(pdfLink);
+          if (!tipoNC) {
+            Swal.showValidationMessage('Debe seleccionar un tipo de Nota de Crédito');
+            return false;
           }
-          window.location.reload();
-        });
-      })
-      .catch(err => {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error al generar la N/C',
-          text: err.message,
-          color: '#0a2d54',
-          confirmButtonColor: '#0a2d54'
-        });
-      })
-      .finally(() => setLoading(false));
-  });
 
-  return;
-}
+          const conceptos = Array.from(selectElements).map((sel, i) => {
+            const value = sel.options[sel.selectedIndex]?.value || '';
+            const text = sel.options[sel.selectedIndex]?.text || '';
+            const importe = parseFloat(importeElements[i].value);
+            return { id_concepto: value, descripcion: text, importe };
+          }).filter(c => c.id_concepto && !isNaN(c.importe) && c.importe > 0);
+
+          if (conceptos.length === 0) {
+            Swal.showValidationMessage('Debe agregar al menos un concepto con producto e importe válidos');
+            return false;
+          }
+
+          if (!referenciaNC) {
+            Swal.showValidationMessage('Debe ingresar una referencia');
+            return false;
+          }
+
+          return { tipoNC, conceptos, referenciaNC, moneda };
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Generar N/C',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0a2d54',
+        cancelButtonColor: '#0a2d54'
+      }).then((result) => {
+        if (!result.isConfirmed) return setLoading(false);
+
+        const { tipoNC, conceptos, referenciaNC, moneda } = result.value;
+        const importeTotal = conceptos.reduce((acc, c) => acc + c.importe, 0);
+
+        const datosNC = {
+          idCliente: selectedCliente.Id,
+          fecha: ecfecha,
+          DocsAfectados: '',
+          CFEsAfectados: '',
+          ImporteTotal: importeTotal,
+          CodigoClienteGIA: selectedCliente.CodigoGIA,
+          Moneda: moneda,
+          Referencia: referenciaNC,
+          TipoNC: tipoNC,
+          Conceptos: conceptos
+        };
+        console.log('DatosNc antes del back', datosNC);
+        axios.post(`${backURL}/api/insertarNCACUENTA`, datosNC)
+          .then((response) => {
+            Swal.fire({
+              icon: 'success',
+              title: response.data.wsResultado?.descripcion || 'N/C generada correctamente',
+              color: '#0a2d54',
+              confirmButtonColor: '#0a2d54'
+            }).then(() => {
+              if (response.data.pdfBase64) {
+                const pdfLink = document.createElement('a');
+                pdfLink.href = `data:application/pdf;base64,${response.data.pdfBase64}`;
+                const numeroNC = response.data.wsResultado?.datos?.documento?.numeroDocumento || 'NC';
+                pdfLink.download = `NC_${numeroNC}.pdf`;
+                document.body.appendChild(pdfLink);
+                pdfLink.click();
+                document.body.removeChild(pdfLink);
+              }
+              window.location.reload();
+            });
+          })
+          .catch(err => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al generar la N/C',
+              text: err.message,
+              color: '#0a2d54',
+              confirmButtonColor: '#0a2d54'
+            });
+          })
+          .finally(() => setLoading(false));
+      });
+
+      return;
+    }
     // Armar texto con números y series sI NO ES A CUENTA
     const detalles = facturasSeleccionadas
       .map(f => `Número: ${f.NumeroCFE}, Serie: ${f.SerieCFE}`)
@@ -488,7 +488,7 @@ if (encAcuenta) {
         );
         const datosNC = {
           idCliente: selectedCliente.Id,
-          fecha: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          fecha: ecfecha,
           DocsAfectados: facturasSeleccionadas.map(f => f.Id).join(','), // separadas por coma
           CFEsAfectados: facturasSeleccionadas.map(f => f.NumeroCFE).join(','),
           ImporteTotal: importeTotal,
@@ -755,6 +755,16 @@ if (encAcuenta) {
                   <option value="false">No</option>
                   <option value="true">Sí</option>
                 </select>
+              </div>
+              <div className="fecha-emision-comprobante">
+                <label htmlFor="ecfecha">Fecha:</label>
+                <input
+                  type="date"
+                  id="ecfecha"
+                  value={ecfecha}
+                  onChange={(e) => setEcFecha(e.target.value)}
+                  required
+                />
               </div>
             </div>
 

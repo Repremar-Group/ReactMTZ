@@ -7,7 +7,7 @@ const NavBar = () => {
     const rol = localStorage.getItem('rol');
     return (
         <header className="navbar">
-            <Link to="/home" className="logoPagina" title='V 2.1.11 06/02/2026'>
+            <Link to="/home" className="logoPagina" title='V 2.1.12 18/02/2026'>
                 <img src={logo} alt="Home" />
             </Link>
 
