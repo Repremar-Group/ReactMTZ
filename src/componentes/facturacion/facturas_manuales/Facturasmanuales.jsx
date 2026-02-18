@@ -623,7 +623,6 @@ const Facturasmanuales = ({ isLoggedIn }) => {
                   value={fmtc}
                   onChange={(e) => setFmTc(e.target.value)}
                   required
-                  readOnly
                 />
               </div>
 
