@@ -2159,6 +2159,59 @@ app.get('/api/previewguias', async (req, res) => {
     res.status(500).json({ error: 'Error al procesar la solicitud' });
   }
 });
+app.get('/api/obtener-recibo-por-factura/:idFactura', async (req, res) => {
+  console.log('Received request for /api/obtener-recibo-por-factura');
+
+  try {
+    const { idFactura } = req.params;
+
+    // =========================
+    // 1️⃣ Buscar en IMPO (facturas)
+    // =========================
+    const queryImpo = `
+      SELECT 
+        r.idrecibo,
+        r.nrorecibo,
+        r.nroformulario
+      FROM facturas f
+      INNER JOIN recibos r ON r.idrecibo = f.idrecibo
+      WHERE f.Id = ?
+    `;
+
+    const [resultImpo] = await pool.query(queryImpo, [idFactura]);
+
+    if (resultImpo.length > 0) {
+      return res.status(200).json(resultImpo[0]);
+    }
+
+    // =========================
+    // 2️⃣ Buscar en EXPO (guiasexpo)
+    // =========================
+    const queryExpo = `
+      SELECT 
+        r.idrecibo,
+        r.nrorecibo,
+        r.nroformulario
+      FROM guiasexpo g
+      INNER JOIN facturas f ON f.Id = g.idfactura
+      INNER JOIN recibos r ON r.idrecibo = f.idrecibo
+      WHERE g.idfactura = ?
+    `;
+
+    const [resultExpo] = await pool.query(queryExpo, [idFactura]);
+
+    if (resultExpo.length > 0) {
+      return res.status(200).json(resultExpo[0]);
+    }
+
+    // Si no existe en ninguno
+    return res.status(200).json(null);
+
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
 // Endpoint para obtener guías Expo
 app.get('/api/previewguiasexpo', async (req, res) => {
   console.log('Received request for /api/previewguiasexpo');

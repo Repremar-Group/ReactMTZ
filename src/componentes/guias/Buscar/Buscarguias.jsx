@@ -15,6 +15,10 @@ import JSZip from 'jszip';
 
 const PreviewGuias = () => {
     const backURL = import.meta.env.VITE_BACK_URL;
+    const [tooltipText, setTooltipText] = useState("");
+    const [activeRowId, setActiveRowId] = useState(null);
+    const [tooltipData, setTooltipData] = useState({});
+    const [loadingId, setLoadingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [guias, setGuias] = useState([]);
@@ -26,6 +30,71 @@ const PreviewGuias = () => {
     const [modalType, setModalType] = useState('alert'); // 'alert' o 'confirm'
     const [guiaAEliminar, setGuiaAEliminar] = useState([]);
     const [soloSinNotificar, setSoloSinNotificar] = useState(false);
+    //Funcion para mostrar de la facturacion de la guia 
+    const handleMouseEnter = async (row) => {
+
+        // 🔹 ID dinámico según tipo
+        const rowId = isImpo ? row.idguia : row.idguiasexpo;
+
+        setActiveRowId(rowId);
+
+        // 🔹 Si no está facturada
+        if (!row.facturada) {
+            setTooltipData(prev => ({
+                ...prev,
+                [rowId]: "Pendiente de facturar / cobrar"
+            }));
+            return;
+        }
+
+        // 🔹 Obtener idFactura
+        const idFactura = isImpo
+            ? (row.idfactura || row.idfacturacuentaajena)
+            : row.idfactura;
+
+        if (!idFactura) {
+            setTooltipData(prev => ({
+                ...prev,
+                [rowId]: "Guía facturada sin ID de factura"
+            }));
+            return;
+        }
+
+        // 🔥 Cache
+        if (tooltipData[rowId]) {
+            return;
+        }
+
+        setLoadingId(rowId);
+
+        try {
+            const response = await axios.get(
+                `${backURL}/api/obtener-recibo-por-factura/${idFactura}`
+            );
+
+            let texto = "Guía sin recibo asociado";
+
+            if (response.data) {
+                texto = `Recibo Nro: ${response.data.nrorecibo} - Formulario: ${response.data.nroformulario}`;
+            }
+
+            setTooltipData(prev => ({
+                ...prev,
+                [rowId]: texto
+            }));
+
+        } catch (error) {
+
+            setTooltipData(prev => ({
+                ...prev,
+                [rowId]: "Error al obtener recibo"
+            }));
+
+        } finally {
+            setLoadingId(null);
+        }
+    };
+
     //Funcion para modal de eliminar
     const openModalConfirmDelete = (guia) => {
         if (guia.facturada != 1) {
@@ -437,10 +506,34 @@ const PreviewGuias = () => {
                                                 : (row.idguiasexpo ? row.total : row.totalguia) + " " + 'USD'
                                             }
                                         </td>
-                                        <td>{row.facturada ? '✔️' : '❌'}</td>
+                                        <td
+                                            onMouseEnter={() => handleMouseEnter(row)}
+                                            onMouseLeave={() => setActiveRowId(null)}
+                                            style={{
+                                                cursor:
+                                                    loadingId === (isImpo ? row.idguia : row.idguiasexpo)
+                                                        ? "wait"
+                                                        : "pointer",
+                                                position: "relative"
+                                            }}
+                                        >
+                                            {row.facturada ? '✔️' : '❌'}
+
+                                            <div
+                                                className={`custom-tooltip ${activeRowId === (isImpo ? row.idguia : row.idguiasexpo)
+                                                        ? "custom-tooltip-visible"
+                                                        : ""
+                                                    }`}
+                                            >
+                                                {loadingId === (isImpo ? row.idguia : row.idguiasexpo)
+                                                    ? "Cargando..."
+                                                    : tooltipData[isImpo ? row.idguia : row.idguiasexpo] || ""}
+                                            </div>
+                                        </td>
                                         {isImpo && (
                                             <td>{row.notificada ? '✔️' : '❌'}</td>
                                         )}
+
                                         <td className="td-con-submenuguias">
                                             <div className="buscarguias-submenu-container">
                                                 <button disabled className="buscarguias-submenu-toggle">☰</button>

@@ -1,32 +1,64 @@
 .Contenedor_Principal {
-    max-width: 1600px;
-    min-width: 1600px;
-    max-height: 900px;
-    min-height: 900px;
-    width: 100%;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-    box-sizing: border-box;
+  max-width: 1600px;
+  min-width: 1600px;
+  max-height: 900px;
+  min-height: 900px;
+  width: 100%;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
 }
 
 .Titulo {
-    margin: 20px 100px 10px 100px;
-    /* Espacio superior, y mantiene el padding lateral */
-    text-align: left;
-    /* Alinea el texto a la izquierda */
-    color: #143361;
+  margin: 20px 100px 10px 100px;
+  /* Espacio superior, y mantiene el padding lateral */
+  text-align: left;
+  /* Alinea el texto a la izquierda */
+  color: #143361;
 }
+
 .buscarguias-submenu-container {
-     position: relative;
+  position: relative;
   z-index: 999999;
+}
+
+.custom-tooltip {
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+
+  background: #ffffff;
+  color: #143361;
+
+  font-weight: 700; /* más consistente que bold */
+  
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 0.25s ease, transform 0.25s ease;
+
+  z-index: 2147483647;
+}
+
+.custom-tooltip-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Botón de los tres puntos */
 .buscarguias-submenu-toggle {
   background-color: transparent;
-   overflow: hidden;
+  overflow: hidden;
   border: none;
   color: inherit;
   cursor: pointer;
@@ -37,7 +69,7 @@
   justify-content: center;
   font-style: 20px;
   position: relative;
- 
+
 }
 
 /* Por defecto oculto con animación */
@@ -47,7 +79,7 @@
   opacity: 0;
   transform: translateY(10px);
   pointer-events: none;
-   position: absolute;
+  position: absolute;
   bottom: -110%;
   /* aparece justo arriba */
   right: 20px;
@@ -55,20 +87,24 @@
   background-color: transparent;
   min-width: 160px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
- 
+
   flex-direction: column;
   padding: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 2147483647;
 }
+
 .td-guias {
-  max-width: 180px;     /* Ajustá el ancho que quieras */
+  max-width: 180px;
+  /* Ajustá el ancho que quieras */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   position: relative;
-  z-index: 1;           /* No tapa el submenu */
+  z-index: 1;
+  /* No tapa el submenu */
 }
+
 /* Mostrar submenu cuando el mouse esté sobre el td */
 .td-con-submenu:hover .buscarguias-submenu-container .buscarguias-submenu,
 .buscarguias-submenu-container:hover .buscarguias-submenu {
@@ -83,6 +119,7 @@
   right: auto;
   left: 0;
 }
+
 /* Estilos para los botones del submenu */
 .buscarguias-submenu button {
   background-color: white;
@@ -97,9 +134,10 @@
   margin: 0;
   transition: transform 0.2s ease;
   border-radius: 0;
-  outline:none;
-  
+  outline: none;
+
 }
+
 .buscarguias-submenu button:focus {
   outline: none;
   box-shadow: none;
@@ -120,6 +158,7 @@
   font-weight: bolder;
   border: none;
 }
+
 .td-con-submenuguias:hover .buscarguias-submenu-container .buscarguias-submenu,
 .buscarguias-submenu-container:hover .buscarguias-submenu {
   opacity: 1;
@@ -127,9 +166,10 @@
   pointer-events: auto;
 
 }
+
 .buscarguias-submenu-toggle {
   background-color: transparent;
-   overflow: hidden;
+  overflow: hidden;
   border: none;
   color: inherit;
   cursor: pointer;
@@ -140,19 +180,21 @@
   justify-content: center;
   font-style: 20px;
   position: relative;
- 
+
 }
+
 .buscarguias-submenu-container {
-     position: relative;
+  position: relative;
   z-index: 999999;
 }
+
 .buscarguias-submenu {
   border-radius: 8px;
   overflow: hidden;
   opacity: 0;
   transform: translateY(10px);
   pointer-events: none;
-   position: absolute;
+  position: absolute;
   bottom: -110%;
   /* aparece justo arriba */
   right: 30px;
@@ -161,19 +203,20 @@
   background-color: transparent;
   min-width: 160px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
- 
+
   flex-direction: column;
   padding: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 2147483647;
 }
+
 .submenu-ajustado {
   border-radius: 8px;
   overflow: hidden;
   opacity: 0;
   transform: translateY(10px);
   pointer-events: none;
-   position: absolute;
+  position: absolute;
   bottom: -280%;
   /* aparece justo arriba */
   right: 30px;
@@ -182,21 +225,22 @@
   background-color: transparent;
   min-width: 160px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
- 
+
   flex-direction: column;
   padding: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 2147483647;
 }
+
 .buscarguias-submenu-container {
-     position: relative;
+  position: relative;
   z-index: 999999;
 }
 
 /* Botón de los tres puntos */
 .buscarguias-submenu-toggle {
   background-color: transparent;
-   overflow: hidden;
+  overflow: hidden;
   border: none;
   color: inherit;
   cursor: pointer;
@@ -207,227 +251,247 @@
   justify-content: center;
   font-style: 20px;
   position: relative;
- 
+
 }
 
 
 .table-container {
-    width: 1500px;
-    height: 700px;
-    /* Ajusta el ancho restando padding */
-    max-width: 100%;
-    /* Ajustamos el ancho máximo para que no exceda el ancho del viewport */
-    margin: 0 auto;
-    /* Centra el contenedor horizontalmente, sin margen superior */
-    box-sizing: border-box;
-    /* Asegúrate de que el padding no afecte el ancho total */
-    overflow-x: auto;
-    /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
+  width: 1500px;
+  height: 700px;
+  /* Ajusta el ancho restando padding */
+  max-width: 100%;
+  /* Ajustamos el ancho máximo para que no exceda el ancho del viewport */
+  margin: 0 auto;
+  /* Centra el contenedor horizontalmente, sin margen superior */
+  box-sizing: border-box;
+  /* Asegúrate de que el padding no afecte el ancho total */
+  overflow-x: auto;
+  /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
 }
 
 .search-bar {
-    display: flex;
-    justify-content: space-between; /* Coloca elementos en extremos opuestos */
-    align-items: center; /* Alinea verticalmente los elementos */
-    gap: 10px; /* Espaciado entre elementos */
-  }
-  
-  .search-left {
-    display: flex;
-    align-items: center; /* Alinea verticalmente los elementos */
-    gap: 10px; /* Espaciado entre los elementos de la izquierda */
-  }
+  display: flex;
+  justify-content: space-between;
+  /* Coloca elementos en extremos opuestos */
+  align-items: center;
+  /* Alinea verticalmente los elementos */
+  gap: 10px;
+  /* Espaciado entre elementos */
+}
+
+.search-left {
+  display: flex;
+  align-items: center;
+  /* Alinea verticalmente los elementos */
+  gap: 10px;
+  /* Espaciado entre los elementos de la izquierda */
+}
 
 
 .input_buscar[type="text"] {
-    width: 200px;
-    padding: 10px;
-    border: 1px solid #143361;
-    border-radius: 5px;
-    box-sizing: border-box;
-     background-color: #fff;
-    /* color de fondo claro */
-    color: #143361;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 200px;
+  padding: 10px;
+  border: 1px solid #143361;
+  border-radius: 5px;
+  box-sizing: border-box;
+  background-color: #fff;
+  /* color de fondo claro */
+  color: #143361;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
 .input_buscar[type="text"]:focus {
-    outline: none; /* Elimina el borde azul predeterminado del navegador */
-    box-shadow: 0 0 5px rgba(20, 51, 97, 0.5); /* Sombra sutil */
-    border-color: #1a4a8e; /* Opcional: cambia ligeramente el borde */
+  outline: none;
+  /* Elimina el borde azul predeterminado del navegador */
+  box-shadow: 0 0 5px rgba(20, 51, 97, 0.5);
+  /* Sombra sutil */
+  border-color: #1a4a8e;
+  /* Opcional: cambia ligeramente el borde */
 }
 
 .tabla-guias th,
 .tabla-guias td {
-    padding: 12px 15px;
-    text-align: left;
-    border: 1px solid #dddddd;
+  padding: 12px 15px;
+  text-align: left;
+  border: 1px solid #dddddd;
 
 }
 
 .tabla-guias th {
-    background-color: #143361;
-    color: white;
+  background-color: #143361;
+  color: white;
 }
 
 .tabla-guias {
-    font-size: 1em;
-    border-collapse: collapse;
-    table-layout: fixed; /* Asegura que las columnas tengan un ancho fijo */
-    width: 100%; /* La tabla ocupará el 100% del contenedor */
-    max-height: 620px;
-    overflow-y: auto;
-    display: block; /* Hace que la tabla se comporte como un bloque para aplicar scroll */
-    border-radius: 5px;
-    margin: 20px 0;
+  font-size: 1em;
+  border-collapse: collapse;
+  table-layout: fixed;
+  /* Asegura que las columnas tengan un ancho fijo */
+  width: 100%;
+  /* La tabla ocupará el 100% del contenedor */
+  max-height: 620px;
+  overflow-y: auto;
+  display: block;
+  /* Hace que la tabla se comporte como un bloque para aplicar scroll */
+  border-radius: 5px;
+  margin: 20px 0;
 }
 
 .tabla-guias tbody {
-    overflow-y: auto;
+  overflow-y: auto;
 }
 
 .tabla-guias thead {
-    
-    top: 0;
-    background-color: #143361;
-    z-index: 1;
+
+  top: 0;
+  background-color: #143361;
+  z-index: 1;
 }
 
 /* Estilo del scrollbar */
 .tabla-guias::-webkit-scrollbar {
-    width: 10px; 
-    background-color: #f0f0f0;
-    border-radius: 5px;
+  width: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
 }
-  
+
 .tabla-guias::-webkit-scrollbar-thumb {
-    background-color: #143361;
-    border-radius: 5px;
-    border: 2px solid #f0f0f0;
+  background-color: #143361;
+  border-radius: 5px;
+  border: 2px solid #f0f0f0;
 }
-  
+
 .tabla-guias::-webkit-scrollbar-thumb:hover {
-    background-color: #4885e2;
+  background-color: #4885e2;
 }
 
 th,
 td {
-    background-color: white;
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: left;
-    overflow: hidden;
-    /* Oculta el desbordamiento */
-    white-space: nowrap;
-    /* Evita el salto de línea */
-    text-overflow: ellipsis;
-    /* Muestra "..." si hay desbordamiento */
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+  overflow: hidden;
+  /* Oculta el desbordamiento */
+  white-space: nowrap;
+  /* Evita el salto de línea */
+  text-overflow: ellipsis;
+  /* Muestra "..." si hay desbordamiento */
 
 }
 
 /* Anchos fijos para cada columna */
 th:nth-child(1),
 td:nth-child(1) {
-    width: 15%;
-    text-align: center;
+  width: 15%;
+  text-align: center;
 }
 
 
 th:nth-child(2),
 td:nth-child(2) {
-    width: 8%;
-    text-align: center;
+  width: 8%;
+  text-align: center;
 }
 
 
 th:nth-child(3),
 td:nth-child(3) {
-    width: 20%;
-    text-align: center;
+  width: 20%;
+  text-align: center;
 }
 
 th:nth-child(4),
 td:nth-child(4) {
-    width: 3%;
-    text-align: center;
+  width: 3%;
+  text-align: center;
 }
 
 
 th:nth-child(5),
 td:nth-child(5) {
-    width: 10%;
-    text-align: center;
+  width: 10%;
+  text-align: center;
 }
 
 
 th:nth-child(6),
 td:nth-child(6) {
-    width: 1%;
-    text-align: center;
+  width: 1%;
+  text-align: center;
 }
+
 th:nth-child(7),
 td:nth-child(7) {
-    width: 1%;
-    text-align: center;
+  width: 1%;
+  text-align: center;
 }
 
 
 th {
-    background-color: #f9f9f9;
+  background-color: #f9f9f9;
 }
+
 /* Estilos para el switch de impo expo */
 .switch-container {
-    display: flex;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    gap: 8px;
-  }
-  
-  .label {
-    font-size: 16px;
-    color: #cbd5e0; /* Color gris */
-    padding-left: 3px;
-    font-weight: bold;
-    line-height: 30px; /* Altura fija del texto */
-    transition: color 0.3s ease, transform 0.3s ease; /* Transición para color y tamaño */
+  display: flex;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  gap: 8px;
+}
+
+.label {
+  font-size: 16px;
+  color: #cbd5e0;
+  /* Color gris */
+  padding-left: 3px;
+  font-weight: bold;
+  line-height: 30px;
+  /* Altura fija del texto */
+  transition: color 0.3s ease, transform 0.3s ease;
+  /* Transición para color y tamaño */
 }
 
 .label.active {
-    color: #143361; /* Color oscuro */
-    transform: scale(1.2); /* Escalar el texto al 120% */
+  color: #143361;
+  /* Color oscuro */
+  transform: scale(1.2);
+  /* Escalar el texto al 120% */
 }
-  
-  .switch {
-    position: relative;
-    width: 60px;
-    height: 30px;
-    border-radius: 15px;
-    background: linear-gradient(to bottom, #2154a1, #143361);
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .switch .slider {
-    position: absolute;
-    top: 2.6px;
-    left: 3px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: white;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
-  }
-  
-  .switch.expo .slider {
-    transform: translateX(30px);
-  }
+
+.switch {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  border-radius: 15px;
+  background: linear-gradient(to bottom, #2154a1, #143361);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.switch .slider {
+  position: absolute;
+  top: 2.6px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.switch.expo .slider {
+  transform: translateX(30px);
+}
+
 .tabla-facturas {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
   border-collapse: collapse;
   table-layout: auto;
   width: 100%;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: visible;
 }
 
@@ -469,11 +533,14 @@ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   color: #333;
   background-color: inherit;
   border: none;
-  position: relative; /* importante */
+  position: relative;
+  /* importante */
 }
+
 .td-texto {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 150px; /* o lo que necesites */
+  max-width: 150px;
+  /* o lo que necesites */
 }
