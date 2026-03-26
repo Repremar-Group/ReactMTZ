@@ -12,17 +12,27 @@ const ModalComprobanteGSM = ({ isOpen, onClose, datos }) => {
 
   useEffect(() => {
     if (datos.length > 0) {
-      // Sumar los importes
-      const subtotal = datos.reduce((acc, concepto) => acc + parseFloat(concepto.importe || 0), 0);
-      const iva = 0;
-      const total = subtotal + iva;
-      
-      const totalACobrar = total ;
+
+      let subtotal = 0;
+      let ivaTotal = 0;
+
+      datos.forEach((concepto) => {
+        const importe = Number(concepto.importe) || 0;
+
+        subtotal += importe;
+
+        if (concepto.descripcion === "AR - Collect Fee") {
+          const iva = Number((importe * 0.22) * 100) / 100; 
+          ivaTotal += iva;
+        }
+      });
+
+      const total = subtotal + ivaTotal;
+      const totalACobrar = total;
 
       setEcsubtotal(subtotal.toFixed(2));
-      setEcIva(iva.toFixed(2));
+      setEcIva(ivaTotal.toFixed(2));
       setEcTotal(total.toFixed(2));
-
       setEcTotalACobrar(totalACobrar.toFixed(2));
     }
   }, [datos]);

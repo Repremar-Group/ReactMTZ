@@ -1,0 +1,198 @@
+26/3/2026, 12:11:05 [info]: Server running on port 5001
+26/3/2026, 12:11:37 [error]: Error conectando a la base de datos: Error: connect ETIMEDOUT 172.212.44.168:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+    --------------------
+    at Protocol._enqueue (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at Protocol.handshake (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\ReactMTZ\BACKEND\node_modules\mysql\lib\protocol\Protocol.js:51:23)
+    at Connection.connect (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\ReactMTZ\BACKEND\node_modules\mysql\lib\Connection.js:116:18)
+    at Object.<anonymous> (C:\Users\PatricioGauna\OneDrive - Repremar Logistics S.A\Documentos\GitHub\ReactMTZ\ReactMTZ\BACKEND\index.js:94:12)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+26/3/2026, 12:20:33 [info]: Server running on port 5001
+26/3/2026, 12:20:34 [info]: Conexión exitosa a la base de datos MySQL
+26/3/2026, 12:21:30 [info]: Received request for /api/guias-sin-facturar
+26/3/2026, 12:21:30 [info]: Received request for /api/facturas-sin-cobrar
+26/3/2026, 12:21:30 [info]: Received request for /api/obtenertipocambio
+26/3/2026, 12:21:34 [info]: ✔ Cotizaciones generales: {
+  "procesoCargarCotizacionesBcuResultado": {
+    "resultado": "1",
+    "descripcion": "Cotizaciones ingresadas correctamente",
+    "datos": ""
+  }
+}
+26/3/2026, 12:21:35 [info]: 💲 Cotización moneda 2: {
+  "obtenerCotizacionResultado": {
+    "resultado": "1",
+    "descripcion": "Se encontro la cotización con los criterios indicados",
+    "datos": {
+      "cotizacion": "40.456"
+    }
+  }
+}
+26/3/2026, 12:21:35 [info]: Received request for /api/agregartipocambio
+26/3/2026, 12:21:44 [info]: Received request for /api/guias-sin-facturar
+26/3/2026, 12:21:44 [info]: Received request for /api/facturas-sin-cobrar
+26/3/2026, 12:21:45 [info]: Received request for /api/obtenertipocambio
+26/3/2026, 12:22:06 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:28:41 [info]: Server running on port 5001
+26/3/2026, 12:28:52 [info]: Conexión exitosa a la base de datos MySQL
+26/3/2026, 12:28:58 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:28:59 [error]: Error: SOI not found in JPEG
+26/3/2026, 12:34:25 [info]: Server running on port 5001
+26/3/2026, 12:34:33 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:34:36 [info]: Conexión exitosa a la base de datos MySQL
+26/3/2026, 12:35:11 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:35:19 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:37:32 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+26/3/2026, 12:39:45 [info]: Server running on port 5001
+26/3/2026, 12:39:46 [info]: Conexión exitosa a la base de datos MySQL
+26/3/2026, 12:39:48 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+26/3/2026, 12:39:58 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+26/3/2026, 12:40:13 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+26/3/2026, 12:43:43 [info]: Server running on port 5001
+26/3/2026, 12:43:44 [info]: Conexión exitosa a la base de datos MySQL
+26/3/2026, 12:44:18 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:44:29 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:44:29 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:44:29 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:44:44 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:44:45 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:44:45 [info]: Iteración 0 [object Object]
+26/3/2026, 12:44:45 [info]: Iteración 1 [object Object]
+26/3/2026, 12:44:59 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:44:59 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:44:59 [info]: Iteración 0 [object Object]
+26/3/2026, 12:44:59 [info]: Iteración 1 [object Object]
+26/3/2026, 12:45:23 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:45:23 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:45:30 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:45:31 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:45:35 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:45:35 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:45:35 [info]: Iteración 0 [object Object]
+26/3/2026, 12:45:35 [info]: Iteración 1 [object Object]
+26/3/2026, 12:45:43 [info]: Server running on port 5001
+26/3/2026, 12:45:43 [info]: Conexión exitosa a la base de datos MySQL
+26/3/2026, 12:46:22 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:46:23 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:46:27 [info]: Parámetros recibidos: [object Object]
+26/3/2026, 12:46:27 [info]: Calculando totales de collect y Prepaid...
+26/3/2026, 12:46:27 [info]: Iteración 0 [object Object]
+26/3/2026, 12:46:27 [info]: Iteración 1 [object Object]
+26/3/2026, 12:46:53 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+26/3/2026, 12:47:00 [info]: reportedeembarquependiente, Parámetros recibidos: [object Object]
+26/3/2026, 12:51:54 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 12:51:54 [info]: 40.456
+26/3/2026, 12:52:43 [info]: Received request for /api/obtenerembarques
+26/3/2026, 12:52:43 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 14:44:50 [info]: Server running on port 5001
+26/3/2026, 14:44:51 [info]: Conexión exitosa a la base de datos MySQL
+26/3/2026, 15:30:12 [info]: Received request for /api/guias-sin-facturar
+26/3/2026, 15:30:12 [info]: Received request for /api/facturas-sin-cobrar
+26/3/2026, 15:30:12 [info]: Received request for /api/obtenertipocambio
+26/3/2026, 15:30:21 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 15:30:21 [info]: 40.456
+26/3/2026, 15:33:47 [info]: Received request for /api/obtenerembarques
+26/3/2026, 15:33:47 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 15:40:46 [info]: Received request for /api/obtenerembarques
+26/3/2026, 15:40:46 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 15:40:50 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 15:40:50 [info]: 40.456
+26/3/2026, 15:40:58 [info]: Received request for /api/obtenerembarques
+26/3/2026, 15:40:58 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 16:24:16 [info]: Received request for /api/fetchguias
+26/3/2026, 16:25:22 [info]: Received request for /api/insertguiaimpo
+26/3/2026, 16:25:22 [info]: Received request for /api/fetchguias
+26/3/2026, 16:26:33 [info]: Received request for /api/insertguiaimpo
+26/3/2026, 16:26:33 [info]: Received request for /api/fetchguias
+26/3/2026, 16:26:38 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 16:26:38 [info]: 40.456
+26/3/2026, 16:26:56 [info]: Received request for /api/obtenerembarques
+26/3/2026, 16:26:56 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 16:34:18 [info]: Received request for /api/obtenerembarques
+26/3/2026, 16:34:18 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 16:41:37 [info]: Received request for /api/fetchguias
+26/3/2026, 16:43:09 [info]: Received request for /api/insertguiaimpo
+26/3/2026, 16:43:09 [info]: Received request for /api/fetchguias
+26/3/2026, 16:45:21 [info]: Received request for /api/insertguiaimpo
+26/3/2026, 16:45:21 [info]: Received request for /api/fetchguias
+26/3/2026, 16:51:20 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 16:51:20 [info]: 40.456
+26/3/2026, 16:51:24 [info]: Received request for /api/obtenerembarques
+26/3/2026, 16:51:25 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 16:52:14 [info]: Received request for /api/previewguias
+26/3/2026, 16:52:14 [info]: Received request for /api/previewguiasexpo
+26/3/2026, 16:52:21 [info]: Received request for /api/obtenerguia
+26/3/2026, 16:52:21 [info]: Received request for /api/obtenerexpo
+26/3/2026, 16:52:22 [info]: Received request for /api/obtenerexpo
+26/3/2026, 16:52:22 [info]: Received request for /api/obtenerguia
+26/3/2026, 16:52:34 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 16:52:34 [info]: 40.456
+26/3/2026, 16:52:40 [info]: Received request for /api/obtenerembarques
+26/3/2026, 16:52:40 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 16:53:15 [info]: Received request for /api/previewguias
+26/3/2026, 16:53:15 [info]: Received request for /api/previewguiasexpo
+26/3/2026, 16:53:21 [info]: Received request for /api/obtenerguia
+26/3/2026, 16:53:21 [info]: Received request for /api/obtenerexpo
+26/3/2026, 16:53:21 [info]: Received request for /api/obtenerguia
+26/3/2026, 16:53:21 [info]: Received request for /api/obtenerexpo
+26/3/2026, 16:54:08 [info]: Received request for /api/obtener-recibo-por-factura
+26/3/2026, 16:54:21 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 16:54:21 [info]: 40.456
+26/3/2026, 16:55:55 [info]: Received request for /api/obtenerembarques
+26/3/2026, 16:55:55 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 16:58:51 [info]: Received request for /api/obtenerembarques
+26/3/2026, 16:58:52 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:00:24 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:00:24 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:00:30 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 17:00:30 [info]: 40.456
+26/3/2026, 17:00:36 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:00:37 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:03:22 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:03:22 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:03:27 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 17:03:27 [info]: 40.456
+26/3/2026, 17:03:32 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:03:33 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:09:59 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:10:00 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:10:03 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 17:10:03 [info]: 40.456
+26/3/2026, 17:10:09 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:10:09 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:15:42 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:15:42 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:17:29 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 17:17:29 [info]: 40.456
+26/3/2026, 17:17:34 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:17:34 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:18:27 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:18:27 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:19:37 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 17:19:37 [info]: 40.456
+26/3/2026, 17:19:42 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:19:42 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:21:26 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:21:26 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:22:10 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:22:10 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:32:01 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:32:01 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:32:03 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:32:03 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:32:06 [info]: Received request for /api/obtenertipocambioparacomprobante
+26/3/2026, 17:32:07 [info]: 40.456
+26/3/2026, 17:32:11 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:32:11 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:32:27 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:32:27 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:33:06 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:33:06 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+26/3/2026, 17:33:12 [info]: Received request for /api/obtenerembarques
+26/3/2026, 17:33:12 [info]: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]

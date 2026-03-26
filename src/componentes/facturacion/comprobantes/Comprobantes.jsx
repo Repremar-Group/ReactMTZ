@@ -194,7 +194,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
     // Calcular IVA
     const totalEcIva = guiasimpocollect.reduce((sum, embarque) => {
-      const valor = parseFloat(embarque.cfiva) || 0;
+      const valor = Math.ceil((Number(embarque.cfiva) / 2) * 100) / 100 || 0;
       return sum + valor;
     }, 0);
 
@@ -202,6 +202,8 @@ const Comprobantes = ({ isLoggedIn }) => {
 
 
   }, [embarquesSeleccionados, ectipodeembarque]);
+
+//UseEffect para armar conceptos
   useEffect(() => {
     if (!eccompania) return;
     // Crear el array de guías con conceptos
@@ -250,15 +252,15 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Verificación de Carga:' : eccompania === 'AirEuropa' ? 'UX - Verificación de Carga:' : 'Verificación de Carga:',
+            descripcion: 'AR - Verificación de Carga:',
             moneda: embarque.moneda,
-            importe: embarque.verificacion,
+            importe: (embarque.verificacion / 2),
           },
           {
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '08' : eccompania === 'AirEuropa' ? '16' : '47',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Redondeo:' : eccompania === 'AirEuropa' ? 'UX - Redondeo:' : 'Redondeo:',
+            descripcion: 'AR - Redondeo:',
             moneda: embarque.moneda,
             importe: embarque.ajuste,
           },
@@ -267,8 +269,16 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'P',
             guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
+            descripcion: 'AR - Verificación de Carga:',
+            moneda: embarque.moneda,
+            importe: (embarque.verificacion / 2),
+          },
+          {
+            tipo: 'P',
+            guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '02' : eccompania === 'AirEuropa' ? '10' : '0',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Iva Sobre Flete' : eccompania === 'AirEuropa' ? 'UX - Iva Sobre Flete' : 'Iva Sobre Flete',
+            descripcion: 'AR - Iva Sobre Flete' ,
             moneda: embarque.moneda,
             importe: embarque.ivas3,
           },
@@ -319,33 +329,49 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '05' : eccompania === 'AirEuropa' ? '13' : '0',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Collect Fee' : eccompania === 'AirEuropa' ? 'UX - Collect Fee' : 'Collect Fee',
+            descripcion: 'AR - Collect Fee',
             moneda: embarque.moneda,
-            importe: Number(embarque.collectfee),
+            importe: Math.ceil((Number(embarque.collectfee) / 2) * 100) / 100,
           },
           {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Verificación de Carga:' : eccompania === 'AirEuropa' ? 'UX - Verificación de Carga:' : 'Verificación de Carga:',
+            descripcion: 'AR - Verificación de Carga:',
             moneda: embarque.moneda,
-            importe: embarque.verificacion,
+            importe: (embarque.verificacion / 2),
           },
           {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '08' : eccompania === 'AirEuropa' ? '16' : '47',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Redondeo:' : eccompania === 'AirEuropa' ? 'UX - Redondeo:' : 'Redondeo:',
+            descripcion: 'AR - Redondeo:',
             moneda: embarque.moneda,
             importe: embarque.ajuste,
           },
         ],
         conceptos_cuentaajena: [
+            {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '05' : eccompania === 'AirEuropa' ? '13' : '0',
+            descripcion: 'AR - Collect Fee',
+            moneda: embarque.moneda,
+            importe: Math.ceil((Number(embarque.collectfee) / 2) * 100) / 100,
+          },
+          {
+            tipo: 'C',
+            guia: embarque.guia,
+            id_concepto: eccompania === 'Airclass' ? '01' : eccompania === 'AirEuropa' ? '09' : '0',
+            descripcion:'AR - Verificación de Carga:',
+            moneda: embarque.moneda,
+            importe: (embarque.verificacion / 2),
+          },
           {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '03' : eccompania === 'AirEuropa' ? '11' : '47',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Flete Importación Aerea' : eccompania === 'AirEuropa' ? 'UX - Flete Importación Aerea' : 'Flete Importación Aerea',
+            descripcion:'AR - Flete Importación Aerea',
             moneda: embarque.moneda,
             importe: embarque.flete,
           },
@@ -353,7 +379,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '02' : eccompania === 'AirEuropa' ? '10' : '47',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Iva Sobre Flete' : eccompania === 'AirEuropa' ? 'UX - Iva Sobre Flete' : 'Iva Sobre Flete',
+            descripcion: 'AR - Iva Sobre Flete',
             moneda: embarque.moneda,
             importe: embarque.ivas3,
           },
@@ -361,7 +387,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '04' : eccompania === 'AirEuropa' ? '12' : '47',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Otros Gastos Collect' : eccompania === 'AirEuropa' ? 'UX - Otros Gastos Collect' : 'Otros Gastos Collect',
+            descripcion: 'AR - Otros Gastos Collect',
             moneda: embarque.moneda,
             importe: Number(embarque.daoriginal) + Number(embarque.dcoriginal)
           },
@@ -396,7 +422,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '06' : eccompania === 'AirEuropa' ? '14' : '47',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Flete Exportación Aerea' : eccompania === 'AirEuropa' ? 'UX - Flete Exportación Aerea' : 'Flete Exportación Aerea',
+            descripcion: 'AR - Flete Exportación Aerea',
             moneda: 'USD',
             importe: embarque.fleteneto,
           },
@@ -414,7 +440,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: eccompania === 'Airclass' ? '07' : eccompania === 'AirEuropa' ? '15' : '47',
-            descripcion: eccompania === 'Airclass' ? 'VZ - Due Carrier Prepaid' : eccompania === 'AirEuropa' ? 'UX - Due Carrier Prepaid' : 'Due Carrier',
+            descripcion: 'AR - Due Carrier Prepaid',
             moneda: 'USD',
             importe: embarque.duecarrier,
           },

@@ -74,7 +74,7 @@ const pool = mysql2.createPool({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoiceprod',
+  database: 'cielosurinvoicetest',
   port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
@@ -86,7 +86,7 @@ const connection = mysql.createConnection({
   host: 'cielosurinvoicedb.mysql.database.azure.com',
   user: 'cielosurdb',
   password: 'nujqeg-giwfes-6jynzA',
-  database: 'cielosurinvoiceprod',
+  database: 'cielosurinvoicetest',
   port: 3306,
   connectTimeout: 60000,
 });
@@ -7143,13 +7143,11 @@ app.get("/api/reportedeembarque/pdf", async (req, res) => {
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([1191, 842]);
 
-    let imageFile = "AirEuropa.jpg"; // valor por defecto
+    let imageFile = "Argentinas.jpg"; // valor por defecto
 
-    if (aerolinea?.toUpperCase() === "AIRCLASS") {
-      imageFile = "Airclass.jpg";
-    } else if (aerolinea?.toUpperCase() === "ALL") {
-      imageFile = null; // sin imagen
-    }
+    if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null;
+    } 
 
     // --- SOLO si hay imagen se ejecuta este bloque ---
     if (imageFile) {
@@ -7471,13 +7469,11 @@ app.get("/api/reportedeembarqueimpo/pdf", async (req, res) => {
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([1191, 842]);
 
-    let imageFile = "AirEuropa.jpg"; // valor por defecto
+    let imageFile = "Argentinas.jpg"; // valor por defecto
 
-    if (aerolinea?.toUpperCase() === "AIRCLASS") {
-      imageFile = "Airclass.jpg";
-    } else if (aerolinea?.toUpperCase() === "ALL") {
-      imageFile = null; // sin imagen
-    }
+    if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null;
+    } 
 
     // --- SOLO si hay imagen se ejecuta este bloque ---
     if (imageFile) {
@@ -7792,13 +7788,11 @@ app.get("/api/reportedeembarquependiente/pdf", async (req, res) => {
     // Crear PDF A3 horizontal
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([1191, 842]);
-    let imageFile = "AirEuropa.jpg"; // valor por defecto
+    let imageFile = "Argentinas.jpg"; // valor por defecto
 
-    if (aerolinea?.toUpperCase() === "AIRCLASS") {
-      imageFile = "Airclass.jpg";
-    } else if (aerolinea?.toUpperCase() === "ALL") {
-      imageFile = null; // sin imagen
-    }
+    if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null;
+    } 
 
     // --- SOLO si hay imagen se ejecuta este bloque ---
     if (imageFile) {
@@ -8103,13 +8097,11 @@ app.get("/api/reportedeembarquependienteimpo/pdf", async (req, res) => {
     // Crear PDF A3 horizontal
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([1191, 842]);
-    let imageFile = "AirEuropa.jpg"; // valor por defecto
+    let imageFile = "Argentinas.jpg"; // valor por defecto
 
-    if (aerolinea?.toUpperCase() === "AIRCLASS") {
-      imageFile = "Airclass.jpg";
-    } else if (aerolinea?.toUpperCase() === "ALL") {
-      imageFile = null; // sin imagen
-    }
+    if (aerolinea?.toUpperCase() === "ALL") {
+      imageFile = null;
+    } 
 
     // --- SOLO si hay imagen se ejecuta este bloque ---
     if (imageFile) {
