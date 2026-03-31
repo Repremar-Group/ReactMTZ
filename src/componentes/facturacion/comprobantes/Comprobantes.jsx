@@ -251,7 +251,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: '8',
+            id_concepto: '01',
             descripcion: 'AR - Verificación de Carga:',
             moneda: embarque.moneda,
             importe: (embarque.verificacion / 2),
@@ -259,7 +259,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: '47',
+            id_concepto: '10',
             descripcion: 'AR - Redondeo:',
             moneda: embarque.moneda,
             importe: embarque.ajuste,
@@ -269,15 +269,15 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: '8',
-            descripcion: 'AR - Verificación de Carga:',
+            id_concepto: '02',
+            descripcion: 'AR - Verificación de Carga ARSA:',
             moneda: embarque.moneda,
             importe: (embarque.verificacion / 2),
           },
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: '5',
+            id_concepto: '03',
             descripcion: 'AR - Iva Sobre Flete' ,
             moneda: embarque.moneda,
             importe: embarque.ivas3,
@@ -328,7 +328,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '2',
+            id_concepto: '06',
             descripcion: 'AR - Collect Fee',
             moneda: embarque.moneda,
             importe: Math.ceil((Number(embarque.collectfee) / 2) * 100) / 100,
@@ -336,7 +336,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '8',
+            id_concepto: '01',
             descripcion: 'AR - Verificación de Carga:',
             moneda: embarque.moneda,
             importe: (embarque.verificacion / 2),
@@ -344,7 +344,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '47',
+            id_concepto: '10',
             descripcion: 'AR - Redondeo:',
             moneda: embarque.moneda,
             importe: embarque.ajuste,
@@ -354,23 +354,23 @@ const Comprobantes = ({ isLoggedIn }) => {
             {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '2',
-            descripcion: 'AR - Collect Fee',
+            id_concepto: '07',
+            descripcion: 'AR - Collect Fee ARSA',
             moneda: embarque.moneda,
             importe: Math.ceil((Number(embarque.collectfee) / 2) * 100) / 100,
           },
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '8',
-            descripcion:'AR - Verificación de Carga:',
+            id_concepto: '02',
+            descripcion:'AR - Verificación de Carga ARSA:',
             moneda: embarque.moneda,
             importe: (embarque.verificacion / 2),
           },
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '4',
+            id_concepto: '04',
             descripcion:'AR - Flete Importación Aerea',
             moneda: embarque.moneda,
             importe: embarque.flete,
@@ -378,7 +378,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '5',
+            id_concepto: '03',
             descripcion: 'AR - Iva Sobre Flete',
             moneda: embarque.moneda,
             importe: embarque.ivas3,
@@ -386,7 +386,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'C',
             guia: embarque.guia,
-            id_concepto: '6',
+            id_concepto: '05',
             descripcion: 'AR - Otros Gastos Collect',
             moneda: embarque.moneda,
             importe: Number(embarque.daoriginal) + Number(embarque.dcoriginal)
@@ -421,25 +421,15 @@ const Comprobantes = ({ isLoggedIn }) => {
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: eccompania === 'Airclass' ? '06' : eccompania === 'AirEuropa' ? '14' : '47',
+            id_concepto: '08',
             descripcion: 'AR - Flete Exportación Aerea',
             moneda: 'USD',
             importe: embarque.fleteneto,
           },
-          ...(eccompania === 'Airclass' && embarque.security && Number(embarque.security) !== 0
-            ? [{
-              tipo: 'P',
-              guia: embarque.guia,
-              id_concepto: '21',
-              descripcion: `VZ - Security`,
-              moneda: 'USD',
-              importe: embarque.security,
-            }]
-            : []),
           {
             tipo: 'P',
             guia: embarque.guia,
-            id_concepto: eccompania === 'Airclass' ? '07' : eccompania === 'AirEuropa' ? '15' : '47',
+            id_concepto: '09',
             descripcion: 'AR - Due Carrier Prepaid',
             moneda: 'USD',
             importe: embarque.duecarrier,
