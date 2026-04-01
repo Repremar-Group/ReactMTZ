@@ -6951,6 +6951,7 @@ app.get("/api/reportedeembarqueguiasexpo", async (req, res) => {
       { header: "pagarcobrar", key: "cobrarpagar", width: 10 },
       { header: "factura", key: "numeroFacturaCFE", width: 15 },
       { header: "recibo", key: "numeroReciboCFE", width: 15 },
+      { header: "cass", key: "cass", width: 15 },
     ];
 
     rows.forEach((r) => {

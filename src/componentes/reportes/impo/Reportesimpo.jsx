@@ -62,6 +62,8 @@ const Reportesimpo = ({ isLoggedIn }) => {
       { header: 'Factura CA', key: 'facturaca', width: 10 },
       { header: 'Recibo', key: 'recibo', width: 10 },
       { header: 'Notificada', key: 'notificada', width: 10 },
+      { header: 'ARSA', key: 'arsa', width: 10 },
+      { header: 'ACS', key: 'acs', width: 10 },
     ];
     // Estilo: encabezado con fondo azul y letras blancas
     const headerRow = worksheet.getRow(1);
@@ -105,6 +107,7 @@ const Reportesimpo = ({ isLoggedIn }) => {
       const ppothers = tipoPago === 'C' ? 0 : (item.dcoriginal || 0) + (item.daoriginal || 0);
       const cccharges = tipoPago === 'P' ? 0 : item.fleteoriginal || 0;
       const ccothers = tipoPago === 'P' ? 0 : (item.dcoriginal || 0) + (item.daoriginal || 0);
+      const arsaacs = (item.verificacion/2)
 
       worksheet.addRow({
         fechaVuelo: item.fechavuelo ? new Date(item.fechavuelo) : null,
@@ -129,6 +132,8 @@ const Reportesimpo = ({ isLoggedIn }) => {
         facturaca: item.factura_ca_cfe,
         recibo: item.recibo_cfe,
         notificada: item.notificada === 1 ? 'SI' : 'NO',
+        arsa:arsaacs,
+        acs:arsaacs,
       });
     });
 
@@ -329,8 +334,8 @@ const Reportesimpo = ({ isLoggedIn }) => {
             >
               <option value="">Seleccione la Aerolinea</option>
               <option value="ALL">Todas</option>
-              <option value="AirEuropa">AirEuropa</option>
-              <option value="Airclass">AirClass</option>
+              <option value="Aerolineas Argentinas">Aerolineas Argentinas</option>
+              
             </select>
           </div>
           <div>

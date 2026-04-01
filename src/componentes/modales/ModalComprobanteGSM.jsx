@@ -21,7 +21,7 @@ const ModalComprobanteGSM = ({ isOpen, onClose, datos }) => {
 
         subtotal += importe;
 
-        if (concepto.descripcion === "AR - Collect Fee") {
+        if (concepto.descripcion === "AR - Collect Fee ARSA") {
           const iva = Number((importe * 0.22) * 100) / 100; 
           ivaTotal += iva;
         }

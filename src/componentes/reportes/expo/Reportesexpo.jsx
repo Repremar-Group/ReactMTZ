@@ -214,8 +214,7 @@ const Reportesexpo = ({ isLoggedIn }) => {
             >
               <option value="">Seleccione la Aerolinea</option>
               <option value="ALL">Todas</option>
-              <option value="AirEuropa">AirEuropa</option>
-              <option value="Airclass">AirClass</option>
+              <option value="Aerolineas Argentinas">Aerolineas Argentinas</option>
             </select>
           </div>
           <div>
