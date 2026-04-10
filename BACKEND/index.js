@@ -691,7 +691,7 @@ app.post('/api/insertclientes', async (req, res) => {
       'Content-Type': 'text/xml;charset=utf-8',
       'SOAPAction': '"agregarElemento"',
       'Accept-Encoding': 'gzip,deflate',
-      'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      'Host': datosEmpresa.serverFacturacion,
       'Connection': 'Keep-Alive',
       'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
     };
@@ -1013,7 +1013,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"modificarElemento"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+    'Host': datosEmpresa.serverFacturacion,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -1120,7 +1120,7 @@ app.delete('/api/deleteclientes', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"eliminarElemento"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `${datosEmpresa.conjuntoClientes}`,
+    'Host': datosEmpresa.serverFacturacion,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -4622,7 +4622,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"procesoCargarCotizacionesBcu"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+    'Host': datosEmpresa.serverFacturacion,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -4741,7 +4741,7 @@ app.post('/pruebaws', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"agregarDocumentoFacturacion"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+    'Host': datosEmpresa.serverFacturacion,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -4884,7 +4884,7 @@ async function procesarFacturaSOAP(xml, xmlCuentaAjena) {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"agregarDocumentoFacturacion"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+    'Host': datosEmpresa.serverFacturacion,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
