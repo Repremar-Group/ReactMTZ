@@ -691,14 +691,14 @@ app.post('/api/insertclientes', async (req, res) => {
       'Content-Type': 'text/xml;charset=utf-8',
       'SOAPAction': '"agregarElemento"',
       'Accept-Encoding': 'gzip,deflate',
-      'Host': `${datosEmpresa.serverFacturacion}`,
+      'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       'Connection': 'Keep-Alive',
       'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
     };
 
     try {
       const response = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xmlBuffer,
         { headers }
       );
@@ -874,7 +874,7 @@ app.post('/api/insertclientes/excel', upload.single('file'), async (req, res) =>
         console.log('XML a instertar: ', xml);
         // 🚀 Enviar XML al servidor GIA
         const response = await axios.post(
-          `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+          `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
           Buffer.from(xml, "utf-8"),
           {
             headers: {
@@ -1013,7 +1013,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"modificarElemento"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `${datosEmpresa.serverFacturacion}`,
+    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -1021,7 +1021,7 @@ app.put('/api/actualizarcliente/:id', async (req, res) => {
   try {
     console.log('XML MODIFICAR A SOAP', xml);
     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlBuffer,
       { headers }
     );
@@ -1127,7 +1127,7 @@ app.delete('/api/deleteclientes', async (req, res) => {
 
   try {
     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlBuffer,
       { headers }
     );
@@ -2648,7 +2648,7 @@ app.post('/api/agregarconcepto', async (req, res) => {
 
   try {
     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlBuffer,
       { headers }
     );
@@ -3658,7 +3658,7 @@ app.post('/api/insertfacturamanual', async (req, res) => {
     try {
       // Paso 2: Impactar documento
       const response = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xmlBuffer,
         { headers }
       );
@@ -3687,7 +3687,7 @@ app.post('/api/insertfacturamanual', async (req, res) => {
       });
 
       const pdfResponse = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xmlPdf,
         { headers: headersObtenerPdf }
       );
@@ -4089,7 +4089,7 @@ app.post('/api/impactarrecibo', async (req, res) => {
 
     try {
       const response = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xml,
         { headers }
       );
@@ -4622,7 +4622,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"procesoCargarCotizacionesBcu"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `${datosEmpresa.serverFacturacion}`,
+    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -4690,7 +4690,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
   try {
     // ✅ Primera llamada: procesoCargarCotizacionesBcu
     const cotizacionesResponse = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlCotizaciones,
       { headers: headersCotizacion }
     );
@@ -4703,7 +4703,7 @@ app.post('/cotizaciones-bcu', async (req, res) => {
 
     // ✅ Segunda llamada: obtenerCotizacion para moneda 2
     const obtenerCotizacionResponse = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlObtenerCotizacion,
       { headers: headersObtener }
     );
@@ -4741,7 +4741,7 @@ app.post('/pruebaws', async (req, res) => {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"agregarDocumentoFacturacion"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `${datosEmpresa.serverFacturacion}`,
+    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -4797,7 +4797,7 @@ app.post('/pruebaws', async (req, res) => {
 
       // 1. Enviar SOAP agregarDocumentoFacturacion
       const response = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xmlBuffer,
         { headers: headersAgregar }
       );
@@ -4830,7 +4830,7 @@ app.post('/pruebaws', async (req, res) => {
 
       // 5. Pedir PDF
       const pdfResponse = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xmlPdf,
         { headers: headersObtenerPdf }
       );
@@ -4884,7 +4884,7 @@ async function procesarFacturaSOAP(xml, xmlCuentaAjena) {
     'Content-Type': 'text/xml;charset=utf-8',
     'SOAPAction': '"agregarDocumentoFacturacion"',
     'Accept-Encoding': 'gzip,deflate',
-    'Host': `${datosEmpresa.serverFacturacion}`,
+    'Host': `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
     'Connection': 'Keep-Alive',
     'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)',
   };
@@ -4932,7 +4932,7 @@ async function procesarFacturaSOAP(xml, xmlCuentaAjena) {
     const xmlBuffer = Buffer.from(xmlData, 'utf-8');
 
     // 1. Enviar SOAP agregarDocumentoFacturacion
-    const response = await axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlBuffer, { headers: headersAgregar });
+    const response = await axios.post(`https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlBuffer, { headers: headersAgregar });
     const parsed = await parseSOAP(response.data);
     const inner = await parseInnerXML(parsed.Envelope.Body.agregarDocumentoFacturacionResponse.xmlResultado);
     const resultado = inner.agregarDocumentoFacturacionResultado;
@@ -4950,7 +4950,7 @@ async function procesarFacturaSOAP(xml, xmlCuentaAjena) {
     });
 
     // 3. Pedir PDF
-    const pdfResponse = await axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf, { headers: headersObtenerPdf });
+    const pdfResponse = await axios.post(`https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf, { headers: headersObtenerPdf });
     const parsedPdf = await parseSOAP(pdfResponse.data);
     const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
     const innerPdf = await parseInnerXML(innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));
@@ -6156,7 +6156,7 @@ app.post('/api/impactardocumento', async (req, res) => {
 
     // Paso 1: Impactar documento
     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlBuffer,
       { headers }
     );
@@ -6185,7 +6185,7 @@ app.post('/api/impactardocumento', async (req, res) => {
     });
 
     const pdfResponse = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xmlPdf,
       { headers: headersObtenerPdf }
     );
@@ -6510,7 +6510,7 @@ app.post('/api/impactarnc', async (req, res) => {
     };
 
     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xml,
       { headers }
     );
@@ -6575,7 +6575,7 @@ app.post('/api/impactarnc', async (req, res) => {
         </soapenv:Envelope>
       `;
       console.log('XML PDF', xmlPdf);
-      const pdfResp = await axios.post(`http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf, { headers: headersPdf });
+      const pdfResp = await axios.post(`https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`, xmlPdf, { headers: headersPdf });
       const parsedPdf = await parseSOAP(pdfResp.data);
       const innerPdfXmlEscaped = parsedPdf.Envelope.Body.obtenerRepresentacionImpresaDocumentoFacturacionResponse.xmlResultado;
       const innerPdf = await parseInnerXML(innerPdfXmlEscaped.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));
@@ -6713,7 +6713,7 @@ app.post('/api/impactarncacuentaa', async (req, res) => {
     };
 
     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xml,
       { headers }
     );
@@ -6777,7 +6777,7 @@ app.post('/api/impactarncacuentaa', async (req, res) => {
       `;
 
       const pdfResp = await axios.post(
-        `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+        `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
         xmlPdf,
         { headers: headersPdf }
       );
@@ -8411,7 +8411,7 @@ app.delete("/api/anularRecibo/:id", async (req, res) => {
     };
 
     const response = await axios.post(
-      `http://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
+      `https://${datosEmpresa.serverFacturacion}/giaweb/soap/giawsserver`,
       xml,
       { headers }
     );
