@@ -248,7 +248,7 @@ const PreviewGuias = () => {
                 return;
             }
             const asunto = `Notificación de arribo - ${row.guia}`;
-            const cuerpo = `Buenos días estimados.\n\nNotificamos arribo de carga en asunto. \nArribada con ${row.nombreVuelo} el ${row.fechavuelo_formateada}.\nGastos terminales USD ${costoGuia}.\n\nDatos bancarios:\nItaú cuenta corriente USD\n0584536 KIXOLER SA\n\nUna vez reciba el comprobante, les paso factura, recibo y transferido.\n\nMuchas gracias.\nSaludos.`;
+            const cuerpo = `Buenos días estimados.\n\nNotificamos arribo de carga en asunto. \nArribada con ${row.nombreVuelo} el ${row.fechavuelo_formateada}.\nGastos terminales USD ${costoGuia}.\n\nDatos bancarios:\nItaú cuenta corriente USD\n0582031 PALINSA SA\n\nUna vez reciba el comprobante, les paso factura, recibo y transferido.\n\nMuchas gracias.\nSaludos.`;
 
 
             const mailtoLink = `mailto:${destinatarios}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;

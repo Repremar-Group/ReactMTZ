@@ -203,7 +203,7 @@ const Comprobantes = ({ isLoggedIn }) => {
 
   }, [embarquesSeleccionados, ectipodeembarque]);
 
-//UseEffect para armar conceptos
+  //UseEffect para armar conceptos
   useEffect(() => {
     if (!eccompania) return;
     // Crear el array de guías con conceptos
@@ -278,7 +278,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'P',
             guia: embarque.guia,
             id_concepto: '03',
-            descripcion: 'AR - Iva Sobre Flete' ,
+            descripcion: 'AR - Iva Sobre Flete',
             moneda: embarque.moneda,
             importe: embarque.ivas3,
           },
@@ -351,7 +351,7 @@ const Comprobantes = ({ isLoggedIn }) => {
           },
         ],
         conceptos_cuentaajena: [
-            {
+          {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: '07',
@@ -363,7 +363,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: '02',
-            descripcion:'AR - Verificación de Carga ARSA:',
+            descripcion: 'AR - Verificación de Carga ARSA:',
             moneda: embarque.moneda,
             importe: (embarque.verificacion / 2),
           },
@@ -371,7 +371,7 @@ const Comprobantes = ({ isLoggedIn }) => {
             tipo: 'C',
             guia: embarque.guia,
             id_concepto: '04',
-            descripcion:'AR - Flete Importación Aerea',
+            descripcion: 'AR - Flete Importación Aerea',
             moneda: embarque.moneda,
             importe: embarque.flete,
           },
@@ -672,7 +672,18 @@ const Comprobantes = ({ isLoggedIn }) => {
     if (Array.isArray(conceptoscuentaajena) && conceptoscuentaajena.length > 0 && !conceptoscuentaajena.includes(undefined)) {
       // Sumar los importes de conceptos cuenta ajena
       const subtotalca = (conceptoscuentaajena.reduce((acc, concepto) => acc + parseFloat(concepto.importe || 0), 0)).toFixed(2);
-      const ivaca = (0).toFixed(2); // Suponiendo que el IVA es 0
+      // Filtrar embarques IMPO + Collect
+      const embarquesCollect = embarquesSeleccionados.filter(
+        (e) => e.Tipo === "IMPO" && e.tipodepagoguia === "C"
+      );
+
+      // Calcular IVA cuenta ajena
+      const ivacaNum = embarquesCollect.reduce((sum, embarque) => {
+        const valor = Math.ceil((Number(embarque.cfiva) / 2) * 100) / 100 || 0;
+        return sum + valor;
+      }, 0);
+
+      const ivaca = ivacaNum.toFixed(2);
       const totalca = (parseFloat(subtotalca) + parseFloat(ivaca)).toFixed(2);
       const redondeoca = (Math.ceil(totalca) - totalca).toFixed(2); // Redondeo
       const totalACobrarca = (parseFloat(totalca)).toFixed(2);
