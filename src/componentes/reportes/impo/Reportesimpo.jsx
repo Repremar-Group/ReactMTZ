@@ -102,9 +102,9 @@ const Reportesimpo = ({ isLoggedIn }) => {
       const tipoPago = item.tipodepagoguia;
 
       const ppcharges = tipoPago === 'C' ? 0 : item.flete || 0;
-      const ppothers = tipoPago === 'C' ? 0 : (item.dcoriginal || 0) + (item.daoriginal || 0);
+      const ppothers = tipoPago === 'C' ? 0 : Number(item.dcoriginal || 0) + Number(item.daoriginal || 0);
       const cccharges = tipoPago === 'P' ? 0 : item.fleteoriginal || 0;
-      const ccothers = tipoPago === 'P' ? 0 : (item.dcoriginal || 0) + (item.daoriginal || 0);
+      const ccothers = tipoPago === 'P' ? 0 : Number(item.dcoriginal || 0) + Number(item.daoriginal || 0);
 
       worksheet.addRow({
         fechaVuelo: item.fechavuelo ? new Date(item.fechavuelo) : null,
