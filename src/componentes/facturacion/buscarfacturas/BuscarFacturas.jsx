@@ -110,8 +110,9 @@ const BuscarFacturas = () => {
     const [guiaAEliminar, setGuiaAEliminar] = useState([]);
     //Estados para los filtros
     const [searchField, setSearchField] = useState('');
-    const [fechaDesde, setFechaDesde] = useState('');
-    const [fechaHasta, setFechaHasta] = useState('');
+  const fechaActual = new Date().toISOString().split('T')[0];
+     const [fechaDesde, setFechaDesde] = useState(fechaActual);
+     const [fechaHasta, setFechaHasta] = useState(fechaActual);
 
     const handleFechaDesdeChange = (e) => {
         setFechaDesde(e.target.value);
@@ -167,7 +168,54 @@ const BuscarFacturas = () => {
         }
     };
 
+const buscarFacturas = async () => {
+        try {
 
+            setLoadingTabla(true);
+
+            const params = {};
+
+            if (fechaDesde) params.desde = fechaDesde;
+            if (fechaHasta) params.hasta = fechaHasta;
+
+            if (searchTerm && searchField) {
+
+                switch (searchField) {
+
+                    case 'NumeroCFE':
+                        params.numeroCFE = searchTerm;
+                        break;
+
+                    case 'idrecibo':
+                        params.idrecibo = searchTerm;
+                        break;
+
+                    case 'RazonSocial':
+                        params.cliente = searchTerm;
+                        break;
+
+                    case 'RutCedula':
+                        params.rut = searchTerm;
+                        break;
+                }
+            }
+
+            const response = await axios.get(
+                `${backURL}/api/previewfacturasnew`,
+                { params }
+            );
+
+            setFacturas(response.data);
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setLoadingTabla(false);
+        }
+    };
 
     const descargarFacturasEnZip = async (facturas) => {
         const zip = new JSZip();
@@ -204,31 +252,31 @@ const BuscarFacturas = () => {
     };
 
     // Función para obtener las Guias
-    const fetchFacturas = async () => {
-        try {
-            setLoadingTabla(true); // Activar indicador de carga
-
-            // Hacer solicitudes a ambos endpoints
-            const response = await axios.get(`${backURL}/api/previewfacturas`);// Endpoint para guías expo
-
-
-            // Actualizar el estado con las guías combinadas
-            setFacturas(response.data);
-            console.log('Facturas desde la Base: ', response.data);
-
-        } catch (err) {
-            console.error('Error al obtener las facturas:', err);
-            setError('No se pudieron cargar las Facturas.');
-        } finally {
-            setLoadingTabla(false); // Desactivar indicador de carga
-        }
-    };
-
-    // Llama a fetchFacturas al cargar el componente
-    useEffect(() => {
-        fetchFacturas();
-    }, []);
-
+   const fetchFacturas = async () => {
+          try {
+              setLoadingTabla(true); // Activar indicador de carga
+  
+              // Hacer solicitudes a ambos endpoints
+              const response = await axios.get(`${backURL}/api/previewfacturasnew`);// Endpoint para guías expo
+  
+  
+              // Actualizar el estado con las guías combinadas
+              setFacturas(response.data);
+              console.log('Facturas desde la Base: ', response.data);
+  
+          } catch (err) {
+              console.error('Error al obtener las facturas:', err);
+              setError('No se pudieron cargar las Facturas.');
+          } finally {
+              setLoadingTabla(false); // Desactivar indicador de carga
+          }
+      };
+  
+      // Llama a fetchFacturas al cargar el componente
+      useEffect(() => {
+          fetchFacturas();
+      }, []);
+  
 
 
 
@@ -236,46 +284,7 @@ const BuscarFacturas = () => {
         setSearchTerm(event.target.value);
         setBusquedaRealizada(true);
     };
-    const facturasFiltradas = facturas.filter((row) => {
-
-        let cumpleBusqueda = true;
-
-        // --- BÚSQUEDA ---
-        if (searchField && searchTerm.trim() !== '') {
-
-            const termino = searchTerm.toLowerCase();
-
-            // Buscar por número de guía
-            if (searchField === 'NumeroGuia') {
-
-                cumpleBusqueda = row.guias?.some(g =>
-                    g.guia?.toLowerCase().includes(termino)
-                );
-
-            } else {
-                // Búsqueda estándar por cualquier otro campo
-                const valor = row[searchField];
-                cumpleBusqueda =
-                    valor?.toString().toLowerCase().includes(termino);
-            }
-        }
-
-        // --- FILTRO FECHAS ---
-        const parseFecha = (str) => {
-            const [dia, mes, anio] = str.split('/');
-            return new Date(`${anio}-${mes}-${dia}`);
-        };
-
-        const fechaFactura = parseFecha(row.Fecha);
-        const desde = fechaDesde ? new Date(fechaDesde) : null;
-        const hasta = fechaHasta ? new Date(hastaFecha) : null;
-
-        const cumpleFecha =
-            (!desde || fechaFactura >= desde) &&
-            (!hasta || fechaFactura <= hasta);
-
-        return cumpleBusqueda && cumpleFecha;
-    });
+   
     useEffect(() => {
         const filtrosVacios =
             searchTerm.trim() === '' &&
@@ -363,6 +372,12 @@ const BuscarFacturas = () => {
                                     <label>Hasta:</label>
                                     <input type="date" value={fechaHasta} onChange={handleFechaHastaChange} />
                                 </div>
+                                  <button
+                                    className="boton-descargar-todas"
+                                    onClick={buscarFacturas}
+                                >
+                                    Buscar
+                                </button>
                                 {facturasSeleccionadas.length > 0 && (
                                     <button
                                         className="boton-descargar-todas"
@@ -391,7 +406,7 @@ const BuscarFacturas = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {facturasFiltradas.map((row) => (
+                                {facturas.map((row) => (
                                     <tr
                                         key={row.Id}
                                         title={row.guias?.map(g => g.guia).join(', ') || 'Sin guías'}

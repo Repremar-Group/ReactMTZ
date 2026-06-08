@@ -449,7 +449,135 @@ app.get('/api/previewfacturas', async (req, res) => {
     });
   }
 });
+app.get('/api/previewfacturasnew', async (req, res) => {
+  console.log('Received request for /api/previewfacturasnew');
 
+  const {
+    desde,
+    hasta,
+    numeroCFE,
+    idrecibo,
+    cliente,
+    rut
+  } = req.query;
+
+  let whereClauses = [];
+  let params = [];
+
+  // Si NO viene ningún filtro -> traer solo las facturas del día
+  const tieneFiltros =
+    desde ||
+    hasta ||
+    numeroCFE ||
+    idrecibo ||
+    cliente ||
+    rut;
+
+  if (!tieneFiltros) {
+    whereClauses.push('DATE(f.Fecha) = CURDATE()');
+  } else {
+
+    if (desde) {
+      whereClauses.push('DATE(f.Fecha) >= ?');
+      params.push(desde);
+    }
+
+    if (hasta) {
+      whereClauses.push('DATE(f.Fecha) <= ?');
+      params.push(hasta);
+    }
+
+    if (numeroCFE) {
+      whereClauses.push('f.NumeroCFE LIKE ?');
+      params.push(`%${numeroCFE}%`);
+    }
+
+    if (idrecibo) {
+      whereClauses.push('f.idrecibo LIKE ?');
+      params.push(`%${idrecibo}%`);
+    }
+
+    if (cliente) {
+      whereClauses.push('f.RazonSocial LIKE ?');
+      params.push(`%${cliente}%`);
+    }
+
+    if (rut) {
+      whereClauses.push('f.RutCedula LIKE ?');
+      params.push(`%${rut}%`);
+    }
+  }
+
+  const whereSQL =
+    whereClauses.length > 0
+      ? `WHERE ${whereClauses.join(' AND ')}`
+      : '';
+
+  const sql = `
+    SELECT
+      f.*,
+      gexpo.guia AS guiaExpo,
+      gimpo.guia AS guiaImpo
+    FROM facturas f
+    LEFT JOIN guiasexpo gexpo
+      ON gexpo.idfactura = f.Id
+    LEFT JOIN guiasimpo gimpo
+      ON gimpo.idfactura = f.Id
+      OR gimpo.idfacturacuentaajena = f.Id
+    ${whereSQL}
+    ORDER BY f.Fecha DESC
+  `;
+
+  try {
+    const [rows] = await pool.query(sql, params);
+
+    const facturasMap = new Map();
+
+    rows.forEach(row => {
+      if (!facturasMap.has(row.Id)) {
+
+        const fecha = new Date(row.Fecha);
+
+        const fechaVenc = row.fechaVencimiento
+          ? new Date(row.fechaVencimiento)
+          : null;
+
+        facturasMap.set(row.Id, {
+          ...row,
+          Fecha: fecha.toLocaleDateString('es-AR'),
+          fechaVencimiento: fechaVenc
+            ? fechaVenc.toLocaleDateString('es-AR')
+            : '',
+          guias: []
+        });
+      }
+
+      if (row.guiaExpo) {
+        facturasMap.get(row.Id).guias.push({
+          tipo: 'Expo',
+          guia: row.guiaExpo
+        });
+      }
+
+      if (row.guiaImpo) {
+        facturasMap.get(row.Id).guias.push({
+          tipo: 'Impo',
+          guia: row.guiaImpo
+        });
+      }
+    });
+
+    res.status(200).json(Array.from(facturasMap.values()));
+
+  } catch (err) {
+    console.error('Error cargando facturas:', err);
+
+    res.status(500).json({
+      message: 'Error en el backend cargando facturas',
+      error: err.message
+    });
+  }
+});
 
 app.post('/api/changeestadocliente', async (req, res) => {
   const { idCliente } = req.body;
