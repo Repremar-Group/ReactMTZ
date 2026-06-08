@@ -1,0 +1,36 @@
+8/6/2026, 15:09:59 [info]: Server running on port 5001
+8/6/2026, 15:10:10 [info]: Conexión exitosa a la base de datos MySQL
+8/6/2026, 15:10:11 [info]: Received request for /api/previewfacturas
+8/6/2026, 15:12:12 [info]: Server running on port 5001
+8/6/2026, 15:12:24 [info]: Conexión exitosa a la base de datos MySQL
+8/6/2026, 15:12:34 [info]: Received request for /api/guias-sin-facturar
+8/6/2026, 15:12:34 [info]: Received request for /api/facturas-sin-cobrar
+8/6/2026, 15:12:34 [info]: Received request for /api/obtenertipocambio
+8/6/2026, 15:12:40 [info]: Received request for /api/previewfacturas
+8/6/2026, 15:12:56 [error]: ❌ Error en el proceso de cotizaciones: Error: connect ETIMEDOUT 10.0.10.16:8082
+8/6/2026, 15:23:27 [info]: Received request for /api/previewfacturas
+8/6/2026, 15:27:04 [info]: Server running on port 5001
+8/6/2026, 15:27:15 [info]: Conexión exitosa a la base de datos MySQL
+8/6/2026, 15:28:06 [info]: Received request for /api/previewfacturas
+8/6/2026, 15:31:17 [info]: Server running on port 5001
+8/6/2026, 15:31:28 [info]: Conexión exitosa a la base de datos MySQL
+8/6/2026, 15:34:09 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:39:55 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:40:23 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:41:03 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:41:03 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:41:06 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:41:07 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:41:10 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:41:16 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:42:49 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:43:03 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:43:09 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:43:29 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:43:43 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:43:49 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:44:11 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:44:17 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:46:55 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:47:02 [info]: Received request for /api/previewfacturasnew
+8/6/2026, 15:47:25 [info]: Received request for /api/previewfacturasnew
