@@ -293,13 +293,13 @@ const BuscarNC = () => {
                                             ? '-' : row.Serie}</td>
                                         <td>
                                             {row.TipoDocumento === 'NCT' ? (
-                                                'E-Factura'
-                                            ) : (row.TipoDocumento === 'NTT' || row.TipoDocumento === 'efacturaca') ? (
-                                                'E-Factura Cuenta Ajena'
-                                            ) : (row.TipoDocumento === 'NRA') ? (
-                                                'E-Ticket'
-                                            ) : row.TipoDocumento === 'NCA' ? (
-                                                'E-Ticket Cuenta Ajena'
+                                                'NC E-Factura'
+                                            ) : (row.TipoDocumento === 'NCA' || row.TipoDocumento === 'efacturaca') ? (
+                                                'NC E-Factura Cuenta Ajena'
+                                            ) : (row.TipoDocumento === 'NTT') ? (
+                                                'NC E-Ticket'
+                                            ) : row.TipoDocumento === 'NRA' ? (
+                                                'NC E-Ticket Cuenta Ajena'
                                             ) : (
                                                 '-'
                                             )}
