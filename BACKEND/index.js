@@ -28,7 +28,7 @@ if (!fs.existsSync('uploads')) {
 const upload = multer({ dest: 'uploads/' });
 
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 const logger = require("./logger");
 
 const originalLog = console.log;
@@ -3547,7 +3547,7 @@ app.post('/api/insertticket', async (req, res) => {
     console.log('XML TICKET GENERADO: ', xml, ' XML TICKETCA GENERADO: ', xmlCuentaAjena);
 
     const resultadoSOAP = await new Promise((resolve, reject) => {
-      axios.post('http://localhost:5000/pruebaws', { xml, xmlCuentaAjena })
+      axios.post('http://localhost:5001/pruebaws', { xml, xmlCuentaAjena })
         .then(async response => {
           const updateQuery = `
             UPDATE facturas SET 
@@ -6518,7 +6518,7 @@ app.post('/api/insertarNC', async (req, res) => {
 
 
 
-    const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC });
+    const impactarResponse = await axios.post('http://localhost:5001/api/impactarnc', { idNC });
 
     return res.json({
       message: 'N/C insertada correctamente, facturas y cuenta corriente actualizadas',
@@ -6775,7 +6775,7 @@ app.post('/api/insertarNCACUENTA', async (req, res) => {
     const idNC = result.insertId;
 
     // 2️⃣ Impactar al WS (pasamos los conceptos directamente)
-    const impactarResponse = await axios.post('http://localhost:5000/api/impactarncacuentaa', {
+    const impactarResponse = await axios.post('http://localhost:5001/api/impactarncacuentaa', {
       idNC,
       TipoNC,
       Referencia,
@@ -6993,7 +6993,7 @@ app.post('/api/reimpactarnc', async (req, res) => {
     console.log(`N/C ${idNC} actualizada correctamente, procediendo a impactar al WS...`);
 
     // 2️⃣ Llamar al endpoint de impactar, reutilizando la lógica ya existente
-    const impactarResponse = await axios.post('http://localhost:5000/api/impactarnc', { idNC });
+    const impactarResponse = await axios.post('http://localhost:5001/api/impactarnc', { idNC });
 
     return res.json({
       message: 'N/C actualizada y reimpactada correctamente',
