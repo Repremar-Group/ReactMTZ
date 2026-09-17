@@ -6516,9 +6516,17 @@ app.post('/api/insertarNC', async (req, res) => {
     `;
     await pool.query(sqlUpdateGuiasExpo, [idsFacturas]);
 
+console.log('========== 2 ==========');
+console.log('DESPUES UPDATE GUIAS');
+console.log('idNC:', idNC);
 
+console.log('========== 3 ==========');
+console.log('ANTES AXIOS IMPACTAR NC');
 
     const impactarResponse = await axios.post('http://localhost:5001/api/impactarnc', { idNC });
+console.log('========== 4 ==========');
+console.log('DESPUES AXIOS');
+console.log(impactarResponse.data);
 
     return res.json({
       message: 'N/C insertada correctamente, facturas y cuenta corriente actualizadas',
