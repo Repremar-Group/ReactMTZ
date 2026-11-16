@@ -3925,6 +3925,7 @@ app.get('/api/historialfac/:idCliente', async (req, res) => {
   WHERE IdCliente = ?
     AND NumeroCFE IS NOT NULL
     AND NumeroCFE != 0
+    AND tieneNC != 1
   ORDER BY FechaCFE DESC;
 `;
 

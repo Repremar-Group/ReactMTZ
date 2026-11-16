@@ -656,7 +656,7 @@ const Emisionrecibos = ({ isLoggedIn }) => {
           </div>
 
           <div className='div-ercuentacorriente'>
-            <h3 className='Titulos-formularios-ingreso-recibos'>Cuenta Corriente</h3>
+            <h3 className='Titulos-formularios-ingreso-recibos'>Historial de Facturación</h3>
             <TablaMovimientos datos={movimientos} loading={loading} />
             <div>
               <label htmlFor="Saldo"><strong>Saldo: </strong> {saldoSelectedCliente ?? '0.00'}</label>
